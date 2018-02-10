@@ -1,6 +1,6 @@
 # Asteroid the Programming Language
 
-Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), and [ML](https://www.smlnj.org).  Asteroid implements a new programming paradigm called pattern-level programming.  Here a just a few small programs to give you the flavor of the langugage.
+Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), and [ML](https://www.smlnj.org) currently under development.  Asteroid implements a new programming paradigm called pattern-level programming.  Here are just a few small programs to give you the flavor of the langugage.
 
 Here is the canonical factorial program written in Asteroid:
 
@@ -88,6 +88,42 @@ function qsort
 ```
 
 Asteroid has a very flexible view of expressions and terms which allows the programmer to attach new interpretations to
-constructor symbols on the fly.  Asteroid also supports prototype-based OO style programming.
+constructor symbols on the fly:
+
+```
+attach (lambda with a, b do return a * b) to __plus__.
+println 3 + 2.                  -- this will print out the value 6
+detach from __plus__.
+
+-- NOTE: '__plus__' is a special symbol representing the '+' operator
+```
+
+Asteroid also supports prototype-based OO style programming:
+
+```
+-- an OO example
+
+-- Our Dog type constructor
+constructor Dog with arity 3.
+
+-- the prototype object
+let dog_proto = Dog (
+            ("name", ""),
+            ("trick", ""),
+            ("make_string", lambda with self do return self{name} + " does " + self{trick})
+        ).
+
+-- Fido the dog
+let fido = copy dog_proto.
+let fido{name} = "Fido".
+let fido{trick} = "play dead".
+println fido{make_string}().
+
+-- Buddy the dog
+let buddy = copy dog_proto.
+let buddy{name} = "Buddy".
+let buddy{trick} = "roll over".
+println buddy{make_string}().
+```
 
 For more details look at the 'Asteroid - The Language' notebook.
