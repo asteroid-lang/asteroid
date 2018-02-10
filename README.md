@@ -1,2 +1,93 @@
 # Asteroid the Programming Language
-more to come here...
+
+Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), and [ML](https://www.smlnj.org).  Asteroid implements a new programming paradigm called pattern-level programming.  Here a just a few small programs to give you the flavor of the langugage.
+
+Here is the canonical factorial program written in Asteroid:
+
+```
+-- Factorial
+
+function fact with n do
+    if n < 0 do
+        error "n has to be non-negative!".
+    elif n is 0 do -- this is pattern-level programmng, 'n == 0' is value-level programming.
+        return 1.
+    else
+        return n * fact (n-1).
+    end if
+end function
+
+println "The factorial of 3 is: ", fact (3).
+
+```
+The following program shows off some of Asteroids pattern-level programming capabilities:
+
+```
+-- implements Peano addition on terms
+
+-- declare the successor function S as a term constructor so that we
+-- can pattern match on it.
+
+constructor S with arity 1.
+
+-- the 'reduce' function is our reduction engine which recursively pattern matches and
+-- rewrites the input term
+
+-- NOTE: during pattern matching free variables are bound to subterms of the original term.
+-- For example, the expression S S 0 + 0 is X + 0 will bind X to S S 0 where X was
+-- declared as a variable. Once a pattern value is bound to a variable it can
+-- be used in the program.  In our case we use the values in the variables to
+-- construct new terms, i.e., S reduce (X + Y)
+
+function reduce
+    with X + 0 do                      -- pattern match 'X + 0'
+            return reduce X.
+    orwith X + S Y  do                 -- pattern match to 'X + S Y'
+            return S reduce (X + Y).
+    orwith term do                     -- default clause
+            return term.
+    end function
+
+-- construct a term we want to reduce, the quote allows us to construct terms without
+-- having Asteroid immediately try to evaluate them.
+
+let n = 'S S 0 + S S S 0.
+
+-- print the resulting term from our reduction
+
+println reduce n.
+```
+
+Here is something a bit more mundane: the quicksort algorithm implemented in Asteroid.  Highlighted here is Asteroid's
+pattern match capabality on lists:
+
+```
+-- Quicksort
+
+function qsort
+    with [] do
+        return [].
+    orwith [a] do
+        return [a].
+    orwith [pivot|rest] do
+        with less=[], more=[] do
+            for e in rest do
+                if e < pivot do
+                    let less = less + [e].
+                else
+                    let more = more + [e].
+                end if
+            end for
+
+            let sorted_less = qsort less.
+            let sorted_more = qsort more.
+
+            return sorted_less + [pivot] + sorted_more.
+        end with
+    end function
+```
+
+Asteroid has a very flexible view of expressions and terms which allows the programmer to attach new interpretations to
+constructor symbols on the fly.  Asteroid also supports prototype-based OO style programming.
+
+For more details look at the 'Asteroid - The Language' notebook.
