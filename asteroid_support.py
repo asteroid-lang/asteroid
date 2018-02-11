@@ -1,4 +1,8 @@
 ##################################################################
+# Asteroid support code
+#
+# (c) 2018 - Lutz Hamel, University of Rhode Island
+##################################################################
 # this function will print any AST that follows the
 #
 #      (TYPE [, child1, child2,...])

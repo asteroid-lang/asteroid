@@ -3,6 +3,7 @@
 #
 # it is a scoped symbol table with a dictionary at each scope level
 #
+# (c) 2018 - Lutz Hamel, University of Rhode Island
 #########################################################################
 
 # TODO: symbold vs function declaration needs to be cleaned up -- everything is just a value in Asteroid

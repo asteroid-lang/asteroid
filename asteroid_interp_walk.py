@@ -1,7 +1,11 @@
-# A tree walker to interpret Cuppa3 programs
+#########################################################################
+# A tree walker to interpret Asteroid programs
+#
+# (c) 2018 - Lutz Hamel, University of Rhode Island
+#########################################################################
 
-from cuppa3_state import state
-from grammar_stuff import assert_match
+from asteroid_state import state
+from support import assert_match
 
 #########################################################################
 # Use the exception mechanism to return values from function calls

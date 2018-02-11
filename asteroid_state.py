@@ -1,3 +1,9 @@
+###########################################################################################
+# Asteroid State Object
+#
+# (c) 2018 - Lutz Hamel, University of Rhode Island
+###########################################################################################
+
 from asteroid_symtab import SymTab
 
 class State:

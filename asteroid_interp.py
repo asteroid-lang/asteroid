@@ -1,5 +1,9 @@
 #!/usr/bin/env python
+###########################################################################################
 # Asteroid interpreter
+#
+# (c) 2018 - Lutz Hamel, University of Rhode Island
+###########################################################################################
 
 from argparse import ArgumentParser
 from asteroid_gram import Parser
