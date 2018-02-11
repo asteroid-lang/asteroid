@@ -42,7 +42,7 @@ def append_node_list(node_type, list1, list2):
                                  list2))
 
 ###########################################################################################
-# LL(1) exp lookahead set
+# LL(1) lookahead sets
 
 exp_lookahead = [
     'EVAL',
