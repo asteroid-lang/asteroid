@@ -2,11 +2,14 @@
 # symbol table for Asteroid
 #
 # it is a scoped symbol table with a dictionary at each scope level
+# each symbols is entered with a list of values in order to enable 'attach'
 #
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 #########################################################################
 
-# TODO: symbold vs function declaration needs to be cleaned up -- everything is just a value in Asteroid
+from pprint import pprint
+
+#########################################################################
 
 CURR_SCOPE = 0
 
@@ -16,6 +19,11 @@ class SymTab:
     def __init__(self):
         # global scope dictionary must always be present
         self.scoped_symtab = [{}]
+
+    #-------
+    def dump(self):
+        print("Symbol Table Dump:")
+        pprint(self.scoped_symtab)
 
     #-------
     def get_config(self):
@@ -40,30 +48,12 @@ class SymTab:
             self.scoped_symtab.pop(CURR_SCOPE)
 
     #-------
-    def declare_sym(self, sym, init):
-        # declare the scalar in the current scope: dict @ position 0
-        
-        # first we need to check whether the symbol was already declared
-        # at this scope
-        if sym in self.scoped_symtab[CURR_SCOPE]:
-            raise ValueError("symbol {} already declared".format(sym))
-        
+    def enter_sym(self, sym, value):
         # enter the symbol in the current scope
+        # we enter the value as a list because if sym is a constructor
+        # we can attach additional functions
         scope_dict = self.scoped_symtab[CURR_SCOPE]
-        scope_dict[sym] = ('scalar', init)
-
-    #-------
-    def declare_fun(self, sym, init):
-        # declare a function in the current scope: dict @ position 0
-        
-        # first we need to check whether the symbol was already declared
-        # at this scope
-        if sym in self.scoped_symtab[CURR_SCOPE]:
-            raise ValueError("symbol {} already declared".format(sym))
-        
-        # enter the function in the current scope
-        scope_dict = self.scoped_symtab[CURR_SCOPE]
-        scope_dict[sym] = ('function', init)
+        scope_dict[sym] = [value]
 
     #-------
     def lookup_sym(self, sym):
@@ -74,14 +64,15 @@ class SymTab:
 
         for scope in range(n_scopes):
             if sym in self.scoped_symtab[scope]:
-                val = self.scoped_symtab[scope].get(sym)
-                return val
+                val_list = self.scoped_symtab[scope].get(sym)
+                return val_list[0]
 
         # not found
-        raise ValueError("{} was not declared".format(sym))
+        raise ValueError("{} is not defined".format(sym))
 
     #-------
-    def update_sym(self, sym, val):
+    def update_sym(self, sym, value):
+        # this is for non-local symbols!
         # find the first occurence of sym in the symtab stack
         # and update the associated value
 
@@ -90,7 +81,46 @@ class SymTab:
         for scope in range(n_scopes):
             if sym in self.scoped_symtab[scope]:
                 scope_dict = self.scoped_symtab[scope]
-                scope_dict[sym] = val
+                scope_dict[sym] = [value]
+                return
+
+        # not found
+        raise ValueError("{} was not declared".format(sym))
+
+    #-------
+    def attach_to_sym(self, sym, fvalue):
+        # find the first occurence of sym in the symtab stack
+        # and attach new function value
+
+        if fvalue[0] != 'function':
+            ValueError("Attach for {} needs a function value.".format(sym))
+
+        n_scopes = len(self.scoped_symtab)
+
+        for scope in range(n_scopes):
+            if sym in self.scoped_symtab[scope]:
+                scope_dict = self.scoped_symtab[scope]
+                scope_dict[sym].insert(0, fvalue)
+                return
+
+        # not found
+        raise ValueError("{} was not declared".format(sym))
+
+    #-------
+    def detach_from_sym(self, sym):
+        # find the first occurence of sym in the symtab stack
+        # and detach toplevel function
+
+        n_scopes = len(self.scoped_symtab)
+
+        for scope in range(n_scopes):
+            if sym in self.scoped_symtab[scope]:
+                scope_dict = self.scoped_symtab[scope]
+                val_list = scope_dict[sym]
+                if len(val_list) == 1:
+                    raise ValueError("Cannot detach constructor from {}.".format(sym))
+                else:
+                    val_list.pop(0)
                 return
 
         # not found

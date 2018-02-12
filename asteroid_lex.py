@@ -63,9 +63,20 @@ reserved = {
 literals = ['.',',','=','{','}','(',')','[',']','|']
 
 tokens = [
-          'PLUS','MINUS','TIMES','DIVIDE',
-          'EQ','NE','LE', 'LT', 'GE', 'GT',
-          'INTEGER', 'REAL', 'STRING', 'ID',
+          'PLUS',
+          'MINUS',
+          'TIMES',
+          'DIVIDE',
+          'EQ',
+          'NE',
+          'LE', 
+          'LT', 
+          'GE', 
+          'GT',
+          'INTEGER', 
+          'REAL', 
+          'STRING', 
+          'ID',
           'QUOTE'
           ] + list(reserved.values())
 

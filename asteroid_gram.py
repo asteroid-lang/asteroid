@@ -5,41 +5,13 @@
 ###########################################################################################
 
 from asteroid_lex import Lexer
+from asteroid_support import reverse_node_list
+from asteroid_support import append_node_list
 
 ###########################################################################################
 def dbg_print(string):
     #print(string)
     pass
-
-###########################################################################################
-def reverse_node_list(node_type, node_list):
-    # shallow reversal of a nil terminated node_type list
-    # assumes the structure of node_type node: (node_type, element, next)
-    # NOTE: the list needs to be ('nil',) terminated
-    
-    new_list = ('nil',)
-
-    e = node_list
-    while(e[0] != 'nil'):
-        new_list = (node_type, e[1], new_list)
-        e = e[2]
-
-    return new_list
-
-###########################################################################################
-def append_node_list(node_type, list1, list2):
-    # append list2 to list1.  assume 'nil' terminated lists of node_type
-    # NOTE: there is a more efficient way of doing this by iterating...
-    
-    if list1[0] == 'nil':
-        return list2
-
-    else:
-        return (node_type, 
-                list1[1], 
-                append_node_list(node_type,
-                                 list1[2],
-                                 list2))
 
 ###########################################################################################
 # LL(1) lookahead sets
@@ -545,13 +517,14 @@ class Parser:
     def exp(self):
         dbg_print("parsing LIST_EXP")
         v = self.quote_exp()
+
         if self.lexer.peek().type == ',':
-            v = ('list', ('seq', v, ('nil',)))
+            vlist = ('list', [v])
             while self.lexer.peek().type == ',':
                 self.lexer.match(',')
                 e = self.quote_exp()
-                v = ('list', ('seq', e, v[1]))
-            return ('list', reverse_node_list('seq', v[1]))
+                vlist[1].append(e)
+            return vlist
         else:
             return v
 
@@ -642,7 +615,9 @@ class Parser:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.arith_exp1()
-            v = (op_tok.type.lower(), v, v2)
+            # either '__plus__' or '__minus__'
+            op_sym = '__' + op_tok.type.lower() + '__'
+            v = (op_sym, v, v2)
         return v
 
     def arith_exp1(self):
@@ -764,7 +739,7 @@ class Parser:
     #    | NOT rel_exp0
     #    | MINUS arith_exp0
     #    | HASATTACH primary
-    #    | EVAL primary
+    #    | EVAL STRING
     #    | '(' exp? ')'
     #    | '[' exp? ']' // list or list access
     #    | '{' exp '}' // dictionary access, should this be just ID/STRING?
@@ -787,15 +762,15 @@ class Parser:
 
         elif tt == 'TRUE':
             self.lexer.match('TRUE')
-            return ('true',)
+            return ('bool', 'true')
 
         elif tt == 'FALSE':
             self.lexer.match('FALSE')
-            return ('false',)
+            return ('bool', 'false')
 
         elif tt == 'NONE':
-            self.lexer.match('NONE')
-            return ('none',)
+           self.lexer.match('NONE')
+           return ('none', 'none')
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
@@ -816,12 +791,17 @@ class Parser:
             v = self.arith_exp0()
             return ('minus', v)
 
+        elif tt == 'EVAL':
+            self.lexer.match('EVAL')
+            str_tok = self.lexer.match('STRING')
+            return ('eval', str_tok.value)
+
         elif tt == '(':
             self.lexer.match('(')
             if self.lexer.peek().type in exp_lookahead:
                 v = self.exp()
             else:
-                v = ('list', ('nil',))
+                v = ('list', [])
             self.lexer.match(')')
             return v
 
@@ -830,9 +810,9 @@ class Parser:
             if self.lexer.peek().type in exp_lookahead:
                 v = self.exp()
                 if v[0] != 'list':
-                    v = ('list', ('seq', v, ('nil',)))
+                    v = ('list', [v])
             else:
-                v = ('list', ('nil',))
+                v = ('list', [])
             self.lexer.match(']')
             return v
 
@@ -857,6 +837,7 @@ class Parser:
         dbg_print("parsing FUNCTION_CONST")
         self.lexer.match('LAMBDA')
         body_list = self.body_defs()
+
         return ('function', body_list)
 
 ###########################################################################################
