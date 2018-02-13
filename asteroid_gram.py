@@ -17,7 +17,7 @@ def dbg_print(string):
 # LL(1) lookahead sets
 
 exp_lookahead = [
-    'EVAL',
+    'ESCAPE',
     'HASATTACH',
     'INTEGER',
     'REAL',
@@ -739,7 +739,7 @@ class Parser:
     #    | NOT rel_exp0
     #    | MINUS arith_exp0
     #    | HASATTACH primary
-    #    | EVAL STRING
+    #    | ESCAPE STRING
     #    | '(' exp? ')'
     #    | '[' exp? ']' // list or list access
     #    | '{' exp '}' // dictionary access, should this be just ID/STRING?
@@ -762,15 +762,15 @@ class Parser:
 
         elif tt == 'TRUE':
             self.lexer.match('TRUE')
-            return ('bool', 'true')
+            return ('boolean', 'true')
 
         elif tt == 'FALSE':
             self.lexer.match('FALSE')
-            return ('bool', 'false')
+            return ('boolean', 'false')
 
         elif tt == 'NONE':
            self.lexer.match('NONE')
-           return ('none', 'none')
+           return ('none',)
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
@@ -791,10 +791,10 @@ class Parser:
             v = self.arith_exp0()
             return ('minus', v)
 
-        elif tt == 'EVAL':
-            self.lexer.match('EVAL')
+        elif tt == 'ESCAPE':
+            self.lexer.match('ESCAPE')
             str_tok = self.lexer.match('STRING')
-            return ('eval', str_tok.value)
+            return ('escape', str_tok.value)
 
         elif tt == '(':
             self.lexer.match('(')

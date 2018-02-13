@@ -21,7 +21,7 @@ reserved = {
     'else' : 'ELSE',      
     'end' : 'END',       
     'error' : 'ERROR',     
-    'eval' : 'EVAL',
+    'escape' : 'ESCAPE',
     'file' : 'FILE',
     'for' : 'FOR',       
     'from' : 'FROM',

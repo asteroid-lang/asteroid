@@ -17,10 +17,6 @@ def interp(input_stream, tree_dump=True, do_walk=True, symtab_dump=True, excepti
     # initialize the state object
     state.initialize()
 
-    # populate the symbol table with predefined behavior for operators - constructors!
-    state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
-    state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
-
     # build the AST
     parser = Parser()
     state.AST = parser.parse(input_stream)

@@ -10,7 +10,7 @@ from asteroid_support import unify
 from asteroid_support import promote
 from pprint import pprint
 
-__retval__ = None
+__retval__ = None  # return value register for escaped code
 
 #########################################################################
 # Use the exception mechanism to return values from function calls
@@ -364,16 +364,16 @@ def list_exp(node):
     return ('list', outlist)
 
 #########################################################################
-def eval_exp(node):
+def escape_exp(node):
 
-    (EVAL, s) = node
-    assert_match(EVAL, 'eval')
+    (ESCAPE, s) = node
+    assert_match(ESCAPE, 'escape')
 
     global __retval__
+    __retval__ = ('none',)
 
     exec(s)
 
-    # special return value variable name
     return __retval__
 
 #########################################################################
@@ -412,7 +412,7 @@ dispatch_dict = {
     'real'    : lambda node : node,
     'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
     'juxta'   : juxta_exp,
-    'eval'    : eval_exp,
+    'escape'  : escape_exp,
 
     # built-in operators
     '__plus__'    : plus_exp,
