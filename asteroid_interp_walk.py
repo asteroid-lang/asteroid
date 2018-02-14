@@ -10,6 +10,7 @@ from asteroid_support import unify
 from asteroid_support import promote
 from pprint import pprint
 
+#########################################################################
 __retval__ = None  # return value register for escaped code
 
 #########################################################################
@@ -24,21 +25,6 @@ class ReturnValue(Exception):
         return(repr(self.value))
 
 #########################################################################
-def len_seq(seq_list):
-
-    if seq_list[0] == 'nil':
-        return 0
-
-    elif seq_list[0] == 'seq':
-        # unpack the seq node
-        (SEQ, p1, p2) = seq_list
-
-        return 1 + len_seq(p2)
-
-    else:
-            raise ValueError("unknown node type: {}".format(seq_list[0]))
-
-#########################################################################
 def eval_actual_args(args):
 
     return walk(args)
@@ -50,6 +36,93 @@ def declare_formal_args(unifiers):
     for u in unifiers:
         sym, term = u
         state.symbol_table.enter_sym(sym, term)
+
+#########################################################################
+# handle list index expressions as rvals
+def handle_list_ix(list_val, ix):
+
+    (VAL_LIST, ll) = list_val
+    (IX_TYPE, ixs) = ix
+
+    if VAL_LIST != 'list':
+        raise ValueError(
+            "expected list node but got {} node".format(
+               VAL_LIST))
+
+    if IX_TYPE == 'list': # then ixs is a list of indexes
+        new_l = [] # construct a list of return values
+        for i in ixs:
+            (IX_EXP_TYPE, ival) = walk(i)
+            if IX_EXP_TYPE != 'integer':
+                raise ValueError("list index is not an integer")
+            else:
+                ix_val = int(ival)
+                new_l.append(ll[ix_val])
+
+        if len(new_l) == 1: # return scalar value
+            return new_l[0]
+        else:
+            return ('list', new_l)
+
+    else:
+        raise ValueError("index op {} not yet implemented".format(ix[0]))
+
+#########################################################################
+# recursively walk through the contents of a list together with the
+# index expression and find the element to assign to
+#
+# NOTE: the key here is that list names in Python are treated as references,
+# that is, even though we are working outside the symbol table, the 
+# symbol table holds a reference to the list we are updating so writing
+# to the list here will update the list in the symbol table.
+# the list acts like memory associated with the list name
+def assign_to_list(list_val, ix, value):
+
+    (JUXTA, ix_exp, rest_ix) = ix
+    assert_match(JUXTA, 'juxta')
+
+    # evaluate ix_exp and use it to update list element
+    (LIST, ix_val_list) = walk(ix_exp)
+
+    if LIST != 'list':
+        raise ValueError("unknown inded expression")
+
+    if len(ix_val_list) != 1:
+        raise ValueError("list slicing not supported on assignment")
+
+    (TYPE, ix_val) = ix_val_list[0]
+
+    if TYPE != 'integer':
+        raise ValueError("non-integer list index expression")
+    else:
+        ix_val = int(ix_val)
+
+    if rest_ix[0] == 'nil': # assign to list element
+        #lhh
+        print("assigning {} to {} at {}".format(value, list_val, ix_val))
+        list_val[ix_val] = value
+
+    else: # keep recursing
+        nested_list = list_val[ix_val]
+        (TYPE, val) = nested_list
+        if TYPE != 'list':
+            raise ValueError("list and index expression do not match")
+        else:
+            assign_to_list(val, rest_ix, value)
+        
+#########################################################################
+# handle list index expressions as lvals -- compute the list lval from
+# sym and ix and assign to it the value
+def handle_list_ix_lval(sym, ix, value):
+    
+    sym_list_val = state.symbol_table.lookup_sym(sym)
+
+    (TYPE, val) = sym_list_val
+
+    if TYPE != 'list':
+        raise ValueError("{} is not of type list".format(sym))
+
+    assign_to_list(val, ix, value)
 
 #########################################################################
 def handle_call(fval, actual_arglist):
@@ -132,10 +205,22 @@ def assign_stmt(node):
     unifiers = unify(term, pattern)
 
     # TODO: check for repeated names in the unfiers
+    # TODO: deal with non-local variables
 
+    # walk the unifiers and bind name-value pairs into the symtab
     for unifier in unifiers:
-        name, value = unifier
-        state.symbol_table.enter_sym(name, value)
+
+        lval, value = unifier
+
+        if lval[0] == 'id':
+            state.symbol_table.enter_sym(lval[1], value)
+
+        elif lval[0] == 'juxta':
+            (JUXTA, (ID, sym), ix) = lval
+            handle_list_ix_lval(sym, ix, value)
+
+        else:
+            raise ValueError("unknown unifier type {}".format(lval[0]))
 
 #########################################################################
 def get_stmt(node):
@@ -328,6 +413,13 @@ def juxta_exp(node):
         (JUXTA, parms, rest) = args
         assert_match(JUXTA, 'juxta')
         return walk(('juxta', handle_call(v, parms), rest))
+
+    elif v[0] == 'list': # handle list indexing/slicing
+        # if it is a list then the args node is another
+        # 'juxta' node for indexing the list
+        (JUXTA, ix, rest) = args
+        assert_match(JUXTA, 'juxta')
+        return walk(('juxta', handle_list_ix(v, ix), rest))
 
     else: # not yet implemented
         raise ValueError("'juxta' not implemented for {}".format(v[0]))

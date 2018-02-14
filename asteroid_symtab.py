@@ -56,7 +56,7 @@ class SymTab:
         scope_dict[sym] = [value]
 
     #-------
-    def lookup_sym(self, sym):
+    def lookup_sym(self, sym, strict=True):
         # find the first occurence of sym in the symtab stack
         # and return the associated value
 
@@ -68,7 +68,10 @@ class SymTab:
                 return val_list[0]
 
         # not found
-        raise ValueError("{} is not defined".format(sym))
+        if strict:
+            raise ValueError("{} is not defined".format(sym))
+        else:
+            return None
 
     #-------
     def update_sym(self, sym, value):

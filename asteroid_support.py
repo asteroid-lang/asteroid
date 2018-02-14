@@ -6,6 +6,21 @@
 
 from asteroid_state import state
 
+#########################################################################
+def len_seq(seq_list):
+
+    if seq_list[0] == 'nil':
+        return 0
+
+    elif seq_list[0] == 'seq':
+        # unpack the seq node
+        (SEQ, p1, p2) = seq_list
+
+        return 1 + len_seq(p2)
+
+    else:
+            raise ValueError("unknown node type: {}".format(seq_list[0]))
+
 ###########################################################################################
 def reverse_node_list(node_type, node_list):
     ''' 
@@ -142,7 +157,15 @@ def unify(term, pattern):
         if sym == '_': # anonymous variable - ignore unifier
             return []
         else:
-            unifier = (sym, term)
+            unifier = (pattern, term)
+            return [unifier]
+
+    elif pattern[0] == 'juxta': # list access -- cannot pattern match on function calls!
+        (TYPE, val) = pattern[1]
+        if TYPE != 'id':
+            raise ValueError("expected list name in access expression")
+        else:
+            unifier = (pattern, term)
             return [unifier]
 
     elif term[0] == 'id': # variable in term not allowed
