@@ -22,7 +22,12 @@ type = promote(state.symbol_table.lookup_sym('a')[0],
                state.symbol_table.lookup_sym('b')[0])
 
 # select the correct add according to type
-if type == 'integer':
+if type == 'list':
+    __retval__ = ('list', 
+            state.symbol_table.lookup_sym('a')[1] + 
+            state.symbol_table.lookup_sym('b')[1])
+
+elif type == 'integer':
     __retval__ = ('integer', 
             int(state.symbol_table.lookup_sym('a')[1]) + 
             int(state.symbol_table.lookup_sym('b')[1]))
@@ -38,7 +43,7 @@ elif type == 'string':
             str(state.symbol_table.lookup_sym('b')[1]))
 
 else:
-    raise ValueError('unsupported type in add')
+    raise ValueError('unsupported type in +')
 ###################################################################
 "     
 end function

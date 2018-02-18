@@ -5,6 +5,7 @@
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
+import sys
 from argparse import ArgumentParser
 from asteroid_gram import Parser
 from asteroid_state import state
@@ -12,7 +13,7 @@ from asteroid_interp_walk import walk
 from asteroid_support import dump_AST
 
 # TODO: adjust the defaults
-def interp(input_stream, tree_dump=True, do_walk=True, symtab_dump=True, exceptions=False):
+def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False):
 
     # initialize the state object
     state.initialize()
@@ -30,10 +31,11 @@ def interp(input_stream, tree_dump=True, do_walk=True, symtab_dump=True, excepti
         if symtab_dump:
             state.symbol_table.dump()
     except Exception as e:
-        if exceptions: # rethrow the exception so that you can see it
+        if exceptions: # rethrow the exception so that you can see the full backtrace
             raise e
-        else:
+        else: 
             print("Error: {}".format(e))
+            sys.exit(1)
 
 if __name__ == "__main__":
     # parse command line args

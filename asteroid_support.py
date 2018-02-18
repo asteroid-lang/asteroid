@@ -132,7 +132,8 @@ def unify(term, pattern):
 
     leaf nodes must be nullary constructors.
     '''
-    #print("term {}\npattern {}\n\n".format(term, pattern))
+    #lhh
+    #print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
 
     if isinstance(term, list) or isinstance(pattern, list):
         if not(isinstance(term, list) and isinstance(pattern, list)):
@@ -160,13 +161,70 @@ def unify(term, pattern):
             unifier = (pattern, term)
             return [unifier]
 
-    elif pattern[0] == 'juxta': # list access -- cannot pattern match on function calls!
-        (TYPE, val) = pattern[1]
-        if TYPE != 'id':
-            raise ValueError("expected list name in access expression")
+    elif pattern[0] == 'juxta': # list access or constructor
+
+        # check if we are looking at juxta nodes in both the term and the pattern
+        if term[0] != pattern[0]:
+            # this still could be legal if the pattern is a unification into a list location
+            if pattern[1][0] == 'id':
+                (type, val) = state.symbol_table.lookup_sym(pattern[1][1])
+                if type == 'list':
+                    return [(pattern, term)]
+                else:
+                    raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
+
+        # get the types of the juxta args
+        type_p1 = pattern[1][0]
+        type_t1 = term[1][0]
+
+        # if the types disagree then the juxta nodes describe something different from
+        # list access and constructor or function calls -- just keep unifying
+        if type_t1 != type_p1:
+            unifier = []
+            unifier += unify(term[1], pattern[1])
+            unifier += unify(term[2], pattern[2])
+            return unifier
+
+        # the arg node to juxta is not an id so just unify the rest of the juxta node and return
+        assert type_t1 == type_p1
+        if type_t1 != 'id':
+            unifier = []
+            unifier += unify(term[1], pattern[1])
+            unifier += unify(term[2], pattern[2])
+            return unifier
+
+        # the juxta arg is an id - figure out the semantics of the id and then act accordingly
+        assert type_t1 == 'id', type_p1 == 'id'
+        sym_p1 = pattern[1][1]
+        sym_t1 = term[1][1]
+
+        # if term and pattern disagree on symbol name then error
+        if sym_t1 != sym_p1:
+            raise ValueError(
+                "pattern match failed: name {} does not match name {}".format(
+                    sym_t1, sym_p1))
+
+        # at this point we know we are looking at a symbol in both the term and the pattern
+        assert sym_t1 == sym_p1
+        sym = sym_t1
+        sym_val = state.symbol_table.lookup_sym(sym,strict=False)
+
+        # an undefined symbol as an arg to a juxta node is illegal
+        if not sym_val:
+            raise ValueError("pattern match failed: {} not defined".format(sym))
+
+        # if the symbol is a list then return the pattern and the term as a unifier
+        if sym_val[0] == 'list':
+            unifier = [(pattern, term)]
+            return unifier
+
+        # if the symbol is a constructor or function keep on unifying
+        elif sym_val[0] in ['constructor', 'function']:
+            return unify(term[2], pattern[2])
+
+        # we have a declared symbol not a list or constructor -- illegal?
         else:
-            unifier = (pattern, term)
-            return [unifier]
+            raise ValueError("pattern match failed: illega juxta context for symbol {}".format(sym))
 
     elif term[0] == 'id': # variable in term not allowed
         raise ValueError(
@@ -190,7 +248,7 @@ def unify(term, pattern):
         return unifier
     
 ###########################################################################################
-def promote(type1, type2):
+def promote(type1, type2, strict=True):
     '''
     type promotion table for builtin primitive types
     '''
@@ -205,8 +263,13 @@ def promote(type1, type2):
         return 'real'
     elif type1 == 'integer' and type2 == 'integer':
         return 'integer'
+    elif type1 == 'list' and type2 == 'list':
+        return 'list'
     else:
-        raise ValueError("type {} and type {} are incompatible".format(type1, type2))
+        if strict:
+            raise ValueError("type {} and type {} are incompatible".format(type1, type2))
+        else:
+            return ('none',)
 
 ###########################################################################################
 

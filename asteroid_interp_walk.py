@@ -31,10 +31,13 @@ def eval_actual_args(args):
 
 #########################################################################
 def declare_formal_args(unifiers):
-    # unfiers is of the format: [ (sym, term), (sym, term),...]
+    # unfiers is of the format: [ (pattern, term), (pattern, term),...]
 
     for u in unifiers:
-        sym, term = u
+        pattern, term = u
+        (ID, sym) = pattern
+        if ID != 'id':
+            raise ValueError("no pattern match possible in function call")
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
@@ -85,7 +88,7 @@ def assign_to_list(list_val, ix, value):
     (LIST, ix_val_list) = walk(ix_exp)
 
     if LIST != 'list':
-        raise ValueError("unknown inded expression")
+        raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
         raise ValueError("list slicing not supported on assignment")
@@ -98,8 +101,6 @@ def assign_to_list(list_val, ix, value):
         ix_val = int(ix_val)
 
     if rest_ix[0] == 'nil': # assign to list element
-        #lhh
-        print("assigning {} to {} at {}".format(value, list_val, ix_val))
         list_val[ix_val] = value
 
     else: # keep recursing
@@ -128,7 +129,7 @@ def handle_list_ix_lval(sym, ix, value):
 def handle_call(fval, actual_arglist):
     
     if fval[0] != 'function':
-        raise ValueError("handle_call: not a function")
+        raise ValueError("not a function in call")
 
     actual_val_args = eval_actual_args(actual_arglist)   # evaluate actuals in current symtab
     body_list = fval[1]   # get the list of function bodies - nil terminated seq list
@@ -157,7 +158,7 @@ def handle_call(fval, actual_arglist):
             body_list_ix = next
 
     if not unified:
-        ValueError("handle_call: none of the function bodies unified with actual parameters")
+        ValueError("none of the function bodies unified with actual parameters")
 
     # dynamic scoping for functions!!!
     state.symbol_table.push_scope()
@@ -209,6 +210,9 @@ def assign_stmt(node):
 
     # walk the unifiers and bind name-value pairs into the symtab
     for unifier in unifiers:
+
+        #lhh
+        #print("assign unifier: {}".format(unifier))
 
         lval, value = unifier
 
@@ -399,20 +403,43 @@ def juxta_exp(node):
     # could be a call: fval fargs
     # could be a list access: x [0]
 
+    #lhh
+    #print("node: {}".format(node))
+
     (JUXTA, val, args) = node
     assert_match(JUXTA, 'juxta')
 
     if args[0] == 'nil':
-        return val
+        return walk(val)
 
+    # look at the semantics of val
     v = walk(val)
 
     if v[0] == 'function': # execute a function call
-        # if it is a function vall then the args node is another
+        # if it is a function call then the args node is another
         # 'juxta' node
         (JUXTA, parms, rest) = args
         assert_match(JUXTA, 'juxta')
         return walk(('juxta', handle_call(v, parms), rest))
+
+    elif v[0] == 'constructor': # return the structure
+        (ID, constr_sym) = val
+        assert_match(ID, 'id') # name of the constructor
+        (JUXTA, parms, rest) = args
+        assert_match(JUXTA, 'juxta')
+
+        # constructor juxta nodes come in 2 flavors:
+        # 1) (juxta, parms, nil) -- single call
+        if rest[0] == 'nil':  
+            return ('juxta', 
+                    ('id', constr_sym),
+                    ('juxta', walk(parms), rest))
+
+        # 2) (juxta, e1, (juxta, e2, rest)) -- cascade
+        else:
+            return ('juxta', 
+                    ('id', constr_sym),
+                    walk(args))
 
     elif v[0] == 'list': # handle list indexing/slicing
         # if it is a list then the args node is another
@@ -497,14 +524,17 @@ dispatch_dict = {
     # expressions
     'list'    : list_exp,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
+    'none'    : lambda node : node,
     'nil'     : lambda node : node,
     'function': lambda node : node, # looks like a constant
+    'constructor' : lambda node : node, # looks like a constant
     'string'  : lambda node : node,
     'integer' : lambda node : node,
     'real'    : lambda node : node,
     'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
     'juxta'   : juxta_exp,
     'escape'  : escape_exp,
+    'quote'   : lambda node : node[1],
 
     # built-in operators
     '__plus__'    : plus_exp,
