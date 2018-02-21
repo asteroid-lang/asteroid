@@ -660,7 +660,8 @@ class Parser:
     #           (IS pattern) |
     #           (IN exp) | // exp has to be a list
     #           (TO exp (STEP exp)?) | // list comprehension
-    #           (WHERE ID IN exp)      // list comprehension
+    #           (WHERE ID IN exp) |    // list comprehension
+    #           ('@' call)+
     #        )?
     def compound(self):
         dbg_print("parsing COMPOUND")
@@ -702,11 +703,33 @@ class Parser:
                     ('id', id_tok.value),
                     ('in-exp', v2))
 
+        elif tt == '@':
+            self.lexer.match('@')
+            ix_val = self.call()
+            # place scalar index values in a list for easier processing
+            if ix_val[0] == 'list':
+                v2 = ('index', ix_val, ('nil',))
+            else:
+                v2 = ('index', ('list', [ix_val]), ('nil',))
+
+            while self.lexer.peek().type == '@':
+                self.lexer.match('@')
+                ix_val = self.call()
+                # place scalar index values in a list for easier processing
+                if ix_val[0] == 'list':
+                    v2 = ('index', ix_val, v2)
+                else:
+                    v2 = ('index', ('list', [ix_val]), v2)
+                    
+
+            return ('structure-ix', v, reverse_node_list('index', v2))
+
         else:
             return v
 
     ###########################################################################################
-    # function call
+    # function/constructor call 
+    #
     # call
     #    : primary primary*
     def call(self):
@@ -716,7 +739,7 @@ class Parser:
             v = ('juxta', v, ('nil',))
             while self.lexer.peek().type in exp_lookahead:
                 v2 = self.primary()
-                v = ('juxta', v2, v) # could be function call or index op
+                v = ('juxta', v2, v) 
             return reverse_node_list('juxta', v)
         else:
             return v

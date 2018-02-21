@@ -131,6 +131,10 @@ def unify(term, pattern):
              (<type>, children*)
 
     leaf nodes must be nullary constructors.
+
+    NOTE: if the pattern looks like an lval then it is treated like an lval, e.g. 
+            let a@[0] = 'a@[0].
+          stores the pattern 'a@[0] into lval a@[0].
     '''
     #lhh
     #print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
@@ -161,24 +165,35 @@ def unify(term, pattern):
             unifier = (pattern, term)
             return [unifier]
 
-    elif pattern[0] == 'juxta': # list access or constructor
+    elif pattern[0] == 'structure-ix': # list/constructor lval access
+        unifier = (pattern, term)
+        return [unifier]
+
+    elif pattern[0] == 'juxta': # constructor/function composition
+        # we are looking at something like this:
+        #       (0:'juxta', 
+        #        1:(0:'id', 
+        #           1:sym), 
+        #        2:next))
 
         # check if we are looking at juxta nodes in both the term and the pattern
         if term[0] != pattern[0]:
+            raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
+            # NOTE: list lval binding is now handled by 'structure-ix' node
             # this still could be legal if the pattern is a unification into a list location
-            if pattern[1][0] == 'id':
-                (type, val) = state.symbol_table.lookup_sym(pattern[1][1])
-                if type == 'list':
-                    return [(pattern, term)]
-                else:
-                    raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
+            #if pattern[1][0] == 'id':
+            #    (type, val) = state.symbol_table.lookup_sym(pattern[1][1])
+            #    if type == 'list':
+            #        return [(pattern, term)]
+            #    else:
+            #        raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
 
         # get the types of the juxta args
         type_p1 = pattern[1][0]
         type_t1 = term[1][0]
 
         # if the types disagree then the juxta nodes describe something different from
-        # list access and constructor or function calls -- just keep unifying
+        # constructor or function calls -- just keep unifying
         if type_t1 != type_p1:
             unifier = []
             unifier += unify(term[1], pattern[1])
@@ -207,19 +222,16 @@ def unify(term, pattern):
         # at this point we know we are looking at a symbol in both the term and the pattern
         assert sym_t1 == sym_p1
         sym = sym_t1
-        sym_val = state.symbol_table.lookup_sym(sym,strict=False)
-
-        # an undefined symbol as an arg to a juxta node is illegal
-        if not sym_val:
-            raise ValueError("pattern match failed: {} not defined".format(sym))
+        sym_val = state.symbol_table.lookup_sym(sym)
 
         # if the symbol is a list then return the pattern and the term as a unifier
-        if sym_val[0] == 'list':
-            unifier = [(pattern, term)]
-            return unifier
+        # NOTE: list lval binding is now handled by the 'structure-ix' node
+        #if sym_val[0] == 'list':
+        #    unifier = [(pattern, term)]
+        #    return unifier
 
         # if the symbol is a constructor or function keep on unifying
-        elif sym_val[0] in ['constructor', 'function']:
+        if sym_val[0] in ['constructor', 'function']:
             return unify(term[2], pattern[2])
 
         # we have a declared symbol not a list or constructor -- illegal?
@@ -242,9 +254,13 @@ def unify(term, pattern):
                 term[0], pattern[0]))
 
     else:
+        #lhh
+        #print("unifying {}".format(pattern[0]))
         unifier = []
         for i in range(1,len(term)):
             unifier += unify(term[i], pattern[i])
+        #lhh
+        #print("returning unifier: {}".format(unifier))
         return unifier
     
 ###########################################################################################

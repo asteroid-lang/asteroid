@@ -52,7 +52,11 @@ def handle_list_ix(list_val, ix):
             "expected list node but got {} node".format(
                VAL_LIST))
 
-    if IX_TYPE == 'list': # then ixs is a list of indexes
+    if IX_TYPE == 'integer': # then ixs is an integer index
+        ix_val = int(ixs)
+        return ll[ix_val]
+        
+    elif IX_TYPE == 'list': # then ixs is a list of indexes
         new_l = [] # construct a list of return values
         for i in ixs:
             (IX_EXP_TYPE, ival) = walk(i)
@@ -81,8 +85,8 @@ def handle_list_ix(list_val, ix):
 # the list acts like memory associated with the list name
 def assign_to_list(list_val, ix, value):
 
-    (JUXTA, ix_exp, rest_ix) = ix
-    assert_match(JUXTA, 'juxta')
+    (INDEX, ix_exp, rest_ix) = ix
+    assert_match(INDEX, 'index')
 
     # evaluate ix_exp and use it to update list element
     (LIST, ix_val_list) = walk(ix_exp)
@@ -117,6 +121,32 @@ def assign_to_list(list_val, ix, value):
 def handle_list_ix_lval(sym, ix, value):
     
     sym_list_val = state.symbol_table.lookup_sym(sym)
+
+    (TYPE, val) = sym_list_val
+
+    if TYPE != 'list':
+        raise ValueError("{} is not of type list".format(sym))
+
+    assign_to_list(val, ix, value)
+
+#########################################################################
+# handle list index expressions as lvals -- compute the list lval from
+# sym and ix and assign to it the value
+def handle_struct_ix_lval(sym, ix, value):
+    
+    raise ValueError("strcuture lval access not yet implemented")
+
+    sym_list_val = state.symbol_table.lookup_sym(sym)
+
+    # check that we are dealing with a constructor type
+    (JUXTA, (ID, structsym), next) = symval
+    structsym_val = state.symbol_table.lookup_sym(structsym)
+    if structsym_val[0] != 'constructor':
+        raise ValueError("{} is not a constructor".format(structsym))
+    # get arity of constructor
+    (CONSTRUCTOR, (ARITY, aval_str)) = structsym_val
+    aval = int(aval_str)
+    
 
     (TYPE, val) = sym_list_val
 
@@ -219,9 +249,18 @@ def assign_stmt(node):
         if lval[0] == 'id':
             state.symbol_table.enter_sym(lval[1], value)
 
-        elif lval[0] == 'juxta':
-            (JUXTA, (ID, sym), ix) = lval
-            handle_list_ix_lval(sym, ix, value)
+        elif lval[0] == 'structure-ix': # list/structure lval access
+            (STRUCTUREIX, (ID, sym), ix) = lval
+            (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
+
+            if symtype == 'list':
+                handle_list_ix_lval(sym, ix, value)
+
+            elif symtype == 'juxta':
+                handle_struct_ix_lval(sym, ix, value)
+
+            else:
+                raise ValueError("unknown type {} in assignment lval".format(symtype))
 
         else:
             raise ValueError("unknown unifier type {}".format(lval[0]))
@@ -401,7 +440,8 @@ def le_exp(node):
 #########################################################################
 def juxta_exp(node):
     # could be a call: fval fargs
-    # could be a list access: x [0]
+    # could be a constructor invocation for an object: B(a,b,c)
+    # could be a list/struct access: x [0]
 
     #lhh
     #print("node: {}".format(node))
@@ -441,15 +481,83 @@ def juxta_exp(node):
                     ('id', constr_sym),
                     walk(args))
 
-    elif v[0] == 'list': # handle list indexing/slicing
+#    elif v[0] == 'list': # handle list indexing/slicing
         # if it is a list then the args node is another
         # 'juxta' node for indexing the list
-        (JUXTA, ix, rest) = args
-        assert_match(JUXTA, 'juxta')
-        return walk(('juxta', handle_list_ix(v, ix), rest))
+#        (JUXTA, ix, rest) = args
+#        assert_match(JUXTA, 'juxta')
+#        return walk(('juxta', handle_list_ix(v, ix), rest))
 
     else: # not yet implemented
         raise ValueError("'juxta' not implemented for {}".format(v[0]))
+
+#########################################################################
+def structure_ix_exp(node):
+    # list/struct access: x@[0]
+
+    #lhh
+    #print("structure node: {}".format(node))
+
+    (STRUCTUREIX, val, args) = node
+    assert_match(STRUCTUREIX, 'structure-ix')
+    
+    if args[0] == 'nil':
+        return walk(val)
+    else:
+        (INDEX, ix, rest) = args
+        assert_match(INDEX, 'index')
+
+    # look at the semantics of val
+    v = walk(val)
+
+    # indexing/slicing a list
+    if v[0] == 'list':
+        # if it is a list then the args node is another
+        # 'juxta' node for indexing the list
+        (INDEX, ix, rest) = args
+        assert_match(INDEX, 'index')
+        return walk(('structure-ix', handle_list_ix(v, ix), rest))
+
+    # indexing/slicing a structure of the form A(x,y,z)
+    elif v[0] == 'juxta': # find the value in the structure
+        # we are looking at something like this
+        #    (0:'juxta', 
+        #     1:(0:'id', 
+        #        1:struct_sym),
+        #     2:next))
+
+        # find out if the id in the structure represents a constructor
+        if v[1][0] != 'id':
+            raise ValueError(
+                'illegal value in structure index/slicing, expected id found {}'.format(
+                    v[1][0]))
+        constructor_sym = v[1][1]
+        (TYPE, cval, *_) = state.symbol_table.lookup_sym(constructor_sym)
+        if TYPE != 'constructor':
+            raise ValueError("symbol {} needs to be a constructor".format(constructor_sym))
+
+        # get the arity
+        (ARITY, arity_val) = cval
+        arity_val = int(arity_val)
+
+        # get the part of the structure that actually stores the info - a list or a single value
+        (JUXTA, sargs, next) = v[2]
+        assert_match(JUXTA, 'juxta')
+        if sargs[0] == 'list':
+            (INDEX, ix, rest) = args
+            assert_match(INDEX, 'index')
+            return walk(('structure-ix', handle_list_ix(sargs, ix), rest))
+        
+        else: # just a single element
+            if arity_val != 1:
+                raise ValueError(
+                    "illegal index expression for structure {}".format(
+                        constructor_sym))
+            # map the single member into a singleton list so we can reuse the handle_ix_list function
+            return walk(('structure-ix', handle_list_ix(('list', [sargs]), ix), rest))
+
+    else: # not yet implemented
+        raise ValueError("illegal index operation for {}".format(v[0]))
 
 #########################################################################
 def uminus_exp(node):
@@ -533,6 +641,7 @@ dispatch_dict = {
     'real'    : lambda node : node,
     'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
     'juxta'   : juxta_exp,
+    'structure-ix' : structure_ix_exp,
     'escape'  : escape_exp,
     'quote'   : lambda node : node[1],
 
