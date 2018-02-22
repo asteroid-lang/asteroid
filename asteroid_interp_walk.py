@@ -130,7 +130,7 @@ def handle_list_ix_lval(sym, ix, value):
     assign_to_list(val, ix, value)
 
 #########################################################################
-# handle list index expressions as lvals -- compute the list lval from
+# handle structure index expressions as lvals -- compute the structure lval from
 # sym and ix and assign to it the value
 def handle_struct_ix_lval(sym, ix, value):
     
@@ -220,6 +220,8 @@ def attach_stmt(node):
         fval = state.symbol_table.lookup_sym(f[1])
     elif f[0] == 'fun-const':
         fval = f[1]
+    else:
+        raise ValueError("unknown function in attach")
 
     if fval[0] != 'function':
         raise ValueError("{} is not a function".format(f[1]))
@@ -244,7 +246,7 @@ def assign_stmt(node):
         #lhh
         #print("assign unifier: {}".format(unifier))
 
-        lval, value = unifier
+        (lval, value) = unifier
 
         if lval[0] == 'id':
             state.symbol_table.enter_sym(lval[1], value)
@@ -441,7 +443,6 @@ def le_exp(node):
 def juxta_exp(node):
     # could be a call: fval fargs
     # could be a constructor invocation for an object: B(a,b,c)
-    # could be a list/struct access: x [0]
 
     #lhh
     #print("node: {}".format(node))
@@ -468,7 +469,9 @@ def juxta_exp(node):
         (JUXTA, parms, rest) = args
         assert_match(JUXTA, 'juxta')
 
-        # constructor juxta nodes come in 2 flavors:
+        # constructor juxta nodes come in 2 flavors, in both cases we preserve
+        # the toplevel structure and walk the args in case the args are functions
+        # or operators that compute new structure...
         # 1) (juxta, parms, nil) -- single call
         if rest[0] == 'nil':  
             return ('juxta', 
@@ -488,7 +491,7 @@ def juxta_exp(node):
 #        assert_match(JUXTA, 'juxta')
 #        return walk(('juxta', handle_list_ix(v, ix), rest))
 
-    else: # not yet implemented
+    else: # not implemented
         raise ValueError("'juxta' not implemented for {}".format(v[0]))
 
 #########################################################################
@@ -519,7 +522,7 @@ def structure_ix_exp(node):
         return walk(('structure-ix', handle_list_ix(v, ix), rest))
 
     # indexing/slicing a structure of the form A(x,y,z)
-    elif v[0] == 'juxta': # find the value in the structure
+    elif v[0] == 'juxta': 
         # we are looking at something like this
         #    (0:'juxta', 
         #     1:(0:'id', 
@@ -546,6 +549,8 @@ def structure_ix_exp(node):
         if sargs[0] == 'list':
             (INDEX, ix, rest) = args
             assert_match(INDEX, 'index')
+            # make the result look like a structure index in case we get a structure back
+            # that we need to index again, e.g., a@[x]@[y]
             return walk(('structure-ix', handle_list_ix(sargs, ix), rest))
         
         else: # just a single element
@@ -553,7 +558,8 @@ def structure_ix_exp(node):
                 raise ValueError(
                     "illegal index expression for structure {}".format(
                         constructor_sym))
-            # map the single member into a singleton list so we can reuse the handle_ix_list function
+            # map the single member into a singleton list so we can reuse the handle_ix_list 
+            # function and do not have to put a lot of special case code here...
             return walk(('structure-ix', handle_list_ix(('list', [sargs]), ix), rest))
 
     else: # not yet implemented
