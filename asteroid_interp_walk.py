@@ -47,16 +47,16 @@ def handle_list_ix(list_val, ix):
     (VAL_LIST, ll) = list_val
     (IX_TYPE, ixs) = ix
 
-    if VAL_LIST != 'list':
+    if VAL_LIST not in ['list', 'raw-list']:
         raise ValueError(
-            "expected list node but got {} node".format(
-               VAL_LIST))
+            "expected list node but got {} node".
+            format(VAL_LIST))
 
     if IX_TYPE == 'integer': # then ixs is an integer index
         ix_val = int(ixs)
         return ll[ix_val]
         
-    elif IX_TYPE == 'list': # then ixs is a list of indexes
+    elif IX_TYPE in ['list', 'raw-list']: # then ixs is a list of indexes
         new_l = [] # construct a list of return values
         for i in ixs:
             (IX_EXP_TYPE, ival) = walk(i)
@@ -91,7 +91,7 @@ def assign_to_list(list_val, ix, value):
     # evaluate ix_exp and use it to update list element
     (LIST, ix_val_list) = walk(ix_exp)
 
-    if LIST != 'list':
+    if LIST not in ['list', 'raw-list']:
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
@@ -110,7 +110,7 @@ def assign_to_list(list_val, ix, value):
     else: # keep recursing
         nested_list = list_val[ix_val]
         (TYPE, val) = nested_list
-        if TYPE != 'list':
+        if TYPE not in ['list', 'raw-list']:
             raise ValueError("list and index expression do not match")
         else:
             assign_to_list(val, rest_ix, value)
@@ -124,7 +124,7 @@ def handle_list_ix_lval(sym, ix, value):
 
     (TYPE, val) = sym_list_val
 
-    if TYPE != 'list':
+    if TYPE not in ['list', 'raw-list']:
         raise ValueError("{} is not of type list".format(sym))
 
     assign_to_list(val, ix, value)
@@ -138,7 +138,7 @@ def update_struct_sym(sym, ix, value):
 
     (LIST, ix_val_list) = walk(ix_exp)
 
-    if LIST != 'list':
+    if LIST not in ['list', 'raw-list']:
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
@@ -199,7 +199,7 @@ def handle_struct_ix_lval(sym, ix, value):
     # get the list from the structure that actually holds the values of the object
     (APPLY, (CONTENT_TYPE, content), NIL) = obj_structure
 
-    if CONTENT_TYPE == 'list':
+    if CONTENT_TYPE in ['list', 'raw-list']:
         assign_to_list(content, ix, value)
     else:
         # update symbol in symtab with new structure content
@@ -305,7 +305,7 @@ def assign_stmt(node):
             (STRUCTUREIX, (ID, sym), ix) = lval
             (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
 
-            if symtype == 'list':
+            if symtype in ['list', 'raw-list']:
                 handle_list_ix_lval(sym, ix, value)
 
             elif symtype == 'apply':
@@ -420,7 +420,13 @@ def apply_exp(node):
     assert_match(APPLY, 'apply')
 
     if args[0] == 'nil':
+        # we are looking at the last apply node in
+        # a cascade of apply nodes
         return walk(val)
+
+    # more 'apply' nodes
+    (APPLY, parms, rest) = args
+    assert_match(APPLY, 'apply')
 
     # look at the semantics of val
     v = walk(val)
@@ -428,37 +434,47 @@ def apply_exp(node):
     if v[0] == 'function': # execute a function call
         # if it is a function call then the args node is another
         # 'apply' node
-        (APPLY, parms, rest) = args
-        assert_match(APPLY, 'apply')
         return walk(('apply', handle_call(v, parms), rest))
 
     elif v[0] == 'constructor': # return the structure
         (ID, constr_sym) = val
         assert_match(ID, 'id') # name of the constructor
-        (APPLY, parms, rest) = args
-        assert_match(APPLY, 'apply')
+
+        # get arity of constructor
+        (CONSTRUCTOR, (ARITY, arity)) = v
+        arity_val = int(arity)
 
         # constructor apply nodes come in 2 flavors, in both cases we preserve
         # the toplevel structure and walk the args in case the args are functions
         # or operators that compute new structure...
         # 1) (apply, parms, nil) -- single call
         if rest[0] == 'nil':  
+            (parm_type, parm_val) = parms
+            if parm_type in ['list', 'raw-list']:
+                if len(parm_val) != arity_val:
+                    raise ValueError(
+                        "argument does not match constructor arity - expected {} got {}".
+                        format(arity_val, len(parm_val)))
+            else:
+                if arity_val != 1:
+                    raise ValueError(
+                        "argument does not match constructor arity - expected {} got 1".
+                        format(arity_val))
+
             return ('apply', 
                     ('id', constr_sym),
                     ('apply', walk(parms), rest))
 
         # 2) (apply, e1, (apply, e2, rest)) -- cascade
         else:
+            if arity_val != 1:
+                raise ValueError(
+                    "argument does not match constructor arity - expected {} argument(s)".format(
+                        arity_val))
+
             return ('apply', 
                     ('id', constr_sym),
                     walk(args))
-
-#    elif v[0] == 'list': # handle list indexing/slicing
-        # if it is a list then the args node is another
-        # 'apply' node for indexing the list
-#        (APPLY, ix, rest) = args
-#        assert_match(APPLY, 'apply')
-#        return walk(('apply', handle_list_ix(v, ix), rest))
 
     else: # not implemented
         raise ValueError("'apply' not implemented for {}".format(v[0]))
@@ -483,7 +499,7 @@ def structure_ix_exp(node):
     v = walk(val)
 
     # indexing/slicing a list
-    if v[0] == 'list':
+    if v[0] in ['list', 'raw-list']:
         # if it is a list then the args node is another
         # 'apply' node for indexing the list
         (INDEX, ix, rest) = args
@@ -515,7 +531,7 @@ def structure_ix_exp(node):
         # get the part of the structure that actually stores the info - a list or a single value
         (APPLY, sargs, next) = v[2]
         assert_match(APPLY, 'apply')
-        if sargs[0] == 'list':
+        if sargs[0] in ['list', 'raw-list']:
             (INDEX, ix, rest) = args
             assert_match(INDEX, 'index')
             # make the result look like a structure index in case we get a structure back
@@ -538,7 +554,7 @@ def structure_ix_exp(node):
 def list_exp(node):
 
     (LIST, inlist) = node
-    assert_match(LIST, 'list')
+    assert_match(LIST, ['list', 'raw-list'])
 
     outlist =[]
 
@@ -588,6 +604,7 @@ dispatch_dict = {
 
     # expressions
     'list'    : list_exp,
+    'raw-list' : list_exp,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'    : lambda node : node,
     'nil'     : lambda node : node,
@@ -597,6 +614,9 @@ dispatch_dict = {
     'integer' : lambda node : node,
     'real'    : lambda node : node,
     'boolean' : lambda node : node,
+    # type tag used in conjunction with escaped code in order to store
+    # foreign constants in Asteroid data structures
+    'foreign' : lambda node : node, 
     'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
     'apply'   : apply_exp,
     'structure-ix' : structure_ix_exp,

@@ -112,10 +112,29 @@ def _indent(level):
 
 ###########################################################################################
 def assert_match(input, expected):
-    if input != expected:
+    nomatch = False
+
+    if isinstance(expected, list):
+        if input not in expected:
+            nomatch = True
+    elif input != expected:
+        nomatch = True
+
+    if nomatch:
         raise ValueError(
-            "Pattern match failed: expected '{}' but got '{}'".format(
-                expected, input))
+            "Pattern match failed: expected '{}' but got '{}'".
+            format(expected, input))
+
+###########################################################################################
+# check if the two type tags match
+def match(tag1, tag2):
+
+    if tag1 in ['list', 'raw-list'] and tag2 in ['list', 'raw-list']:
+        return True
+    elif tag1 == tag2:
+        return True
+    else:
+        return False
 
 ###########################################################################################
 def unify(term, pattern):
@@ -248,7 +267,7 @@ def unify(term, pattern):
             "Pattern match failed: nodes {} and {} are not of the same arity".format(
                 term[0], pattern[0]))
 
-    elif term[0] != pattern[0]:  # nodes are not the same
+    elif not match(term[0], pattern[0]):  # nodes are not the same
         raise ValueError(
             "Pattern match failed: nodes {} and {} are not the same".format(
                 term[0], pattern[0]))
@@ -279,7 +298,7 @@ def promote(type1, type2, strict=True):
         return 'real'
     elif type1 == 'integer' and type2 == 'integer':
         return 'integer'
-    elif type1 == 'list' and type2 == 'list':
+    elif type1 in ['list', 'raw-list'] and type2 in ['list', 'raw-list']:
         return 'list'
     else:
         if strict:

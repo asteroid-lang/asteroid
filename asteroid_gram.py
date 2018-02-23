@@ -67,10 +67,12 @@ class Parser:
     def __init__(self):
         self.lexer = Lexer()
         
-        # the constructor for the parser initializes the constructors in 
-        # the symbol table.
+        # the constructor for the parser initializes the constructor symbols for
+        # our builtin operators in# the symbol table.
+        #
         # NOTE: you need to keep this in sync with the operators you add to the grammar
-        # populate the symbol table with predefined behavior for operator symbols
+        # and populate the symbol table with predefined behavior for operator symbols
+        #
         # binary
         state.symbol_table.enter_sym('__headtail__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
@@ -537,17 +539,23 @@ class Parser:
 
     ###########################################################################################
     # exp
-    #    : quote_exp (',' quote_exp)*
+    #    : quote_exp (',' quote_exp?)*
+    #
+    # NOTE: trailing comma means single element list!
+    # NOTE: raw-list nodes are list nodes that were constructed with just the comma constructor
+    #       the should work just like list nodes in the context of interpretation
+    #
     def exp(self):
         dbg_print("parsing LIST_EXP")
         v = self.quote_exp()
 
         if self.lexer.peek().type == ',':
-            vlist = ('list', [v])
+            vlist = ('raw-list', [v])
             while self.lexer.peek().type == ',':
                 self.lexer.match(',')
-                e = self.quote_exp()
-                vlist[1].append(e)
+                if self.lexer.peek().type in exp_lookahead:
+                    e = self.quote_exp()
+                    vlist[1].append(e)
             return vlist
         else:
             return v
@@ -766,7 +774,7 @@ class Parser:
             self.lexer.match('@')
             ix_val = self.call()
             # place scalar index values in a list for easier processing
-            if ix_val[0] == 'list':
+            if ix_val[0] in ['list', 'raw-list']:
                 v2 = ('index', ix_val, ('nil',))
             else:
                 v2 = ('index', ('list', [ix_val]), ('nil',))
@@ -775,7 +783,7 @@ class Parser:
                 self.lexer.match('@')
                 ix_val = self.call()
                 # place scalar index values in a list for easier processing
-                if ix_val[0] == 'list':
+                if ix_val[0] in ['list', 'raw-list']:
                     v2 = ('index', ix_val, v2)
                 else:
                     v2 = ('index', ('list', [ix_val]), v2)
@@ -822,9 +830,9 @@ class Parser:
     #    | MINUS arith_exp0
     #    | HASATTACH primary
     #    | ESCAPE STRING
-    #    | '(' exp? ')'
+    #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
-    #    | '{' exp '}' // dictionary access, should this be just ID/STRING?
+    #    | '{' exp '}'  // dictionary access, should this be just ID/STRING?
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
@@ -889,11 +897,23 @@ class Parser:
             return ('escape', str_tok.value)
 
         elif tt == '(':
+            # NOTE: here we implement a similar scheme to Python:
+            #       (A)  means a parenthesized value A
+            #       (A,) means a list with a single value A
+            #       () or (,) means empty list
+            # NOTE: the ',' is handled in exp
             self.lexer.match('(')
             if self.lexer.peek().type in exp_lookahead:
                 v = self.exp()
+                if v[0] == 'raw-list':
+                    # we are parenthesizing a raw-list, turn it into a list
+                    v = ('list', v[1])
+                    
             else:
                 v = ('list', [])
+                if self.lexer.peek().type == ',':
+                    self.lexer.match(',')
+
             self.lexer.match(')')
             return v
 
@@ -901,7 +921,11 @@ class Parser:
             self.lexer.match('[')
             if self.lexer.peek().type in exp_lookahead:
                 v = self.exp()
-                if v[0] != 'list':
+                if v[0] == 'raw-list':
+                    # we are putting brackets around a raw-list, turn it into a list
+                    v = ('list', v[1])
+                else:
+                    # run contents into a list (possibly nested lists)
                     v = ('list', [v])
             else:
                 v = ('list', [])
