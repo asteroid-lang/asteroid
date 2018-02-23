@@ -14,11 +14,6 @@ class State:
         self.symbol_table = SymTab()
         self.AST = None
 
-        # populate the symbol table with predefined behavior for operator symbols
-        self.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
-        self.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
-
-
 state = State()
 
 

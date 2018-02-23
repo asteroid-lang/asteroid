@@ -130,30 +130,80 @@ def handle_list_ix_lval(sym, ix, value):
     assign_to_list(val, ix, value)
 
 #########################################################################
+def update_struct_sym(sym, ix, value):
+
+    # check out the index -- needs to evaluate to the value 0.
+    (INDEX, ix_exp, rest_ix) = ix
+    assert_match(INDEX, 'index')
+
+    (LIST, ix_val_list) = walk(ix_exp)
+
+    if LIST != 'list':
+        raise ValueError("unknown index expression")
+
+    if len(ix_val_list) != 1:
+        raise ValueError("list slicing not supported on assignment")
+
+    (TYPE, ix_val) = ix_val_list[0]
+
+    if TYPE != 'integer':
+        raise ValueError("non-integer list index expression")
+    else:
+        ix_val = int(ix_val)
+        if ix_val != 0:
+            raise ValueError("index and arity of structure mismatched - expected index 0")
+
+    # update the object structure in the symbol table
+
+    sym_val = state.symbol_table.lookup_sym(sym)
+
+    # check that we are dealing with a constructor type
+    (APPLY, (ID, structsym), obj_structure) = sym_val
+    structsym_val = state.symbol_table.lookup_sym(structsym)
+    if structsym_val[0] != 'constructor':
+        raise ValueError("{} is not a constructor".format(structsym))
+
+    # get arity of constructor
+    (CONSTRUCTOR, (ARITY, aval_str)) = structsym_val
+    aval = int(aval_str)
+    if aval != 1:
+        raise ValueError("internal interpreter error - arity mismatch on struct lval")
+
+    # construct a new structure based on the new value and update sym
+    new_struct = ('apply',
+                  ('id', structsym),
+                  ('apply',
+                   value,
+                   ('nil',)))
+
+    state.symbol_table.update_sym(sym, new_struct)
+    
+
+#########################################################################
 # handle structure index expressions as lvals -- compute the structure lval from
 # sym and ix and assign to it the value
 def handle_struct_ix_lval(sym, ix, value):
     
-    raise ValueError("strcuture lval access not yet implemented")
-
-    sym_list_val = state.symbol_table.lookup_sym(sym)
+    sym_val = state.symbol_table.lookup_sym(sym)
 
     # check that we are dealing with a constructor type
-    (JUXTA, (ID, structsym), next) = symval
+    (APPLY, (ID, structsym), obj_structure) = sym_val
     structsym_val = state.symbol_table.lookup_sym(structsym)
     if structsym_val[0] != 'constructor':
         raise ValueError("{} is not a constructor".format(structsym))
+
     # get arity of constructor
     (CONSTRUCTOR, (ARITY, aval_str)) = structsym_val
     aval = int(aval_str)
     
+    # get the list from the structure that actually holds the values of the object
+    (APPLY, (CONTENT_TYPE, content), NIL) = obj_structure
 
-    (TYPE, val) = sym_list_val
-
-    if TYPE != 'list':
-        raise ValueError("{} is not of type list".format(sym))
-
-    assign_to_list(val, ix, value)
+    if CONTENT_TYPE == 'list':
+        assign_to_list(content, ix, value)
+    else:
+        # update symbol in symtab with new structure content
+        update_struct_sym(sym, ix, value)
 
 #########################################################################
 def handle_call(fval, actual_arglist):
@@ -258,7 +308,7 @@ def assign_stmt(node):
             if symtype == 'list':
                 handle_list_ix_lval(sym, ix, value)
 
-            elif symtype == 'juxta':
+            elif symtype == 'apply':
                 handle_struct_ix_lval(sym, ix, value)
 
             else:
@@ -359,96 +409,15 @@ def block_stmt(node):
     state.symbol_table.pop_scope()
 
 #########################################################################
-def plus_exp(node):
-    
-    (PLUS,c1,c2) = node
-    assert_match(PLUS, '__plus__')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-
-    fval = state.symbol_table.lookup_sym('__plus__')
-    
-    if fval[0] == 'constructor':
-        return ('__plus__', v1, v2)
-
-    elif fval[0] == 'function':
-        arglist = ('list', [v1, v2])
-        v = walk(('juxta',
-                  fval,
-                  ('juxta',
-                   arglist,
-                   ('nil',))))
-        return v
-
-    else:
-        raise ValueError("{} not implemented in __plus__".format(fval[0]))
-
-#########################################################################
-def minus_exp(node):
-    
-    (MINUS,c1,c2) = node
-    assert_match(MINUS, '-')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return v1 - v2
-
-#########################################################################
-def times_exp(node):
-    
-    (TIMES,c1,c2) = node
-    assert_match(TIMES, '*')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return v1 * v2
-
-#########################################################################
-def divide_exp(node):
-    
-    (DIVIDE,c1,c2) = node
-    assert_match(DIVIDE, '/')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return v1 // v2
-
-#########################################################################
-def eq_exp(node):
-    
-    (EQ,c1,c2) = node
-    assert_match(EQ, '==')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if v1 == v2 else 0
-
-#########################################################################
-def le_exp(node):
-    
-    (LE,c1,c2) = node
-    assert_match(LE, '<=')
-    
-    v1 = walk(c1)
-    v2 = walk(c2)
-    
-    return 1 if v1 <= v2 else 0
-
-#########################################################################
-def juxta_exp(node):
+def apply_exp(node):
     # could be a call: fval fargs
     # could be a constructor invocation for an object: B(a,b,c)
 
     #lhh
     #print("node: {}".format(node))
 
-    (JUXTA, val, args) = node
-    assert_match(JUXTA, 'juxta')
+    (APPLY, val, args) = node
+    assert_match(APPLY, 'apply')
 
     if args[0] == 'nil':
         return walk(val)
@@ -458,41 +427,41 @@ def juxta_exp(node):
 
     if v[0] == 'function': # execute a function call
         # if it is a function call then the args node is another
-        # 'juxta' node
-        (JUXTA, parms, rest) = args
-        assert_match(JUXTA, 'juxta')
-        return walk(('juxta', handle_call(v, parms), rest))
+        # 'apply' node
+        (APPLY, parms, rest) = args
+        assert_match(APPLY, 'apply')
+        return walk(('apply', handle_call(v, parms), rest))
 
     elif v[0] == 'constructor': # return the structure
         (ID, constr_sym) = val
         assert_match(ID, 'id') # name of the constructor
-        (JUXTA, parms, rest) = args
-        assert_match(JUXTA, 'juxta')
+        (APPLY, parms, rest) = args
+        assert_match(APPLY, 'apply')
 
-        # constructor juxta nodes come in 2 flavors, in both cases we preserve
+        # constructor apply nodes come in 2 flavors, in both cases we preserve
         # the toplevel structure and walk the args in case the args are functions
         # or operators that compute new structure...
-        # 1) (juxta, parms, nil) -- single call
+        # 1) (apply, parms, nil) -- single call
         if rest[0] == 'nil':  
-            return ('juxta', 
+            return ('apply', 
                     ('id', constr_sym),
-                    ('juxta', walk(parms), rest))
+                    ('apply', walk(parms), rest))
 
-        # 2) (juxta, e1, (juxta, e2, rest)) -- cascade
+        # 2) (apply, e1, (apply, e2, rest)) -- cascade
         else:
-            return ('juxta', 
+            return ('apply', 
                     ('id', constr_sym),
                     walk(args))
 
 #    elif v[0] == 'list': # handle list indexing/slicing
         # if it is a list then the args node is another
-        # 'juxta' node for indexing the list
-#        (JUXTA, ix, rest) = args
-#        assert_match(JUXTA, 'juxta')
-#        return walk(('juxta', handle_list_ix(v, ix), rest))
+        # 'apply' node for indexing the list
+#        (APPLY, ix, rest) = args
+#        assert_match(APPLY, 'apply')
+#        return walk(('apply', handle_list_ix(v, ix), rest))
 
     else: # not implemented
-        raise ValueError("'juxta' not implemented for {}".format(v[0]))
+        raise ValueError("'apply' not implemented for {}".format(v[0]))
 
 #########################################################################
 def structure_ix_exp(node):
@@ -516,15 +485,15 @@ def structure_ix_exp(node):
     # indexing/slicing a list
     if v[0] == 'list':
         # if it is a list then the args node is another
-        # 'juxta' node for indexing the list
+        # 'apply' node for indexing the list
         (INDEX, ix, rest) = args
         assert_match(INDEX, 'index')
         return walk(('structure-ix', handle_list_ix(v, ix), rest))
 
     # indexing/slicing a structure of the form A(x,y,z)
-    elif v[0] == 'juxta': 
+    elif v[0] == 'apply': 
         # we are looking at something like this
-        #    (0:'juxta', 
+        #    (0:'apply', 
         #     1:(0:'id', 
         #        1:struct_sym),
         #     2:next))
@@ -544,8 +513,8 @@ def structure_ix_exp(node):
         arity_val = int(arity_val)
 
         # get the part of the structure that actually stores the info - a list or a single value
-        (JUXTA, sargs, next) = v[2]
-        assert_match(JUXTA, 'juxta')
+        (APPLY, sargs, next) = v[2]
+        assert_match(APPLY, 'apply')
         if sargs[0] == 'list':
             (INDEX, ix, rest) = args
             assert_match(INDEX, 'index')
@@ -564,24 +533,6 @@ def structure_ix_exp(node):
 
     else: # not yet implemented
         raise ValueError("illegal index operation for {}".format(v[0]))
-
-#########################################################################
-def uminus_exp(node):
-    
-    (UMINUS, exp) = node
-    assert_match(UMINUS, 'uminus')
-    
-    val = walk(exp)
-    return - val
-
-#########################################################################
-def not_exp(node):
-    
-    (NOT, exp) = node
-    assert_match(NOT, 'not')
-    
-    val = walk(exp)
-    return 0 if val != 0 else 1
 
 #########################################################################
 def list_exp(node):
@@ -645,21 +596,12 @@ dispatch_dict = {
     'string'  : lambda node : node,
     'integer' : lambda node : node,
     'real'    : lambda node : node,
+    'boolean' : lambda node : node,
     'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
-    'juxta'   : juxta_exp,
+    'apply'   : apply_exp,
     'structure-ix' : structure_ix_exp,
     'escape'  : escape_exp,
     'quote'   : lambda node : node[1],
-
-    # built-in operators
-    '__plus__'    : plus_exp,
-    '__minus__'   : minus_exp,
-    '*'       : times_exp,
-    '/'       : divide_exp,
-    '=='      : eq_exp,
-    '<='      : le_exp,
-    'uminus'  : uminus_exp,
-    'not'     : not_exp
 }
 
 

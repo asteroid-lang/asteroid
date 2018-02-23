@@ -7,6 +7,7 @@
 from asteroid_lex import Lexer
 from asteroid_support import reverse_node_list
 from asteroid_support import append_node_list
+from asteroid_state import state
 
 ###########################################################################################
 def dbg_print(string):
@@ -65,6 +66,29 @@ class Parser:
     ###########################################################################################
     def __init__(self):
         self.lexer = Lexer()
+        
+        # the constructor for the parser initializes the constructors in 
+        # the symbol table.
+        # NOTE: you need to keep this in sync with the operators you add to the grammar
+        # populate the symbol table with predefined behavior for operator symbols
+        # binary
+        state.symbol_table.enter_sym('__headtail__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__times__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__divide__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__or__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__and__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__eq__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__ne__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__le__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__lt__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__ge__', ('constructor', ('arity', 2)))
+        state.symbol_table.enter_sym('__gt__', ('constructor', ('arity', 2)))
+        # unary
+        state.symbol_table.enter_sym('__uminus__', ('constructor', ('arity', 1)))
+        state.symbol_table.enter_sym('__not__', ('constructor', ('arity', 1)))
+
 
     ###########################################################################################
     def parse(self, input):
@@ -550,9 +574,16 @@ class Parser:
         if self.lexer.peek().type == '|':
             self.lexer.match('|')
             tail = self.exp()
-            v = ('|', v, tail)
+            op_sym = '__headtail__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, tail]),
+                  ('nil',)))
         return v
 
+    ###########################################################################################
+    # NOTE: all terms are expressed as apply nodes of their corresponding constructor names
     ###########################################################################################
     # relational operators with their precedence
     # rel_exp0
@@ -572,7 +603,12 @@ class Parser:
         while self.lexer.peek().type == 'OR':
             self.lexer.match('OR')
             v2 = self.rel_exp1()
-            v = ('or', v, v2)
+            op_sym = '__or__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     def rel_exp1(self):
@@ -580,7 +616,12 @@ class Parser:
         while self.lexer.peek().type == 'AND':
             self.lexer.match('AND')
             v2 = self.rel_exp2()
-            v = ('and', v, v2)
+            op_sym = '__and__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     def rel_exp2(self):
@@ -589,7 +630,12 @@ class Parser:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.rel_exp3()
-            v = (op_tok.type.lower(), v, v2)
+            op_sym = '__' + op_tok.type.lower() + '__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     def rel_exp3(self):
@@ -598,7 +644,12 @@ class Parser:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.arith_exp0()
-            v = (op_tok.type.lower(), v, v2)
+            op_sym = '__' + op_tok.type.lower() + '__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     ###########################################################################################
@@ -615,9 +666,12 @@ class Parser:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.arith_exp1()
-            # either '__plus__' or '__minus__'
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = (op_sym, v, v2)
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     def arith_exp1(self):
@@ -626,7 +680,12 @@ class Parser:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.conditional()
-            v = (op_tok.type.lower(), v, v2)
+            op_sym = '__' + op_tok.type.lower() + '__'
+            v = ('apply', 
+                 ('id', op_sym),
+                 ('apply',
+                  ('list', [v, v2]),
+                  ('nil',)))
         return v
 
     ###########################################################################################
@@ -736,11 +795,11 @@ class Parser:
         dbg_print("parsing CALL")
         v = self.primary()
         if self.lexer.peek().type in exp_lookahead:
-            v = ('juxta', v, ('nil',))
+            v = ('apply', v, ('nil',))
             while self.lexer.peek().type in exp_lookahead:
                 v2 = self.primary()
-                v = ('juxta', v2, v) 
-            return reverse_node_list('juxta', v)
+                v = ('apply', v2, v) 
+            return reverse_node_list('apply', v)
         else:
             return v
 
@@ -807,12 +866,22 @@ class Parser:
         elif tt == 'NOT':
             self.lexer.match('NOT')
             v = self.rel_exp0()
-            return ('not', v)
+            v = ('apply', 
+                 ('id', '__not__'),
+                 ('apply',
+                  v,
+                  ('nil',)))
+            return v
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
             v = self.arith_exp0()
-            return ('minus', v)
+            v = ('apply', 
+                 ('id', '__uminus__'),
+                 ('apply',
+                  v,
+                  ('nil',)))
+            return v
 
         elif tt == 'ESCAPE':
             self.lexer.match('ESCAPE')

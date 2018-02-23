@@ -169,16 +169,16 @@ def unify(term, pattern):
         unifier = (pattern, term)
         return [unifier]
 
-    elif pattern[0] == 'juxta': # constructor/function composition
+    elif pattern[0] == 'apply': # constructor/function composition
         # we are looking at something like this:
-        #       (0:'juxta', 
+        #       (0:'apply', 
         #        1:(0:'id', 
         #           1:sym), 
         #        2:next))
 
-        # check if we are looking at juxta nodes in both the term and the pattern
+        # check if we are looking at apply nodes in both the term and the pattern
         if term[0] != pattern[0]:
-            raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
+            raise ValueError("pattern match failed: term and pattern disagree on 'apply' node")
             # NOTE: list lval binding is now handled by 'structure-ix' node
             # this still could be legal if the pattern is a unification into a list location
             #if pattern[1][0] == 'id':
@@ -186,13 +186,13 @@ def unify(term, pattern):
             #    if type == 'list':
             #        return [(pattern, term)]
             #    else:
-            #        raise ValueError("pattern match failed: term and pattern disagree on 'juxta' node")
+            #        raise ValueError("pattern match failed: term and pattern disagree on 'apply' node")
 
-        # get the types of the juxta args
+        # get the types of the apply args
         type_p1 = pattern[1][0]
         type_t1 = term[1][0]
 
-        # if the types disagree then the juxta nodes describe something different from
+        # if the types disagree then the apply nodes describe something different from
         # constructor or function calls -- just keep unifying
         if type_t1 != type_p1:
             unifier = []
@@ -200,7 +200,7 @@ def unify(term, pattern):
             unifier += unify(term[2], pattern[2])
             return unifier
 
-        # the arg node to juxta is not an id so just unify the rest of the juxta node and return
+        # the arg node to apply is not an id so just unify the rest of the apply node and return
         assert type_t1 == type_p1
         if type_t1 != 'id':
             unifier = []
@@ -208,7 +208,7 @@ def unify(term, pattern):
             unifier += unify(term[2], pattern[2])
             return unifier
 
-        # the juxta arg is an id - figure out the semantics of the id and then act accordingly
+        # the apply arg is an id - figure out the semantics of the id and then act accordingly
         assert type_t1 == 'id', type_p1 == 'id'
         sym_p1 = pattern[1][1]
         sym_t1 = term[1][1]
@@ -236,7 +236,7 @@ def unify(term, pattern):
 
         # we have a declared symbol not a list or constructor -- illegal?
         else:
-            raise ValueError("pattern match failed: illega juxta context for symbol {}".format(sym))
+            raise ValueError("pattern match failed: illega apply context for symbol {}".format(sym))
 
     elif term[0] == 'id': # variable in term not allowed
         raise ValueError(
