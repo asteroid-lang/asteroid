@@ -64,7 +64,7 @@ def handle_dict_ix(val_list, key):
                              format(ENTRY_KEY_TYPE))
 
         if entry_key_string == key: # return the value
-            return e_list[1] 
+            return walk(e_list[1])
 
     raise ValueError("dictionary entry {} not found".format(key))
 
@@ -95,11 +95,11 @@ def handle_list_ix(list_val, ix):
 
             if IX_EXP_TYPE == 'integer':
                 ix_val = int(ival)
-                new_l.append(ll[ix_val])
+                new_l.append(walk(ll[ix_val]))
 
             elif IX_EXP_TYPE == 'dict-access':
-                (ID, id_str) = ival
-                new_l.append(handle_dict_ix(ll, id_str))
+                ix_str = ival
+                new_l.append(handle_dict_ix(ll, ix_str))
 
             else:
                 raise ValueError("unsupported list index")
@@ -114,14 +114,14 @@ def handle_list_ix(list_val, ix):
 
 #########################################################################
 # recursively walk through the contents of a list together with the
-# index expression and find the element to assign to
+# index expression and find the element to unify to
 #
 # NOTE: the key here is that list names in Python are treated as references,
 # that is, even though we are working outside the symbol table, the 
 # symbol table holds a reference to the list we are updating so writing
 # to the list here will update the list in the symbol table.
 # the list acts like memory associated with the list name
-def assign_to_list(list_val, ix, value):
+def unify_to_list(list_val, ix, value):
 
     (INDEX, ix_exp, rest_ix) = ix
     assert_match(INDEX, 'index')
@@ -133,7 +133,7 @@ def assign_to_list(list_val, ix, value):
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
-        raise ValueError("list slicing not supported on assignment")
+        raise ValueError("list slicing not supported on unification")
 
     (TYPE, ix_val) = ix_val_list[0]
 
@@ -142,7 +142,7 @@ def assign_to_list(list_val, ix, value):
     else:
         ix_val = int(ix_val)
 
-    if rest_ix[0] == 'nil': # assign to list element
+    if rest_ix[0] == 'nil': # unify to list element
         list_val[ix_val] = value
 
     else: # keep recursing
@@ -151,11 +151,11 @@ def assign_to_list(list_val, ix, value):
         if TYPE not in ['list', 'raw-list']:
             raise ValueError("list and index expression do not match")
         else:
-            assign_to_list(val, rest_ix, value)
+            unify_to_list(val, rest_ix, value)
         
 #########################################################################
 # handle list index expressions as lvals -- compute the list lval from
-# sym and ix and assign to it the value
+# sym and ix and unify to it the value
 def handle_list_ix_lval(sym, ix, value):
     
     sym_list_val = state.symbol_table.lookup_sym(sym)
@@ -165,7 +165,7 @@ def handle_list_ix_lval(sym, ix, value):
     if TYPE not in ['list', 'raw-list']:
         raise ValueError("{} is not of type list".format(sym))
 
-    assign_to_list(val, ix, value)
+    unify_to_list(val, ix, value)
 
 #########################################################################
 def update_struct_sym(sym, ix, value):
@@ -180,7 +180,7 @@ def update_struct_sym(sym, ix, value):
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
-        raise ValueError("list slicing not supported on assignment")
+        raise ValueError("list slicing not supported on unification")
 
     (TYPE, ix_val) = ix_val_list[0]
 
@@ -219,7 +219,7 @@ def update_struct_sym(sym, ix, value):
 
 #########################################################################
 # handle structure index expressions as lvals -- compute the structure lval from
-# sym and ix and assign to it the value
+# sym and ix and unify to it the value
 def handle_struct_ix_lval(sym, ix, value):
     
     sym_val = state.symbol_table.lookup_sym(sym)
@@ -243,7 +243,7 @@ def handle_struct_ix_lval(sym, ix, value):
                 "constructor arity does not match arguments - expected {} got {}".
                 format(arity_val, len(content)))
 
-        assign_to_list(content, ix, value)
+        unify_to_list(content, ix, value)
 
     else:
         if arity_val != 1:
@@ -328,10 +328,10 @@ def attach_stmt(node):
         state.symbol_table.attach_to_sym(sym, fval)
 
 #########################################################################
-def assign_stmt(node):
+def unify_stmt(node):
 
-    (ASSIGN, pattern, exp) = node
-    assert_match(ASSIGN, 'assign')
+    (UNIFY, pattern, exp) = node
+    assert_match(UNIFY, 'unify')
     
     term = walk(exp)
     unifiers = unify(term, pattern)
@@ -343,7 +343,7 @@ def assign_stmt(node):
     for unifier in unifiers:
 
         #lhh
-        #print("assign unifier: {}".format(unifier))
+        #print("unify unifier: {}".format(unifier))
 
         (lval, value) = unifier
 
@@ -361,7 +361,7 @@ def assign_stmt(node):
                 handle_struct_ix_lval(sym, ix, value)
 
             else:
-                raise ValueError("unknown type {} in assignment lval".format(symtype))
+                raise ValueError("unknown type {} in unification lval".format(symtype))
 
         else:
             raise ValueError("unknown unifier type {}".format(lval[0]))
@@ -642,7 +642,7 @@ def walk(node):
 dispatch_dict = {
     # statements
     'attach'  : attach_stmt,
-    'assign'  : assign_stmt,
+    'unify'   : unify_stmt,
     'get'     : get_stmt,
     'print'   : print_stmt,
     'callstmt': call_stmt,

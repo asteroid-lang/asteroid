@@ -194,7 +194,7 @@ class Parser:
             self.lexer.match('END')
             self.lexer.match('FUNCTION')
             # functions are values bound to names
-            return ('assign',
+            return ('unify',
                     ('id',id_tok.value),
                     ('function', body_list))
 
@@ -208,7 +208,7 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             # constructors are values bound to names
-            return ('assign',
+            return ('unify',
                     ('id', id_tok.value),
                     ('constructor', ('arity', int_tok.value)))
 
@@ -251,7 +251,7 @@ class Parser:
             v = self.value()
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
-            return ('assign', p, v)
+            return ('unify', p, v)
 
         elif tt == 'GLOBAL' or tt == 'NONLOCAL':
             dbg_print("parsing GLOBAL/NONLOCAL")
@@ -497,18 +497,18 @@ class Parser:
 
         if self.lexer.peek().type == '=':
             ini = self.initializer()
-            v = ('seq', ('assign', p, ini), ('nil',))
+            v = ('seq', ('unify', p, ini), ('nil',))
         else:
-            v = ('seq', ('assign', p, ('nil',)), ('nil',))
+            v = ('seq', ('unify', p, ('nil',)), ('nil',))
 
         while self.lexer.peek().type == ',':
             self.lexer.match(',')
             p = self.pattern()
             if self.lexer.peek().type == '=':
                 ini = self.initializer()
-                v = ('seq', ('assign', p, ini), v)
+                v = ('seq', ('unify', p, ini), v)
             else:
-                v = ('seq', ('assign', p, ('nil',)), v)
+                v = ('seq', ('unify', p, ('nil',)), v)
         
         return reverse_node_list('seq', v)
 
@@ -832,7 +832,7 @@ class Parser:
     #    | ESCAPE STRING
     #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
-    #    | '{' ID '}'  
+    #    | '{' dict_ix '}'  
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
@@ -934,9 +934,9 @@ class Parser:
 
         elif tt == '{':
             self.lexer.match('{')
-            tok = self.lexer.match('ID')
+            str = self.dict_ix()
             self.lexer.match('}')
-            return ('dict-access', ('id', tok.value))
+            return ('dict-access', str)
 
         elif tt == 'LAMBDA':
             return self.function_const()
@@ -945,6 +945,22 @@ class Parser:
             raise SyntaxError("Syntax Error:{}: at '{}'".format(
                     self.lexer.peek().lineno,
                     self.lexer.peek().value))
+
+    ###########################################################################################
+    # dict_ix
+    #    : ID
+    #    | STRING
+    #
+    # NOTE: this function returns a string NOT an AST
+    def dict_ix(self):
+        dbg_print("parsing DICT_IX")
+
+        if self.lexer.peek().type == 'ID':
+            str = self.lexer.match('ID').value
+        else:
+            str = self.lexer.match('STRING').value
+
+        return str
 
     ###########################################################################################
     # function_const
