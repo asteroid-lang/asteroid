@@ -832,7 +832,7 @@ class Parser:
     #    | ESCAPE STRING
     #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
-    #    | '{' exp '}'  // dictionary access, should this be just ID/STRING?
+    #    | '{' ID '}'  
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
@@ -934,9 +934,9 @@ class Parser:
 
         elif tt == '{':
             self.lexer.match('{')
-            v = self.exp()
+            tok = self.lexer.match('ID')
             self.lexer.match('}')
-            return ('dict_access', v)
+            return ('dict-access', ('id', tok.value))
 
         elif tt == 'LAMBDA':
             return self.function_const()

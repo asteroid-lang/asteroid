@@ -41,6 +41,34 @@ def declare_formal_args(unifiers):
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
+def handle_dict_ix(val_list, key):
+    # a dictionary is a list of 2-tuples, first component is the key, second
+    # component is the value.
+
+    for e in val_list:
+        #lhh
+        #print(e)
+
+        (LIST, e_list) = e
+
+        if not isinstance(e_list, list):
+            raise ValueError("internal error: unsupported dictionary format")
+
+        if len(e_list) != 2:
+            raise ValueError("unsupported dictionary format (2)")
+            
+        (ENTRY_KEY_TYPE, entry_key_string) = e_list[0]
+
+        if ENTRY_KEY_TYPE != 'string':
+            raise ValueError("unsupported dictionary key type {}".
+                             format(ENTRY_KEY_TYPE))
+
+        if entry_key_string == key: # return the value
+            return e_list[1] 
+
+    raise ValueError("dictionary entry {} not found".format(key))
+
+#########################################################################
 # handle list index expressions as rvals
 def handle_list_ix(list_val, ix):
 
@@ -52,19 +80,29 @@ def handle_list_ix(list_val, ix):
             "expected list node but got {} node".
             format(VAL_LIST))
 
-    if IX_TYPE == 'integer': # then ixs is an integer index
-        ix_val = int(ixs)
-        return ll[ix_val]
+    # NOTE: no longer supported -- everything is now a list of indexes
+    #if IX_TYPE == 'integer': # then ixs is an integer index
+    #   ix_val = int(ixs)
+    #   return ll[ix_val]
         
-    elif IX_TYPE in ['list', 'raw-list']: # then ixs is a list of indexes
+    if IX_TYPE in ['list', 'raw-list']: # then ixs is a list of indexes
+        if len(ixs) == 0:
+            raise ValueError("index list is empty")
+
         new_l = [] # construct a list of return values
         for i in ixs:
             (IX_EXP_TYPE, ival) = walk(i)
-            if IX_EXP_TYPE != 'integer':
-                raise ValueError("list index is not an integer")
-            else:
+
+            if IX_EXP_TYPE == 'integer':
                 ix_val = int(ival)
                 new_l.append(ll[ix_val])
+
+            elif IX_EXP_TYPE == 'dict-access':
+                (ID, id_str) = ival
+                new_l.append(handle_dict_ix(ll, id_str))
+
+            else:
+                raise ValueError("unsupported list index")
 
         if len(new_l) == 1: # return scalar value
             return new_l[0]
@@ -193,15 +231,26 @@ def handle_struct_ix_lval(sym, ix, value):
         raise ValueError("{} is not a constructor".format(structsym))
 
     # get arity of constructor
-    (CONSTRUCTOR, (ARITY, aval_str)) = structsym_val
-    aval = int(aval_str)
+    (CONSTRUCTOR, (ARITY, arity_str)) = structsym_val
+    arity_val = int(arity_str)
     
     # get the list from the structure that actually holds the values of the object
     (APPLY, (CONTENT_TYPE, content), NIL) = obj_structure
 
     if CONTENT_TYPE in ['list', 'raw-list']:
+        if len(content) != arity_val:
+            raise ValueError(
+                "constructor arity does not match arguments - expected {} got {}".
+                format(arity_val, len(content)))
+
         assign_to_list(content, ix, value)
+
     else:
+        if arity_val != 1:
+            raise ValueError(
+                "constructor arity does not match arguments - expected {} got {}".
+                format(arity_val, len(content)))
+
         # update symbol in symtab with new structure content
         update_struct_sym(sym, ix, value)
 
@@ -605,6 +654,7 @@ dispatch_dict = {
     # expressions
     'list'    : list_exp,
     'raw-list' : list_exp,
+    'dict-access' : lambda node : node,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'    : lambda node : node,
     'nil'     : lambda node : node,
