@@ -832,7 +832,7 @@ class Parser:
     #    | ESCAPE STRING
     #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
-    #    | '{' dict_ix '}'  
+    #    | '{' exp '}'  // exp should only produce integer and string typed expressions
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
@@ -934,9 +934,9 @@ class Parser:
 
         elif tt == '{':
             self.lexer.match('{')
-            str = self.dict_ix()
+            v = self.exp()
             self.lexer.match('}')
-            return ('dict-access', str)
+            return ('dict-access', v)
 
         elif tt == 'LAMBDA':
             return self.function_const()
@@ -945,22 +945,6 @@ class Parser:
             raise SyntaxError("Syntax Error:{}: at '{}'".format(
                     self.lexer.peek().lineno,
                     self.lexer.peek().value))
-
-    ###########################################################################################
-    # dict_ix
-    #    : ID
-    #    | STRING
-    #
-    # NOTE: this function returns a string NOT an AST
-    def dict_ix(self):
-        dbg_print("parsing DICT_IX")
-
-        if self.lexer.peek().type == 'ID':
-            str = self.lexer.match('ID').value
-        else:
-            str = self.lexer.match('STRING').value
-
-        return str
 
     ###########################################################################################
     # function_const

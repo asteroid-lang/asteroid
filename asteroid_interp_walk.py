@@ -41,13 +41,17 @@ def declare_formal_args(unifiers):
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
-def handle_dict_ix(val_list, key):
+def handle_dict_ix(val_list, key, value=None, mode="read"):
     # a dictionary is a list of 2-tuples, first component is the key, second
     # component is the value.
+    # this function handles both reading and writing dictionary lists
 
-    for e in val_list:
+    (KEY_TYPE, key_val) = key
+
+    for ix in range(len(val_list)):
+        e = val_list[ix]
         #lhh
-        #print(e)
+        print(e)
 
         (LIST, e_list) = e
 
@@ -57,16 +61,28 @@ def handle_dict_ix(val_list, key):
         if len(e_list) != 2:
             raise ValueError("unsupported dictionary format (2)")
             
-        (ENTRY_KEY_TYPE, entry_key_string) = e_list[0]
+        (ENTRY_KEY_TYPE, entry_key) = e_list[0]
 
-        if ENTRY_KEY_TYPE != 'string':
-            raise ValueError("unsupported dictionary key type {}".
-                             format(ENTRY_KEY_TYPE))
+        if ENTRY_KEY_TYPE != KEY_TYPE:
+            raise ValueError("wrong dictionary key type - expected {} got {}".
+                             format(KEY_TYPE, ENTRY_KEY_TYPE))
 
-        if entry_key_string == key: # return the value
-            return walk(e_list[1])
+        if entry_key == key_val: # return the value
+            if mode == "read":
+                return walk(e_list[1])
+            elif mode == "write":
+                val_list[ix] = ('list', [key, value])
+                return val_list
+            else:
+                raise ValueError("unsupported mode in dictionary handling")
 
-    raise ValueError("dictionary entry {} not found".format(key))
+    if mode == "read":
+        raise ValueError("dictionary key {} not found".format(key))
+    elif mode == "write":
+        val_list.append(('list', [key, value]))
+        return val_list
+    else:
+        raise ValueError("unsupported mode in dictionary handling")
 
 #########################################################################
 # handle list index expressions as rvals
@@ -91,15 +107,18 @@ def handle_list_ix(list_val, ix):
 
         new_l = [] # construct a list of return values
         for i in ixs:
-            (IX_EXP_TYPE, ival) = walk(i)
+            (IX_EXP_TYPE, ix_exp) = walk(i)
 
             if IX_EXP_TYPE == 'integer':
-                ix_val = int(ival)
-                new_l.append(walk(ll[ix_val]))
+                ix_exp_val = int(ix_exp)
+                new_l.append(walk(ll[ix_exp_val]))
 
             elif IX_EXP_TYPE == 'dict-access':
-                ix_str = ival
-                new_l.append(handle_dict_ix(ll, ix_str))
+                (DICT_KEY_TYPE, dict_key, *_) = walk(ix_exp)
+                if DICT_KEY_TYPE not in ['integer', 'string']:
+                    raise ValueError("dictionary key type {} not supported".
+                                     format(DICT_KEY_TYPE))
+                new_l.append(handle_dict_ix(ll, (DICT_KEY_TYPE, dict_key)))
 
             else:
                 raise ValueError("unsupported list index")
@@ -114,14 +133,14 @@ def handle_list_ix(list_val, ix):
 
 #########################################################################
 # recursively walk through the contents of a list together with the
-# index expression and find the element to unify to
+# index expression and find the element to store into
 #
 # NOTE: the key here is that list names in Python are treated as references,
 # that is, even though we are working outside the symbol table, the 
 # symbol table holds a reference to the list we are updating so writing
 # to the list here will update the list in the symbol table.
 # the list acts like memory associated with the list name
-def unify_to_list(list_val, ix, value):
+def store_into_list(list_val, ix, value):
 
     (INDEX, ix_exp, rest_ix) = ix
     assert_match(INDEX, 'index')
@@ -137,22 +156,40 @@ def unify_to_list(list_val, ix, value):
 
     (TYPE, ix_val) = ix_val_list[0]
 
-    if TYPE != 'integer':
-        raise ValueError("non-integer list index expression")
-    else:
+    if TYPE == 'integer':
         ix_val = int(ix_val)
 
-    if rest_ix[0] == 'nil': # unify to list element
-        list_val[ix_val] = value
+        if rest_ix[0] == 'nil': # store into list element
+            list_val[ix_val] = value
 
-    else: # keep recursing
-        nested_list = list_val[ix_val]
-        (TYPE, val) = nested_list
-        if TYPE not in ['list', 'raw-list']:
-            raise ValueError("list and index expression do not match")
-        else:
-            unify_to_list(val, rest_ix, value)
+        else: # keep recursing
+            nested_list = list_val[ix_val]
+            (TYPE, val) = nested_list
+            if TYPE not in ['list', 'raw-list']:
+                raise ValueError("list and index expression do not match")
+            else:
+                store_into_list(val, rest_ix, value)
         
+    elif TYPE == 'dict-access':
+        (KEY_TYPE, key, *_) = walk(ix_val) # compute the semantics of the dictionary key
+        if KEY_TYPE not in ['integer', 'string']:
+            raise ValueError("dictionary key type {} not supported".
+                             format(KEY_TYPE))
+
+        if rest_ix[0] == 'nil': # store into list element
+            handle_dict_ix(list_val, (KEY_TYPE, key), value, mode="write")
+
+        else: # keep recursing
+            nested_list = handle_dict_ix(list_val, (KEY_TYPE, key))
+            (TYPE, val) = nested_list
+            if TYPE not in ['list', 'raw-list']:
+                raise ValueError("list and index expression do not match")
+            else:
+                store_into_list(val, rest_ix, value)
+        
+    else:
+        raise ValueError("unsupported list index expression")
+
 #########################################################################
 # handle list index expressions as lvals -- compute the list lval from
 # sym and ix and unify to it the value
@@ -165,7 +202,7 @@ def handle_list_ix_lval(sym, ix, value):
     if TYPE not in ['list', 'raw-list']:
         raise ValueError("{} is not of type list".format(sym))
 
-    unify_to_list(val, ix, value)
+    store_into_list(val, ix, value)
 
 #########################################################################
 def update_struct_sym(sym, ix, value):
@@ -243,7 +280,7 @@ def handle_struct_ix_lval(sym, ix, value):
                 "constructor arity does not match arguments - expected {} got {}".
                 format(arity_val, len(content)))
 
-        unify_to_list(content, ix, value)
+        store_into_list(content, ix, value)
 
     else:
         if arity_val != 1:
