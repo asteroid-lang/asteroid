@@ -89,7 +89,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
 def handle_list_ix(list_val, ix):
 
     (VAL_LIST, ll) = list_val
-    (IX_TYPE, ixs) = ix
+    (IX_TYPE, ixs, *_) = ix
 
     if VAL_LIST not in ['list', 'raw-list']:
         raise ValueError(
@@ -344,6 +344,39 @@ def handle_call(fval, actual_arglist):
     return return_value
 
 #########################################################################
+def declare_unifiers(unifiers):
+    # walk the unifiers and bind name-value pairs into the symtab
+
+    # TODO: check for repeated names in the unfiers
+    # TODO: deal with non-local variables
+
+    for unifier in unifiers:
+
+        #lhh
+        #print("unifier: {}".format(unifier))
+
+        (lval, value) = unifier
+
+        if lval[0] == 'id':
+            state.symbol_table.enter_sym(lval[1], value)
+
+        elif lval[0] == 'structure-ix': # list/structure lval access
+            (STRUCTUREIX, (ID, sym), ix) = lval
+            (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
+
+            if symtype in ['list', 'raw-list']:
+                handle_list_ix_lval(sym, ix, value)
+
+            elif symtype == 'apply':
+                handle_struct_ix_lval(sym, ix, value)
+
+            else:
+                raise ValueError("unknown type {} in unification lval".format(symtype))
+
+        else:
+            raise ValueError("unknown unifier type {}".format(lval[0]))
+
+#########################################################################
 # node functions
 #########################################################################
 def attach_stmt(node):
@@ -373,35 +406,8 @@ def unify_stmt(node):
     term = walk(exp)
     unifiers = unify(term, pattern)
 
-    # TODO: check for repeated names in the unfiers
-    # TODO: deal with non-local variables
+    declare_unifiers(unifiers)
 
-    # walk the unifiers and bind name-value pairs into the symtab
-    for unifier in unifiers:
-
-        #lhh
-        #print("unify unifier: {}".format(unifier))
-
-        (lval, value) = unifier
-
-        if lval[0] == 'id':
-            state.symbol_table.enter_sym(lval[1], value)
-
-        elif lval[0] == 'structure-ix': # list/structure lval access
-            (STRUCTUREIX, (ID, sym), ix) = lval
-            (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
-
-            if symtype in ['list', 'raw-list']:
-                handle_list_ix_lval(sym, ix, value)
-
-            elif symtype == 'apply':
-                handle_struct_ix_lval(sym, ix, value)
-
-            else:
-                raise ValueError("unknown type {} in unification lval".format(symtype))
-
-        else:
-            raise ValueError("unknown unifier type {}".format(lval[0]))
 
 #########################################################################
 def get_stmt(node):
@@ -590,7 +596,7 @@ def structure_ix_exp(node):
         # 'apply' node for indexing the list
         (INDEX, ix, rest) = args
         assert_match(INDEX, 'index')
-        return walk(('structure-ix', handle_list_ix(v, ix), rest))
+        return walk(('structure-ix', handle_list_ix(v, walk(ix)), rest))
 
     # indexing/slicing a structure of the form A(x,y,z)
     elif v[0] == 'apply': 
@@ -622,7 +628,7 @@ def structure_ix_exp(node):
             assert_match(INDEX, 'index')
             # make the result look like a structure index in case we get a structure back
             # that we need to index again, e.g., a@[x]@[y]
-            return walk(('structure-ix', handle_list_ix(sargs, ix), rest))
+            return walk(('structure-ix', handle_list_ix(sargs, walk(ix)), rest))
         
         else: # just a single element
             if arity_val != 1:
@@ -631,7 +637,7 @@ def structure_ix_exp(node):
                         constructor_sym))
             # map the single member into a singleton list so we can reuse the handle_ix_list 
             # function and do not have to put a lot of special case code here...
-            return walk(('structure-ix', handle_list_ix(('list', [sargs]), ix), rest))
+            return walk(('structure-ix', handle_list_ix(('list', [sargs]), walk(ix)), rest))
 
     else: # not yet implemented
         raise ValueError("illegal index operation for {}".format(v[0]))
@@ -663,6 +669,83 @@ def escape_exp(node):
     return __retval__
 
 #########################################################################
+def is_exp(node):
+
+    (IS, term, pattern) = node
+    assert_match(IS, 'is')
+
+    term_val = walk(term)
+    
+    try:
+        unifiers = unify(term_val, pattern)
+    except:
+        return ('boolean', 'false')
+    else:
+        declare_unifiers(unifiers)
+        return ('boolean', 'true')
+
+#########################################################################
+def in_exp(node):
+
+    (IN, exp, exp_list) = node
+    assert_match(IN, 'in')
+
+    exp_val = walk(exp)
+    (EXP_LIST_TYPE, exp_list_val, *_) = walk(exp_list)
+
+    if EXP_LIST_TYPE not in ['list', 'raw-list']:
+        raise ValueError("right argument to in operator has to be a list")
+
+    # we simply map our in operator to the Python in operator
+    if exp_val in exp_list_val:
+        return ('boolean', 'true')
+    else:
+        return ('boolean', 'false')
+
+#########################################################################
+# NOTE: 'to-list' is not a semantic value and should never appear in 
+#       any tests.  It is a constructor and should be expanded by the
+#       walk function before semantic processing.
+def to_list_exp(node):
+
+    (TOLIST,
+     (START, start),
+     (STOP, stop),
+     (STEP, step)) = node
+
+    assert_match(TOLIST, 'to-list')
+    assert_match(START, 'start')
+    assert_match(STOP, 'stop')
+    assert_match(STEP, 'step')
+
+    (START_TYPE, start_val, *_) = walk(start)
+    (STOP_TYPE, stop_val, *_) = walk(stop)
+    (STEP_TYPE, step_val, *_) = walk(step)
+
+    if START_TYPE != 'integer' or STOP_TYPE != 'integer' or STEP_TYPE != 'integer':
+        raise ValueError("only integer values allowed in start, stop, or step")
+
+    out_list_val = []
+
+    # the behavior is start and stop included
+    if int(step_val) > 0: # generate the list
+        ix = int(start_val)
+        while ix <= int(stop_val):
+            out_list_val.append(('integer', str(ix)))
+            ix += int(step_val)
+
+    elif int(step_val) == 0: # error
+        raise ValueError("step size of 0 not supported")
+
+    elif int(step_val) < 0: # generate the list
+        ix = int(stop_val)
+        while ix >= int(start_val):
+            out_list_val.append(('integer', str(ix)))
+            ix += int(step_val)
+
+    return ('list', out_list_val)
+
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
@@ -691,6 +774,7 @@ dispatch_dict = {
     # expressions
     'list'    : list_exp,
     'raw-list' : list_exp,
+    'to-list' : to_list_exp,
     'dict-access' : lambda node : node,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'    : lambda node : node,
@@ -709,6 +793,8 @@ dispatch_dict = {
     'structure-ix' : structure_ix_exp,
     'escape'  : escape_exp,
     'quote'   : lambda node : node[1],
+    'is'      : is_exp,
+    'in'      : in_exp,
 }
 
 

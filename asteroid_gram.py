@@ -727,7 +727,7 @@ class Parser:
     #           (IS pattern) |
     #           (IN exp) | // exp has to be a list
     #           (TO exp (STEP exp)?) | // list comprehension
-    #           (WHERE ID IN exp) |    // list comprehension
+    #           (WHERE pattern IN exp) |    // list comprehension
     #           ('@' call)+
     #        )?
     def compound(self):
@@ -750,31 +750,32 @@ class Parser:
             if self.lexer.peek().type == 'STEP':
                 self.lexer.match('STEP')
                 v3 = self.exp()
-                return ('list-to',
+                return ('to-list',
                         ('start', v),
                         ('stop', v2),
                         ('step', v3))
             else:
-                return ('list-to',
+                return ('to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('step', ('nil',)))
+                        ('step', ('integer', '1')))
 
         elif tt == 'WHERE':
             self.lexer.match('WHERE')
-            id_tok = self.lexer.match('ID')
-            self.lexer.match('IN')
-            v2 = self.exp()
-            return ('list-where', # list comprehension
+            in_exp = self.exp()
+            if in_exp[0] != 'in':
+                raise ValueError("syntax error: expect in got {}".format(in_exp[0]))
+#            self.lexer.match('IN')
+#            v2 = self.exp()
+            return ('where-list', # list comprehension
                     ('comp-exp', v),
-                    ('id', id_tok.value),
-                    ('in-exp', v2))
+                    ('in-exp', in_exp))
 
         elif tt == '@':
             self.lexer.match('@')
             ix_val = self.call()
             # place scalar index values in a list for easier processing
-            if ix_val[0] in ['list', 'raw-list']:
+            if ix_val[0] in ['list', 'raw-list', 'to-list']:
                 v2 = ('index', ix_val, ('nil',))
             else:
                 v2 = ('index', ('list', [ix_val]), ('nil',))
@@ -783,7 +784,7 @@ class Parser:
                 self.lexer.match('@')
                 ix_val = self.call()
                 # place scalar index values in a list for easier processing
-                if ix_val[0] in ['list', 'raw-list']:
+                if ix_val[0] in ['list', 'raw-list', 'to-list']:
                     v2 = ('index', ix_val, v2)
                 else:
                     v2 = ('index', ('list', [ix_val]), v2)
@@ -921,11 +922,14 @@ class Parser:
             self.lexer.match('[')
             if self.lexer.peek().type in exp_lookahead:
                 v = self.exp()
-                if v[0] == 'raw-list':
-                    # we are putting brackets around a raw-list, turn it into a list
+                if v[0] == 'raw-list': # we are putting brackets around a raw-list, turn it into a list
                     v = ('list', v[1])
+                elif v[0] == 'to-list': # don't do anything, just pass the list constructor
+                    pass
+                elif v[0] == 'where-list': # don't do anything, just pass the list constructor
+                    pass
                 else:
-                    # run contents into a list (possibly nested lists)
+                    # turn contents into a list (possibly nested lists)
                     v = ('list', [v])
             else:
                 v = ('list', [])

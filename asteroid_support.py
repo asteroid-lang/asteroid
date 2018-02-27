@@ -129,7 +129,7 @@ def assert_match(input, expected):
 # check if the two type tags match
 def match(tag1, tag2):
 
-    if tag1 in ['list', 'raw-list'] and tag2 in ['list', 'raw-list']:
+    if tag1 in ['list', 'raw-list', 'to-list'] and tag2 in ['list', 'raw-list', 'to-list']:
         return True
     elif tag1 == tag2:
         return True
