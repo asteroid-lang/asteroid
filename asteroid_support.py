@@ -129,7 +129,8 @@ def assert_match(input, expected):
 # check if the two type tags match
 def match(tag1, tag2):
 
-    if tag1 in ['list', 'raw-list', 'to-list'] and tag2 in ['list', 'raw-list', 'to-list']:
+    if tag1 in ['list', 'raw-list', 'to-list', 'where-list'] and \
+            tag2 in ['list', 'raw-list', 'to-list', 'where-list']:
         return True
     elif tag1 == tag2:
         return True
@@ -298,7 +299,7 @@ def promote(type1, type2, strict=True):
         return 'real'
     elif type1 == 'integer' and type2 == 'integer':
         return 'integer'
-    elif type1 in ['list', 'raw-list'] and type2 in ['list', 'raw-list']:
+    elif type1 == 'list' and type2 == 'list':
         return 'list'
     else:
         if strict:

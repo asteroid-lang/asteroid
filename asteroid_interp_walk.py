@@ -91,7 +91,7 @@ def handle_list_ix(list_val, ix):
     (VAL_LIST, ll) = list_val
     (IX_TYPE, ixs, *_) = ix
 
-    if VAL_LIST not in ['list', 'raw-list']:
+    if VAL_LIST != 'list':
         raise ValueError(
             "expected list node but got {} node".
             format(VAL_LIST))
@@ -101,7 +101,7 @@ def handle_list_ix(list_val, ix):
     #   ix_val = int(ixs)
     #   return ll[ix_val]
         
-    if IX_TYPE in ['list', 'raw-list']: # then ixs is a list of indexes
+    if IX_TYPE == 'list': # then ixs is a list of indexes
         if len(ixs) == 0:
             raise ValueError("index list is empty")
 
@@ -148,7 +148,7 @@ def store_into_list(list_val, ix, value):
     # evaluate ix_exp and use it to update list element
     (LIST, ix_val_list) = walk(ix_exp)
 
-    if LIST not in ['list', 'raw-list']:
+    if LIST != 'list':
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
@@ -165,7 +165,7 @@ def store_into_list(list_val, ix, value):
         else: # keep recursing
             nested_list = list_val[ix_val]
             (TYPE, val) = nested_list
-            if TYPE not in ['list', 'raw-list']:
+            if TYPE != 'list':
                 raise ValueError("list and index expression do not match")
             else:
                 store_into_list(val, rest_ix, value)
@@ -182,7 +182,7 @@ def store_into_list(list_val, ix, value):
         else: # keep recursing
             nested_list = handle_dict_ix(list_val, (KEY_TYPE, key))
             (TYPE, val) = nested_list
-            if TYPE not in ['list', 'raw-list']:
+            if TYPE != 'list':
                 raise ValueError("list and index expression do not match")
             else:
                 store_into_list(val, rest_ix, value)
@@ -199,7 +199,7 @@ def handle_list_ix_lval(sym, ix, value):
 
     (TYPE, val) = sym_list_val
 
-    if TYPE not in ['list', 'raw-list']:
+    if TYPE != 'list':
         raise ValueError("{} is not of type list".format(sym))
 
     store_into_list(val, ix, value)
@@ -213,7 +213,7 @@ def update_struct_sym(sym, ix, value):
 
     (LIST, ix_val_list) = walk(ix_exp)
 
-    if LIST not in ['list', 'raw-list']:
+    if LIST != 'list':
         raise ValueError("unknown index expression")
 
     if len(ix_val_list) != 1:
@@ -274,7 +274,7 @@ def handle_struct_ix_lval(sym, ix, value):
     # get the list from the structure that actually holds the values of the object
     (APPLY, (CONTENT_TYPE, content), NIL) = obj_structure
 
-    if CONTENT_TYPE in ['list', 'raw-list']:
+    if CONTENT_TYPE == 'list':
         if len(content) != arity_val:
             raise ValueError(
                 "constructor arity does not match arguments - expected {} got {}".
@@ -364,7 +364,7 @@ def declare_unifiers(unifiers):
             (STRUCTUREIX, (ID, sym), ix) = lval
             (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
 
-            if symtype in ['list', 'raw-list']:
+            if symtype == 'list':
                 handle_list_ix_lval(sym, ix, value)
 
             elif symtype == 'apply':
@@ -542,7 +542,7 @@ def apply_exp(node):
         # 1) (apply, parms, nil) -- single call
         if rest[0] == 'nil':  
             (parm_type, parm_val) = parms
-            if parm_type in ['list', 'raw-list']:
+            if parm_type == 'list':
                 if len(parm_val) != arity_val:
                     raise ValueError(
                         "argument does not match constructor arity - expected {} got {}".
@@ -591,7 +591,7 @@ def structure_ix_exp(node):
     v = walk(val)
 
     # indexing/slicing a list
-    if v[0] in ['list', 'raw-list']:
+    if v[0] == 'list':
         # if it is a list then the args node is another
         # 'apply' node for indexing the list
         (INDEX, ix, rest) = args
@@ -623,7 +623,7 @@ def structure_ix_exp(node):
         # get the part of the structure that actually stores the info - a list or a single value
         (APPLY, sargs, next) = v[2]
         assert_match(APPLY, 'apply')
-        if sargs[0] in ['list', 'raw-list']:
+        if sargs[0] == 'list':
             (INDEX, ix, rest) = args
             assert_match(INDEX, 'index')
             # make the result look like a structure index in case we get a structure back
@@ -646,7 +646,7 @@ def structure_ix_exp(node):
 def list_exp(node):
 
     (LIST, inlist) = node
-    assert_match(LIST, ['list', 'raw-list'])
+    assert_match(LIST, 'list')
 
     outlist =[]
 
@@ -693,7 +693,7 @@ def in_exp(node):
     exp_val = walk(exp)
     (EXP_LIST_TYPE, exp_list_val, *_) = walk(exp_list)
 
-    if EXP_LIST_TYPE not in ['list', 'raw-list']:
+    if EXP_LIST_TYPE != 'list':
         raise ValueError("right argument to in operator has to be a list")
 
     # we simply map our in operator to the Python in operator
@@ -773,7 +773,10 @@ dispatch_dict = {
 
     # expressions
     'list'    : list_exp,
-    'raw-list' : list_exp,
+    # raw-list is a list constructor that has the internal structure of an acutal list
+    # just map it to an actual list an walk it - raw-list itself should never
+    # appear in semantic processing -- it can appear in patterns as a constructor!
+    'raw-list' : lambda node : walk(('list', node[1])),
     'to-list' : to_list_exp,
     'dict-access' : lambda node : node,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
