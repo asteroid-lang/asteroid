@@ -19,7 +19,6 @@ def dbg_print(string):
 
 exp_lookahead = [
     'ESCAPE',
-    'HASATTACH',
     'INTEGER',
     'REAL',
     'STRING',
@@ -46,9 +45,6 @@ stmt_lookahead = [
     'LET',
     'NONLOCAL',
     'NOOP',
-    'PRINT',
-    'PRINTLN',
-    'READ',
     'REPEAT',
     'WITH',
     'FOR',
@@ -159,8 +155,6 @@ class Parser:
     #    | DETACH FROM ID '.'?
     #    | LET exp '=' value '.'?
     #    | (GLOBAL | NONLOCAL) var_list '.'?
-    #    | (PRINT | PRINTLN) exp (TO FILE ID)? '.'?
-    #    | READ ID (FROM FILE ID)? '.'?
     #    | WITH pattern_init_list DO stmt_list END WITH
     #    | FOR ID IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
@@ -260,38 +254,6 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return (tt.lower(), vl)
-
-        elif tt == 'PRINT' or tt == 'PRINTLN':
-            dbg_print("parsing PRINT/PRINTLN")
-            self.lexer.next()
-            e = self.exp()
-            if self.lexer.peek().type == 'TO':
-                self.lexer.match('TO')
-                self.lexer.match('FILE')
-                fname_tok = self.lexer.match('ID')
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return (tt.lower(), e, ('file-name', ('id', fname_tok.value)))
-            else:
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return (tt.lower(), e, ('file-name', ('nil',)))
-
-        elif tt == 'READ':
-            dbg_print("parsing READ")
-            self.lexer.match('READ')
-            var_tok = self.lexer.match('ID')
-            if self.lexer.peek().type == 'FROM':
-                self.lexer.match('FROM')
-                self.lexer.match('FILE')
-                fname_tok = self.lexer.match('ID')
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return ('read', ('id', var_tok.value), ('file-name', ('id', fname_tok.value)))
-            else:
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return ('read', ('id', var_tok.value), ('file-name', ('nil',)))
 
         elif tt == 'WITH':
             dbg_print("parsing WITH")
@@ -499,7 +461,7 @@ class Parser:
             ini = self.initializer()
             v = ('seq', ('unify', p, ini), ('nil',))
         else:
-            v = ('seq', ('unify', p, ('nil',)), ('nil',))
+            v = ('seq', ('unify', p, ('none',)), ('nil',))
 
         while self.lexer.peek().type == ',':
             self.lexer.match(',')
@@ -508,7 +470,7 @@ class Parser:
                 ini = self.initializer()
                 v = ('seq', ('unify', p, ini), v)
             else:
-                v = ('seq', ('unify', p, ('nil',)), v)
+                v = ('seq', ('unify', p, ('none',)), v)
         
         return reverse_node_list('seq', v)
 
@@ -813,7 +775,6 @@ class Parser:
             return v
 
     ###########################################################################################
-    # NOTE: in HASATTACH the primary should evaluate to a ID
     # NOTE: in EVAL the primary should evaluate to a string
     # NOTE: EVAL allows the user to patch python code into the interpreter and therefore
     #       is able to create custom extension to the interpreter
@@ -829,7 +790,6 @@ class Parser:
     #    | '*' ID  // "dereference" a variable during pattern matching
     #    | NOT rel_exp0
     #    | MINUS arith_exp0
-    #    | HASATTACH primary
     #    | ESCAPE STRING
     #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access

@@ -8,7 +8,6 @@ from asteroid_state import state
 from asteroid_support import assert_match
 from asteroid_support import unify
 from asteroid_support import promote
-from pprint import pprint
 
 #########################################################################
 __retval__ = None  # return value register for escaped code
@@ -51,7 +50,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
     for ix in range(len(val_list)):
         e = val_list[ix]
         #lhh
-        print(e)
+        #print(e)
 
         (LIST, e_list) = e
 
@@ -425,17 +424,6 @@ def get_stmt(node):
     state.symbol_table.update_sym(name, ('scalar', value))
 
 #########################################################################
-def print_stmt(node):
-
-    # TODO: deal with files and structures/lists
-
-    (PRINT, exp, f) = node
-    assert_match(PRINT, 'print')
-    
-    value = walk(exp)
-    print("{}".format(value))
-
-#########################################################################
 def call_stmt(node):
 
     (CALLSTMT, name, actual_args) = node
@@ -764,7 +752,6 @@ dispatch_dict = {
     'attach'  : attach_stmt,
     'unify'   : unify_stmt,
     'get'     : get_stmt,
-    'print'   : print_stmt,
     'callstmt': call_stmt,
     'return'  : return_stmt,
     'while'   : while_stmt,

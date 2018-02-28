@@ -1,17 +1,18 @@
 ------------------------------------------------------------------
--- std_op.ast
+-- standard.ast
 --
 -- this module implements the standard interpretation for all
 -- builtin operator symbols.
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
+-- arithmetic operators
+
+------------------------------------------------------------------
 -- the 'add' function implements the behavior for 
 -- the '+' operator for ints, reals, and strings.
-
 function add with a, b do return escape 
 "
-###################################################################
 # return register from 'escape' calls
 global __retval__ 
 
@@ -44,14 +45,12 @@ elif type == 'string':
 
 else:
     raise ValueError('unsupported type in +')
-###################################################################
 "     
 end function
 
+attach add to __plus__.
 
 ------------------------------------------------------------------
--- attach the behavior to the operator symbols
 
-attach add to __plus__.
 
 

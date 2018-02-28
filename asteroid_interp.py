@@ -7,9 +7,9 @@
 
 import sys
 from argparse import ArgumentParser
-from asteroid_gram import Parser
+from asteroid_parser import Parser
 from asteroid_state import state
-from asteroid_interp_walk import walk
+from asteroid_walk import walk
 from asteroid_support import dump_AST
 
 # TODO: adjust the defaults
