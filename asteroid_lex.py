@@ -80,7 +80,7 @@ t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
 t_EQ      = r'=='
-t_NE      = r'><'
+t_NE      = r'=/='
 t_LE      = r'<='
 t_LT      = r'<'
 t_GE      = r'>='
@@ -96,9 +96,15 @@ def t_ID(t):
     t.type = reserved.get(t.value,'ID')    # Check for reserved words
     return t
 
+# TODO: scientific notation for real numbers
 def t_NUMBER(t):
     r'([0-9]*[.])?[0-9]+'
-    t.type = 'REAL' if '.' in t.value else 'INTEGER'
+    if '.' in t.value:
+        t.type = 'REAL' 
+        t.value = float(t.value)
+    else:
+        t.type = 'INTEGER'
+        t.value = int(t.value)
     return t
 
 def t_STRING(t):

@@ -32,6 +32,8 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
             state.symbol_table.dump()
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
+            if symtab_dump:
+                state.symbol_table.dump()
             raise e
         else: 
             print("Error: {}".format(e))

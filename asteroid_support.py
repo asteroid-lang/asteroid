@@ -159,7 +159,19 @@ def unify(term, pattern):
     #lhh
     #print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
 
-    if isinstance(term, list) or isinstance(pattern, list):
+    if isinstance(term, (int, float, bool, str)):
+        try:
+            if term == pattern:
+                return []
+            else:
+                raise ValueError("pattern match failed: {} is not the same as {}".
+                                 format(term, pattern))
+        except:
+            raise ValueError("pattern match failed: {} is not the same as {}".
+                             format(term, pattern))
+            
+    # TODO: clean up the following condition
+    elif isinstance(term, list) or isinstance(pattern, list):
         if not(isinstance(term, list) and isinstance(pattern, list)):
             raise ValueError("Pattern match failed: term and pattern do not agree on list constructor")
 
@@ -305,8 +317,31 @@ def promote(type1, type2, strict=True):
         if strict:
             raise ValueError("type {} and type {} are incompatible".format(type1, type2))
         else:
-            return ('none',)
+            return ('none', None)
 
 ###########################################################################################
+# Asteroid uses Python's Pythonic truth values:
+#
+# Any object can be tested for truth value, for use in an if or while condition or as 
+# operand of the Boolean operations below. The following values are considered false:
+#
+#     none
+#     false
+#     zero of any numeric type, for example, 0, 0L, 0.0, 0j.
+#     the empty string
+#     any empty list: (), [].
+#
+#  All other values are considered true
+def map2boolean(value):
 
+    if value[0] == 'none':
+        return ('boolean', False)
 
+    elif value[0] == 'boolean':
+        return value
+
+    elif value[0] in  ['integer', 'real', 'list', 'string']:
+        return ('boolean', bool(value[1]))
+
+    else:
+        raise ValueError('unsupported type {} as truth value'.format(value[0]))

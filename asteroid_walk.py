@@ -8,6 +8,7 @@ from asteroid_state import state
 from asteroid_support import assert_match
 from asteroid_support import unify
 from asteroid_support import promote
+from asteroid_support import map2boolean
 
 #########################################################################
 __retval__ = None  # return value register for escaped code
@@ -335,7 +336,7 @@ def handle_call(fval, actual_arglist):
     except ReturnValue as val:
         return_value = val.value
     else:
-        return_value = ('none',) # need that in case function has no return statement
+        return_value = ('none', None) # need that in case function has no return statement
 
     # return to the original scope
     state.symbol_table.pop_scope()
@@ -397,6 +398,14 @@ def attach_stmt(node):
         state.symbol_table.attach_to_sym(sym, fval)
 
 #########################################################################
+def detach_stmt(node):
+
+    (DETACH, (ID, id)) = node
+    assert_match(DETACH, 'detach')
+
+    detach_from_sym(id)
+
+#########################################################################
 def unify_stmt(node):
 
     (UNIFY, pattern, exp) = node
@@ -409,36 +418,13 @@ def unify_stmt(node):
 
 
 #########################################################################
-def get_stmt(node):
-
-    (GET, name) = node
-    assert_match(GET, 'get')
-
-    s = input("Value for " + name + '? ')
-    
-    try:
-        value = int(s)
-    except ValueError:
-        raise ValueError("expected an integer value for " + name)
-    
-    state.symbol_table.update_sym(name, ('scalar', value))
-
-#########################################################################
-def call_stmt(node):
-
-    (CALLSTMT, name, actual_args) = node
-    assert_match(CALLSTMT, 'callstmt')
-
-    handle_call(name, actual_args)
-
-#########################################################################
 def return_stmt(node):
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
 
     if e[0] == 'nil': # no return value
-        raise ReturnValue(('none',))
+        raise ReturnValue(('none', None))
 
     else:
         raise ReturnValue(walk(e))
@@ -446,37 +432,49 @@ def return_stmt(node):
 #########################################################################
 def while_stmt(node):
 
-    (WHILE, cond, body) = node
+    (WHILE, cond_exp, body_stmts) = node
     assert_match(WHILE, 'while')
     
-    value = walk(cond)
-    while value != 0:
+    (COND_EXP, cond) = cond_exp
+    (STMT_LIST, body) = body_stmts
+
+    (COND_TYPE, cond_val) = map2boolean(walk(cond))
+    while cond_val:
         walk(body)
-        value = walk(cond)
+        (COND_TYPE, cond_val) = map2boolean(walk(cond))
+
+#########################################################################
+def repeat_stmt(node):
+
+    (REPEAT, body_stmts, cond_exp) = node
+    assert_match(REPEAT, 'repeat')
+    
+    (COND_EXP, cond) = cond_exp
+    (STMT_LIST, body) = body_stmts
+
+    while True:
+        walk(body)
+        (COND_TYPE, cond_val) = map2boolean(walk(cond))
+        if cond_val:
+            break
 
 #########################################################################
 def if_stmt(node):
     
-    try: # try the if-then pattern
-        (IF, cond, then_stmt, (NIL,)) = node
-        assert_match(IF, 'if')
-        assert_match(NIL, 'nil')
+    (IF, if_list) = node
+    assert_match(IF, 'if')
 
-    except ValueError: # if-then pattern didn't match
-        (IF, cond, then_stmt, else_stmt) = node
-        assert_match(IF, 'if')
-        
-        value = walk(cond)
-        
-        if value != 0:
-            walk(then_stmt)
-        else:
-            walk(else_stmt)
+    for if_pair in if_list:
 
-    else: # if-then pattern matched
-        value = walk(cond)
-        if value != 0:
-            walk(then_stmt)
+        (IF_PAIR,
+         (COND, cond),
+         (STMTS, stmts)) = if_pair
+
+        (BOOLEAN, cond_val) = map2boolean(walk(cond))
+
+        if cond_val:
+            walk(stmts)
+            break
 
 #########################################################################
 def block_stmt(node):
@@ -650,7 +648,7 @@ def escape_exp(node):
     assert_match(ESCAPE, 'escape')
 
     global __retval__
-    __retval__ = ('none',)
+    __retval__ = ('none', None)
 
     exec(s)
 
@@ -667,10 +665,10 @@ def is_exp(node):
     try:
         unifiers = unify(term_val, pattern)
     except:
-        return ('boolean', 'false')
+        return ('boolean', False)
     else:
         declare_unifiers(unifiers)
-        return ('boolean', 'true')
+        return ('boolean', True)
 
 #########################################################################
 def in_exp(node):
@@ -686,9 +684,9 @@ def in_exp(node):
 
     # we simply map our in operator to the Python in operator
     if exp_val in exp_list_val:
-        return ('boolean', 'true')
+        return ('boolean', True)
     else:
-        return ('boolean', 'false')
+        return ('boolean', False)
 
 #########################################################################
 # NOTE: 'to-list' is not a semantic value and should never appear in 
@@ -744,21 +742,22 @@ def walk(node):
         node_function = dispatch_dict[type]
         return node_function(node)
     else:
-        raise ValueError("walk: unknown tree node type: " + type)
+        raise ValueError("feature {} not yet implemented".format(type))
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
-    # statements
+    # statements - statements do not produce return values
+    'noop'    : lambda node : None,
     'attach'  : attach_stmt,
+    'detach'  : detach_stmt,
     'unify'   : unify_stmt,
-    'get'     : get_stmt,
-    'callstmt': call_stmt,
-    'return'  : return_stmt,
     'while'   : while_stmt,
+    'repeat'  : repeat_stmt,
+    'return'  : return_stmt,
     'if'      : if_stmt,
     'block'   : block_stmt,
 
-    # expressions
+    # expressions - expressions do produce return values
     'list'    : list_exp,
     # raw-list is a list constructor that has the internal structure of an acutal list
     # just map it to an actual list an walk it - raw-list itself should never

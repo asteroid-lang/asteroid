@@ -70,7 +70,7 @@ class Parser:
         # and populate the symbol table with predefined behavior for operator symbols
         #
         # binary
-        state.symbol_table.enter_sym('__headtail__', ('constructor', ('arity', 2)))
+        #state.symbol_table.enter_sym('__headtail__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__times__', ('constructor', ('arity', 2)))
@@ -160,7 +160,7 @@ class Parser:
     #    | WHILE exp DO stmt_list END WHILE
     #    | REPEAT stmt_list UNTIL exp '.'?
     #    | BREAK
-    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE stmt_list)? END IF
+    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
     #    | RETURN exp? '.'?
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
     #    | ERROR exp '.'?
@@ -219,6 +219,7 @@ class Parser:
                         ('fun-id',fid_tok.value),
                         ('constr-id', cid_tok.value))
             else:
+                # allows lambda functions to be attached directly
                 fconst = self.primary()
                 self.lexer.match('TO')
                 cid_tok = self.lexer.match('ID')
@@ -312,13 +313,15 @@ class Parser:
             return ('break',)
 
         elif tt == 'IF':
+            # if statements are coded as a list of (condition, stmts) pairs
+            if_list = []
+
             dbg_print("parsing IF")
             self.lexer.match('IF')
             if_exp = self.exp()
             self.lexer.match('DO')
             then_stmts = self.stmt_list()
-            elif_list = ('nil',)
-            else_stmts = ('nil',)
+            if_list.append(('if-pair', ('cond', if_exp), ('stmts', then_stmts)))
 
             while self.lexer.peek().type == 'ELIF':
                 dbg_print("parsing ELIF")
@@ -326,24 +329,23 @@ class Parser:
                 e = self.exp()
                 self.lexer.match('DO')
                 sl = self.stmt_list()
-                elif_list = ('seq',
-                             ('elif',
-                              ('cond-exp', e),
-                              ('stmt-list', sl)),
-                             elif_list)
+                if_list.append(('if-pair', ('cond', e), ('stmts', sl)))
 
             if self.lexer.peek().type == 'ELSE':
                 dbg_print("parsing ELSE")
                 self.lexer.match('ELSE')
+                if self.lexer.peek().type == 'DO':
+                    self.lexer.match('DO')
                 else_stmts = self.stmt_list()
+                # make the else look like another elif with the condition set to 'true'
+                if_list.append(('if-pair',
+                                ('cond', ('boolean', True)),
+                                ('stmts', else_stmts)))
+
             self.lexer.match('END')
             self.lexer.match('IF')
-            # NOTE: elif_list is reversed
-            return ('if',
-                    ('cond-exp', if_exp),
-                    ('then-stmt-list', then_stmts),
-                    ('elif-list', reverse_node_list('seq', elif_list)),
-                    ('else-stmt-list', else_stmts))
+            return ('if', if_list)
+
 
         elif tt == 'RETURN':
             dbg_print("parsing RETURN")
@@ -461,7 +463,7 @@ class Parser:
             ini = self.initializer()
             v = ('seq', ('unify', p, ini), ('nil',))
         else:
-            v = ('seq', ('unify', p, ('none',)), ('nil',))
+            v = ('seq', ('unify', p, ('none', None)), ('nil',))
 
         while self.lexer.peek().type == ',':
             self.lexer.match(',')
@@ -470,7 +472,7 @@ class Parser:
                 ini = self.initializer()
                 v = ('seq', ('unify', p, ini), v)
             else:
-                v = ('seq', ('unify', p, ('none',)), v)
+                v = ('seq', ('unify', p, ('none', None)), v)
         
         return reverse_node_list('seq', v)
 
@@ -537,10 +539,10 @@ class Parser:
 
     ###########################################################################################
     # head_tail
-    #    : rel_exp0 ('|' exp)?
+    #    : conditional ('|' exp)?
     def head_tail(self):
         dbg_print("parsing HEAD_TAIL")
-        v = self.rel_exp0()
+        v = self.conditional()
         if self.lexer.peek().type == '|':
             self.lexer.match('|')
             tail = self.exp()
@@ -553,6 +555,105 @@ class Parser:
         return v
 
     ###########################################################################################
+    # conditional
+    #    : compound
+    #        (
+    #           (OTHERWISE exp) |
+    #           (WHENEVER exp OTHERWISE exp)
+    #        )?
+    def conditional(self):
+        dbg_print("parsing COONDITIONAL")
+        v = self.compound()
+        tt = self.lexer.peek().type
+        if tt  == 'OTHERWISE':
+            self.lexer.match('OTHERWISE')
+            v2 = self.exp()
+            return ('otherwise', v, v2)
+        elif tt == 'WHENEVER':
+            self.lexer.match('WHENEVER')
+            v2 = self.exp()
+            self.lexer.match('OTHERWISE')
+            v2 = self.exp()
+            return ('whenever', v, v2, v3)
+        else:
+            return v
+
+    ###########################################################################################
+    # compound
+    #    : rel_exp0
+    #        (
+    #           (IS pattern) |
+    #           (IN exp) | // exp has to be a list
+    #           (TO exp (STEP exp)?) | // list comprehension
+    #           (WHERE pattern IN exp) |    // list comprehension
+    #           ('@' call)+
+    #        )?
+    def compound(self):
+        dbg_print("parsing COMPOUND")
+        v = self.rel_exp0()
+        tt = self.lexer.peek().type
+        if tt == 'IS':
+            self.lexer.match('IS')
+            v2 = self.pattern()
+            return ('is', v, v2)
+
+        elif tt == 'IN':
+            self.lexer.match('IN')
+            v2 = self.exp()
+            return ('in', v, v2)
+
+        elif tt == 'TO':
+            self.lexer.match('TO')
+            v2 = self.exp()
+            if self.lexer.peek().type == 'STEP':
+                self.lexer.match('STEP')
+                v3 = self.exp()
+                return ('to-list',
+                        ('start', v),
+                        ('stop', v2),
+                        ('step', v3))
+            else:
+                return ('to-list',
+                        ('start', v),
+                        ('stop', v2),
+                        ('step', ('integer', '1')))
+
+        elif tt == 'WHERE':
+            self.lexer.match('WHERE')
+            in_exp = self.exp()
+            if in_exp[0] != 'in':
+                raise ValueError("syntax error: expect in got {}".format(in_exp[0]))
+#            self.lexer.match('IN')
+#            v2 = self.exp()
+            return ('where-list', # list comprehension
+                    ('comp-exp', v),
+                    ('in-exp', in_exp))
+
+        elif tt == '@':
+            self.lexer.match('@')
+            ix_val = self.call()
+            # place scalar index values in a list for easier processing
+            if ix_val[0] in ['list', 'raw-list', 'to-list']:
+                v2 = ('index', ix_val, ('nil',))
+            else:
+                v2 = ('index', ('list', [ix_val]), ('nil',))
+
+            while self.lexer.peek().type == '@':
+                self.lexer.match('@')
+                ix_val = self.call()
+                # place scalar index values in a list for easier processing
+                if ix_val[0] in ['list', 'raw-list', 'to-list']:
+                    v2 = ('index', ix_val, v2)
+                else:
+                    v2 = ('index', ('list', [ix_val]), v2)
+                    
+
+            return ('structure-ix', v, reverse_node_list('index', v2))
+
+        else:
+            return v
+
+    ###########################################################################################
     # NOTE: all terms are expressed as apply nodes of their corresponding constructor names
     ###########################################################################################
     # relational operators with their precedence
@@ -563,7 +664,7 @@ class Parser:
     #    : rel_exp2 (AND rel_exp2)*
     #
     # rel_exp2
-    #    : rel_exp3 (('==' | '><' /* not equal */) rel_exp3)*
+    #    : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
     #
     # rel_exp3
     #    : arith_exp0 (('LE' | 'LT'  | 'GE' | 'GT') arith_exp0)*
@@ -628,7 +729,7 @@ class Parser:
     #    : arith_exp1 ((PLUS | MINUS) arith_exp1)*
     #
     # arith_exp1
-    #    : conditional ((TIMES | DIVIDE) conditional)*
+    #    : call ((TIMES | DIVIDE) call)*
     def arith_exp0(self):
         dbg_print("parsing ARITH_EXP")
         v = self.arith_exp1()
@@ -645,11 +746,11 @@ class Parser:
         return v
 
     def arith_exp1(self):
-        v = self.conditional()
+        v = self.call()
         while self.lexer.peek().type in ['TIMES', 'DIVIDE']:
             op_tok = self.lexer.peek()
             self.lexer.next()
-            v2 = self.conditional()
+            v2 = self.call()
             op_sym = '__' + op_tok.type.lower() + '__'
             v = ('apply', 
                  ('id', op_sym),
@@ -657,105 +758,6 @@ class Parser:
                   ('list', [v, v2]),
                   ('nil',)))
         return v
-
-    ###########################################################################################
-    # conditional
-    #    : compound
-    #        (
-    #           (OTHERWISE exp) |
-    #           (WHENEVER exp OTHERWISE exp)
-    #        )?
-    def conditional(self):
-        dbg_print("parsing COONDITIONAL")
-        v = self.compound()
-        tt = self.lexer.peek().type
-        if tt  == 'OTHERWISE':
-            self.lexer.match('OTHERWISE')
-            v2 = self.exp()
-            return ('otherwise', v, v2)
-        elif tt == 'WHENEVER':
-            self.lexer.match('WHENEVER')
-            v2 = self.exp()
-            self.lexer.match('OTHERWISE')
-            v2 = self.exp()
-            return ('whenever', v, v2, v3)
-        else:
-            return v
-
-    ###########################################################################################
-    # compound
-    #    : call
-    #        (
-    #           (IS pattern) |
-    #           (IN exp) | // exp has to be a list
-    #           (TO exp (STEP exp)?) | // list comprehension
-    #           (WHERE pattern IN exp) |    // list comprehension
-    #           ('@' call)+
-    #        )?
-    def compound(self):
-        dbg_print("parsing COMPOUND")
-        v = self.call()
-        tt = self.lexer.peek().type
-        if tt == 'IS':
-            self.lexer.match('IS')
-            v2 = self.pattern()
-            return ('is', v, v2)
-
-        elif tt == 'IN':
-            self.lexer.match('IN')
-            v2 = self.exp()
-            return ('in', v, v2)
-
-        elif tt == 'TO':
-            self.lexer.match('TO')
-            v2 = self.exp()
-            if self.lexer.peek().type == 'STEP':
-                self.lexer.match('STEP')
-                v3 = self.exp()
-                return ('to-list',
-                        ('start', v),
-                        ('stop', v2),
-                        ('step', v3))
-            else:
-                return ('to-list',
-                        ('start', v),
-                        ('stop', v2),
-                        ('step', ('integer', '1')))
-
-        elif tt == 'WHERE':
-            self.lexer.match('WHERE')
-            in_exp = self.exp()
-            if in_exp[0] != 'in':
-                raise ValueError("syntax error: expect in got {}".format(in_exp[0]))
-#            self.lexer.match('IN')
-#            v2 = self.exp()
-            return ('where-list', # list comprehension
-                    ('comp-exp', v),
-                    ('in-exp', in_exp))
-
-        elif tt == '@':
-            self.lexer.match('@')
-            ix_val = self.call()
-            # place scalar index values in a list for easier processing
-            if ix_val[0] in ['list', 'raw-list', 'to-list']:
-                v2 = ('index', ix_val, ('nil',))
-            else:
-                v2 = ('index', ('list', [ix_val]), ('nil',))
-
-            while self.lexer.peek().type == '@':
-                self.lexer.match('@')
-                ix_val = self.call()
-                # place scalar index values in a list for easier processing
-                if ix_val[0] in ['list', 'raw-list', 'to-list']:
-                    v2 = ('index', ix_val, v2)
-                else:
-                    v2 = ('index', ('list', [ix_val]), v2)
-                    
-
-            return ('structure-ix', v, reverse_node_list('index', v2))
-
-        else:
-            return v
 
     ###########################################################################################
     # function/constructor call 
@@ -813,15 +815,15 @@ class Parser:
 
         elif tt == 'TRUE':
             self.lexer.match('TRUE')
-            return ('boolean', 'true')
+            return ('boolean', True)
 
         elif tt == 'FALSE':
             self.lexer.match('FALSE')
-            return ('boolean', 'false')
+            return ('boolean', False)
 
         elif tt == 'NONE':
            self.lexer.match('NONE')
-           return ('none',)
+           return ('none', None)
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
