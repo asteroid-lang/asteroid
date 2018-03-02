@@ -9,6 +9,7 @@ from asteroid_support import assert_match
 from asteroid_support import unify
 from asteroid_support import promote
 from asteroid_support import map2boolean
+from asteroid_support import PatternMatchFailed
 
 #########################################################################
 __retval__ = None  # return value register for escaped code
@@ -23,6 +24,12 @@ class ReturnValue(Exception):
     
     def __str__(self):
         return(repr(self.value))
+
+#########################################################################
+class Break(Exception):
+
+    def __str__(self):
+        return("break statement exception")
 
 #########################################################################
 def eval_actual_args(args):
@@ -314,7 +321,7 @@ def handle_call(fval, actual_arglist):
         try:
             unifiers = unify(actual_val_args, p)
             unified = True
-        except:
+        except PatternMatchFailed:
             unifiers = []
             unified = False
 
@@ -416,18 +423,21 @@ def unify_stmt(node):
 
     declare_unifiers(unifiers)
 
-
 #########################################################################
 def return_stmt(node):
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
 
-    if e[0] == 'nil': # no return value
-        raise ReturnValue(('none', None))
+    raise ReturnValue(walk(e))
 
-    else:
-        raise ReturnValue(walk(e))
+#########################################################################
+def break_stmt(node):
+
+    (BREAK,) = node
+    assert_match(BREAK, 'break')
+
+    raise Break()
 
 #########################################################################
 def while_stmt(node):
@@ -438,10 +448,13 @@ def while_stmt(node):
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
-    (COND_TYPE, cond_val) = map2boolean(walk(cond))
-    while cond_val:
-        walk(body)
+    try:
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
+        while cond_val:
+            walk(body)
+            (COND_TYPE, cond_val) = map2boolean(walk(cond))
+    except Break:
+        pass
 
 #########################################################################
 def repeat_stmt(node):
@@ -452,11 +465,46 @@ def repeat_stmt(node):
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
-    while True:
-        walk(body)
-        (COND_TYPE, cond_val) = map2boolean(walk(cond))
-        if cond_val:
-            break
+    try:
+        while True:
+            walk(body)
+            (COND_TYPE, cond_val) = map2boolean(walk(cond))
+            if cond_val:
+                break
+
+    except Break:
+        pass
+
+#########################################################################
+def for_stmt(node):
+
+    (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
+    assert_match(FOR, 'for')
+
+    (IN, pattern, list_term) = in_exp
+
+    # expand the list_term in case the list is expressed as a constructor
+    (LIST, list_val) = walk(list_term)
+
+    # for each term on the list unfiy with pattern, declare the bound variables,
+    # and execute the loop body in that context
+    # NOTE: just like Python, loop bodies do not create a new scope!
+    # NOTE: we can use unification as a filter of elements:
+    #
+    #      for (2,y) in [(1,11), (1,12), (1,13), (2,21), (2,22), (2,23)]  do
+    #             print y.
+    #      end for
+    try:
+        for term in list_val:
+            try:
+                unifiers = unify(term,pattern)
+            except PatternMatchFailed:
+                pass
+            else:
+                declare_unifiers(unifiers)
+                walk(stmt_list)
+    except Break:
+        pass
 
 #########################################################################
 def if_stmt(node):
@@ -477,12 +525,16 @@ def if_stmt(node):
             break
 
 #########################################################################
-def block_stmt(node):
+def with_stmt(node):
     
-    (BLOCK, stmt_list) = node
-    assert_match(BLOCK, 'block')
+    (WITH, (PATTERN_LIST, pattern_list), (STMT_LIST, stmt_list)) = node
+    assert_match(WITH, 'with')
     
+    (LIST, list_val) = pattern_list
+
     state.symbol_table.push_scope()
+    for e in list_val:
+        walk(e)
     walk(stmt_list)
     state.symbol_table.pop_scope()
 
@@ -664,7 +716,7 @@ def is_exp(node):
     
     try:
         unifiers = unify(term_val, pattern)
-    except:
+    except PatterMatchFailed:
         return ('boolean', False)
     else:
         declare_unifiers(unifiers)
@@ -687,6 +739,32 @@ def in_exp(node):
         return ('boolean', True)
     else:
         return ('boolean', False)
+
+#########################################################################
+def otherwise_exp(node):
+    
+    (OTHERWISE, e1, e2) = node
+    assert_match(OTHERWISE, 'otherwise')
+
+    val = walk(e1)
+
+    if val[0] == 'none':
+        return walk(e2)
+    else:
+        return val
+
+#########################################################################
+def if_exp(node):
+
+    (IF_EXP, cond_exp, then_exp, else_exp) = node
+    assert_match(IF_EXP, 'if-exp')
+
+    (BOOLEAN, cond_val) = map2boolean(walk(cond_exp))
+
+    if cond_val:
+        return walk(then_exp)
+    else:
+        return walk(else_exp)
 
 #########################################################################
 # NOTE: 'to-list' is not a semantic value and should never appear in 
@@ -713,11 +791,12 @@ def to_list_exp(node):
 
     out_list_val = []
 
+    # TODO: check out the behavior with step -1 -- is this what we want?
     # the behavior is start and stop included
     if int(step_val) > 0: # generate the list
         ix = int(start_val)
         while ix <= int(stop_val):
-            out_list_val.append(('integer', str(ix)))
+            out_list_val.append(('integer', ix))
             ix += int(step_val)
 
     elif int(step_val) == 0: # error
@@ -726,10 +805,28 @@ def to_list_exp(node):
     elif int(step_val) < 0: # generate the list
         ix = int(stop_val)
         while ix >= int(start_val):
-            out_list_val.append(('integer', str(ix)))
+            out_list_val.append(('integer', ix))
             ix += int(step_val)
 
     return ('list', out_list_val)
+
+#########################################################################
+# NOTE: this is the value view of the head tail constructor, for the
+#       pattern view of this constructor see unify.
+def head_tail_exp(node):
+    
+    (HEAD_TAIL, head, tail) = node
+    assert_match(HEAD_TAIL, 'head-tail')
+
+    head_val = walk(head)
+    (TAIL_TYPE, tail_val) = walk(tail)
+
+    if TAIL_TYPE != 'list':
+        raise ValueError(
+            "unsuported tail type {} in head-tail operator".
+            format(TAIL_TYPE))
+
+    return ('list', [head_val] + tail_val)
 
 #########################################################################
 # walk
@@ -753,9 +850,11 @@ dispatch_dict = {
     'unify'   : unify_stmt,
     'while'   : while_stmt,
     'repeat'  : repeat_stmt,
+    'for'     : for_stmt,
     'return'  : return_stmt,
+    'break'   : break_stmt,
     'if'      : if_stmt,
-    'block'   : block_stmt,
+    'with'    : with_stmt,
 
     # expressions - expressions do produce return values
     'list'    : list_exp,
@@ -764,6 +863,7 @@ dispatch_dict = {
     # appear in semantic processing -- it can appear in patterns as a constructor!
     'raw-list' : lambda node : walk(('list', node[1])),
     'to-list' : to_list_exp,
+    'head-tail' : head_tail_exp,
     'dict-access' : lambda node : node,
     'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'    : lambda node : node,
@@ -784,6 +884,8 @@ dispatch_dict = {
     'quote'   : lambda node : node[1],
     'is'      : is_exp,
     'in'      : in_exp,
+    'otherwise' : otherwise_exp,
+    'if-exp'  : if_exp,
 }
 
 

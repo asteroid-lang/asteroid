@@ -70,7 +70,6 @@ class Parser:
         # and populate the symbol table with predefined behavior for operator symbols
         #
         # binary
-        #state.symbol_table.enter_sym('__headtail__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__times__', ('constructor', ('arity', 2)))
@@ -156,7 +155,7 @@ class Parser:
     #    | LET exp '=' value '.'?
     #    | (GLOBAL | NONLOCAL) var_list '.'?
     #    | WITH pattern_init_list DO stmt_list END WITH
-    #    | FOR ID IN exp DO stmt_list END FOR
+    #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
     #    | REPEAT stmt_list UNTIL exp '.'?
     #    | BREAK
@@ -271,15 +270,14 @@ class Parser:
         elif tt == 'FOR':
             dbg_print("parsing FOR")
             self.lexer.match('FOR')
-            var_tok = self.lexer.match('ID')
-            self.lexer.match('IN')
             e = self.exp()
+            if e[0] != 'in':
+                raise ValueError("syntax error: expected in expression in for loop")
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
             self.lexer.match('FOR')
             return ('for',
-                    ('id', var_tok.value),
                     ('in-exp', e),
                     ('stmt-list', sl))
 
@@ -358,7 +356,7 @@ class Parser:
             else:
                 if self.lexer.peek().type == '.':
                     self.lexer.match('.')
-                return ('return', ('nil',))
+                return ('return', ('none', None))
 
         elif tt == 'TRY':
             dbg_print("parsing TRY")
@@ -457,24 +455,28 @@ class Parser:
     #    : pattern initializer? (',' pattern initializer?)*
     def pattern_init_list(self):
         dbg_print("parsing PATTERN_INIT_LIST")
-        p = self.pattern()
 
+        pattern_list = []
+
+        p = self.pattern()
         if self.lexer.peek().type == '=':
             ini = self.initializer()
-            v = ('seq', ('unify', p, ini), ('nil',))
+            v = ('unify', p, ini)
         else:
-            v = ('seq', ('unify', p, ('none', None)), ('nil',))
+            v = ('unify', p, ('none', None))
+        pattern_list.append(v)
 
         while self.lexer.peek().type == ',':
             self.lexer.match(',')
             p = self.pattern()
             if self.lexer.peek().type == '=':
                 ini = self.initializer()
-                v = ('seq', ('unify', p, ini), v)
+                v = ('unify', p, ini)
             else:
-                v = ('seq', ('unify', p, ('none', None)), v)
+                v = ('unify', p, ('none', None))
+        pattern_list.append(v)
         
-        return reverse_node_list('seq', v)
+        return ('list', pattern_list)
 
     ###########################################################################################
     # initializer
@@ -540,18 +542,21 @@ class Parser:
     ###########################################################################################
     # head_tail
     #    : conditional ('|' exp)?
+    #
+    # NOTE: * as a value this operator will construct a list from the semantic values of
+    #         head and tail
+    #       * as a pattern this operator will be unified with a list such that head will
+    #         unify with the first element of the list and tail with the remaining list
+    # NOTE: this is a list constructor and therefore should never appear in the semantic
+    #       processing, use walk to expand the list before processing it.
     def head_tail(self):
         dbg_print("parsing HEAD_TAIL")
         v = self.conditional()
         if self.lexer.peek().type == '|':
             self.lexer.match('|')
+            head = v
             tail = self.exp()
-            op_sym = '__headtail__'
-            v = ('apply', 
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, tail]),
-                  ('nil',)))
+            v = ('head-tail', head, tail)
         return v
 
     ###########################################################################################
@@ -559,7 +564,7 @@ class Parser:
     #    : compound
     #        (
     #           (OTHERWISE exp) |
-    #           (WHENEVER exp OTHERWISE exp)
+    #           (IF exp (ELSE exp)?) # expression level if-else
     #        )?
     def conditional(self):
         dbg_print("parsing COONDITIONAL")
@@ -569,12 +574,12 @@ class Parser:
             self.lexer.match('OTHERWISE')
             v2 = self.exp()
             return ('otherwise', v, v2)
-        elif tt == 'WHENEVER':
-            self.lexer.match('WHENEVER')
+        elif tt == 'IF':
+            self.lexer.match('IF')
             v2 = self.exp()
-            self.lexer.match('OTHERWISE')
-            v2 = self.exp()
-            return ('whenever', v, v2, v3)
+            self.lexer.match('ELSE')
+            v3 = self.exp()
+            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
         else:
             return v
 
@@ -889,6 +894,8 @@ class Parser:
                 elif v[0] == 'to-list': # don't do anything, just pass the list constructor
                     pass
                 elif v[0] == 'where-list': # don't do anything, just pass the list constructor
+                    pass
+                elif v[0] == 'head-tail': # don't do anything, just pass the list constructor
                     pass
                 else:
                     # turn contents into a list (possibly nested lists)

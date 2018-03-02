@@ -6,7 +6,6 @@
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
 -- printing functions
-
 ------------------------------------------------------------------
 -- basic print function - currently just dumps the AST to screen
 -- TODO: make the output look like terms...

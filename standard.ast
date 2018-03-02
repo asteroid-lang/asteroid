@@ -322,7 +322,7 @@ attach not_op to __not__.
 ------------------------------------------------------------------
 -- eval
 --
--- evaluates a term in the current term interpretation
+-- evaluates a term in the current term interpretation environment
 --
 function eval with item do return escape
 "

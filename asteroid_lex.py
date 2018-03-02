@@ -45,7 +45,6 @@ reserved = {
     'to' : 'TO',        
     'try' : 'TRY',       
     'until' : 'UNTIL',
-    'whenever' : 'WHENEVER',
     'where' : 'WHERE',
     'while' : 'WHILE',     
     'with' : 'WITH',

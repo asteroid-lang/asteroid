@@ -7,6 +7,14 @@
 from asteroid_state import state
 
 #########################################################################
+class PatternMatchFailed(Exception):
+    def __init__(self, value):
+        self.value = value
+    
+    def __str__(self):
+        return(repr(self.value))
+
+#########################################################################
 def len_seq(seq_list):
 
     if seq_list[0] == 'nil':
@@ -164,25 +172,50 @@ def unify(term, pattern):
             if term == pattern:
                 return []
             else:
-                raise ValueError("pattern match failed: {} is not the same as {}".
-                                 format(term, pattern))
-        except:
-            raise ValueError("pattern match failed: {} is not the same as {}".
-                             format(term, pattern))
+                raise PatternMatchFailed(
+                    "pattern match failed: {} is not the same as {}"
+                    .format(term, pattern))
+        except: # just in case the comparison above throws an exception
+            raise PatternMatchFailed(
+                "pattern match failed: {} is not the same as {}"
+                .format(term, pattern))
             
-    # TODO: clean up the following condition
     elif isinstance(term, list) or isinstance(pattern, list):
         if not(isinstance(term, list) and isinstance(pattern, list)):
-            raise ValueError("Pattern match failed: term and pattern do not agree on list constructor")
+            raise PatternMatchFailed(
+                "Pattern match failed: term and pattern do not agree on list constructor")
 
         elif len(term) != len(pattern):
-            raise ValueError("Pattern match failed: term and pattern lists are not the same length")
+            raise PatternMatchFailed(
+                "pattern match failed: term and pattern lists are not the same length")
 
         else:
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i])
             return unifier
+
+    elif pattern[0] == 'head-tail':  
+
+        (TERM_TYPE, term_val, *_) = term
+
+        if TERM_TYPE != 'list':
+            raise PatternMatchFailed(
+                "pattern match failed: head-tail operator expected type list got type {}"
+                .format(TERM_TYPE))
+            
+
+        pattern_head = pattern[1]
+        pattern_tail = pattern[2]
+
+        term_head = term_val[0]
+        term_tail = ('list', term_val[1:])
+
+        unifier = []
+        unifier += unify(term_head, pattern_head)
+        unifier += unify(term_tail, pattern_tail)
+
+        return unifier
 
     elif pattern[0] == 'deref':  # ('deref', id)
         sym = pattern[1]
@@ -210,15 +243,8 @@ def unify(term, pattern):
 
         # check if we are looking at apply nodes in both the term and the pattern
         if term[0] != pattern[0]:
-            raise ValueError("pattern match failed: term and pattern disagree on 'apply' node")
-            # NOTE: list lval binding is now handled by 'structure-ix' node
-            # this still could be legal if the pattern is a unification into a list location
-            #if pattern[1][0] == 'id':
-            #    (type, val) = state.symbol_table.lookup_sym(pattern[1][1])
-            #    if type == 'list':
-            #        return [(pattern, term)]
-            #    else:
-            #        raise ValueError("pattern match failed: term and pattern disagree on 'apply' node")
+            raise PatternMatchFailed(
+                "pattern match failed: term and pattern disagree on 'apply' node")
 
         # get the types of the apply args
         type_p1 = pattern[1][0]
@@ -247,20 +273,14 @@ def unify(term, pattern):
 
         # if term and pattern disagree on symbol name then error
         if sym_t1 != sym_p1:
-            raise ValueError(
-                "pattern match failed: name {} does not match name {}".format(
-                    sym_t1, sym_p1))
+            raise PatternMatchFailed(
+                "pattern match failed: name {} does not match name {}"
+                .format(sym_t1, sym_p1))
 
         # at this point we know we are looking at a symbol in both the term and the pattern
         assert sym_t1 == sym_p1
         sym = sym_t1
         sym_val = state.symbol_table.lookup_sym(sym)
-
-        # if the symbol is a list then return the pattern and the term as a unifier
-        # NOTE: list lval binding is now handled by the 'structure-ix' node
-        #if sym_val[0] == 'list':
-        #    unifier = [(pattern, term)]
-        #    return unifier
 
         # if the symbol is a constructor or function keep on unifying
         if sym_val[0] in ['constructor', 'function']:
@@ -268,22 +288,24 @@ def unify(term, pattern):
 
         # we have a declared symbol not a list or constructor -- illegal?
         else:
-            raise ValueError("pattern match failed: illega apply context for symbol {}".format(sym))
+            raise PatternMatchFailed(
+                "pattern match failed: illega apply context for symbol {}"
+                .format(sym))
 
     elif term[0] == 'id': # variable in term not allowed
-        raise ValueError(
-            "Pattern match failed: variable {} in term not allowed".format(
-                term[1]))
+        raise PatternMatchFailed(
+            "pattern match failed: variable {} in term not allowed"
+            .format(term[1]))
 
     elif len(term) != len(pattern): # nodes are not of same the arity
-        raise ValueError(
-            "Pattern match failed: nodes {} and {} are not of the same arity".format(
-                term[0], pattern[0]))
+        raise PatternMatchFailed(
+            "pattern match failed: nodes {} and {} are not of the same arity"
+            .format(term[0], pattern[0]))
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
-        raise ValueError(
-            "Pattern match failed: nodes {} and {} are not the same".format(
-                term[0], pattern[0]))
+        raise PatternMatchFailed(
+            "pattern match failed: nodes {} and {} are not the same"
+            .format(term[0], pattern[0]))
 
     else:
         #lhh
@@ -298,7 +320,12 @@ def unify(term, pattern):
 ###########################################################################################
 def promote(type1, type2, strict=True):
     '''
-    type promotion table for builtin primitive types
+    type promotion table for builtin primitive types.  this table implements the
+    type hierarchy  
+
+                 integer < real < string 
+
+    with list not being related to any of the other types.
     '''
     
     if type1 == 'string' and type2 in['string', 'real', 'integer']:
@@ -320,18 +347,21 @@ def promote(type1, type2, strict=True):
             return ('none', None)
 
 ###########################################################################################
-# Asteroid uses Python's Pythonic truth values:
+# Asteroid uses truth value similar to Python's Pythonic truth values:
 #
 # Any object can be tested for truth value, for use in an if or while condition or as 
-# operand of the Boolean operations below. The following values are considered false:
+# operand of the Boolean operations.
+#
+# The following values are considered false:
 #
 #     none
 #     false
-#     zero of any numeric type, for example, 0, 0L, 0.0, 0j.
+#     zero of the numeric types: 0, 0.0.
 #     the empty string
 #     any empty list: (), [].
 #
-#  All other values are considered true
+#  All other values are considered true, in particular any object or constructor.
+#
 def map2boolean(value):
 
     if value[0] == 'none':
