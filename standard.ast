@@ -303,14 +303,14 @@ val_a = state.symbol_table.lookup_sym('a')
 
 bool_a = map2boolean(val_a)
 
-if val_a[1] == 'false':
+if val_a[1] == False:
     __retval__ = ('boolean', True)
 
-elif val_a[1] == 'true':
+elif val_a[1] == True:
     __retval__ = ('boolean', False)
 
 else:
-    raise ValueError('unsupported type in not')
+    raise ValueError('not a boolean value in not')
 "     
 end function
 
@@ -320,10 +320,14 @@ attach not_op to __not__.
 ------------------------------------------------------------------
 -- standard functions --
 ------------------------------------------------------------------
--- eval
---
+-- use this constructor to throw error exceptions with a string
+-- as its argument
+
+constructor Error with arity 1.
+
+------------------------------------------------------------------
 -- evaluates a term in the current term interpretation environment
---
+
 function eval with item do return escape
 "
 global __retval__
@@ -332,4 +336,34 @@ __retval__ = walk(item_val)
 "
 end function
 
+------------------------------------------------------------------
+function length with lst do return escape
+"
+global __retval__
+item_val = state.symbol_table.lookup_sym('lst')
+
+if item_val[0] != 'list':
+   raise ValueError(
+   	 'length expected a list got {}'
+	 .format(item_val[0]))
+
+__retval__ = ('integer', len(item_val[1]))
+"
+end function
+
+------------------------------------------------------------------
+function exit with msg do escape
+"
+import sys
+
+(MSGTYPE, msg_val) = state.symbol_table.lookup_sym('msg')
+if MSGTYPE != 'string':
+   raise ValueError('exit expected a string got {}'
+   	 .format(MSGTYPE))
+
+print(msg_val)
+sys.exit(1)
+"
+end function
+------------------------------------------------------------------
 

@@ -53,7 +53,7 @@ stmt_lookahead = [
     'IF',
     'RETURN',
     'TRY',
-    'ERROR'
+    'THROW'
     ] + exp_lookahead
 
 ###########################################################################################
@@ -162,7 +162,7 @@ class Parser:
     #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
     #    | RETURN exp? '.'?
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
-    #    | ERROR exp '.'?
+    #    | THROW exp '.'?
     #    | call '.'?
     def stmt(self):
         dbg_print("parsing STMT")
@@ -360,45 +360,44 @@ class Parser:
 
         elif tt == 'TRY':
             dbg_print("parsing TRY")
+
+            catch_list = []
+
             self.lexer.match('TRY')
             try_block = self.stmt_list()
-            catch_list = ('nil',)
             self.lexer.match('CATCH')
             dbg_print("parsing CATCH")
             catch_pattern = self.pattern()
             self.lexer.match('DO')
             catch_stmts = self.stmt_list()
-            catch_list = ('seq',
-                          ('catch',
-                           ('pattern', catch_pattern),
-                           ('stmt-list', catch_stmts)),
-                          catch_list)
+            catch_list.append(('catch',
+                               ('catch-pattern', catch_pattern),
+                               ('catch-stmts', catch_stmts)))
 
-            while lexer.peek().type == 'CATCH':
+            while self.lexer.peek().type == 'CATCH':
                 dbg_print("parsing CATCH")
                 self.lexer.match('CATCH')
                 catch_pattern = self.pattern()
                 self.lexer.match('DO')
                 catch_stmts = self.stmt_list()
-                catch_list = ('seq',
-                              ('catch',
-                               ('pattern', catch_pattern),
-                               ('stmt-list', catch_stmts)),
-                              catch_list)
+                catch_list.append(('catch',
+                                   ('catch-pattern', catch_pattern),
+                                   ('catch-stmts', catch_stmts)))
+
             self.lexer.match('END')
             self.lexer.match('TRY')
-            # NOTE: catch_list is in reverse!
-            return ('try',
-                    ('stmt-list', try_block)
-                    ('catch-list', reverse_node_list('seq', catch_list)))
 
-        elif tt == 'ERROR':
-            dbg_print("parsing ERROR")
-            self.lexer.match('ERROR')
+            return ('try',
+                    ('try-stmts', try_block),
+                    ('catch-list', ('list', catch_list)))
+
+        elif tt == 'THROW':
+            dbg_print("parsing THROW")
+            self.lexer.match('THROW')
             e = self.exp()
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
-            return ('error', e)
+            return ('throw', e)
 
         else:
             v = self.call()
@@ -591,7 +590,7 @@ class Parser:
     #           (IN exp) | // exp has to be a list
     #           (TO exp (STEP exp)?) | // list comprehension
     #           (WHERE pattern IN exp) |    // list comprehension
-    #           ('@' call)+
+    #           ('@' primary)+
     #        )?
     def compound(self):
         dbg_print("parsing COMPOUND")
@@ -636,7 +635,7 @@ class Parser:
 
         elif tt == '@':
             self.lexer.match('@')
-            ix_val = self.call()
+            ix_val = self.primary()
             # place scalar index values in a list for easier processing
             if ix_val[0] in ['list', 'raw-list', 'to-list']:
                 v2 = ('index', ix_val, ('nil',))
@@ -645,7 +644,7 @@ class Parser:
 
             while self.lexer.peek().type == '@':
                 self.lexer.match('@')
-                ix_val = self.call()
+                ix_val = self.primary()
                 # place scalar index values in a list for easier processing
                 if ix_val[0] in ['list', 'raw-list', 'to-list']:
                     v2 = ('index', ix_val, v2)

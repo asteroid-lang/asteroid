@@ -6,10 +6,12 @@
 ###########################################################################################
 
 import sys
+from pprint import pprint
 from argparse import ArgumentParser
 from asteroid_parser import Parser
 from asteroid_state import state
 from asteroid_walk import walk
+from asteroid_walk import ThrowValue
 from asteroid_support import dump_AST
 
 # TODO: adjust the defaults
@@ -30,6 +32,18 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
             walk(state.AST)
         if symtab_dump:
             state.symbol_table.dump()
+
+    except ThrowValue as throw_val:
+        # handle exceptions using the standard Error constructor
+        if throw_val.value[0] == 'apply' and throw_val.value[1][1] == 'Error':
+            (APPLY, (ID, id), (APPLY, (STRING, error_string), rest)) = throw_val.value
+            print("Error: {}".format(error_string))
+        else:
+            print("Error: unhandled Asteroid exception:")
+            pprint(throw_val)
+        
+        sys.exit(1)
+
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
             if symtab_dump:
