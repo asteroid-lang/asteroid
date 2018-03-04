@@ -589,8 +589,7 @@ class Parser:
     #           (IS pattern) |
     #           (IN exp) | // exp has to be a list
     #           (TO exp (STEP exp)?) | // list comprehension
-    #           (WHERE pattern IN exp) |    // list comprehension
-    #           ('@' primary)+
+    #           (WHERE pattern IN exp)     // list comprehension
     #        )?
     def compound(self):
         dbg_print("parsing COMPOUND")
@@ -632,27 +631,6 @@ class Parser:
             return ('where-list', # list comprehension
                     ('comp-exp', v),
                     ('in-exp', in_exp))
-
-        elif tt == '@':
-            self.lexer.match('@')
-            ix_val = self.primary()
-            # place scalar index values in a list for easier processing
-            if ix_val[0] in ['list', 'raw-list', 'to-list']:
-                v2 = ('index', ix_val, ('nil',))
-            else:
-                v2 = ('index', ('list', [ix_val]), ('nil',))
-
-            while self.lexer.peek().type == '@':
-                self.lexer.match('@')
-                ix_val = self.primary()
-                # place scalar index values in a list for easier processing
-                if ix_val[0] in ['list', 'raw-list', 'to-list']:
-                    v2 = ('index', ix_val, v2)
-                else:
-                    v2 = ('index', ('list', [ix_val]), v2)
-                    
-
-            return ('structure-ix', v, reverse_node_list('index', v2))
 
         else:
             return v
@@ -767,16 +745,47 @@ class Parser:
     # function/constructor call 
     #
     # call
-    #    : primary primary*
+    #    : index index*
     def call(self):
         dbg_print("parsing CALL")
-        v = self.primary()
+        v = self.index()
         if self.lexer.peek().type in exp_lookahead:
             v = ('apply', v, ('nil',))
             while self.lexer.peek().type in exp_lookahead:
-                v2 = self.primary()
+                v2 = self.index()
                 v = ('apply', v2, v) 
             return reverse_node_list('apply', v)
+        else:
+            return v
+
+    ###########################################################################################
+    # index 
+    #    : primary ('@' primary)*
+    def index(self):
+        dbg_print("parsing INDEX")
+        v = self.primary()
+
+        if self.lexer.peek().type == '@':
+            self.lexer.match('@')
+            ix_val = self.primary()
+            # place scalar index values in a list for easier processing
+            if ix_val[0] in ['list', 'raw-list', 'to-list', 'where-list']:
+                v2 = ('index', ix_val, ('nil',))
+            else:
+                v2 = ('index', ('list', [ix_val]), ('nil',))
+
+            while self.lexer.peek().type == '@':
+                self.lexer.match('@')
+                ix_val = self.primary()
+                # place scalar index values in a list for easier processing
+                if ix_val[0] in ['list', 'raw-list', 'to-list']:
+                    v2 = ('index', ix_val, v2)
+                else:
+                    v2 = ('index', ('list', [ix_val]), v2)
+                    
+
+            return ('structure-ix', v, reverse_node_list('index', v2))
+
         else:
             return v
 
