@@ -5,12 +5,15 @@
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
--- printing functions
+-- PRINTING FUNCTIONS
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function print 
 ------------------------------------------------------------------
 -- basic print function - currently just dumps the AST to screen
 -- TODO: make the output look like terms...
-
-function print with item do escape
+with item do escape
 "
 from pprint import pprint
 item_val = state.symbol_table.lookup_sym('item')

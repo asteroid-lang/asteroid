@@ -41,9 +41,7 @@ stmt_lookahead = [
     'DETACH',
     'CONSTRUCTOR',
     'FUNCTION',
-    'GLOBAL',
     'LET',
-    'NONLOCAL',
     'NOOP',
     'REPEAT',
     'WITH',
@@ -126,22 +124,19 @@ class Parser:
                 fparser = Parser()
                 fstmts = fparser.parse(data)
             sl = self.stmt_list()
-            return append_node_list('seq', fstmts, sl)
+            return ('list', fstmts[1] + sl[1])
 
         elif self.lexer.peek().type in stmt_lookahead:
             s = self.stmt()
             sl = self.stmt_list()
-            return ('seq', s, sl)
+            return ('list', [s] +  sl[1])
 
         else:
-            return ('nil',)
+            return ('list', [])
 
     ###########################################################################################
     # NOTE: periods are optional at end of sentences but leaving them out can
     #       lead to ambiguities
-    # NOTE: reading will try to cast the read entity in the lowest primitive
-    #       datatype with integer < real < string
-    # NOTE: should we generalize loops allowing patterns instead of loop index variable?
     # NOTE: the dot is also short hand for the 'noop' command
     # NOTE: in ATTACH the primary should evaluate to a function value
     #
@@ -153,7 +148,6 @@ class Parser:
     #    | ATTACH primary TO ID '.'?
     #    | DETACH FROM ID '.'?
     #    | LET exp '=' value '.'?
-    #    | (GLOBAL | NONLOCAL) var_list '.'?
     #    | WITH pattern_init_list DO stmt_list END WITH
     #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
@@ -246,14 +240,6 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return ('unify', p, v)
-
-        elif tt == 'GLOBAL' or tt == 'NONLOCAL':
-            dbg_print("parsing GLOBAL/NONLOCAL")
-            self.lexer.next()
-            vl = self.var_list()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
-            return (tt.lower(), vl)
 
         elif tt == 'WITH':
             dbg_print("parsing WITH")
@@ -414,40 +400,20 @@ class Parser:
         p = self.pattern()
         self.lexer.match('DO')
         sl = self.stmt_list()
-        body_list = ('seq',
-                     ('body',
+        body_list = [('body',
                       ('pattern', p),
-                      ('stmt-list', sl)),
-                     ('nil',))
+                      ('stmt-list', sl))]
 
         while self.lexer.peek().type == 'ORWITH':
             self.lexer.match('ORWITH')
             p = self.pattern()
             self.lexer.match('DO')
             sl = self.stmt_list()
-            body_list = ('seq',
-                         ('body',
-                          ('pattern', p),
-                          ('stmt-list', sl)),
-                         body_list)
+            body_list.append(('body',
+                              ('pattern', p),
+                              ('stmt-list', sl)))
 
-        return ('body-list', reverse_node_list('seq', body_list))
-
-    ###########################################################################################
-    # var_list
-    #   : ID (',' ID)*
-    def var_list(self):
-        dbg_print("parsing VAR_LIST")
-        id_tok = self.lexer.match('ID')
-        vlist = ('seq', id_tok.value, ('nil',))
-
-        while self.lexer.peek().type == ',':
-            self.lexer.match(',')
-            id_tok = self.lexer.match('ID')
-            vlist = ('seq', id_tok.value, vlist)
-
-        # NOTE: vlist is reversed
-        return reverse_node_list('seq', vlist)
+        return ('body-list', ('list', body_list))
 
     ###########################################################################################
     # pattern_init_list

@@ -7,7 +7,6 @@
 from asteroid_state import state
 from asteroid_support import assert_match
 from asteroid_support import unify
-from asteroid_support import promote
 from asteroid_support import map2boolean
 from asteroid_support import PatternMatchFailed
 
@@ -316,14 +315,13 @@ def handle_call(fval, actual_arglist):
         raise ValueError("not a function in call")
 
     actual_val_args = eval_actual_args(actual_arglist)   # evaluate actuals in current symtab
-    body_list = fval[1]   # get the list of function bodies - nil terminated seq list
+    body_list = fval[1]   # get the list of function bodies 
 
     # iterate over the bodies to find one that unifies with the actual parameters
-    (BODY_LIST, body_list_ix) = body_list
+    (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    while body_list_ix[0] != 'nil':
-        (SEQ, body, next) = body_list_ix
+    for body in body_list_val:
 
         (BODY, 
          (PATTERN, p),
@@ -338,8 +336,6 @@ def handle_call(fval, actual_arglist):
 
         if unified:
             break
-        else:
-            body_list_ix = next
 
     if not unified:
         ValueError("none of the function bodies unified with actual parameters")

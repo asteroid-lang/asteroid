@@ -347,7 +347,7 @@ def promote(type1, type2, strict=True):
             return ('none', None)
 
 ###########################################################################################
-# Asteroid uses truth value similar to Python's Pythonic truth values:
+# Asteroid uses truth values similar to Python's Pythonic truth values:
 #
 # Any object can be tested for truth value, for use in an if or while condition or as 
 # operand of the Boolean operations.
