@@ -1,0 +1,132 @@
+------------------------------------------------------------------
+-- util.ast
+--
+-- this module defines some standard functions, e.g., eval
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+
+------------------------------------------------------------------
+-- TYPE CONVERSION FUNCTIONS --
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function integer
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+(TYPE, item_val) = state.symbol_table.lookup_sym('item')
+__retval__ = ('integer', int(item_val))
+"
+end function
+
+------------------------------------------------------------------
+function real
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+(TYPE, item_val) = state.symbol_table.lookup_sym('item')
+__retval__ = ('real', float(item_val))
+"
+end function
+
+------------------------------------------------------------------
+function boolean
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+(TYPE, item_val) = state.symbol_table.lookup_sym('item')
+__retval__ = ('boolean', bool(float(item_val)))
+"
+end function
+
+------------------------------------------------------------------
+-- UTILITY FUNCTIONS --
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+constructor Error 
+------------------------------------------------------------------
+-- use this constructor to throw error exceptions with a string
+-- as its argument
+with arity 1.
+
+------------------------------------------------------------------
+function eval 
+------------------------------------------------------------------
+-- evaluates a term in the current term interpretation environment
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('item')
+state.ignore_quote = True
+__retval__ = walk(item_val)
+state.ignore_quote = False
+"
+end function
+
+------------------------------------------------------------------
+function length 
+------------------------------------------------------------------
+with lst do return escape
+"
+global __retval__
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('lst')
+
+if item_val[0] != 'list':
+   raise ValueError(
+   	 'length expected a list got {}'
+	 .format(item_val[0]))
+
+__retval__ = ('integer', len(item_val[1]))
+"
+end function
+
+------------------------------------------------------------------
+function exit 
+------------------------------------------------------------------
+with msg do escape
+"
+import sys
+from asteroid_state import state
+
+(MSGTYPE, msg_val) = state.symbol_table.lookup_sym('msg')
+
+if MSGTYPE != 'string':
+   raise ValueError('exit expected a string got {}'
+   	 .format(MSGTYPE))
+
+print(msg_val)
+sys.exit(1)
+"
+end function
+
+------------------------------------------------------------------
+function copy
+------------------------------------------------------------------
+-- make a deep copy of an Asteroid object
+with obj do return escape
+"
+global __retval__
+import copy
+from asteroid_state import state
+
+obj_val = state.symbol_table.lookup_sym('obj')
+
+__retval__ = copy.deepcopy(obj_val)
+"
+end function
