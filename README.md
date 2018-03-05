@@ -7,55 +7,64 @@ Here is the canonical factorial program written in Asteroid:
 ```
 -- Factorial
 
-function fact with n do
-    if n < 0 do
-        error "n has to be non-negative!".
-    elif n is 0 do -- this is pattern-level programmng, 'n == 0' is value-level programming.
-        return 1.
-    else
+load "standard.ast".
+load "io.ast".
+
+function fact 
+    with 0 do
+        return 1
+    orwith n do
         return n * fact (n-1).
-    end if
-end function
+    end function
 
-println "The factorial of 3 is: ", fact (3).
-
+print ("The factorial of 3 is: " + fact (3)).
 ```
 The following program shows off some of Asteroids pattern-level programming capabilities:
 
 ```
 -- implements Peano addition on terms
 
--- declare the successor function S as a term constructor so that we
+-- declare the successor function S as a term constructor so that we 
 -- can pattern match on it.
-
 constructor S with arity 1.
 
 -- the 'reduce' function is our reduction engine which recursively pattern matches and
 -- rewrites the input term
-
 -- NOTE: during pattern matching free variables are bound to subterms of the original term.
--- For example, the expression S S 0 + 0 is X + 0 will bind X to S S 0 where X was
--- declared as a variable. Once a pattern value is bound to a variable it can
--- be used in the program.  In our case we use the values in the variables to
+-- For example, the expression S S 0 + 0 is X + 0 will bind X to S S 0 
+-- Once a pattern value is bound to a variable it can 
+-- be used in the program.  In our case we use the values in the variables to 
 -- construct new terms, i.e., S reduce (X + Y)
-
 function reduce
     with X + 0 do                      -- pattern match 'X + 0'
-            return reduce X.
-    orwith X + S Y  do                 -- pattern match to 'X + S Y'
-            return S reduce (X + Y).
+        return reduce X.
+    orwith X + S(Y)  do                -- pattern match to 'X + S Y'
+        return S(reduce(X + Y)).
     orwith term do                     -- default clause
-            return term.
+        return term.
     end function
 
--- construct a term we want to reduce, the quote allows us to construct terms without
--- having Asteroid immediately try to evaluate them.
+-- construct a term we want to reduce  
+let n = 'S(S(0)) + (S(S(S(0)))).
 
-let n = 'S S 0 + S S S 0.
+-- and reduce it!
+let rn = reduce n.
 
--- print the resulting term from our reduction
+-- attach inc behavior/interpretation to the S constructor
+load "standard.ast".
+load "util.ast".
+load "io.ast".
 
-println reduce n.
+function inc 
+    with n do
+        return n + 1.
+    end function
+    
+attach inc to S.
+
+-- show that with this behavior both the original term and the rewritten term
+-- evaluate to the same value
+print ((eval rn) == (eval n)).
 ```
 
 Here is something a bit more mundane: the quicksort algorithm implemented in Asteroid.  Highlighted here is Asteroid's
@@ -64,6 +73,9 @@ pattern match capabality on lists:
 ```
 -- Quicksort
 
+load "standard.ast".
+load "io.ast".
+
 function qsort
     with [] do
         return [].
@@ -71,29 +83,37 @@ function qsort
         return [a].
     orwith [pivot|rest] do
         with less=[], more=[] do
-            for e in rest do
+            for e in rest do  
                 if e < pivot do
                     let less = less + [e].
                 else
                     let more = more + [e].
                 end if
             end for
-
-            let sorted_less = qsort less.
-            let sorted_more = qsort more.
-
-            return sorted_less + [pivot] + sorted_more.
+                        
+            return qsort less + [pivot] + qsort more.
         end with
     end function
+    
+print (qsort [3,2,1,0])
 ```
 
 Asteroid has a very flexible view of expressions and terms which allows the programmer to attach new interpretations to
 constructor symbols on the fly:
 
 ```
-attach (lambda with a, b do return a * b) to __plus__.
-println 3 + 2.                  -- this will print out the value 6
-detach from __plus__.
+load "standard.ast".  -- load the standard operator interpretations
+load "io.ast".        -- load the io system
+
+function funny_add    -- define a function that given two 
+    with a, b do      -- parameters a,b will multiply them
+        return a * b.
+    end function
+
+attach funny_add to __plus__.   -- attach 'funny_add' to '+'
+print (3 + 2).                  -- this will print out the value 6
+detach from __plus__.           -- restore default interpretation
+print (3 + 2).                  -- this will print out the value 5
 
 -- NOTE: '__plus__' is a special symbol representing the '+' operator
 ```
@@ -102,6 +122,9 @@ Asteroid also supports prototype-based OO style programming:
 
 ```
 -- an OO example
+load "standard.ast".
+load "io.ast".
+load "util.ast".
 
 -- Our Dog type constructor
 constructor Dog with arity 3.
@@ -110,20 +133,21 @@ constructor Dog with arity 3.
 let dog_proto = Dog (
             ("name", ""),
             ("trick", ""),
-            ("make_string", lambda with self do return self{name} + " does " + self{trick})
+            ("make_string", 
+                lambda with self do return self@{"name"} + " does " + self@{"trick"})
         ).
 
 -- Fido the dog
 let fido = copy dog_proto.
-let fido{name} = "Fido".
-let fido{trick} = "play dead".
-println fido{make_string}().
+let fido@{"name"} = "Fido".
+let fido@{"trick"} = "play dead".
+print (fido@{"make_string"} fido).
 
 -- Buddy the dog
 let buddy = copy dog_proto.
-let buddy{name} = "Buddy".
-let buddy{trick} = "roll over".
-println buddy{make_string}().
+let buddy@{"name"} = "Buddy".
+let buddy@{"trick"} = "roll over".
+print (buddy@{"make_string"} buddy).
 ```
 
 For more details look at the 'Asteroid - The Language' notebook.
