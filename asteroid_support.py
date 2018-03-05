@@ -195,6 +195,15 @@ def unify(term, pattern):
                 unifier += unify(term[i], pattern[i])
             return unifier
 
+    elif term[0] == 'quote' and pattern[0] not in ['id', 'structure-ix']: 
+        # ignore quote on the term if we are not try to unify term with
+        # a variable or other kind of lval
+        return unify(term[1], pattern)
+
+    elif pattern[0] == 'quote':
+        # quotes on the pattern side can always be ignored
+        return unify(term, pattern[1])
+
     elif pattern[0] == 'head-tail':  
 
         (TERM_TYPE, term_val, *_) = term
@@ -219,7 +228,7 @@ def unify(term, pattern):
 
     elif pattern[0] == 'deref':  # ('deref', id)
         sym = pattern[1]
-        p = state.symtab.lookup_sym(sym)
+        p = state.symbol_table.lookup_sym(sym)
         return unify(term,p)
 
     elif pattern[0] == 'id': # variable in pattern add to unifier
@@ -321,28 +330,36 @@ def unify(term, pattern):
 def promote(type1, type2, strict=True):
     '''
     type promotion table for builtin primitive types.  this table implements the
-    type hierarchy  
+    type hierarchies
 
-                 integer < real < string 
+                 boolean < integer < real < string 
 
-    with list not being related to any of the other types.
+                 list < string
     '''
     
-    if type1 == 'string' and type2 in['string', 'real', 'integer']:
+    if type1 == 'string' and type2 in['string', 'real', 'integer', 'list', 'boolean']:
         return 'string'
-    if type2 == 'string' and type1 in['string', 'real', 'integer']:
+    if type2 == 'string' and type1 in['string', 'real', 'integer', 'list', 'boolean']:
         return 'string'
-    elif type1 == 'real' and type2 in ['real', 'integer']:
+    elif type1 == 'real' and type2 in ['real', 'integer', 'boolean']:
         return 'real'
-    elif type2 == 'real' and type1 in ['real', 'integer']:
+    elif type2 == 'real' and type1 in ['real', 'integer', 'boolean']:
         return 'real'
-    elif type1 == 'integer' and type2 == 'integer':
+    elif type1 == 'integer' and type2 in ['integer', 'boolean']:
         return 'integer'
+    elif type2 == 'integer' and type1 in ['integer', 'boolean']:
+        return 'integer'
+    elif type1 == 'boolean' and type2 == 'boolean':
+        return 'boolean'
     elif type1 == 'list' and type2 == 'list':
         return 'list'
     else:
         if strict:
-            raise ValueError("type {} and type {} are incompatible".format(type1, type2))
+            if type1 == type2:
+                raise ValueError("binary operation on type {} not supported".format(type1))
+            else:
+                raise ValueError("type {} and type {} are incompatible".format(type1, type2))
+
         else:
             return ('none', None)
 
@@ -375,3 +392,50 @@ def map2boolean(value):
 
     else:
         raise ValueError('unsupported type {} as truth value'.format(value[0]))
+
+###########################################################################################
+def term2string(term):
+
+    TYPE = term[0]
+
+    if TYPE in ['id', 'integer', 'real', 'string']:
+        (PRIMITIVE_TYPE, val) = term
+        return str(val) + ' '
+
+    elif TYPE in ['boolean', 'none']:
+        (PRIMITIVE_TYPE, val) = term
+        return str(val).lower() + ' '
+
+    elif TYPE == 'list':
+        (LIST_TYPE, val) = term
+        term_string = '[ '
+        l = len(val)
+        for i in range(l):
+            term_string += term2string(val[i])
+            if i != l-1:
+                term_string += ', '
+        term_string += '] '
+        return term_string
+
+    elif TYPE == 'apply':
+        (APPLY_TYPE, val, rest) = term
+        term_string = ''
+        term_string += term2string(val)
+        term_string += term2string(rest)
+        return term_string
+
+    elif TYPE == 'quote':
+        (QUOTE_TYPE, val) = term
+        term_string = '\' '
+        term_string += term2string(val)
+        return term_string
+
+    elif TYPE == 'nil':
+        return ''
+    
+    else:
+        raise ValueError(
+            "unknown type {} in term2string"
+            .format(TYPE))
+
+###########################################################################################

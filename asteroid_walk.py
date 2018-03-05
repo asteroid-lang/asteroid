@@ -624,7 +624,7 @@ def apply_exp(node):
         # or operators that compute new structure...
         # 1) (apply, parms, nil) -- single call
         if rest[0] == 'nil':  
-            (parm_type, parm_val) = parms
+            (parm_type, parm_val, *_) = parms
             if parm_type == 'list':
                 if len(parm_val) != arity_val:
                     raise ValueError(
@@ -921,6 +921,8 @@ dispatch_dict = {
     'integer' : lambda node : node,
     'real'    : lambda node : node,
     'boolean' : lambda node : node,
+    # quoted code should be treated like a constant if not ignore_quote
+    'quote'   : lambda node : node[1] if state.ignore_quote else node, 
     # type tag used in conjunction with escaped code in order to store
     # foreign constants in Asteroid data structures
     'foreign' : lambda node : node, 
@@ -928,7 +930,6 @@ dispatch_dict = {
     'apply'   : apply_exp,
     'structure-ix' : structure_ix_exp,
     'escape'  : escape_exp,
-    'quote'   : lambda node : node[1],
     'is'      : is_exp,
     'in'      : in_exp,
     'otherwise' : otherwise_exp,
