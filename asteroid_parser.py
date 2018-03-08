@@ -4,6 +4,8 @@
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
+import sys
+from pathlib import Path
 from asteroid_lex import Lexer
 from asteroid_support import reverse_node_list
 from asteroid_support import append_node_list
@@ -119,7 +121,35 @@ class Parser:
             str_tok = self.lexer.match('STRING')
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
-            with open(str_tok.value) as f:
+
+            # search for module file:
+            # 0. raw module name - could be an absolute path
+            # 1. search in current directory (path[1])
+            # 2. search in directory where Asteroid is installed (path[0])
+
+            # does this work on all OS's?
+            search_list = []
+            search_list.append(str_tok.value)
+            search_list.append(sys.path[1] + '/' + str_tok.value)
+            search_list.append(sys.path[0] + '/' + str_tok.value)
+
+            file_found = False
+
+            for ix in range(len(search_list)):
+                ast_module_file = search_list[ix]
+                ast_module_path = Path(ast_module_file)
+                if ast_module_path.is_file():
+                    file_found = True
+                    break
+
+            if not file_found:
+                raise ValueError("Asteroid module {} not found"
+                                 .format(str_tok.value))
+
+            #lhh
+            #print("opening module {}".format(ast_module_file))
+
+            with open(ast_module_file) as f:
                 data = f.read()
                 fparser = Parser()
                 fstmts = fparser.parse(data)

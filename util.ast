@@ -57,8 +57,8 @@ end function
 ------------------------------------------------------------------
 constructor Error 
 ------------------------------------------------------------------
--- use this constructor to throw error exceptions with a string
--- as its argument
+-- use this constructor to throw error exceptions with a 
+-- single argument
 with arity 1.
 
 ------------------------------------------------------------------

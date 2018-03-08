@@ -13,6 +13,7 @@ from asteroid_state import state
 from asteroid_walk import walk
 from asteroid_walk import ThrowValue
 from asteroid_support import dump_AST
+from asteroid_support import term2string
 
 # TODO: adjust the defaults
 def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False):
@@ -36,11 +37,10 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
     except ThrowValue as throw_val:
         # handle exceptions using the standard Error constructor
         if throw_val.value[0] == 'apply' and throw_val.value[1][1] == 'Error':
-            (APPLY, (ID, id), (APPLY, (STRING, error_string), rest)) = throw_val.value
-            print("Error: {}".format(error_string))
+            (APPLY, (ID, id), (APPLY, error_obj, rest)) = throw_val.value
+            print("Error: {}".format(term2string(error_obj)))
         else:
-            print("Error: unhandled Asteroid exception:")
-            pprint(throw_val)
+            print("Unhandled Asteroid exception: {}".format(term2string(throw_val.value)))
         
         sys.exit(1)
 
@@ -54,6 +54,9 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
             sys.exit(1)
 
 if __name__ == "__main__":
+    #lhh
+    #print(sys.path)
+
     # parse command line args
     aparser = ArgumentParser()
     aparser.add_argument('-t','--tree', action='store_true', help='AST dump flag')
@@ -61,14 +64,14 @@ if __name__ == "__main__":
     aparser.add_argument('-s','--symtab', action='store_true', help='symbol table dump flag')
     aparser.add_argument('input', metavar='input_file', help='Asteroid input file')
 
-    args = vars(aparser.parse_args())
+    args = aparser.parse_args()
 
-    f = open(args['input'], 'r')
+    f = open(args.input, 'r')
     input_stream = f.read()
     f.close()
 
     # execute interpreter
     interp(input_stream=input_stream, 
-           tree_dump=args['t'],
-           do_walk=args['w'],
-           symtab_dump=args['s'])
+           tree_dump=args.tree,
+           do_walk=args.no_walk,
+           symtab_dump=args.symtab)
