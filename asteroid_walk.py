@@ -606,7 +606,39 @@ def apply_exp(node):
     # look at the semantics of val
     v = walk(val)
 
-    if v[0] == 'function': # execute a function call
+    # the following code implements OO function calls by inserting a reference to the
+    # object as the first actual parameter in the parameter list.
+    # OO function calls are introduced via an application of a function
+    # that is a member of an object.
+    if val[0] == 'structure-ix' and v[0] == 'function':
+        #lhh
+        #print("OO function call in object {} with parameters {}".format(val[1],parms))
+
+        if parms[0] == 'none' or (parms[0] == 'list' and len(parms[1]) == 0):
+            # actual parameter list is empty, make the actual parameter list the object
+            actual_parms = val[1] # the object
+            return walk(('apply', handle_call(v, actual_parms), rest))
+
+        elif parms[0] != 'list':
+            # we have a single argument call - construct a list with the object as the
+            # first argument.
+            list_val = []
+            list_val.append(val[1])
+            list_val.append(parms)
+            actual_parms = ('list', list_val)
+            return walk(('apply', handle_call(v, actual_parms), rest))
+
+        elif parms[0] == 'list':
+            # non-empty actual parameter list - make the object the first parameter
+            parms[1].insert(0, val[1])
+            return walk(('apply', handle_call(v, parms), rest))
+
+        else:
+            raise ValueError(
+                "unknown parameter type {} in apply"
+                .format(parms[0]))
+
+    elif v[0] == 'function': # execute a function call
         # if it is a function call then the args node is another
         # 'apply' node
         return walk(('apply', handle_call(v, parms), rest))
