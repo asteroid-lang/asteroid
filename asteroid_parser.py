@@ -5,11 +5,14 @@
 ###########################################################################################
 
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath
 from asteroid_lex import Lexer
 from asteroid_support import reverse_node_list
-from asteroid_support import append_node_list
 from asteroid_state import state
+
+###########################################################################################
+# this is used to compute the filename extensions of the modules
+asteroid_file_suffix = ".ast"
 
 ###########################################################################################
 def dbg_print(string):
@@ -111,6 +114,7 @@ class Parser:
     # stmt_list
     #   : LOAD STRING stmt_list
     #   | stmt stmt_list
+    #   | empty
     def stmt_list(self):
         dbg_print("parsing STMT_LIST")
 
@@ -126,17 +130,25 @@ class Parser:
             # 0. raw module name - could be an absolute path
             # 1. search in current directory (path[1])
             # 2. search in directory where Asteroid is installed (path[0])
+            # 3. search in subdirectory where Asteroid was started
+
+            raw_pp = PurePath(str_tok.value)
+            module_name = raw_pp.stem
 
             # does this work on all OS's?
             search_list = []
             search_list.append(str_tok.value)
-            search_list.append(sys.path[1] + '/' + str_tok.value)
-            search_list.append(sys.path[0] + '/' + str_tok.value)
+            search_list.append(str_tok.value + asteroid_file_suffix)
+            search_list.append(sys.path[1] + '/' + module_name + asteroid_file_suffix)
+            search_list.append(sys.path[0] + '/modules/' + module_name + asteroid_file_suffix)
+            search_list.append('modules/' + module_name + asteroid_file_suffix)
 
             file_found = False
 
             for ix in range(len(search_list)):
                 ast_module_file = search_list[ix]
+                #lhh
+                #print("AST module: {}".format(ast_module_file))
                 ast_module_path = Path(ast_module_file)
                 if ast_module_path.is_file():
                     file_found = True
@@ -177,7 +189,7 @@ class Parser:
     #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
     #    | ATTACH primary TO ID '.'?
     #    | DETACH FROM ID '.'?
-    #    | LET exp '=' value '.'?
+    #    | LET pattern '=' exp '.'?
     #    | WITH pattern_init_list DO stmt_list END WITH
     #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
@@ -266,7 +278,7 @@ class Parser:
             self.lexer.match('LET')
             p = self.pattern()
             self.lexer.match('=')
-            v = self.value()
+            v = self.exp()
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return ('unify', p, v)
@@ -487,14 +499,6 @@ class Parser:
     #    : exp
     def pattern(self):
         dbg_print("parsing PATTERN")
-        e = self.exp()
-        return e
-
-    ###########################################################################################
-    # value
-    #   : exp
-    def value(self):
-        dbg_print("parsing VALUE")
         e = self.exp()
         return e
 
