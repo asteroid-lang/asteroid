@@ -7,8 +7,8 @@ Here is the canonical factorial program written in Asteroid:
 ```
 -- Factorial
 
-load "standard.ast".
-load "io.ast".
+load "standard".
+load "io".
 
 function fact 
     with 0 do
@@ -51,9 +51,9 @@ let n = 'S(S(0)) + (S(S(S(0)))).
 let rn = reduce n.
 
 -- attach inc behavior/interpretation to the S constructor
-load "standard.ast".
-load "util.ast".
-load "io.ast".
+load "standard".
+load "util".
+load "io".
 
 function inc 
     with n do
@@ -73,8 +73,8 @@ pattern match capabality on lists:
 ```
 -- Quicksort
 
-load "standard.ast".
-load "io.ast".
+load "standard".
+load "io".
 
 function qsort
     with [] do
@@ -102,8 +102,8 @@ Asteroid has a very flexible view of expressions and terms which allows the prog
 constructor symbols on the fly:
 
 ```
-load "standard.ast".  -- load the standard operator interpretations
-load "io.ast".        -- load the io system
+load "standard".  -- load the standard operator interpretations
+load "io".        -- load the io system
 
 function funny_add    -- define a function that given two 
     with a, b do      -- parameters a,b will multiply them
@@ -122,9 +122,9 @@ Asteroid also supports prototype-based OO style programming:
 
 ```
 -- an OO example
-load "standard.ast".
-load "io.ast".
-load "util.ast".
+load "standard".
+load "io".
+load "util".
 
 -- Our Dog type constructor
 constructor Dog with arity 3.
@@ -141,13 +141,13 @@ let dog_proto = Dog (
 let fido = copy dog_proto.
 let fido@{"name"} = "Fido".
 let fido@{"trick"} = "play dead".
-print (fido@{"make_string"} fido).
+print (fido@{"make_string"}()).
 
 -- Buddy the dog
 let buddy = copy dog_proto.
 let buddy@{"name"} = "Buddy".
 let buddy@{"trick"} = "roll over".
-print (buddy@{"make_string"} buddy).
+print (buddy@{"make_string"}()).
 ```
 
 For more details look at the 'Asteroid - The Language' notebook.
