@@ -10,6 +10,7 @@ from asteroid_parser import Parser
 from asteroid_state import state
 from asteroid_walk import walk
 from asteroid_walk import ThrowValue
+from asteroid_walk import ReturnValue
 from asteroid_support import dump_AST
 from asteroid_support import term2string
 
@@ -40,6 +41,10 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
         else:
             print("Unhandled Asteroid exception: {}".format(term2string(throw_val.value)))
         
+        sys.exit(1)
+
+    except ReturnValue as inst:
+        print("Error: return statement used outside a function environment")
         sys.exit(1)
 
     except Exception as e:

@@ -467,22 +467,48 @@ def try_stmt(node):
     try:
         walk(try_stmts)
 
-    except ThrowValue as throw_val:
-        for catch_val in catch_list:
-            (CATCH,
-             (CATCH_PATTERN, catch_pattern),
-             (CATCH_STMTS, catch_stmts)) = catch_val
-            try:
-                unifiers = unify(throw_val.value, catch_pattern)
-            except PatternMatchFailed:
-                pass
-            else:
-                declare_unifiers(unifiers)
-                walk(catch_stmts)
-                return
+    # NOTE: in Python the 'as inst' variable is only local to the catch block???
+    except ThrowValue as inst:
+        except_val = inst.value
+        inst_val = inst
+
+    except ReturnValue as inst:
+        # return values should never be captured by user level try stmts - rethrow
+        raise inst
+
+    except PatternMatchFailed as inst:
+        # convert a Python string to an Asteroid string
+        except_val = ('list', 
+                      [('string', 'PatternMatchFailed'), ('string', inst.value)])
+        inst_val = inst
+
+    except Exception as inst:
+        # convert exception args to an Asteroid string
+        except_val = ('list', 
+                      [('string', 'Exception'), ('string', str(inst))])
+        inst_val = inst
+
+    else:
+        # no exceptions found in the try statements
+        return
+    
+    # we had an exception - walk the catch list and find an appropriate set of
+    # catch statements.
+    for catch_val in catch_list:
+        (CATCH,
+         (CATCH_PATTERN, catch_pattern),
+         (CATCH_STMTS, catch_stmts)) = catch_val
+        try:
+            unifiers = unify(except_val, catch_pattern)
+        except PatternMatchFailed:
+            pass
+        else:
+            declare_unifiers(unifiers)
+            walk(catch_stmts)
+            return
         
-        # no exception handler found - rethrow the exception
-        raise throw_val
+    # no exception handler found - rethrow the exception
+    raise inst_val
 
 #########################################################################
 def while_stmt(node):

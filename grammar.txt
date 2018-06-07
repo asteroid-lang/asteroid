@@ -1,0 +1,111 @@
+Grammar for Asteroid written in EBNF format.
+
+(c) 2018 - Lutz Hamel, University of Rhode Island
+
+     prog:
+       stmt_list
+
+     stmt_list
+       : LOAD STRING stmt_list
+       | stmt stmt_list
+       | empty
+
+     stmt
+        : NOOP
+        | '.'
+        | FUNCTION ID body_defs END FUNCTION
+        | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
+        | ATTACH primary TO ID '.'?
+        | DETACH FROM ID '.'?
+        | LET pattern '=' exp '.'?
+        | WITH pattern_init_list DO stmt_list END WITH
+        | FOR pattern IN exp DO stmt_list END FOR
+        | WHILE exp DO stmt_list END WHILE
+        | REPEAT stmt_list UNTIL exp '.'?
+        | BREAK
+        | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
+        | RETURN exp? '.'?
+        | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
+        | THROW exp '.'?
+        | call '.'?
+
+     body_defs
+       : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+
+     pattern_init_list
+        : pattern initializer? (',' pattern initializer?)*
+
+     initializer
+        : '=' quote_exp
+
+     pattern
+        : exp
+
+     exp
+        : quote_exp (',' quote_exp?)*
+
+     quote_exp
+        : QUOTE head_tail
+        | head_tail
+
+     conditional
+        : compound
+            (
+               (OTHERWISE exp) |
+               (IF exp (ELSE exp)?)
+            )?
+
+     compound
+        : rel_exp0
+            (
+               (IS pattern) |
+               (IN exp) | // exp has to be a list
+               (TO exp (STEP exp)?) | // list comprehension
+               (WHERE pattern IN exp)     // list comprehension
+            )?
+
+     relational operators with their precedence
+     rel_exp0
+        : rel_exp1 (OR rel_exp1)*
+
+     rel_exp1
+        : rel_exp2 (AND rel_exp2)*
+
+     rel_exp2
+        : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
+
+     rel_exp3
+        : arith_exp0 ((LE | LT  | GE | GT) arith_exp0)*
+
+     arith_exp0
+        : arith_exp1 ((PLUS | MINUS) arith_exp1)*
+
+     arith_exp1
+        : call ((TIMES | DIVIDE) call)*
+
+     call
+        : index index*
+
+     index 
+        : primary ('@' primary)*
+
+     primary
+        : INTEGER
+        | REAL
+        | STRING
+        | TRUE
+        | FALSE
+        | NONE
+        | ID
+        | '*' ID  // "dereference" a variable during pattern matching
+        | NOT rel_exp0
+        | MINUS arith_exp0
+        | ESCAPE STRING
+        | '(' exp? ')' 
+        | '[' exp? ']' // list or list access
+        | '{' exp '}'  // exp should only produce integer and string typed expressions
+        | function_const
+
+     function_const
+        : LAMBDA body_defs 
+

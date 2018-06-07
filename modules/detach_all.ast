@@ -1,0 +1,110 @@
+------------------------------------------------------------------
+-- detach_all.ast
+--
+-- this module detaches interpretations from all of the
+-- built-in constructors
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+-- ARITHMETIC OPERATORS --
+------------------------------------------------------------------
+
+try
+    detach from __plus__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __minus__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __times__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __divide__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __uminus__.
+catch _ do
+    ...
+end try
+
+
+------------------------------------------------------------------
+-- LOGIC OPERATORS --
+------------------------------------------------------------------
+
+try
+    detach from __and__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __or__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __not__.
+catch _ do
+    ...
+end try
+
+------------------------------------------------------------------
+-- RELATIONAL OPERATORS --
+------------------------------------------------------------------
+
+try
+    detach from __eq__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __ne__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __le__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __lt__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __ge__.
+catch _ do
+    ...
+end try
+
+try
+    detach from __gt__.
+catch _ do
+    ...
+end try
+
+
+
+
+
