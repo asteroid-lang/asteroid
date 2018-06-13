@@ -400,28 +400,35 @@ def term2string(term):
 
     if TYPE in ['id', 'integer', 'real', 'string']:
         (PRIMITIVE_TYPE, val) = term
-        return str(val) + ' '
+        return str(val)
 
     elif TYPE in ['boolean', 'none']:
         (PRIMITIVE_TYPE, val) = term
-        return str(val).lower() + ' '
+        return str(val).lower()
 
     elif TYPE == 'list':
         (LIST_TYPE, val) = term
-        term_string = '[ '
+        term_string = '['
         l = len(val)
         for i in range(l):
             term_string += term2string(val[i])
             if i != l-1:
-                term_string += ', '
-        term_string += '] '
+                term_string += ','
+        term_string += ']'
         return term_string
 
     elif TYPE == 'apply':
         (APPLY_TYPE, val, rest) = term
         term_string = ''
-        term_string += term2string(val)
-        term_string += term2string(rest)
+        
+        if rest[0] == 'nil':
+            term_string += term2string(val)
+        else:
+            term_string += term2string(val)
+            term_string += '('
+            term_string += term2string(rest)
+            term_string += ')'
+
         return term_string
 
     elif TYPE == 'quote':
