@@ -12,7 +12,8 @@
 function raw_print 
 ------------------------------------------------------------------
 -- dumps the AST to screen
-with item do escape
+with item do
+escape
 "
 from asteroid_state import state
 from pprint import pprint
@@ -25,7 +26,8 @@ end function
 ------------------------------------------------------------------
 function print 
 ------------------------------------------------------------------
-with item do escape
+with item do
+escape
 "
 from asteroid_state import state
 from asteroid_support import term2string
@@ -38,9 +40,10 @@ end function
 ------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
--- mapping the Asteroid input function onto the 
+-- mapping the Asteroid input function onto the
 -- Python input function
-with prompt do return escape
+with prompt do return
+escape
 "
 global __retval__
 from asteroid_support import term2string
