@@ -51,6 +51,23 @@ __retval__ = ('boolean', bool(float(item_val)))
 end function
 
 ------------------------------------------------------------------
+-- TYPE TESTING FUNCTIONS --
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function is_list
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+(TYPE, item_val) = state.symbol_table.lookup_sym('item')
+__retval__ = ('boolean', (TYPE == 'list'))
+"
+end function
+
+------------------------------------------------------------------
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
