@@ -34,7 +34,7 @@ exp_lookahead = [
     '*',
     '-',
     #'TIMES',
-    #'MINUS',
+    'MINUS',
     'NOT',
     'LAMBDA',
     'QUOTE',
