@@ -32,7 +32,7 @@ exp_lookahead = [
     'NONE',
     'ID',
     '*',
-    '-', 
+    '-',
     #'TIMES',
     #'MINUS',
     'NOT',
@@ -114,7 +114,7 @@ class Parser:
 
     ###########################################################################################
     # stmt_list
-    #   : LOAD STRING stmt_list
+    #   : LOAD STRING [.] stmt_list
     #   | stmt stmt_list
     #   | empty
     def stmt_list(self):
@@ -128,16 +128,22 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
 
+            raw_pp = PurePath(str_tok.value)
+            module_name = raw_pp.stem
+            
+            # if module is on the list of modules then we have loaded
+            # it already -- ignore -- continue parsing the program file
+            if module_name in state.modules:
+                # lhh
+                print("Ignoring module {}".format(module_name))
+                return self.stmt_list()
+
             # search for module file:
             # 0. raw module name - could be an absolute path
             # 1. search in current directory (path[1])
             # 2. search in directory where Asteroid is installed (path[0])
             # 3. search in subdirectory where Asteroid was started
-
-            raw_pp = PurePath(str_tok.value)
-            module_name = raw_pp.stem
-
-            # does this work on all OS's?
+            # lhh: does this work on all OS's?
             search_list = []
             search_list.append(str_tok.value)
             search_list.append(str_tok.value + asteroid_file_suffix)
@@ -167,6 +173,7 @@ class Parser:
                 data = f.read()
                 fparser = Parser()
                 fstmts = fparser.parse(data)
+                state.modules.append(module_name)
             sl = self.stmt_list()
             return ('list', fstmts[1] + sl[1])
 

@@ -12,6 +12,7 @@ class State:
 
     def initialize(self):
         self.symbol_table = SymTab()
+        self.modules = [] # loaded modules
         self.AST = None
         self.ignore_quote = False # used to evaluate quoted expressions
 
