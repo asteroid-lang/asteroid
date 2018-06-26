@@ -1,8 +1,8 @@
 ------------------------------------------------------------------
--- detach_all.ast
+-- default.ast
 --
--- this module detaches interpretations from all of the
--- built-in constructors
+-- this module detaches all interpretations from all of the
+-- built-in constructors and restores the default term model
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------

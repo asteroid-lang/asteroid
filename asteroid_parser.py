@@ -34,7 +34,7 @@ exp_lookahead = [
     '*',
     '-',
     #'TIMES',
-    'MINUS',
+    #'MINUS',
     'NOT',
     'LAMBDA',
     'QUOTE',
@@ -135,7 +135,7 @@ class Parser:
             # it already -- ignore -- continue parsing the program file
             if module_name in state.modules:
                 # lhh
-                print("Ignoring module {}".format(module_name))
+                # print("Ignoring module {}".format(module_name))
                 return self.stmt_list()
 
             # search for module file:
