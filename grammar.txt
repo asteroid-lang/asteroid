@@ -6,7 +6,7 @@ Grammar for Asteroid written in EBNF format.
        stmt_list
 
      stmt_list
-       : LOAD STRING stmt_list
+       : LOAD STRING '.'? stmt_list
        | stmt stmt_list
        | empty
 
