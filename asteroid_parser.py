@@ -22,8 +22,7 @@ def dbg_print(string):
 ###########################################################################################
 # LL(1) lookahead sets
 
-exp_lookahead = [
-    'ESCAPE',
+exp_lookahead_no_ops = [
     'INTEGER',
     'REAL',
     'STRING',
@@ -31,16 +30,19 @@ exp_lookahead = [
     'FALSE',
     'NONE',
     'ID',
-    '*',
-    '-',
-    #'TIMES',
-    #'MINUS',
-    'NOT',
-    'LAMBDA',
-    'QUOTE',
     '{',
-    '(',
-    '[']
+    '[',
+    '(']
+
+exp_lookahead = exp_lookahead_no_ops + [
+                 'ESCAPE',
+                 '*',
+                 '-',
+                 #'TIMES',
+                 'MINUS',
+                 'NOT',
+                 'LAMBDA',
+                 'QUOTE']
 
 stmt_lookahead = [
     '.',
@@ -189,7 +191,7 @@ class Parser:
     # NOTE: periods are optional at end of sentences but leaving them out can
     #       lead to ambiguities
     # NOTE: the dot is also short hand for the 'noop' command
-    # NOTE: in ATTACH the primary should evaluate to a function value
+    # NOTE: in ATTACH the primary should evaluate to a function constructor
     #
     # stmt
     #    : NOOP
@@ -199,7 +201,6 @@ class Parser:
     #    | ATTACH primary TO ID '.'?
     #    | DETACH FROM ID '.'?
     #    | LET pattern '=' exp '.'?
-    #    | WITH pattern_init_list DO stmt_list END WITH
     #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
     #    | REPEAT stmt_list UNTIL exp '.'?
@@ -291,18 +292,6 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return ('unify', p, v)
-
-        elif tt == 'WITH':
-            dbg_print("parsing WITH")
-            self.lexer.match('WITH')
-            pl = self.pattern_init_list()
-            self.lexer.match('DO')
-            sl = self.stmt_list()
-            self.lexer.match('END')
-            self.lexer.match('WITH')
-            return ('with',
-                    ('pattern-list', pl),
-                    ('stmt-list', sl))
 
         elif tt == 'FOR':
             dbg_print("parsing FOR")
@@ -467,43 +456,6 @@ class Parser:
         return ('body-list', ('list', body_list))
 
     ###########################################################################################
-    # pattern_init_list
-    #    : pattern initializer? (',' pattern initializer?)*
-    def pattern_init_list(self):
-        dbg_print("parsing PATTERN_INIT_LIST")
-
-        pattern_list = []
-
-        p = self.pattern()
-        if self.lexer.peek().type == '=':
-            ini = self.initializer()
-            v = ('unify', p, ini)
-        else:
-            v = ('unify', p, ('none', None))
-        pattern_list.append(v)
-
-        while self.lexer.peek().type == ',':
-            self.lexer.match(',')
-            p = self.pattern()
-            if self.lexer.peek().type == '=':
-                ini = self.initializer()
-                v = ('unify', p, ini)
-            else:
-                v = ('unify', p, ('none', None))
-        pattern_list.append(v)
-        
-        return ('list', pattern_list)
-
-    ###########################################################################################
-    # initializer
-    #    : '=' quote_exp
-    def initializer(self):
-        dbg_print("parsing INITIALIZER")
-        self.lexer.match('=')
-        v = self.quote_exp() # cannot be a "raw list"
-        return v
-
-    ###########################################################################################
     # pattern
     #    : exp
     def pattern(self):
@@ -520,7 +472,7 @@ class Parser:
     #       the should work just like list nodes in the context of interpretation
     #
     def exp(self):
-        dbg_print("parsing LIST_EXP")
+        dbg_print("parsing EXP")
         v = self.quote_exp()
 
         if self.lexer.peek().type == ',':
@@ -539,6 +491,8 @@ class Parser:
     #    : QUOTE head_tail
     #    | head_tail
     def quote_exp(self):
+        dbg_print("parsing QUOTE_EXP")
+
         if self.lexer.peek().type == 'QUOTE':
             self.lexer.match('QUOTE')
             v = self.head_tail()
@@ -758,9 +712,9 @@ class Parser:
     def call(self):
         dbg_print("parsing CALL")
         v = self.index()
-        if self.lexer.peek().type in exp_lookahead:
+        if self.lexer.peek().type in exp_lookahead_no_ops:
             v = ('apply', v, ('nil',))
-            while self.lexer.peek().type in exp_lookahead:
+            while self.lexer.peek().type in exp_lookahead_no_ops:
                 v2 = self.index()
                 v = ('apply', v2, v) 
             return reverse_node_list('apply', v)
@@ -868,7 +822,7 @@ class Parser:
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
-            v = self.arith_exp0()
+            v = self.primary()
             v = ('apply', 
                  ('id', '__uminus__'),
                  ('apply',

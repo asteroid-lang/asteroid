@@ -596,20 +596,6 @@ def if_stmt(node):
             break
 
 #########################################################################
-def with_stmt(node):
-    
-    (WITH, (PATTERN_LIST, pattern_list), (STMT_LIST, stmt_list)) = node
-    assert_match(WITH, 'with')
-    
-    (LIST, pattern_list_val) = pattern_list
-
-    state.symbol_table.push_scope()
-    for e in pattern_list_val:
-        walk(e)
-    walk(stmt_list)
-    state.symbol_table.pop_scope()
-
-#########################################################################
 def apply_exp(node):
     # could be a call: fval fargs
     # could be a constructor invocation for an object: B(a,b,c)
@@ -957,7 +943,6 @@ dispatch_dict = {
     'return'  : return_stmt,
     'break'   : break_stmt,
     'if'      : if_stmt,
-    'with'    : with_stmt,
     'throw'   : throw_stmt,
     'try'     : try_stmt,
 

@@ -82,17 +82,17 @@ function qsort
     orwith [a] do
         return [a].
     orwith [pivot|rest] do
-        with less=[], more=[] do
-            for e in rest do  
-                if e < pivot do
-                    let less = less + [e].
-                else
-                    let more = more + [e].
-                end if
-            end for
+        let less=[]. 
+        let more=[].
+        for e in rest do  
+            if e < pivot do
+                let less = less + [e].
+            else do
+                let more = more + [e].
+            end if
+        end for
                         
-            return qsort less + [pivot] + qsort more.
-        end with
+        return qsort less + [pivot] + qsort more.
     end function
     
 print (qsort [3,2,1,0])

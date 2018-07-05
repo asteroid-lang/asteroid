@@ -18,7 +18,6 @@ Grammar for Asteroid written in EBNF format.
         | ATTACH primary TO ID '.'?
         | DETACH FROM ID '.'?
         | LET pattern '=' exp '.'?
-        | WITH pattern_init_list DO stmt_list END WITH
         | FOR pattern IN exp DO stmt_list END FOR
         | WHILE exp DO stmt_list END WHILE
         | REPEAT stmt_list UNTIL exp '.'?
@@ -32,12 +31,6 @@ Grammar for Asteroid written in EBNF format.
      body_defs
        : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
 
-     pattern_init_list
-        : pattern initializer? (',' pattern initializer?)*
-
-     initializer
-        : '=' quote_exp
-
      pattern
         : exp
 
@@ -47,6 +40,9 @@ Grammar for Asteroid written in EBNF format.
      quote_exp
         : QUOTE head_tail
         | head_tail
+
+     head_tail
+        : conditional ('|' exp)?
 
      conditional
         : compound
