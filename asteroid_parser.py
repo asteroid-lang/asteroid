@@ -50,6 +50,7 @@ stmt_lookahead = [
     'DETACH',
     'CONSTRUCTOR',
     'FUNCTION',
+    'GLOBAL',
     'LET',
     'NOOP',
     'REPEAT',
@@ -196,6 +197,7 @@ class Parser:
     # stmt
     #    : NOOP
     #    | '.'
+    #    | GLOBAL id_list '.'?
     #    | FUNCTION ID body_defs END FUNCTION
     #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
     #    | ATTACH primary TO ID '.'?
@@ -224,6 +226,14 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return ('noop',)
+
+        elif tt == 'GLOBAL':
+            dbg_print("parsing GLOBAL")
+            self.lexer.match('GLOBAL')
+            id_list = self.id_list()
+            if self.lexer.peek().type == '.':
+                self.lexer.match('.')
+            return ('global', id_list)
 
         elif tt == 'FUNCTION':
             dbg_print("parsing FUNCTION")
@@ -430,6 +440,19 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return v
+
+    ###########################################################################################
+    # id_list
+    #   : ID (',' ID)*
+    def id_list(self):
+        dbg_print("parsing ID_LIST")
+        id_tok = self.lexer.match('ID')
+        idl = [('id', id_tok.value)]
+        while self.lexer.peek().type == ',':
+            self.lexer.match(',')
+            id_tok = self.lexer.match('ID')
+            idl += [('id', id_tok.value)]
+        return ('id-list', ('list', idl))
 
     ###########################################################################################
     # body_defs

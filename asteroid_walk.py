@@ -365,7 +365,6 @@ def declare_unifiers(unifiers):
     # walk the unifiers and bind name-value pairs into the symtab
 
     # TODO: check for repeated names in the unfiers
-    # TODO: deal with non-local variables
 
     for unifier in unifiers:
 
@@ -395,6 +394,24 @@ def declare_unifiers(unifiers):
 
 #########################################################################
 # node functions
+#########################################################################
+def global_stmt(node):
+
+    (GLOBAL, id_list) = node
+    assert_match(GLOBAL, 'global')
+
+    (ID_LIST, id_list_tree) = id_list
+    assert_match(ID_LIST, 'id-list')
+    
+    (LIST, id_list_val) = id_list_tree
+    assert_match(LIST, 'list')
+
+    for id_tuple in id_list_val:
+        (ID, id_val) = id_tuple
+        if state.symbol_table.is_symbol_local(id_val):
+            raise ValueError("{} is already local, cannot be declared global".format(id_val))
+        state.symbol_table.enter_global(id_val)
+
 #########################################################################
 def attach_stmt(node):
 
@@ -940,6 +957,7 @@ dispatch_dict = {
     'while'   : while_stmt,
     'repeat'  : repeat_stmt,
     'for'     : for_stmt,
+    'global'  : global_stmt,
     'return'  : return_stmt,
     'break'   : break_stmt,
     'if'      : if_stmt,
