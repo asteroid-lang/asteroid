@@ -107,6 +107,9 @@ def t_NUMBER(t):
 
 def t_STRING(t):
     r'\"[^\"]*\"'
+    lines = t.value.count('\n')
+    (module, lineno) = state.lineinfo
+    state.lineinfo = (module, lineno + lines)
     t.value = t.value[1:-1] # strip the quotes
     return t
 
