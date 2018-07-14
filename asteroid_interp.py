@@ -16,14 +16,14 @@ from asteroid_support import term2string
 # TODO: adjust the defaults
 def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False):
 
-    # initialize the state object
-    state.initialize()
-
-    # build the AST
-    parser = Parser()
-    state.AST = parser.parse(input_stream)
-
     try:
+        # initialize the state object
+        state.initialize()
+
+        # build the AST
+        parser = Parser()
+        state.AST = parser.parse(input_stream)
+
         # walk the AST
         if tree_dump:
             dump_AST(state.AST)
@@ -34,16 +34,20 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
 
     except ThrowValue as throw_val:
         # handle exceptions using the standard Error constructor
+        module, lineno = state.lineinfo
         if throw_val.value[0] == 'apply' and throw_val.value[1][1] == 'Error':
             (APPLY, (ID, id), (APPLY, error_obj, rest)) = throw_val.value
-            print("Error: {}".format(term2string(error_obj)))
+            print("Error: {}: {}: {}".format(module, lineno, term2string(error_obj)))
         else:
-            print("Unhandled Asteroid exception: {}".format(term2string(throw_val.value)))
+            print("Error: {}: {}: unhandled Asteroid exception: {}"
+                  .format(module, lineno, term2string(throw_val.value)))
         
         sys.exit(1)
 
     except ReturnValue as inst:
-        print("Error: return statement used outside a function environment")
+        module, lineno = state.lineinfo
+        print("Error: {}: {}: return statement used outside a function environment"
+              .format(module, lineno))
         sys.exit(1)
 
     except Exception as e:
@@ -51,8 +55,9 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
             if symtab_dump:
                 state.symbol_table.dump()
             raise e
-        else: 
-            print("Error: {}".format(e))
+        else:
+            module, lineno = state.lineinfo
+            print("Error: {}: {}: {}".format(module, lineno, e))
             sys.exit(1)
 
     except  KeyboardInterrupt as e:

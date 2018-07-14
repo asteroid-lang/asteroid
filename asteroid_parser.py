@@ -68,8 +68,10 @@ stmt_lookahead = [
 class Parser:
     
     ###########################################################################################
-    def __init__(self):
+    def __init__(self, filename="<input file>"):
         self.lexer = Lexer()
+        
+        state.lineinfo = (filename,0)
         
         # the constructor for the parser initializes the constructor symbols for
         # our builtin operators in# the symbol table.
@@ -93,8 +95,7 @@ class Parser:
         # unary
         state.symbol_table.enter_sym('__uminus__', ('constructor', ('arity', 1)))
         state.symbol_table.enter_sym('__not__', ('constructor', ('arity', 1)))
-
-
+    
     ###########################################################################################
     def parse(self, input):
         self.lexer.input(input)
@@ -124,7 +125,7 @@ class Parser:
         dbg_print("parsing STMT_LIST")
 
         if self.lexer.peek().type == 'LOAD':
-            # expandd the AST from the file into our current AST
+            # expand the AST from the file into our current AST
             # using a nested parser object
             self.lexer.match('LOAD')
             str_tok = self.lexer.match('STRING')
@@ -172,18 +173,23 @@ class Parser:
             #lhh
             #print("opening module {}".format(ast_module_file))
 
+            old_lineinfo = state.lineinfo
+
             with open(ast_module_file) as f:
-                data = f.read()
-                fparser = Parser()
-                fstmts = fparser.parse(data)
                 state.modules.append(module_name)
+                data = f.read()
+                fparser = Parser(module_name)
+                fstmts = fparser.parse(data)
+
+            state.lineinfo = old_lineinfo
             sl = self.stmt_list()
             return ('list', fstmts[1] + sl[1])
 
         elif self.lexer.peek().type in stmt_lookahead:
+            lineinfo = ('lineinfo', state.lineinfo)
             s = self.stmt()
             sl = self.stmt_list()
-            return ('list', [s] +  sl[1])
+            return ('list', [lineinfo] + [s] +  sl[1])
 
         else:
             return ('list', [])

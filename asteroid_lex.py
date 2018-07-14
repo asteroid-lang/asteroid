@@ -6,6 +6,7 @@
 
 from ply import lex
 from ply.lex import LexToken
+from asteroid_state import state
 
 reserved = {
     'and' : 'AND',
@@ -115,11 +116,11 @@ def t_COMMENT(t):
 
 def t_NEWLINE(t):
     r'\n+'
-    t.lexer.lineno += len(t.value)
+    (module, lineno) = state.lineinfo
+    state.lineinfo = (module, lineno + len(t.value))
 
 def t_error(t):
-    print("Illegal character {} line {}".format(t.value[0],t.lineno))
-    t.lexer.skip(1)
+    raise ValueError("illegal character {}".format(t.value[0]))
 
 def dbg_print(string):
     #print(string)
@@ -135,13 +136,10 @@ class Lexer:
             t = LexToken()
             t.type = 'EOF'
             t.value = ''
-            t.lineno = -1
-            t.lexpos = -1
             self.curr_token = t
 
     def input(self, input_string):
         self.plylexer.input(input_string)
-        self.plylexer.lineno = 1
         self.curr_token = self.plylexer.token()
         self.make_eof_token()
 
@@ -161,11 +159,10 @@ class Lexer:
 
     def match(self, token_type):
         if token_type not in tokens+literals:
-            raise ValueError("Error: Unknown token type: '{}'.".format(token_type))
+            raise ValueError("unknown token type: '{}'.".format(token_type))
         elif token_type != self.curr_token.type:
-            raise SyntaxError("Syntax Error:{}: Expected '{}' found '{}'.".format(
-                    self.curr_token.lineno,
-                    token_type, 
+            raise ValueError("expected '{}' found '{}'.".format(
+                    token_type,
                     self.curr_token.type))
         else:
             dbg_print('matching {}'.format(token_type))

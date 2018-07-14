@@ -346,12 +346,18 @@ def handle_call(fval, actual_arglist):
     declare_formal_args(unifiers)
 
     # execute the function
+    # function calls transfer control - save our caller's lineinfo
+    old_lineinfo = state.lineinfo
+
     try:
         walk(stmts)         
     except ReturnValue as val:
         return_value = val.value
     else:
         return_value = ('none', None) # need that in case function has no return statement
+
+    # coming back from a function call - restore caller's lineinfo
+    state.lineinfo = old_lineinfo
 
     # NOTE: popping the function scope is not necessary because we
     # are restoring the original symtab configuration. this is necessary
@@ -936,6 +942,17 @@ def head_tail_exp(node):
     return ('list', [head_val] + tail_val)
 
 #########################################################################
+def process_lineinfo(node):
+
+    (LINEINFO, lineinfo_val) = node
+    assert_match(LINEINFO, 'lineinfo')
+    
+    #lhh
+    #print("lineinfo: {}".format(lineinfo_val))
+
+    state.lineinfo = lineinfo_val
+
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
@@ -951,6 +968,7 @@ def walk(node):
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
     # statements - statements do not produce return values
+    'lineinfo': process_lineinfo,
     'noop'    : lambda node : None,
     'attach'  : attach_stmt,
     'detach'  : detach_stmt,
