@@ -4,7 +4,6 @@
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-import re
 from ply import lex
 from ply.lex import LexToken
 
@@ -13,11 +12,11 @@ reserved = {
     'arity' : 'ARITY',
     'attach' : 'ATTACH',
     'break' : 'BREAK',
-    'catch' : 'CATCH',     
+    'catch' : 'CATCH',
     'constructor' : 'CONSTRUCTOR',
     'detach' : 'DETACH',
-    'do' : 'DO',        
-    'elif' : 'ELIF',      
+    'do' : 'DO',
+    'elif' : 'ELIF',
     'else' : 'ELSE',      
     'end' : 'END',       
     'escape' : 'ESCAPE',

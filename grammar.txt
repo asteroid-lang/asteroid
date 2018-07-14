@@ -13,6 +13,7 @@ Grammar for Asteroid written in EBNF format.
      stmt
         : NOOP
         | '.'
+        | GLOBAL id_list '.'?
         | FUNCTION ID body_defs END FUNCTION
         | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
         | ATTACH primary TO ID '.'?
@@ -27,6 +28,9 @@ Grammar for Asteroid written in EBNF format.
         | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
         | THROW exp '.'?
         | call '.'?
+
+     id_list
+       : ID (',' ID)*
 
      body_defs
        : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*

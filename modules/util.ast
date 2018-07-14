@@ -147,3 +147,51 @@ obj_val = state.symbol_table.lookup_sym('obj')
 __retval__ = copy.deepcopy(obj_val)
 "
 end function
+
+------------------------------------------------------------------
+function cls
+------------------------------------------------------------------
+-- clear screen
+with () do escape
+"
+import os
+import platform
+
+if platform.win32_ver()[0]:
+    os.system('cls')
+else:
+    os.system('clear')
+"
+end function
+
+------------------------------------------------------------------
+function sleep
+------------------------------------------------------------------
+-- program sleep for secs seconds
+with secs do escape
+"
+import time
+
+(TYPE, val) = state.symbol_table.lookup_sym('secs')
+
+if not TYPE in ['integer','real']:
+   raise ValueError('sleep expected an integer or real value got {}'
+   	 .format(TYPE))
+
+time.sleep(val)
+"
+end function
+
+------------------------------------------------------------------
+function random
+------------------------------------------------------------------
+-- return a random floating point number in the range [0.0, 1.0).
+with () do return escape
+"
+import random
+global __retval__
+
+__retval__ = ('real', random.random())
+"
+end function
+

@@ -713,7 +713,8 @@ def apply_exp(node):
                     walk(args))
 
     else: # not implemented
-        raise ValueError("'apply' not implemented for {}".format(v[0]))
+        #raise ValueError("'apply' not implemented for {}".format(v[0]))
+        raise ValueError("bad constructor or function call")
 
 #########################################################################
 def structure_ix_exp(node):

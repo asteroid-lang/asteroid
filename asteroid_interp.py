@@ -5,7 +5,6 @@
 ###########################################################################################
 
 import sys
-from pprint import pprint
 from asteroid_parser import Parser
 from asteroid_state import state
 from asteroid_walk import walk
@@ -53,6 +52,14 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
                 state.symbol_table.dump()
             raise e
         else: 
+            print("Error: {}".format(e))
+            sys.exit(1)
+
+    except  KeyboardInterrupt as e:
+            print("Error: keyboard interrupt")
+            sys.exit(1)
+
+    except  BaseException as e:
             print("Error: {}".format(e))
             sys.exit(1)
 
