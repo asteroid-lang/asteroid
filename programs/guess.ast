@@ -1,0 +1,45 @@
+-- guess that number game from http://inventwithpython.com/invent4thed/
+-- written by Lutz Hamel, (c) 2018, University of Rhode Island
+
+
+load "standard".
+load "util".
+load "io".
+
+print "".
+print "     \||||||||||||||||||/".
+print "    - Guess that Number -".
+print "     /||||||||||||||||||\".
+print "".
+
+
+let name = input("Hello! What is your name? ").
+let guesses_made = 0.
+let number = randint(1, 20).
+
+print ("Well, " + name + ", I am thinking of a number between 1 and 20...").
+
+while guesses_made < 6 do
+    let guess = integer(input("Take a guess: ")).
+    let guesses_made = guesses_made + 1.
+
+    if guess < number do
+        print "Your guess is too low."
+    end if
+
+    if guess > number do
+        print "Your guess is too high."
+    end if
+
+    if guess == number do
+        break.
+    end if
+end while
+
+if guess == number do
+    print ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
+else do
+    print ("Nope. The number I was thinking of was " + number).
+end if
+
+print "".

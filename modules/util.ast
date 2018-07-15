@@ -195,3 +195,22 @@ __retval__ = ('real', random.random())
 "
 end function
 
+------------------------------------------------------------------
+function randint
+------------------------------------------------------------------
+-- return a random integer N such that lo <= N <= hi.
+with lo, hi do return escape
+"
+import random
+from asteroid_support import assert_match
+global __retval__
+
+(TYPE, lo_val) = state.symbol_table.lookup_sym('lo')
+assert_match(TYPE, 'integer')
+(TYPE, hi_val) = state.symbol_table.lookup_sym('hi')
+assert_match(TYPE, 'integer')
+
+__retval__ = ('integer', random.randint(lo_val, hi_val))
+"
+end function
+
