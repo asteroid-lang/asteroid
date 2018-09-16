@@ -94,7 +94,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
                 raise ValueError("unsupported mode in dictionary handling")
 
     if mode == "read":
-        raise ValueError("dictionary key {} not found".format(key))
+        raise ValueError("dictionary key {} not found".format(key_val))
     elif mode == "write":
         val_list.append(('list', [key, value]))
         return val_list
@@ -113,25 +113,38 @@ def handle_list_ix(list_val, ix):
             "expected list node but got {} node".
             format(VAL_LIST))
 
-    # NOTE: no longer supported -- everything is now a list of indexes
-    #if IX_TYPE == 'integer': # then ixs is an integer index
-    #   ix_val = int(ixs)
-    #   return ll[ix_val]
+    # NOTE: when indexed with a scalar it will return a single value,
+    # that value of course could be a list etc.  When index with a list
+    # then it will return a list of value. Therefore:
+    #       a@1 =/= a@[1]
+    # the value on the left of the inequality is a single value, the
+    # value on the right is a singleton list.
+    
+    if IX_TYPE == 'integer': # then ixs is an integer index
+       ix_val = int(ixs)
+       return ll[ix_val]
         
-    if IX_TYPE == 'list': # then ixs is a list of indexes
+    elif IX_TYPE == 'dict-access':
+        (DICT_KEY_TYPE, dict_key, *_) = walk(ixs) # lhh: is walking here necessary, already semantic val?
+        if DICT_KEY_TYPE not in ['integer', 'string']:
+            raise ValueError("dictionary key type {} not supported".
+                             format(DICT_KEY_TYPE))
+        return handle_dict_ix(ll, (DICT_KEY_TYPE, dict_key))
+
+    elif IX_TYPE == 'list': # then ixs is a list of indexes
         if len(ixs) == 0:
             raise ValueError("index list is empty")
 
         new_l = [] # construct a list of return values
         for i in ixs:
-            (IX_EXP_TYPE, ix_exp) = walk(i)
+            (IX_EXP_TYPE, ix_exp) = walk(i) # lhh: is walking here necessary, already semantic val?
 
             if IX_EXP_TYPE == 'integer':
                 ix_exp_val = int(ix_exp)
                 new_l.append(walk(ll[ix_exp_val]))
 
             elif IX_EXP_TYPE == 'dict-access':
-                (DICT_KEY_TYPE, dict_key, *_) = walk(ix_exp)
+                (DICT_KEY_TYPE, dict_key, *_) = walk(ix_exp) # lhh: is walking here necessary, already semantic val?
                 if DICT_KEY_TYPE not in ['integer', 'string']:
                     raise ValueError("dictionary key type {} not supported".
                                      format(DICT_KEY_TYPE))
@@ -140,10 +153,7 @@ def handle_list_ix(list_val, ix):
             else:
                 raise ValueError("unsupported list index")
 
-        if len(new_l) == 1: # return scalar value
-            return new_l[0]
-        else:
-            return ('list', new_l)
+        return ('list', new_l)
 
     else:
         raise ValueError("index op {} not yet implemented".format(ix[0]))
@@ -157,25 +167,20 @@ def handle_list_ix(list_val, ix):
 # symbol table holds a reference to the list we are updating so writing
 # to the list here will update the list in the symbol table.
 # the list acts like memory associated with the list name
+#
+# NOTE: lhh: this needs to be cleaned up, lots of repeated code that only
+#            differs in minor details
 def store_into_list(list_val, ix, value):
 
     (INDEX, ix_exp, rest_ix) = ix
     assert_match(INDEX, 'index')
 
     # evaluate ix_exp and use it to update list element
-    (LIST, ix_val_list) = walk(ix_exp)
-
-    if LIST != 'list':
-        raise ValueError("unknown index expression")
-
-    if len(ix_val_list) != 1:
-        raise ValueError("list slicing not supported on unification")
-
-    (TYPE, ix_val) = ix_val_list[0]
+    (TYPE, ix_val_list) = walk(ix_exp)
 
     if TYPE == 'integer':
-        ix_val = int(ix_val)
-
+        ix_val = int(ix_val_list)
+        
         if rest_ix[0] == 'nil': # store into list element
             list_val[ix_val] = value
 
@@ -186,9 +191,9 @@ def store_into_list(list_val, ix, value):
                 raise ValueError("list and index expression do not match")
             else:
                 store_into_list(val, rest_ix, value)
-        
+
     elif TYPE == 'dict-access':
-        (KEY_TYPE, key, *_) = walk(ix_val) # compute the semantics of the dictionary key
+        (KEY_TYPE, key, *_) = walk(ix_val_list) # compute the semantics of the dictionary key
         if KEY_TYPE not in ['integer', 'string']:
             raise ValueError("dictionary key type {} not supported".
                              format(KEY_TYPE))
@@ -203,7 +208,45 @@ def store_into_list(list_val, ix, value):
                 raise ValueError("list and index expression do not match")
             else:
                 store_into_list(val, rest_ix, value)
+
+    elif TYPE == 'list':
+
+        # if len(ix_val_list) != 1:
+        raise ValueError("list slicing not supported on unification")
+
+        (IX_TYPE, ix_val) = ix_val_list[0]
+
+        if IX_TYPE == 'integer':
+            ix_val = int(ix_val)
+
+            if rest_ix[0] == 'nil': # store into list element
+                list_val[ix_val] = value
+
+            else: # keep recursing
+                nested_list = list_val[ix_val]
+                (TYPE, val) = nested_list
+                if TYPE != 'list':
+                    raise ValueError("list and index expression do not match")
+                else:
+                    store_into_list(val, rest_ix, value)
         
+        elif IX_TYPE == 'dict-access':
+            (KEY_TYPE, key, *_) = walk(ix_val) # compute the semantics of the dictionary key
+            if KEY_TYPE not in ['integer', 'string']:
+                raise ValueError("dictionary key type {} not supported".
+                                 format(KEY_TYPE))
+
+            if rest_ix[0] == 'nil': # store into list element
+                handle_dict_ix(list_val, (KEY_TYPE, key), value, mode="write")
+
+            else: # keep recursing
+                nested_list = handle_dict_ix(list_val, (KEY_TYPE, key))
+                (TYPE, val) = nested_list
+                if TYPE != 'list':
+                    raise ValueError("list and index expression do not match")
+                else:
+                    store_into_list(val, rest_ix, value)
+    
     else:
         raise ValueError("unsupported list index expression")
 
@@ -916,10 +959,13 @@ def to_list_exp(node):
         raise ValueError("step size of 0 not supported")
 
     elif int(step_val) < 0: # generate the list
-        ix = int(stop_val)
-        while ix >= int(start_val):
+        ix = int(start_val)
+        while ix >= int(stop_val):
             out_list_val.append(('integer', ix))
             ix += int(step_val)
+
+    else:
+        raise ValueError("{} not a valid step value".format(step_val))
 
     return ('list', out_list_val)
 

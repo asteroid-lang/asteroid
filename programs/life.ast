@@ -7,7 +7,7 @@ load "io".
 
 --------------------------------------------------------------------------
 function display_array
-    -- clear the screen, display the contents of an array, wait for .5sec
+    -- display the contents of an array, wait for .5sec
     with ar do
 
         let nrows = length(ar).    -- grab the rows
@@ -15,7 +15,7 @@ function display_array
             throw Error("Array contains no data").
         end if
 
-        let ncols = length(ar@[0]). -- grab the cols
+        let ncols = length(ar@0). -- grab the cols
 
         for i in 0 to (nrows-1) do
             let row_str = "".
@@ -48,14 +48,14 @@ function compute_new_state
             for y in 0 to (ydim-1) do
                 -- probe the map and count the neighbors
                 let ct = 0.
-                let ct = (ct + map1@[x-1]@[y-1]) if (x-1 >= 0   and y-1 >= 0)  else 0.
-                let ct = (ct + map1@[x]@[y-1])   if (               y-1 >= 0)  else 0.
-                let ct = (ct + map1@[x+1]@[y-1]) if (x+1 < xdim and y-1 >= 0)  else 0.
-                let ct = (ct + map1@[x+1]@[y])   if (x+1 < xdim             )  else 0.
-                let ct = (ct + map1@[x+1]@[y+1]) if (x+1 < xdim and y+1 < ydim) else 0.
-                let ct = (ct + map1@[x]@[y+1])   if (               y+1 < ydim) else 0.
-                let ct = (ct + map1@[x-1]@[y+1]) if (x-1 >= 0   and y+1 < ydim) else 0.
-                let ct = (ct + map1@[x-1]@[y])   if (x-1 >= 0                 ) else 0.
+                let ct = (ct + map1@(x-1)@(y-1)) if (x-1 >= 0   and y-1 >= 0)  else 0.
+                let ct = (ct + map1@(x)@(y-1))   if (               y-1 >= 0)  else 0.
+                let ct = (ct + map1@(x+1)@(y-1)) if (x+1 < xdim and y-1 >= 0)  else 0.
+                let ct = (ct + map1@(x+1)@(y))   if (x+1 < xdim             )  else 0.
+                let ct = (ct + map1@(x+1)@(y+1)) if (x+1 < xdim and y+1 < ydim) else 0.
+                let ct = (ct + map1@(x)@(y+1))   if (               y+1 < ydim) else 0.
+                let ct = (ct + map1@(x-1)@(y+1)) if (x-1 >= 0   and y+1 < ydim) else 0.
+                let ct = (ct + map1@(x-1)@(y))   if (x-1 >= 0                 ) else 0.
 
                 -- update the output map
                 -- element is alive
@@ -130,6 +130,7 @@ function life
         cls().
         print ("initial map").
         show_map(map1).
+        -- exit("all done"). --lhh
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).

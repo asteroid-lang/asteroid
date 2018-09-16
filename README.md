@@ -150,4 +150,4 @@ let buddy@{"trick"} = "roll over".
 print (buddy@{"make_string"}()).
 ```
 
-For more details look at the 'Asteroid - The Language' notebook.
+For more details look at the 'Asteroid - The Language' the 'Asteroid User Guide" notebooks.

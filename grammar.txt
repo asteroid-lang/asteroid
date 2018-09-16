@@ -22,7 +22,7 @@ Grammar for Asteroid written in EBNF format.
         | FOR pattern IN exp DO stmt_list END FOR
         | WHILE exp DO stmt_list END WHILE
         | REPEAT stmt_list UNTIL exp '.'?
-        | BREAK
+        | BREAK '.'?
         | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
         | RETURN exp? '.'?
         | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY

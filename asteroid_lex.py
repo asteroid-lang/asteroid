@@ -4,8 +4,11 @@
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-from ply import lex
-from ply.lex import LexToken
+# NOTE: we copied the lexer from ply (version 3.11) so that
+# we have no installation dependencies other than python 3.x
+import lex
+from lex import LexToken
+
 from asteroid_state import state
 
 reserved = {

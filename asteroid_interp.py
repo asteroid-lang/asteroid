@@ -12,9 +12,13 @@ from asteroid_walk import ThrowValue
 from asteroid_walk import ReturnValue
 from asteroid_support import dump_AST
 from asteroid_support import term2string
+from asteroid_version import VERSION
 
 # TODO: adjust the defaults
-def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False):
+def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False, version=False):
+    
+    if version:
+        print("** Asteroid Version {} **".format(VERSION))
 
     try:
         # initialize the state object

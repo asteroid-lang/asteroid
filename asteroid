@@ -11,9 +11,10 @@ from asteroid_interp import interp
 
 # parse command line args
 aparser = ArgumentParser()
-aparser.add_argument('-t','--tree', action='store_true', help='AST dump flag')
-aparser.add_argument('-w','--no_walk', action='store_false', help='walk flag')
 aparser.add_argument('-s','--symtab', action='store_true', help='symbol table dump flag')
+aparser.add_argument('-t','--tree', action='store_true', help='AST dump flag')
+aparser.add_argument('-v','--version', action='store_true', help='version flag')
+aparser.add_argument('-w','--no_walk', action='store_false', help='walk flag')
 aparser.add_argument('input', metavar='input_file', help='Asteroid input file')
 
 args = aparser.parse_args()
@@ -26,4 +27,5 @@ f.close()
 interp(input_stream=input_stream, 
        tree_dump=args.tree,
        do_walk=args.no_walk,
-       symtab_dump=args.symtab)
+       symtab_dump=args.symtab,
+       version=args.version)

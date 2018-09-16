@@ -760,21 +760,12 @@ class Parser:
         if self.lexer.peek().type == '@':
             self.lexer.match('@')
             ix_val = self.primary()
-            # place scalar index values in a list for easier processing
-            if ix_val[0] in ['list', 'raw-list', 'to-list', 'where-list']:
-                v2 = ('index', ix_val, ('nil',))
-            else:
-                v2 = ('index', ('list', [ix_val]), ('nil',))
+            v2 = ('index', ix_val, ('nil',))
 
             while self.lexer.peek().type == '@':
                 self.lexer.match('@')
                 ix_val = self.primary()
-                # place scalar index values in a list for easier processing
-                if ix_val[0] in ['list', 'raw-list', 'to-list']:
-                    v2 = ('index', ix_val, v2)
-                else:
-                    v2 = ('index', ('list', [ix_val]), v2)
-                    
+                v2 = ('index', ix_val, v2)                    
 
             return ('structure-ix', v, reverse_node_list('index', v2))
 

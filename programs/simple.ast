@@ -1,0 +1,6 @@
+-- a simple program using lambda functions
+
+load "standard"
+load "io".
+
+print ((lambda with n do return n+1) 1).
