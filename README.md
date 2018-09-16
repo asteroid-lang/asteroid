@@ -1,6 +1,8 @@
 # Asteroid the Programming Language
 
-Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development.  Asteroid implements a new programming paradigm called pattern-level programming.  Here are just a few small programs to give you the flavor of the langugage.
+Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development.  Asteroid implements a new programming paradigm called pattern-level programming.  Below are just a few small programs to give you the flavor of the langugage.
+
+For more details look at the 'Asteroid the Language' the 'Asteroid User Guide" notebooks.
 
 Here is the canonical factorial program written in Asteroid:
 
@@ -150,4 +152,3 @@ let buddy@{"trick"} = "roll over".
 print (buddy@{"make_string"}()).
 ```
 
-For more details look at the 'Asteroid - The Language' the 'Asteroid User Guide" notebooks.
