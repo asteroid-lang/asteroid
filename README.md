@@ -2,7 +2,7 @@
 
 Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development.  Asteroid implements a new programming paradigm called pattern-level programming.  Below are just a few small programs to give you the flavor of the langugage.
 
-Take a look at the [Asteroid the Language](Asteroid the Language.ipynb) notebook for an overview and the [Asteroid User Guide](Asteroid User Guid.ipynb) notebook for a fairly detailed discussion of the language.
+Take a look at the [Asteroid the Language](Asteroid%20the%20Language.ipynb) notebook for an overview and the [Asteroid User Guide](Asteroid%20User%20 Guide.ipynb) notebook for a fairly detailed discussion of the language.
 
 Here is the canonical factorial program written in Asteroid:
 
