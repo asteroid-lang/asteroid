@@ -2,7 +2,7 @@
 
 # Asteroid the Programming Language
 
-Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development.  Asteroid implements a new programming paradigm called pattern-level programming.  Below are just a few small programs to give you the flavor of the langugage.
+Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called pattern-level programming.  Below are just a few small programs to give you the flavor of the langugage.
 
 Take a look at the [Asteroid the Language](Asteroid%20the%20Language.ipynb) notebook for an overview and the [Asteroid User Guide](Asteroid%20User%20Guide.ipynb) notebook for a fairly detailed discussion of the language.
 
@@ -72,7 +72,7 @@ print ((eval rn) == (eval n)).
 ```
 
 Here is something a bit more mundane: the quicksort algorithm implemented in Asteroid.  Highlighted here is Asteroid's
-pattern match capabality on lists:
+pattern match capability on lists:
 
 ```
 -- Quicksort
