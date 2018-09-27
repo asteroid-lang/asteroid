@@ -19,7 +19,7 @@ function fact
         return 1
     orwith n do
         return n * fact (n-1).
-    end function
+end function
 
 print ("The factorial of 3 is: " + fact (3)).
 ```
@@ -46,7 +46,7 @@ function reduce
         return S(reduce(X + Y)).
     orwith term do                     -- default clause
         return term.
-    end function
+end function
 
 -- construct a term we want to reduce  
 let n = 'S(S(0)) + (S(S(S(0)))).
@@ -59,10 +59,9 @@ load "standard".
 load "util".
 load "io".
 
-function inc 
-    with n do
-        return n + 1.
-    end function
+function inc with n do
+    return n + 1.
+end function
     
 attach inc to S.
 
@@ -97,7 +96,7 @@ function qsort
         end for
                         
         return qsort less + [pivot] + qsort more.
-    end function
+end function
     
 print (qsort [3,2,1,0])
 ```
@@ -112,7 +111,7 @@ load "io".        -- load the io system
 function funny_add    -- define a function that given two 
     with a, b do      -- parameters a,b will multiply them
         return a * b.
-    end function
+end function
 
 attach funny_add to __plus__.   -- attach 'funny_add' to '+'
 print (3 + 2).                  -- this will print out the value 6
