@@ -2,9 +2,9 @@
 
 # Asteroid the Programming Language
 
-Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called pattern-matching oriented programming.  In this new programming paradigm patterns and pattern matching is supported by all major programming language constructs making programs succinct and robust.
+Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), and [ML](https://www.smlnj.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching is supported by all major programming language constructs making programs succinct and robust.
 
-OK, before we get started here is the obligatory *Hello World!* program,
+OK, before we get started here is the obligatory *Hello World!* program written in Asteroid,
 ```
 load "io".
 
@@ -24,12 +24,11 @@ load "io".
 let list = [1,2,3].
 
 repeat do
-    let [head|tail] = list. -- head-tail operator
+    let [head|list] = list. -- head-tail operator
     print head.
-    let list = tail.
 until list is [_].
 ```
-Here we use the head-tail operator as a pattern to match a list. The loop iterates until the list from applying the head-tail operator has exactly one element in it.  The output of this program is:
+Here we use the head-tail operator as a pattern to match a list. The loop iterates until the list resulting from the repeated application of the head-tail operator has exactly one element in it.  The output of this program is,
 ```
 1
 2
@@ -52,6 +51,11 @@ function fact
 
 print ("The factorial of 3 is: " + fact (3)).
 ```
+As one would expect, the output is,
+```
+6
+```
+
 The following quicksort implementation has slightly more complicated patterns for the function
 arguments. Asteroid inherits this functionality from functional programming languages such as ML.  
 ```
@@ -130,6 +134,9 @@ The output of this program is,
 ```
 True
 ```
+meaning that the symbolic reduction and the value based computation computed exactly the same thing,
+namely the value `5`.
+
 As mentioned above, Asteroid has a very flexible view of the interpretation of expression terms which allows the programmer to attach new interpretations to constructor symbols on the fly.  Consider the following program which attaches a new interpretation to the `+` operator symbol, performs a computation, and then removes that interpretation restoring the original interpretation,
 ```
 load "standard".  -- load the standard operator interpretations
@@ -147,6 +154,7 @@ print (3 + 2).                  -- this will print out the value 5
 
 -- NOTE: '__plus__' is a special symbol representing the '+' operator
 ```
+The output of the first `print` statement is 6 because `funny_add` attached to the `+` symbol multiplies its arguments.  The second `print` statement outputs the expected value 5 since we are back at the standard interpretation of the `+` symbol.
 
 Asteroid also supports prototype-based OO style programming inspired by Lua.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" using pattern matching.
 
