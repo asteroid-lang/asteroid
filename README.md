@@ -206,4 +206,4 @@ for Dog(("name",name), ("tricks",["roll over"|_]), _) in dogs do
 end for
 
 ```
-Take a look at the [Asteroid User Guide](Asteroid%20User%20Guide.ipynb) notebook for a more detailed discussion of the language.
+Take a look at the [Asteroid User Guide](https://nbviewer.jupyter.org/github/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.ipynb) notebook for a more detailed discussion of the language.
