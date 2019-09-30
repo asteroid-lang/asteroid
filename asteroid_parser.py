@@ -211,7 +211,7 @@ class Parser:
     #    | LET pattern '=' exp '.'?
     #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
-    #    | REPEAT stmt_list UNTIL exp '.'?
+    #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
     #    | BREAK
     #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
     #    | RETURN exp? '.'?
@@ -338,6 +338,8 @@ class Parser:
         elif tt == 'REPEAT':
             dbg_print("parsing REPEAT")
             self.lexer.match('REPEAT')
+            if self.lexer.peek().type == 'DO':
+                self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('UNTIL')
             e = self.exp()

@@ -21,7 +21,7 @@ Grammar for Asteroid written in EBNF format.
         | LET pattern '=' exp '.'?
         | FOR pattern IN exp DO stmt_list END FOR
         | WHILE exp DO stmt_list END WHILE
-        | REPEAT stmt_list UNTIL exp '.'?
+        | REPEAT (DO?) stmt_list UNTIL exp '.'?
         | BREAK '.'?
         | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
         | RETURN exp? '.'?
