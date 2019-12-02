@@ -66,13 +66,13 @@ stmt_lookahead = [
 
 ###########################################################################################
 class Parser:
-    
+
     ###########################################################################################
     def __init__(self, filename="<input file>"):
         self.lexer = Lexer()
-        
+
         state.lineinfo = (filename,0)
-        
+
         # the constructor for the parser initializes the constructor symbols for
         # our builtin operators in# the symbol table.
         #
@@ -95,7 +95,7 @@ class Parser:
         # unary
         state.symbol_table.enter_sym('__uminus__', ('constructor', ('arity', 1)))
         state.symbol_table.enter_sym('__not__', ('constructor', ('arity', 1)))
-    
+
     ###########################################################################################
     def parse(self, input):
         self.lexer.input(input)
@@ -108,13 +108,11 @@ class Parser:
         dbg_print("parsing PROG")
         sl = self.stmt_list()
         if not self.lexer.EOF():
-            raise SyntaxError("Syntax Error: expected 'EOF' found '{}'.".format(
-                    self.lexer.peek().type))
+            raise SyntaxError("Syntax Error: expected 'EOF' found '{}'." \
+                              .format(self.lexer.peek().type))
         else:
             dbg_print("parsing EOF")
-        
         return sl
-
 
     ###########################################################################################
     # stmt_list
@@ -134,7 +132,7 @@ class Parser:
 
             raw_pp = PurePath(str_tok.value)
             module_name = raw_pp.stem
-            
+
             # if module is on the list of modules then we have loaded
             # it already -- ignore -- continue parsing the program file
             if module_name in state.modules:
@@ -651,7 +649,7 @@ class Parser:
             self.lexer.match('OR')
             v2 = self.rel_exp1()
             op_sym = '__or__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -664,7 +662,7 @@ class Parser:
             self.lexer.match('AND')
             v2 = self.rel_exp2()
             op_sym = '__and__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -678,7 +676,7 @@ class Parser:
             self.lexer.next()
             v2 = self.rel_exp3()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -692,7 +690,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp0()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -714,7 +712,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -728,7 +726,7 @@ class Parser:
             self.lexer.next()
             v2 = self.call()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply', 
+            v = ('apply',
                  ('id', op_sym),
                  ('apply',
                   ('list', [v, v2]),
@@ -736,7 +734,7 @@ class Parser:
         return v
 
     ###########################################################################################
-    # function/constructor call 
+    # function/constructor call
     #
     # call
     #    : index index*
@@ -747,13 +745,13 @@ class Parser:
             v = ('apply', v, ('nil',))
             while self.lexer.peek().type in exp_lookahead_no_ops:
                 v2 = self.index()
-                v = ('apply', v2, v) 
+                v = ('apply', v2, v)
             return reverse_node_list('apply', v)
         else:
             return v
 
     ###########################################################################################
-    # index 
+    # index
     #    : primary ('@' primary)*
     def index(self):
         dbg_print("parsing INDEX")
@@ -767,7 +765,7 @@ class Parser:
             while self.lexer.peek().type == '@':
                 self.lexer.match('@')
                 ix_val = self.primary()
-                v2 = ('index', ix_val, v2)                    
+                v2 = ('index', ix_val, v2)
 
             return ('structure-ix', v, reverse_node_list('index', v2))
 
@@ -788,8 +786,8 @@ class Parser:
     #    | NONE
     #    | ID
     #    | '*' ID  // "dereference" a variable during pattern matching
-    #    | NOT rel_exp0
-    #    | MINUS arith_exp0
+    #    | NOT primary
+    #    | MINUS primary
     #    | ESCAPE STRING
     #    | '(' exp? ')' // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
@@ -834,8 +832,8 @@ class Parser:
 
         elif tt == 'NOT':
             self.lexer.match('NOT')
-            v = self.rel_exp0()
-            v = ('apply', 
+            v = self.primary()
+            v = ('apply',
                  ('id', '__not__'),
                  ('apply',
                   v,
@@ -845,7 +843,7 @@ class Parser:
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
             v = self.primary()
-            v = ('apply', 
+            v = ('apply',
                  ('id', '__uminus__'),
                  ('apply',
                   v,
@@ -869,7 +867,7 @@ class Parser:
                 if v[0] == 'raw-list':
                     # we are parenthesizing a raw-list, turn it into a list
                     v = ('list', v[1])
-                    
+
             else:
                 v = ('list', [])
                 if self.lexer.peek().type == ',':
@@ -914,7 +912,7 @@ class Parser:
 
     ###########################################################################################
     # function_const
-    #    : LAMBDA body_defs 
+    #    : LAMBDA body_defs
     def function_const(self):
         dbg_print("parsing FUNCTION_CONST")
         self.lexer.match('LAMBDA')
@@ -933,5 +931,3 @@ let x = y[1]{"foo"}.
 
     parser = Parser()
     parser.parse(test)
-
-
