@@ -1,6 +1,6 @@
 Grammar for Asteroid written in EBNF format.
 
-(c) 2018 - Lutz Hamel, University of Rhode Island
+(c) 2019 - Lutz Hamel, University of Rhode Island
 
      prog:
        stmt_list
