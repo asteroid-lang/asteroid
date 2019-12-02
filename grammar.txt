@@ -1,4 +1,4 @@
-Grammar for Asteroid written in EBNF format.
+New Grammar for Asteroid written in EBNF format.
 
 (c) 2019 - Lutz Hamel, University of Rhode Island
 
