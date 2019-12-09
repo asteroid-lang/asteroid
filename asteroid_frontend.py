@@ -71,31 +71,6 @@ class Parser:
 
         state.lineinfo = (filename,0)
 
-        # the constructor for the parser initializes the constructor symbols for
-        # our builtin operators in# the symbol table.
-        #
-        # NOTE: you need to keep this in sync with the operators you add to the grammar
-        # and populate the symbol table with predefined behavior for operator symbols
-        #
-        # binary
-        #lhh
-        #print("initializing the symbol table")
-        state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__times__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__divide__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__or__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__and__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__eq__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__ne__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__le__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__lt__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__ge__', ('constructor', ('arity', 2)))
-        state.symbol_table.enter_sym('__gt__', ('constructor', ('arity', 2)))
-        # unary
-        state.symbol_table.enter_sym('__uminus__', ('constructor', ('arity', 1)))
-        state.symbol_table.enter_sym('__not__', ('constructor', ('arity', 1)))
-
     ###########################################################################################
     def parse(self, input):
         self.lexer.input(input)
