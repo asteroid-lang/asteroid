@@ -223,16 +223,12 @@ def store_at_ix(structure_val, index, value):
 #########################################################################
 def handle_call(fval, actual_val_args):
 
+    (FUNCTION, body_list) = fval
+    assert_match(FUNCTION, 'function')
+
     #lhh
     #print('in handle_call')
     #print("calling: {}\nwith: {}\n\n".format(fval,actual_val_args))
-
-    if fval[0] != 'function':
-        raise ValueError("not a function in call")
-
-    # this is done in apply_list_exp
-    # actual_val_args = eval_actual_args(actual_arglist)   # evaluate actuals in current symtab
-    body_list = fval[1]   # get the list of function bodies
 
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
@@ -343,19 +339,16 @@ def global_stmt(node):
 #########################################################################
 def attach_stmt(node):
 
-    (ATTACH, f, (CONSTR_ID, sym)) = node
+    (ATTACH, (FUN_EXP, fexp), (CONSTR_ID, sym)) = node
     assert_match(ATTACH, 'attach')
+    assert_match(FUN_EXP, 'fun-exp')
     assert_match(CONSTR_ID, 'constr-id')
 
-    if f[0] == 'fun-id':
-        fval = state.symbol_table.lookup_sym(f[1])
-    elif f[0] == 'fun-const':
-        fval = f[1]
-    else:
-        raise ValueError("unknown function in attach")
+    fval = walk(fexp)
 
     if fval[0] != 'function':
-        raise ValueError("{} is not a function".format(f[1]))
+        raise ValueError("expected a function in attach for '{}'"
+                         .format(sym))
     else:
         state.symbol_table.attach_to_sym(sym, fval)
 
@@ -620,111 +613,6 @@ def apply_list_exp(node):
     return arg_val
 
 #########################################################################
-# Note: obsolete
-def apply_exp(node):
-    # could be a call: fval fargs
-    # could be a constructor invocation for an object: B(a,b,c)
-
-    #lhh
-    #print("node: {}".format(node))
-
-    (APPLY, val, args) = node
-    assert_match(APPLY, 'apply')
-
-    if args[0] == 'nil':
-        # we are looking at the last apply node in
-        # a cascade of apply nodes
-        return walk(val)
-
-    # more 'apply' nodes
-    (APPLY, parms, rest) = args
-    assert_match(APPLY, 'apply')
-
-    # look at the semantics of val
-    v = walk(val)
-
-    # the following code implements OO function calls by inserting a reference to the
-    # object as the first actual parameter in the parameter list.
-    # OO function calls are introduced via an application of a function
-    # that is a member of an object.
-    if val[0] == 'structure-ix' and v[0] == 'function':
-        #lhh
-        #print("OO function call in object {} with parameters {}".format(val[1],parms))
-
-        if parms[0] == 'none' or (parms[0] == 'list' and len(parms[1]) == 0):
-            # actual parameter list is empty, make the actual parameter list the object
-            actual_parms = val[1] # the object
-            return walk(('apply', handle_call(v, actual_parms), rest))
-
-        elif parms[0] != 'list':
-            # we have a single argument call - construct a list with the object as the
-            # first argument.
-            list_val = []
-            list_val.append(val[1])
-            list_val.append(parms)
-            actual_parms = ('list', list_val)
-            return walk(('apply', handle_call(v, actual_parms), rest))
-
-        elif parms[0] == 'list':
-            # non-empty actual parameter list - make the object the first parameter
-            parms[1].insert(0, val[1])
-            return walk(('apply', handle_call(v, parms), rest))
-
-        else:
-            raise ValueError(
-                "unknown parameter type {} in apply"
-                .format(parms[0]))
-
-    elif v[0] == 'function': # execute a function call
-        # if it is a function call then the args node is another
-        # 'apply' node
-        return walk(('apply', handle_call(v, parms), rest))
-
-    elif v[0] == 'constructor': # return the structure
-        (ID, constr_sym) = val
-        assert_match(ID, 'id') # name of the constructor
-
-        # get arity of constructor
-        (CONSTRUCTOR, (ARITY, arity)) = v
-        arity_val = int(arity)
-
-        # constructor apply nodes come in 2 flavors, in both cases we preserve
-        # the toplevel structure and walk the args in case the args are functions
-        # or operators that compute new structure...
-        # 1) (apply, parms, nil) -- single call
-        if rest[0] == 'nil':
-            (parm_type, parm_val, *_) = parms
-            if parm_type == 'list':
-                if len(parm_val) != arity_val:
-                    raise ValueError(
-                        "argument does not match constructor arity - expected {} got {}".
-                        format(arity_val, len(parm_val)))
-            else:
-                if arity_val != 1:
-                    raise ValueError(
-                        "argument does not match constructor arity - expected {} got 1".
-                        format(arity_val))
-
-            return ('apply',
-                    ('id', constr_sym),
-                    ('apply', walk(parms), rest))
-
-        # 2) (apply, e1, (apply, e2, rest)) -- cascade
-        else:
-            if arity_val != 1:
-                raise ValueError(
-                    "argument does not match constructor arity - expected {} argument(s)".format(
-                        arity_val))
-
-            return ('apply',
-                    ('id', constr_sym),
-                    walk(args))
-
-    else: # not implemented
-        #raise ValueError("'apply' not implemented for {}".format(v[0]))
-        raise ValueError("bad constructor or function call")
-
-#########################################################################
 def structure_ix_exp(node):
 
     (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = node
@@ -938,7 +826,6 @@ dispatch_dict = {
     'if'            : if_stmt,
     'throw'         : throw_stmt,
     'try'           : try_stmt,
-
     # expressions - expressions do produce return values
     'list'          : list_exp,
     # raw-list is a list constructor that has the internal structure of an acutal list

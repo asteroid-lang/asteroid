@@ -251,25 +251,14 @@ class Parser:
         elif tt == 'ATTACH':
             dbg_print("parsing ATTACH")
             self.lexer.match('ATTACH')
-            if self.lexer.peek().type == 'ID':
-                fid_tok = self.lexer.match('ID')
-                self.lexer.match('TO')
-                cid_tok = self.lexer.match('ID')
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return ('attach',
-                        ('fun-id',fid_tok.value),
-                        ('constr-id', cid_tok.value))
-            else:
-                # allows lambda functions to be attached directly
-                fconst = self.primary()
-                self.lexer.match('TO')
-                cid_tok = self.lexer.match('ID')
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
-                return ('attach',
-                        ('fun-const',fconst),
-                        ('constr-id', cid_tok.value))
+            fexp = self.primary()
+            self.lexer.match('TO')
+            cid_tok = self.lexer.match('ID')
+            if self.lexer.peek().type == '.':
+                self.lexer.match('.')
+            return ('attach',
+                    ('fun-exp', fexp),
+                    ('constr-id', cid_tok.value))
 
         elif tt == 'DETACH':
             dbg_print("parsing DETACH")
