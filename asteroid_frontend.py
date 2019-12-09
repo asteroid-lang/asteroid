@@ -1,13 +1,12 @@
 ###########################################################################################
-# parser for Asteroid
+# front end for Asteroid
 #
-# (c) 2018 - Lutz Hamel, University of Rhode Island
+# (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
 import sys
 from pathlib import Path, PurePath
 from asteroid_lex import Lexer
-from asteroid_support import reverse_node_list
 from asteroid_state import state
 
 ###########################################################################################
@@ -67,8 +66,7 @@ stmt_lookahead = [
 ###########################################################################################
 class Parser:
 
-    ###########################################################################################
-    def __init__(self, filename="<input file>"):
+    def __init__(self, filename="<input>"):
         self.lexer = Lexer()
 
         state.lineinfo = (filename,0)
@@ -80,6 +78,8 @@ class Parser:
         # and populate the symbol table with predefined behavior for operator symbols
         #
         # binary
+        #lhh
+        #print("initializing the symbol table")
         state.symbol_table.enter_sym('__plus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__minus__', ('constructor', ('arity', 2)))
         state.symbol_table.enter_sym('__times__', ('constructor', ('arity', 2)))
@@ -177,17 +177,17 @@ class Parser:
                 state.modules.append(module_name)
                 data = f.read()
                 fparser = Parser(module_name)
-                fstmts = fparser.parse(data)
+                (STMT_LIST, fstmts) = fparser.parse(data)
 
             state.lineinfo = old_lineinfo
-            sl = self.stmt_list()
-            return ('list', fstmts[1] + sl[1])
+            (LIST, sl) = self.stmt_list()
+            return ('list', fstmts + sl)
 
         elif self.lexer.peek().type in stmt_lookahead:
             lineinfo = ('lineinfo', state.lineinfo)
             s = self.stmt()
-            sl = self.stmt_list()
-            return ('list', [lineinfo] + [s] +  sl[1])
+            (LIST, sl) = self.stmt_list()
+            return ('list', [lineinfo] + [s] +  sl)
 
         else:
             return ('list', [])
@@ -238,6 +238,14 @@ class Parser:
             if self.lexer.peek().type == '.':
                 self.lexer.match('.')
             return ('global', id_list)
+
+        elif tt == 'NONLOCAL':
+            dbg_print("parsing NONLOCAL")
+            self.lexer.match('NONLOCAL')
+            id_list = self.id_list()
+            if self.lexer.peek().type == '.':
+                self.lexer.match('.')
+            return ('nonlocal', id_list)
 
         elif tt == 'FUNCTION':
             dbg_print("parsing FUNCTION")
@@ -312,7 +320,7 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise ValueError("syntax error: expected in expression in for loop")
+                raise ValueError("syntax error: expected 'in' expression in for loop")
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
@@ -353,38 +361,36 @@ class Parser:
             return ('break',)
 
         elif tt == 'IF':
-            # if statements are coded as a list of (condition, stmts) pairs
+            # if statements are coded as a list of ('if-clause', condition, stmts)
             if_list = []
 
             dbg_print("parsing IF")
             self.lexer.match('IF')
-            if_exp = self.exp()
+            cond = self.exp()
             self.lexer.match('DO')
-            then_stmts = self.stmt_list()
-            if_list.append(('if-pair', ('cond', if_exp), ('stmts', then_stmts)))
+            stmts = self.stmt_list()
+            if_list.append(('if-clause', ('cond', cond), ('stmt-list', stmts)))
 
             while self.lexer.peek().type == 'ELIF':
                 dbg_print("parsing ELIF")
                 self.lexer.match('ELIF')
-                e = self.exp()
+                cond = self.exp()
                 self.lexer.match('DO')
-                sl = self.stmt_list()
-                if_list.append(('if-pair', ('cond', e), ('stmts', sl)))
+                stmts = self.stmt_list()
+                if_list.append(('if-clause', ('cond', cond), ('stmt-list', stmts)))
 
             if self.lexer.peek().type == 'ELSE':
                 dbg_print("parsing ELSE")
                 self.lexer.match('ELSE')
                 if self.lexer.peek().type == 'DO':
                     self.lexer.match('DO')
-                else_stmts = self.stmt_list()
+                stmts = self.stmt_list()
                 # make the else look like another elif with the condition set to 'true'
-                if_list.append(('if-pair',
-                                ('cond', ('boolean', True)),
-                                ('stmts', else_stmts)))
+                if_list.append(('if-clause', ('cond', ('boolean', True)), ('stmt-list', stmts)))
 
             self.lexer.match('END')
             self.lexer.match('IF')
-            return ('if', if_list)
+            return ('if', ('list', if_list))
 
 
         elif tt == 'RETURN':
@@ -403,34 +409,31 @@ class Parser:
         elif tt == 'TRY':
             dbg_print("parsing TRY")
 
+            # the catch list is a list of ('catch', pattern, stmts)
             catch_list = []
 
             self.lexer.match('TRY')
-            try_block = self.stmt_list()
+            try_stmts = self.stmt_list()
             self.lexer.match('CATCH')
             dbg_print("parsing CATCH")
-            catch_pattern = self.pattern()
+            pattern = self.pattern()
             self.lexer.match('DO')
-            catch_stmts = self.stmt_list()
-            catch_list.append(('catch',
-                               ('catch-pattern', catch_pattern),
-                               ('catch-stmts', catch_stmts)))
+            stmts = self.stmt_list()
+            catch_list.append(('catch', ('pattern', pattern), ('stmt-list', stmts)))
 
             while self.lexer.peek().type == 'CATCH':
                 dbg_print("parsing CATCH")
                 self.lexer.match('CATCH')
-                catch_pattern = self.pattern()
+                pattern = self.pattern()
                 self.lexer.match('DO')
-                catch_stmts = self.stmt_list()
-                catch_list.append(('catch',
-                                   ('catch-pattern', catch_pattern),
-                                   ('catch-stmts', catch_stmts)))
+                stmts = self.stmt_list()
+                catch_list.append(('catch',('pattern', pattern), ('stmt-list', stmts)))
 
             self.lexer.match('END')
             self.lexer.match('TRY')
 
             return ('try',
-                    ('try-stmts', try_block),
+                    ('stmt-list', try_stmts),
                     ('catch-list', ('list', catch_list)))
 
         elif tt == 'THROW':
@@ -452,35 +455,38 @@ class Parser:
     #   : ID (',' ID)*
     def id_list(self):
         dbg_print("parsing ID_LIST")
+
+        id_list = []
+
         id_tok = self.lexer.match('ID')
-        idl = [('id', id_tok.value)]
+        id_list.append(('id', id_tok.value))
         while self.lexer.peek().type == ',':
             self.lexer.match(',')
             id_tok = self.lexer.match('ID')
-            idl += [('id', id_tok.value)]
-        return ('id-list', ('list', idl))
+            id_list.append(('id', id_tok.value))
+        return ('list', id_list)
 
     ###########################################################################################
     # body_defs
     #   : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
     def body_defs(self):
         dbg_print("parsing BODY_DEFS")
+
+        # a list of ('body', pattern, stmts) pairs
+        body_list = []
+
         self.lexer.match('WITH')
         p = self.pattern()
         self.lexer.match('DO')
         sl = self.stmt_list()
-        body_list = [('body',
-                      ('pattern', p),
-                      ('stmt-list', sl))]
+        body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
 
         while self.lexer.peek().type == 'ORWITH':
             self.lexer.match('ORWITH')
             p = self.pattern()
             self.lexer.match('DO')
             sl = self.stmt_list()
-            body_list.append(('body',
-                              ('pattern', p),
-                              ('stmt-list', sl)))
+            body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
 
         return ('body-list', ('list', body_list))
 
@@ -498,20 +504,22 @@ class Parser:
     #
     # NOTE: trailing comma means single element list!
     # NOTE: raw-list nodes are list nodes that were constructed with just the comma constructor
-    #       the should work just like list nodes in the context of interpretation
+    #       they should work just like list nodes in the context of interpretation
     #
     def exp(self):
         dbg_print("parsing EXP")
+
         v = self.quote_exp()
 
         if self.lexer.peek().type == ',':
-            vlist = ('raw-list', [v])
+            raw_list = [v]
             while self.lexer.peek().type == ',':
                 self.lexer.match(',')
                 if self.lexer.peek().type in exp_lookahead:
                     e = self.quote_exp()
-                    vlist[1].append(e)
-            return vlist
+                    raw_list.append(e)
+            return ('raw-list', raw_list)
+
         else:
             return v
 
@@ -542,12 +550,15 @@ class Parser:
     #       processing, use walk to expand the list before processing it.
     def head_tail(self):
         dbg_print("parsing HEAD_TAIL")
+
         v = self.conditional()
+
         if self.lexer.peek().type == '|':
             self.lexer.match('|')
             head = v
             tail = self.exp()
             v = ('head-tail', head, tail)
+
         return v
 
     ###########################################################################################
@@ -558,19 +569,23 @@ class Parser:
     #           (IF exp (ELSE exp)?) # expression level if-else
     #        )?
     def conditional(self):
-        dbg_print("parsing COONDITIONAL")
+        dbg_print("parsing CONDITIONAL")
+
         v = self.compound()
+
         tt = self.lexer.peek().type
         if tt  == 'OTHERWISE':
             self.lexer.match('OTHERWISE')
             v2 = self.exp()
             return ('otherwise', v, v2)
+
         elif tt == 'IF':
             self.lexer.match('IF')
             v2 = self.exp()
             self.lexer.match('ELSE')
             v3 = self.exp()
             return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+
         else:
             return v
 
@@ -585,7 +600,9 @@ class Parser:
     #        )?
     def compound(self):
         dbg_print("parsing COMPOUND")
+
         v = self.rel_exp0()
+
         tt = self.lexer.peek().type
         if tt == 'IS':
             self.lexer.match('IS')
@@ -628,7 +645,7 @@ class Parser:
             return v
 
     ###########################################################################################
-    # NOTE: all terms are expressed as apply nodes of their corresponding constructor names
+    # NOTE: all terms are expressed as apply-list nodes of their corresponding constructor names
     ###########################################################################################
     # relational operators with their precedence
     # rel_exp0
@@ -649,11 +666,7 @@ class Parser:
             self.lexer.match('OR')
             v2 = self.rel_exp1()
             op_sym = '__or__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     def rel_exp1(self):
@@ -662,11 +675,7 @@ class Parser:
             self.lexer.match('AND')
             v2 = self.rel_exp2()
             op_sym = '__and__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     def rel_exp2(self):
@@ -676,11 +685,7 @@ class Parser:
             self.lexer.next()
             v2 = self.rel_exp3()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     def rel_exp3(self):
@@ -690,11 +695,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp0()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     ###########################################################################################
@@ -712,11 +713,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     def arith_exp1(self):
@@ -726,11 +723,7 @@ class Parser:
             self.lexer.next()
             v2 = self.call()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply',
-                 ('id', op_sym),
-                 ('apply',
-                  ('list', [v, v2]),
-                  ('nil',)))
+            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
         return v
 
     ###########################################################################################
@@ -740,13 +733,15 @@ class Parser:
     #    : index index*
     def call(self):
         dbg_print("parsing CALL")
+
         v = self.index()
+
         if self.lexer.peek().type in exp_lookahead_no_ops:
-            v = ('apply', v, ('nil',))
+            apply_list = [v]
             while self.lexer.peek().type in exp_lookahead_no_ops:
                 v2 = self.index()
-                v = ('apply', v2, v)
-            return reverse_node_list('apply', v)
+                apply_list.append(v2)
+            return ('apply-list', ('list', apply_list))
         else:
             return v
 
@@ -760,14 +755,14 @@ class Parser:
         if self.lexer.peek().type == '@':
             self.lexer.match('@')
             ix_val = self.primary()
-            v2 = ('index', ix_val, ('nil',))
+            index_list = [('index', ix_val)]
 
             while self.lexer.peek().type == '@':
                 self.lexer.match('@')
                 ix_val = self.primary()
-                v2 = ('index', ix_val, v2)
+                index_list.append(('index', ix_val))
 
-            return ('structure-ix', v, reverse_node_list('index', v2))
+            return ('structure-ix', v, ('index-list', ('list', index_list)))
 
         else:
             return v
@@ -795,6 +790,7 @@ class Parser:
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
+
         tt = self.lexer.peek().type
 
         if tt == 'INTEGER':
@@ -833,46 +829,37 @@ class Parser:
         elif tt == 'NOT':
             self.lexer.match('NOT')
             v = self.primary()
-            v = ('apply',
-                 ('id', '__not__'),
-                 ('apply',
-                  v,
-                  ('nil',)))
-            return v
+            return ('apply-list', ('list', [('id', '__not__'), v]))
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
             v = self.primary()
-            v = ('apply',
-                 ('id', '__uminus__'),
-                 ('apply',
-                  v,
-                  ('nil',)))
-            return v
+            return ('apply-list', ('list', [('id', '__uminus__'), v]))
 
         elif tt == 'ESCAPE':
             self.lexer.match('ESCAPE')
             str_tok = self.lexer.match('STRING')
             return ('escape', str_tok.value)
 
+        # TODO: need to look at list constructors for to-list, where-list and head-tail
         elif tt == '(':
             # NOTE: here we implement a similar scheme to Python:
-            #       (A)  means a parenthesized value A
-            #       (A,) means a list with a single value A
-            #       () or (,) means empty list
+            #       (A)    means a parenthesized value A
+            #       (A,)   means a list with a single value A
+            #       (A, B) means a list with values A and B
+            #       ()     means empty list
             # NOTE: the ',' is handled in exp
             self.lexer.match('(')
             if self.lexer.peek().type in exp_lookahead:
-                v = self.exp()
+                v = self.exp() # list or value
                 if v[0] == 'raw-list':
-                    # we are parenthesizing a raw-list, turn it into a list
                     v = ('list', v[1])
-
-            else:
+            elif self.lexer.peek().type == ')':
                 v = ('list', [])
-                if self.lexer.peek().type == ',':
-                    self.lexer.match(',')
-
+            else:
+                raise SyntaxError("Syntax Error:{}: at '{}'".format(
+                        self.lexer.peek().lineno,
+                        self.lexer.peek().value))
             self.lexer.match(')')
             return v
 
@@ -891,8 +878,12 @@ class Parser:
                 else:
                     # turn contents into a list (possibly nested lists)
                     v = ('list', [v])
-            else:
+            elif self.lexer.peek().type == ']':
                 v = ('list', [])
+            else:
+                raise SyntaxError("Syntax Error:{}: at '{}'".format(
+                        self.lexer.peek().lineno,
+                        self.lexer.peek().value))
             self.lexer.match(']')
             return v
 
@@ -924,10 +915,5 @@ class Parser:
 ### test the parser
 if __name__ == "__main__":
 
-    test = \
-'''
-let x = y[1]{"foo"}.
-'''
-
-    parser = Parser()
+    test = 'load "io". print "Hello World!"'
     parser.parse(test)

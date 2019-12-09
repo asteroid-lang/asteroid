@@ -1,0 +1,26 @@
+-- implements Peano addition using a lookup table for the rewrite rules
+
+load "standard".
+load "util".
+load "io".
+
+detach from __plus__ . -- we want to use '+' as constructor
+constructor S with arity 1.
+
+let rule_table = [
+    ('x + 0, 'reduce(x)),
+    ('x + S(y), 'S(reduce(x + y)))
+    ].
+
+function reduce
+    with term do
+        for i in 0 to length(rule_table) - 1 do
+            let (lhs, rhs) = rule_table@i.
+            if term is *lhs do
+                return eval(rhs).
+            end if
+        end for
+        return term.
+    end function
+
+print (reduce('S(S(0)) + S(S(S(0))))).

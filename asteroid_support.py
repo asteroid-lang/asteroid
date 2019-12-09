@@ -9,8 +9,8 @@ from asteroid_state import state
 #########################################################################
 class PatternMatchFailed(Exception):
     def __init__(self, value):
-        self.value = value
-    
+        self.value = "pattern match failed: " + value
+
     def __str__(self):
         return(repr(self.value))
 
@@ -31,12 +31,12 @@ def len_seq(seq_list):
 
 ###########################################################################################
 def reverse_node_list(node_type, node_list):
-    ''' 
+    '''
     shallow reversal of a nil terminated node_type list
     assumes the structure of node_type node: (node_type, element, next)
     NOTE: the list needs to be ('nil',) terminated
     '''
-    
+
     new_list = ('nil',)
 
     e = node_list
@@ -52,13 +52,13 @@ def append_node_list(node_type, list1, list2):
     append list2 to list1.  assume 'nil' terminated lists of node_type
     NOTE: there is a more efficient way of doing this by iterating...
     '''
-    
+
     if list1[0] == 'nil':
         return list2
 
     else:
-        return (node_type, 
-                list1[1], 
+        return (node_type,
+                list1[1],
                 append_node_list(node_type,
                                  list1[2],
                                  list2))
@@ -67,30 +67,30 @@ def append_node_list(node_type, list1, list2):
 def dump_AST(node):
     '''
     this function will print any AST that follows the
-    
+
          (TYPE [, child1, child2,...])
-    
+
     tuple format for tree nodes.
     '''
     _dump_AST(node)
     print('')
 
 def _dump_AST(node, level=0):
-    
+
     if isinstance(node, tuple):
         _indent(level)
         nchildren = len(node) - 1
 
         print("(%s" % node[0], end='')
-        
+
         if nchildren > 0:
             print(" ", end='')
-        
+
         for c in range(nchildren):
             _dump_AST(node[c+1], level+1)
             if c != nchildren-1:
                 print(' ', end='')
-        
+
         print(")", end='')
 
     elif isinstance(node, list):
@@ -101,12 +101,12 @@ def _dump_AST(node, level=0):
 
         if nchildren > 0:
             print(" ", end='')
-        
+
         for c in range(nchildren):
             _dump_AST(node[c], level+1)
             if c != nchildren-1:
                 print(' ', end='')
-        
+
         print("]", end='')
 
     else:
@@ -137,13 +137,28 @@ def assert_match(input, expected):
 # check if the two type tags match
 def match(tag1, tag2):
 
-    if tag1 in ['list', 'raw-list', 'to-list', 'where-list'] and \
-            tag2 in ['list', 'raw-list', 'to-list', 'where-list']:
+    if tag1 in ['list', 'raw-list'] and  tag2 in ['list', 'raw-list']:
         return True
     elif tag1 == tag2:
         return True
     else:
         return False
+
+###########################################################################################
+# expression nodes not allowed in terms or patterns for unification. these are all node
+# that express some sort of computation
+
+unify_not_allowed = {
+    'function',
+    'to-list',
+    'where-list',
+    'if-exp',
+    'foreign',
+    'escape',
+    'is',
+    'in',
+    'otherwise',
+}
 
 ###########################################################################################
 def unify(term, pattern):
@@ -160,9 +175,9 @@ def unify(term, pattern):
 
     leaf nodes must be nullary constructors.
 
-    NOTE: if the pattern looks like an lval then it is treated like an lval, e.g. 
+    NOTE: if the pattern looks like an lval then it is treated like an lval, e.g.
             let a@[0] = 'a@[0].
-          stores the pattern 'a@[0] into lval a@[0].
+          stores the term 'a@[0] into lval a@[0].
     '''
     #lhh
     #print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
@@ -173,63 +188,50 @@ def unify(term, pattern):
                 return []
             else:
                 raise PatternMatchFailed(
-                    "pattern match failed: {} is not the same as {}"
+                    "{} is not the same as {}"
                     .format(term, pattern))
         except: # just in case the comparison above throws an exception
             raise PatternMatchFailed(
-                "pattern match failed: {} is not the same as {}"
+                "{} is not the same as {}"
                 .format(term, pattern))
-            
-    elif isinstance(term, list) or isinstance(pattern, list):
-        if not(isinstance(term, list) and isinstance(pattern, list)):
-            raise PatternMatchFailed(
-                "Pattern match failed: term and pattern do not agree on list constructor")
 
+    elif isinstance(term, list) or isinstance(pattern, list):
+        if not(isinstance(term, list)) or not(isinstance(pattern, list)):
+            raise PatternMatchFailed(
+                "term and pattern do not agree on list constructor")
         elif len(term) != len(pattern):
             raise PatternMatchFailed(
-                "pattern match failed: term and pattern lists are not the same length")
-
+                "term and pattern lists are not the same length")
         else:
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i])
             return unifier
 
-    elif term[0] == 'quote' and pattern[0] not in ['id', 'structure-ix']: 
-        # ignore quote on the term if we are not try to unify term with
-        # a variable or other kind of lval
-        return unify(term[1], pattern)
+    # NOTE: functions are allowed in terms as long as they are matched
+    # by a variable in the pattern - anything else will fail
+    elif term[0] in (unify_not_allowed - {'function'}):
+        raise PatternMatchFailed(
+            "term of type '{}' not allowed in pattern matching"
+            .format(term[0]))
+
+    elif pattern[0] in unify_not_allowed:
+        raise PatternMatchFailed(
+            "pattern of type '{}' not allowed in pattern matching"
+            .format(pattern[0]))
 
     elif pattern[0] == 'quote':
         # quotes on the pattern side can always be ignored
         return unify(term, pattern[1])
 
-    elif pattern[0] == 'head-tail':  
+    elif term[0] == 'quote' and pattern[0] not in ['id', 'structure-ix']:
+        # ignore quote on the term if we are not trying to unify term with
+        # a variable or other kind of lval
+        return unify(term[1], pattern)
 
-        (TERM_TYPE, term_val, *_) = term
-
-        if TERM_TYPE != 'list':
-            raise PatternMatchFailed(
-                "pattern match failed: head-tail operator expected type list got type {}"
-                .format(TERM_TYPE))
-            
-
-        pattern_head = pattern[1]
-        pattern_tail = pattern[2]
-
-        term_head = term_val[0]
-        term_tail = ('list', term_val[1:])
-
-        unifier = []
-        unifier += unify(term_head, pattern_head)
-        unifier += unify(term_tail, pattern_tail)
-
-        return unifier
-
-    elif pattern[0] == 'deref':  # ('deref', id)
-        sym = pattern[1]
-        p = state.symbol_table.lookup_sym(sym)
-        return unify(term,p)
+    elif pattern[0] == 'structure-ix': # list/constructor lval access
+        unifier = (pattern, term)
+        return [unifier]
 
     elif pattern[0] == 'id': # variable in pattern add to unifier
         sym = pattern[1]
@@ -239,81 +241,66 @@ def unify(term, pattern):
             unifier = (pattern, term)
             return [unifier]
 
-    elif pattern[0] == 'structure-ix': # list/constructor lval access
-        unifier = (pattern, term)
-        return [unifier]
-
-    elif pattern[0] == 'apply': # constructor/function composition
-        # we are looking at something like this:
-        #       (0:'apply', 
-        #        1:(0:'id', 
-        #           1:sym), 
-        #        2:next))
-
-        # check if we are looking at apply nodes in both the term and the pattern
-        if term[0] != pattern[0]:
-            raise PatternMatchFailed(
-                "pattern match failed: term and pattern disagree on 'apply' node")
-
-        # get the types of the apply args
-        type_p1 = pattern[1][0]
-        type_t1 = term[1][0]
-
-        # if the types disagree then the apply nodes describe something different from
-        # constructor or function calls -- just keep unifying
-        if type_t1 != type_p1:
-            unifier = []
-            unifier += unify(term[1], pattern[1])
-            unifier += unify(term[2], pattern[2])
-            return unifier
-
-        # the arg node to apply is not an id so just unify the rest of the apply node and return
-        assert type_t1 == type_p1
-        if type_t1 != 'id':
-            unifier = []
-            unifier += unify(term[1], pattern[1])
-            unifier += unify(term[2], pattern[2])
-            return unifier
-
-        # the apply arg is an id - figure out the semantics of the id and then act accordingly
-        assert type_t1 == 'id', type_p1 == 'id'
-        sym_p1 = pattern[1][1]
-        sym_t1 = term[1][1]
-
-        # if term and pattern disagree on symbol name then error
-        if sym_t1 != sym_p1:
-            raise PatternMatchFailed(
-                "pattern match failed: name {} does not match name {}"
-                .format(sym_t1, sym_p1))
-
-        # at this point we know we are looking at a symbol in both the term and the pattern
-        assert sym_t1 == sym_p1
-        sym = sym_t1
-        sym_val = state.symbol_table.lookup_sym(sym)
-
-        # if the symbol is a constructor or function keep on unifying
-        if sym_val[0] in ['constructor', 'function']:
-            return unify(term[2], pattern[2])
-
-        # we have a declared symbol not a list or constructor -- illegal?
-        else:
-            raise PatternMatchFailed(
-                "pattern match failed: illega apply context for symbol {}"
-                .format(sym))
-
     elif term[0] == 'id': # variable in term not allowed
         raise PatternMatchFailed(
-            "pattern match failed: variable {} in term not allowed"
+            "variable '{}' in term not allowed"
             .format(term[1]))
 
-    elif len(term) != len(pattern): # nodes are not of same the arity
-        raise PatternMatchFailed(
-            "pattern match failed: nodes {} and {} are not of the same arity"
-            .format(term[0], pattern[0]))
+    elif pattern[0] == 'head-tail':
+        # unpack the structures
+        (HEAD_TAIL, pattern_head, pattern_tail) = pattern
+        (LIST, list_val) = term
+
+        if LIST != 'list':
+            raise PatternMatchFailed(
+                "head-tail operator expected type 'list' got type '{}'"
+                .format(LIST))
+
+        list_head = list_val[0]
+        list_tail = ('list', list_val[1:])
+
+        unifier = []
+        unifier += unify(list_head, pattern_head)
+        unifier += unify(list_tail, pattern_tail)
+        return unifier
+
+    elif pattern[0] == 'deref':  # ('deref', id)
+        sym = pattern[1]
+        p = state.symbol_table.lookup_sym(sym)
+        return unify(term,p)
+
+    elif pattern[0] == 'apply-list': # constructor
+        if term[0] != pattern[0]: # make sure both are apply-lists
+            raise PatternMatchFailed(
+                "term and pattern disagree on 'apply-list' node")
+        elif len(term[1]) > 2 or len(pattern[1]) > 2: # make sure only constructors
+            raise PatternMatchFailed(
+                "illegal function applications in pattern or term")
+
+        # unpack the apply-list structures
+        (APPLY_LIST,
+         (LIST, [(ID, t_constr_id), t_arg])) = term
+
+        (APPLY_LIST,
+         (LIST, [(ID, p_constr_id), p_arg])) = pattern
+
+        # make sure constructors match
+        if t_constr_id != p_constr_id:
+            raise PatternMatchFailed(
+                "term '{}' does not match pattern '{}'"
+                .format(t_constr_id, p_constr_id))
+
+        # unify the args
+        return unify(t_arg, p_arg)
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
         raise PatternMatchFailed(
-            "pattern match failed: nodes {} and {} are not the same"
+            "nodes '{}' and '{}' are not the same"
+            .format(term[0], pattern[0]))
+
+    elif len(term) != len(pattern): # nodes are not of same the arity
+        raise PatternMatchFailed(
+            "nodes '{}' and '{}'' are not of the same arity"
             .format(term[0], pattern[0]))
 
     else:
@@ -325,18 +312,18 @@ def unify(term, pattern):
         #lhh
         #print("returning unifier: {}".format(unifier))
         return unifier
-    
+
 ###########################################################################################
 def promote(type1, type2, strict=True):
     '''
     type promotion table for builtin primitive types.  this table implements the
     type hierarchies
 
-                 boolean < integer < real < string 
+                 boolean < integer < real < string
 
                  list < string
     '''
-    
+
     if type1 == 'string' and type2 in['string', 'real', 'integer', 'list', 'boolean']:
         return 'string'
     if type2 == 'string' and type1 in['string', 'real', 'integer', 'list', 'boolean']:
@@ -366,7 +353,7 @@ def promote(type1, type2, strict=True):
 ###########################################################################################
 # Asteroid uses truth values similar to Python's Pythonic truth values:
 #
-# Any object can be tested for truth value, for use in an if or while condition or as 
+# Any object can be tested for truth value, for use in an if or while condition or as
 # operand of the Boolean operations.
 #
 # The following values are considered false:
@@ -399,15 +386,15 @@ def term2string(term):
     TYPE = term[0]
 
     if TYPE in ['id', 'integer', 'real', 'string']:
-        (PRIMITIVE_TYPE, val) = term
+        val = term[1]
         return str(val)
 
     elif TYPE in ['boolean', 'none']:
-        (PRIMITIVE_TYPE, val) = term
+        val = term[1]
         return str(val).lower()
 
     elif TYPE == 'list':
-        (LIST_TYPE, val) = term
+        val = term[1]
         term_string = '['
         l = len(val)
         for i in range(l):
@@ -417,31 +404,26 @@ def term2string(term):
         term_string += ']'
         return term_string
 
-    elif TYPE == 'apply':
-        (APPLY_TYPE, val, rest) = term
-        term_string = ''
-        
-        if rest[0] == 'nil':
-            term_string += term2string(val)
-        else:
-            term_string += term2string(val)
-            term_string += '('
-            term_string += term2string(rest)
-            term_string += ')'
-
+    elif TYPE == 'apply-list':
+        (LIST, apply_list) = term[1]
+        term_string = term2string(apply_list[0])
+        term_string += '('
+        for ix in range(1, len(apply_list)):
+            term_string += term2string(apply_list[ix])
+        term_string += ')'
         return term_string
 
     elif TYPE == 'quote':
         # printing out a term string -- just ignore the quote
-        (QUOTE_TYPE, val) = term
+        val = term[1]
         return term2string(val)
 
     elif TYPE == 'nil':
         return ''
-    
+
     else:
         raise ValueError(
-            "unknown type {} in term2string"
+            "unknown type '{}' in term2string"
             .format(TYPE))
 
 ###########################################################################################

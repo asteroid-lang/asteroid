@@ -72,14 +72,14 @@ end function
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-constructor Error 
+constructor Error
 ------------------------------------------------------------------
--- use this constructor to throw error exceptions with a 
+-- use this constructor to throw error exceptions with a
 -- single argument
 with arity 1.
 
 ------------------------------------------------------------------
-function eval 
+function eval
 ------------------------------------------------------------------
 -- evaluates a term in the current term interpretation environment
 with item do return escape
@@ -95,7 +95,7 @@ state.ignore_quote = False
 end function
 
 ------------------------------------------------------------------
-function length 
+function length
 ------------------------------------------------------------------
 with lst do return escape
 "
@@ -114,7 +114,7 @@ __retval__ = ('integer', len(item_val[1]))
 end function
 
 ------------------------------------------------------------------
-function exit 
+function exit
 ------------------------------------------------------------------
 with msg do escape
 "
@@ -213,4 +213,3 @@ assert_match(TYPE, 'integer')
 __retval__ = ('integer', random.randint(lo_val, hi_val))
 "
 end function
-

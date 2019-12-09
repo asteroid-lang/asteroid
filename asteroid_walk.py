@@ -1,7 +1,7 @@
 #########################################################################
 # A tree walker to interpret Asteroid programs
 #
-# (c) 2018 - Lutz Hamel, University of Rhode Island
+# (c) Lutz Hamel, University of Rhode Island
 #########################################################################
 
 from asteroid_state import state
@@ -17,10 +17,10 @@ __retval__ = None  # return value register for escaped code
 # Use the exception mechanism to return values from function calls
 
 class ReturnValue(Exception):
-    
+
     def __init__(self, value):
         self.value = value
-    
+
     def __str__(self):
         return(repr(self.value))
 
@@ -37,7 +37,7 @@ class ThrowValue(Exception):
 
     def __init__(self, value):
         self.value = value
-    
+
     def __str__(self):
         return(repr(self.value))
 
@@ -51,7 +51,7 @@ def declare_formal_args(unifiers):
     # unfiers is of the format: [ (pattern, term), (pattern, term),...]
 
     for u in unifiers:
-        pattern, term = u
+        (pattern, term) = u
         (ID, sym) = pattern
         if ID != 'id':
             raise ValueError("no pattern match possible in function call")
@@ -77,7 +77,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
 
         if len(e_list) != 2:
             raise ValueError("unsupported dictionary format (2)")
-            
+
         (ENTRY_KEY_TYPE, entry_key) = e_list[0]
 
         if ENTRY_KEY_TYPE != KEY_TYPE:
@@ -93,6 +93,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
             else:
                 raise ValueError("unsupported mode in dictionary handling")
 
+    # fell through the loop -- key doesn't exit
     if mode == "read":
         raise ValueError("dictionary key {} not found".format(key_val))
     elif mode == "write":
@@ -102,263 +103,136 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
         raise ValueError("unsupported mode in dictionary handling")
 
 #########################################################################
-# handle list index expressions as rvals
-def handle_list_ix(list_val, ix):
+# we are indexing into the memory of either a list or a constructor to
+# read the memory.
+#
+# NOTE: when indexed with a scalar it will return a single value,
+# that value of course could be a list etc.  When index with a list
+# then it will return a list of values. Therefore:
+#       a@1 =/= a@[1]
+# the value on the left of the inequality is a single value, the
+# value on the right is a singleton list.
+def read_at_ix(structure_val, index):
 
-    (VAL_LIST, ll) = list_val
-    (IX_TYPE, ixs, *_) = ix
+    (INDEX, ix) = index
+    assert_match(INDEX, 'index')
 
-    if VAL_LIST != 'list':
-        raise ValueError(
-            "expected list node but got {} node".
-            format(VAL_LIST))
+    # find the actual memory we need to access
+    # list: return the actual list
+    if structure_val[0] == 'list':
+        memory = structure_val[1] # get a reference to the memory
 
-    # NOTE: when indexed with a scalar it will return a single value,
-    # that value of course could be a list etc.  When index with a list
-    # then it will return a list of value. Therefore:
-    #       a@1 =/= a@[1]
-    # the value on the left of the inequality is a single value, the
-    # value on the right is a singleton list.
-    
-    if IX_TYPE == 'integer': # then ixs is an integer index
-       ix_val = int(ixs)
-       return ll[ix_val]
-        
-    elif IX_TYPE == 'dict-access':
-        (DICT_KEY_TYPE, dict_key, *_) = walk(ixs) # lhh: is walking here necessary, already semantic val?
+    # constructor: return the argument list as memory
+    # NOTE: indexing a constructor that is applied to a constant
+    #       will fail since there is no memory here.
+    elif structure_val[0] == 'apply-list':
+        (APPLY_LIST,
+         (LIST_1,
+          [(ID, constructor_id),
+           (LIST_2, memory)])) = structure_val # get a reference to the memory
+        if LIST_2 != 'list':
+            raise ValueError("Constructor '{}' as an object needs list argument" \
+                             .format(constructor_id))
+
+    # compute the index
+    ix_val = walk(ix)
+
+    # index into memory and get value(s)
+    if ix_val[0] == 'integer':
+        return memory[ix_val[1]]
+
+    elif ix_val[0] == 'dict-access':
+        (DICT_KEY_TYPE, dict_key) = walk(ix_val[1])
         if DICT_KEY_TYPE not in ['integer', 'string']:
-            raise ValueError("dictionary key type {} not supported".
+            raise ValueError("dictionary key type {} not supported (1)".
                              format(DICT_KEY_TYPE))
-        return handle_dict_ix(ll, (DICT_KEY_TYPE, dict_key))
+        return handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key))
 
-    elif IX_TYPE == 'list': # then ixs is a list of indexes
-        if len(ixs) == 0:
+    elif ix_val[0] == 'list':
+        if len(ix_val[1]) == 0:
             raise ValueError("index list is empty")
 
-        new_l = [] # construct a list of return values
-        for i in ixs:
-            (IX_EXP_TYPE, ix_exp) = walk(i) # lhh: is walking here necessary, already semantic val?
+        return_memory = []
+        for i in ix_val[1]:
+            (IX_EXP_TYPE, ix_exp) = i
 
             if IX_EXP_TYPE == 'integer':
-                ix_exp_val = int(ix_exp)
-                new_l.append(walk(ll[ix_exp_val]))
+                return_memory.append(memory[ix_exp])
 
             elif IX_EXP_TYPE == 'dict-access':
-                (DICT_KEY_TYPE, dict_key, *_) = walk(ix_exp) # lhh: is walking here necessary, already semantic val?
+                (DICT_KEY_TYPE, dict_key, *_) = ix_exp
                 if DICT_KEY_TYPE not in ['integer', 'string']:
-                    raise ValueError("dictionary key type {} not supported".
-                                     format(DICT_KEY_TYPE))
-                new_l.append(handle_dict_ix(ll, (DICT_KEY_TYPE, dict_key)))
+                    raise ValueError("dictionary key type '{}' not supported"\
+                                     .format(DICT_KEY_TYPE))
+                return_memory.append(handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key)))
 
             else:
                 raise ValueError("unsupported list index")
 
-        return ('list', new_l)
+        return ('list', return_memory)
 
     else:
-        raise ValueError("index op {} not yet implemented".format(ix[0]))
+        raise ValueError("index op '{}' not yet implemented".format(ix_val[0]))
 
 #########################################################################
-# recursively walk through the contents of a list together with the
-# index expression and find the element to store into
-#
-# NOTE: the key here is that list names in Python are treated as references,
-# that is, even though we are working outside the symbol table, the 
-# symbol table holds a reference to the list we are updating so writing
-# to the list here will update the list in the symbol table.
-# the list acts like memory associated with the list name
-#
-# NOTE: lhh: this needs to be cleaned up, lots of repeated code that only
-#            differs in minor details
-def store_into_list(list_val, ix, value):
+# we are indexing into the memory of either a list or a constructor to
+# write into the memory.
+def store_at_ix(structure_val, index, value):
 
-    (INDEX, ix_exp, rest_ix) = ix
+    (INDEX, ix) = index
     assert_match(INDEX, 'index')
 
-    # evaluate ix_exp and use it to update list element
-    (TYPE, ix_val_list) = walk(ix_exp)
+    # find the actual memory we need to access
+    if structure_val[0] == 'list':
+        memory = structure_val[1]
 
-    if TYPE == 'integer':
-        ix_val = int(ix_val_list)
-        
-        if rest_ix[0] == 'nil': # store into list element
-            list_val[ix_val] = value
+    # constructor: return the argument list as memory
+    # NOTE: indexing a constructor that is applied to a constant
+    #       will fail since there is no memory here.
+    elif structure_val[0] == 'apply-list':
+        (APPLY_LIST,
+         (LIST_1,
+          [(ID, constructor_id),
+           (LIST_2, memory)])) = structure_val
+        if LIST_2 != 'list':
+            raise ValueError("Constructor '{}' as an object needs list argument" \
+                             .format(constructor_id))
 
-        else: # keep recursing
-            nested_list = list_val[ix_val]
-            (TYPE, val) = nested_list
-            if TYPE != 'list':
-                raise ValueError("list and index expression do not match")
-            else:
-                store_into_list(val, rest_ix, value)
+    # compute the index
+    ix_val = walk(ix)
 
-    elif TYPE == 'dict-access':
-        (KEY_TYPE, key, *_) = walk(ix_val_list) # compute the semantics of the dictionary key
-        if KEY_TYPE not in ['integer', 'string']:
-            raise ValueError("dictionary key type {} not supported".
-                             format(KEY_TYPE))
+    # index into memory and set the value
+    if ix_val[0] == 'integer':
+        memory[ix_val[1]] = value
+        return
 
-        if rest_ix[0] == 'nil': # store into list element
-            handle_dict_ix(list_val, (KEY_TYPE, key), value, mode="write")
+    elif ix_val[0] == 'dict-access':
+        (DICT_KEY_TYPE, dict_key) = walk(ix_val[1])
+        if DICT_KEY_TYPE not in ['integer', 'string']:
+            raise ValueError("dictionary key type {} not supported (2)".
+                             format(DICT_KEY_TYPE))
+        return handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key), value, "write")
 
-        else: # keep recursing
-            nested_list = handle_dict_ix(list_val, (KEY_TYPE, key))
-            (TYPE, val) = nested_list
-            if TYPE != 'list':
-                raise ValueError("list and index expression do not match")
-            else:
-                store_into_list(val, rest_ix, value)
-
-    elif TYPE == 'list':
-
-        # if len(ix_val_list) != 1:
-        raise ValueError("list slicing not supported on unification")
-
-        (IX_TYPE, ix_val) = ix_val_list[0]
-
-        if IX_TYPE == 'integer':
-            ix_val = int(ix_val)
-
-            if rest_ix[0] == 'nil': # store into list element
-                list_val[ix_val] = value
-
-            else: # keep recursing
-                nested_list = list_val[ix_val]
-                (TYPE, val) = nested_list
-                if TYPE != 'list':
-                    raise ValueError("list and index expression do not match")
-                else:
-                    store_into_list(val, rest_ix, value)
-        
-        elif IX_TYPE == 'dict-access':
-            (KEY_TYPE, key, *_) = walk(ix_val) # compute the semantics of the dictionary key
-            if KEY_TYPE not in ['integer', 'string']:
-                raise ValueError("dictionary key type {} not supported".
-                                 format(KEY_TYPE))
-
-            if rest_ix[0] == 'nil': # store into list element
-                handle_dict_ix(list_val, (KEY_TYPE, key), value, mode="write")
-
-            else: # keep recursing
-                nested_list = handle_dict_ix(list_val, (KEY_TYPE, key))
-                (TYPE, val) = nested_list
-                if TYPE != 'list':
-                    raise ValueError("list and index expression do not match")
-                else:
-                    store_into_list(val, rest_ix, value)
-    
-    else:
-        raise ValueError("unsupported list index expression")
-
-#########################################################################
-# handle list index expressions as lvals -- compute the list lval from
-# sym and ix and unify to it the value
-def handle_list_ix_lval(sym, ix, value):
-    
-    sym_list_val = state.symbol_table.lookup_sym(sym)
-
-    (TYPE, val) = sym_list_val
-
-    if TYPE != 'list':
-        raise ValueError("{} is not of type list".format(sym))
-
-    store_into_list(val, ix, value)
-
-#########################################################################
-def update_struct_sym(sym, ix, value):
-
-    # check out the index -- needs to evaluate to the value 0.
-    (INDEX, ix_exp, rest_ix) = ix
-    assert_match(INDEX, 'index')
-
-    (LIST, ix_val_list) = walk(ix_exp)
-
-    if LIST != 'list':
-        raise ValueError("unknown index expression")
-
-    if len(ix_val_list) != 1:
-        raise ValueError("list slicing not supported on unification")
-
-    (TYPE, ix_val) = ix_val_list[0]
-
-    if TYPE != 'integer':
-        raise ValueError("non-integer list index expression")
-    else:
-        ix_val = int(ix_val)
-        if ix_val != 0:
-            raise ValueError("index and arity of structure mismatched - expected index 0")
-
-    # update the object structure in the symbol table
-
-    sym_val = state.symbol_table.lookup_sym(sym)
-
-    # check that we are dealing with a constructor type
-    (APPLY, (ID, structsym), obj_structure) = sym_val
-    structsym_val = state.symbol_table.lookup_sym(structsym)
-    if structsym_val[0] != 'constructor':
-        raise ValueError("{} is not a constructor".format(structsym))
-
-    # get arity of constructor
-    (CONSTRUCTOR, (ARITY, aval_str)) = structsym_val
-    aval = int(aval_str)
-    if aval != 1:
-        raise ValueError("internal interpreter error - arity mismatch on struct lval")
-
-    # construct a new structure based on the new value and update sym
-    new_struct = ('apply',
-                  ('id', structsym),
-                  ('apply',
-                   value,
-                   ('nil',)))
-
-    state.symbol_table.update_sym(sym, new_struct)
-    
-
-#########################################################################
-# handle structure index expressions as lvals -- compute the structure lval from
-# sym and ix and unify to it the value
-def handle_struct_ix_lval(sym, ix, value):
-    
-    sym_val = state.symbol_table.lookup_sym(sym)
-
-    # check that we are dealing with a constructor type
-    (APPLY, (ID, structsym), obj_structure) = sym_val
-    structsym_val = state.symbol_table.lookup_sym(structsym)
-    if structsym_val[0] != 'constructor':
-        raise ValueError("{} is not a constructor".format(structsym))
-
-    # get arity of constructor
-    (CONSTRUCTOR, (ARITY, arity_str)) = structsym_val
-    arity_val = int(arity_str)
-    
-    # get the list from the structure that actually holds the values of the object
-    (APPLY, (CONTENT_TYPE, content), NIL) = obj_structure
-
-    if CONTENT_TYPE == 'list':
-        if len(content) != arity_val:
-            raise ValueError(
-                "constructor arity does not match arguments - expected {} got {}".
-                format(arity_val, len(content)))
-
-        store_into_list(content, ix, value)
+    elif ix_val[0] == 'list':
+        raise ValueError("slicing in patterns not supported")
 
     else:
-        if arity_val != 1:
-            raise ValueError(
-                "constructor arity does not match arguments - expected {} got {}".
-                format(arity_val, len(content)))
-
-        # update symbol in symtab with new structure content
-        update_struct_sym(sym, ix, value)
+        raise ValueError("index op '{}' in patterns not supported"
+                         .format(ix_val[0]))
 
 #########################################################################
-def handle_call(fval, actual_arglist):
-    
+def handle_call(fval, actual_val_args):
+
+    #lhh
+    #print('in handle_call')
+    #print("calling: {}\nwith: {}\n\n".format(fval,actual_val_args))
+
     if fval[0] != 'function':
         raise ValueError("not a function in call")
 
-    actual_val_args = eval_actual_args(actual_arglist)   # evaluate actuals in current symtab
-    body_list = fval[1]   # get the list of function bodies 
+    # this is done in apply_list_exp
+    # actual_val_args = eval_actual_args(actual_arglist)   # evaluate actuals in current symtab
+    body_list = fval[1]   # get the list of function bodies
 
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
@@ -366,7 +240,7 @@ def handle_call(fval, actual_arglist):
 
     for body in body_list_val:
 
-        (BODY, 
+        (BODY,
          (PATTERN, p),
          (STMT_LIST, stmts)) = body
 
@@ -393,7 +267,7 @@ def handle_call(fval, actual_arglist):
     old_lineinfo = state.lineinfo
 
     try:
-        walk(stmts)         
+        walk(stmts)
     except ReturnValue as val:
         return_value = val.value
     else:
@@ -426,39 +300,44 @@ def declare_unifiers(unifiers):
             state.symbol_table.enter_sym(lval[1], value)
 
         elif lval[0] == 'structure-ix': # list/structure lval access
-            (STRUCTUREIX, (ID, sym), ix) = lval
-            (symtype, symval, *_) = state.symbol_table.lookup_sym(sym)
+            # Note: structures have to be declared before index access
+            # can be successful!!  They have to be declared so that therefore
+            # is memory associated with the structure.
 
-            if symtype == 'list':
-                handle_list_ix_lval(sym, ix, value)
+            (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = lval
 
-            elif symtype == 'apply':
-                handle_struct_ix_lval(sym, ix, value)
+            # look at the semantics of 'structure'
+            structure_val = walk(structure)
 
-            else:
-                raise ValueError("unknown type {} in unification lval".format(symtype))
+            # indexing/slicing
+            # iterate over the indexes: ('index', index)
+            # NOTE: index operations are left assoc. each index op produces
+            # a new memory object cast as a list.  this memory object
+            # is fed to the following index op.  here is last index
+            # updates the memory of the object.
+            for ix_ix in range(0, len(index_list)-1):
+                structure_val = read_at_ix(structure_val, index_list[ix_ix])
+
+            # use the last index to update the memory
+            store_at_ix(structure_val, index_list[-1], value)
 
         else:
-            raise ValueError("unknown unifier type {}".format(lval[0]))
+            raise ValueError("unknown unifier type '{}'".format(lval[0]))
 
 #########################################################################
 # node functions
 #########################################################################
 def global_stmt(node):
 
-    (GLOBAL, id_list) = node
+    (GLOBAL, (LIST, id_list)) = node
     assert_match(GLOBAL, 'global')
-
-    (ID_LIST, id_list_tree) = id_list
-    assert_match(ID_LIST, 'id-list')
-    
-    (LIST, id_list_val) = id_list_tree
     assert_match(LIST, 'list')
 
-    for id_tuple in id_list_val:
+    for id_tuple in id_list:
         (ID, id_val) = id_tuple
         if state.symbol_table.is_symbol_local(id_val):
-            raise ValueError("{} is already local, cannot be declared global".format(id_val))
+            raise ValueError("{} is already local, cannot be declared global"
+                             .format(id_val))
         state.symbol_table.enter_global(id_val)
 
 #########################################################################
@@ -493,10 +372,9 @@ def unify_stmt(node):
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
-    
+
     term = walk(exp)
     unifiers = unify(term, pattern)
-
     declare_unifiers(unifiers)
 
 #########################################################################
@@ -522,12 +400,12 @@ def throw_stmt(node):
     assert_match(THROW, 'throw')
 
     raise ThrowValue(walk(object))
-     
+
 #########################################################################
 def try_stmt(node):
 
-    (TRY, 
-     (TRY_STMTS, try_stmts),
+    (TRY,
+     (STMT_LIST, try_stmts),
      (CATCH_LIST, (LIST, catch_list))) = node
 
     try:
@@ -544,20 +422,20 @@ def try_stmt(node):
 
     except PatternMatchFailed as inst:
         # convert a Python string to an Asteroid string
-        except_val = ('list', 
+        except_val = ('list',
                       [('string', 'PatternMatchFailed'), ('string', inst.value)])
         inst_val = inst
 
     except Exception as inst:
         # convert exception args to an Asteroid string
-        except_val = ('list', 
+        except_val = ('list',
                       [('string', 'Exception'), ('string', str(inst))])
         inst_val = inst
 
     else:
         # no exceptions found in the try statements
         return
-    
+
     # we had an exception - walk the catch list and find an appropriate set of
     # catch statements.
     for catch_val in catch_list:
@@ -572,7 +450,7 @@ def try_stmt(node):
             declare_unifiers(unifiers)
             walk(catch_stmts)
             return
-        
+
     # no exception handler found - rethrow the exception
     raise inst_val
 
@@ -581,7 +459,7 @@ def while_stmt(node):
 
     (WHILE, cond_exp, body_stmts) = node
     assert_match(WHILE, 'while')
-    
+
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
@@ -598,7 +476,7 @@ def repeat_stmt(node):
 
     (REPEAT, body_stmts, cond_exp) = node
     assert_match(REPEAT, 'repeat')
-    
+
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
@@ -645,15 +523,16 @@ def for_stmt(node):
 
 #########################################################################
 def if_stmt(node):
-    
-    (IF, if_list) = node
+
+    (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
+    assert_match(LIST, 'list')
 
-    for if_pair in if_list:
+    for if_clause in if_list:
 
-        (IF_PAIR,
+        (IF_CLAUSE,
          (COND, cond),
-         (STMTS, stmts)) = if_pair
+         (STMT_LIST, stmts)) = if_clause
 
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
@@ -662,6 +541,86 @@ def if_stmt(node):
             break
 
 #########################################################################
+def apply_list_exp(node):
+
+    (APPLY_LIST, (LIST, apply_list)) = node
+    assert_match(APPLY_LIST, 'apply-list')
+
+    # handle a list of apply terms:
+    # e.g. inc inc 1
+    # function application happens from right to left, therefore we reverse
+    # a shallow copy of the apply-list
+    rev_list = list(apply_list)
+    rev_list.reverse()
+
+    #lhh
+    #print("rev-list: {}".format(rev_list))
+    #print(state.symbol_table.dbg_find_sym('x')+"\n\n")
+
+    # first element must be a value to pass to a function
+    arg_val = walk(rev_list[0])
+
+    #lhh
+    #print("arg_val: {}".format(arg_val))
+
+    # step thru all the apply terms each of which needs to produce a
+    # function/constructor value - the current function application
+    # will produce the input value (arg_val) for the next application
+    for apply_ix in range(1, len(rev_list)):
+        ftree = rev_list[apply_ix]
+        fval = walk(ftree)
+
+        # object member function
+        if fval[0] == 'function' and ftree[0] == 'structure-ix':
+            # we are dealing with a member function call. compute
+            # the object reference and make that the first actual argument
+            # to the function.
+            (STRUCTURE_IX, obj_tree, index_list) = ftree
+            obj_ref = walk(obj_tree)
+            if arg_val[0] == 'none':
+                arg_val = handle_call(fval, obj_ref)
+            elif arg_val[0] != 'list':
+                new_arg_val = ('list', [obj_ref, arg_val])
+                arg_val = handle_call(fval, new_arg_val)
+            elif arg_val[0] == 'list':
+                arg_val[1].insert(0, obj_ref)
+                arg_val = handle_call(fval, arg_val)
+            else:
+                raise ValueError(
+                    "unknown parameter type '{}' in apply"
+                    .format(arg_val[0]))
+
+        # regular function call
+        elif fval[0] == 'function':
+            arg_val = handle_call(fval, arg_val)
+
+        # constructor call
+        elif fval[0] == 'constructor': # return structure
+            (ID, constructor_id) = rev_list[apply_ix]
+            (ARITY, arity) = fval[1]
+            # check arity match
+            if arg_val[0] == 'none' and arity != 0:
+                raise ValueError(
+                    "constructor '{}' arity mismatch, expected {} got 0"
+                    .format(constructor_id, arity))
+            elif arg_val[0] != 'list' and arity != 1:
+                raise ValueError(
+                    "constructor '{}' arity mismatch, expected {} got 1"
+                    .format(constructor_id, arity))
+            elif arg_val[0] == 'list' and (len(arg_val[1]) != arity) :
+                raise ValueError(
+                    "constructor '{}' arity mismatch, expected {} got {}"
+                    .format(constructor_id, arity, len(arg_val[1])))
+
+            arg_val = ('apply-list', ('list', [(ID, constructor_id), arg_val]))
+
+        else:
+            raise ValueError("unknown apply term '{}'".format(fval[0]))
+
+    return arg_val
+
+#########################################################################
+# Note: obsolete
 def apply_exp(node):
     # could be a call: fval fargs
     # could be a constructor invocation for an object: B(a,b,c)
@@ -733,7 +692,7 @@ def apply_exp(node):
         # the toplevel structure and walk the args in case the args are functions
         # or operators that compute new structure...
         # 1) (apply, parms, nil) -- single call
-        if rest[0] == 'nil':  
+        if rest[0] == 'nil':
             (parm_type, parm_val, *_) = parms
             if parm_type == 'list':
                 if len(parm_val) != arity_val:
@@ -746,7 +705,7 @@ def apply_exp(node):
                         "argument does not match constructor arity - expected {} got 1".
                         format(arity_val))
 
-            return ('apply', 
+            return ('apply',
                     ('id', constr_sym),
                     ('apply', walk(parms), rest))
 
@@ -757,7 +716,7 @@ def apply_exp(node):
                     "argument does not match constructor arity - expected {} argument(s)".format(
                         arity_val))
 
-            return ('apply', 
+            return ('apply',
                     ('id', constr_sym),
                     walk(args))
 
@@ -767,74 +726,25 @@ def apply_exp(node):
 
 #########################################################################
 def structure_ix_exp(node):
-    # list/struct access: x@[0]
 
-    #lhh
-    #print("structure node: {}".format(node))
+    (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = node
 
-    (STRUCTUREIX, val, args) = node
-    assert_match(STRUCTUREIX, 'structure-ix')
-    
-    if args[0] == 'nil':
-        return walk(val)
-    else:
-        (INDEX, ix, rest) = args
-        assert_match(INDEX, 'index')
+    assert_match(STRUCTURE_IX, 'structure-ix')
+    assert_match(INDEX_LIST, 'index-list')
+    assert_match(LIST, 'list')
 
-    # look at the semantics of val
-    v = walk(val)
+    # look at the semantics of 'structure'
+    structure_val = walk(structure)
 
-    # indexing/slicing a list
-    if v[0] == 'list':
-        # if it is a list then the args node is another
-        # 'apply' node for indexing the list
-        (INDEX, ix, rest) = args
-        assert_match(INDEX, 'index')
-        return walk(('structure-ix', handle_list_ix(v, walk(ix)), rest))
+    # indexing/slicing
+    # iterate over the indexes: ('index', index)
+    # NOTE: index operations are left assoc. each index op produces
+    # a new memory object cast as a list.  this memory object
+    # is fed to the following index op.
+    for ix_ix in range(0, len(index_list)):
+        structure_val = read_at_ix(structure_val, index_list[ix_ix])
 
-    # indexing/slicing a structure of the form A(x,y,z)
-    elif v[0] == 'apply': 
-        # we are looking at something like this
-        #    (0:'apply', 
-        #     1:(0:'id', 
-        #        1:struct_sym),
-        #     2:next))
-
-        # find out if the id in the structure represents a constructor
-        if v[1][0] != 'id':
-            raise ValueError(
-                'illegal value in structure index/slicing, expected id found {}'.format(
-                    v[1][0]))
-        constructor_sym = v[1][1]
-        (TYPE, cval, *_) = state.symbol_table.lookup_sym(constructor_sym)
-        if TYPE != 'constructor':
-            raise ValueError("symbol {} needs to be a constructor".format(constructor_sym))
-
-        # get the arity
-        (ARITY, arity_val) = cval
-        arity_val = int(arity_val)
-
-        # get the part of the structure that actually stores the info - a list or a single value
-        (APPLY, sargs, next) = v[2]
-        assert_match(APPLY, 'apply')
-        if sargs[0] == 'list':
-            (INDEX, ix, rest) = args
-            assert_match(INDEX, 'index')
-            # make the result look like a structure index in case we get a structure back
-            # that we need to index again, e.g., a@[x]@[y]
-            return walk(('structure-ix', handle_list_ix(sargs, walk(ix)), rest))
-        
-        else: # just a single element
-            if arity_val != 1:
-                raise ValueError(
-                    "illegal index expression for structure {}".format(
-                        constructor_sym))
-            # map the single member into a singleton list so we can reuse the handle_ix_list 
-            # function and do not have to put a lot of special case code here...
-            return walk(('structure-ix', handle_list_ix(('list', [sargs]), walk(ix)), rest))
-
-    else: # not yet implemented
-        raise ValueError("illegal index operation for {}".format(v[0]))
+    return structure_val
 
 #########################################################################
 def list_exp(node):
@@ -869,7 +779,7 @@ def is_exp(node):
     assert_match(IS, 'is')
 
     term_val = walk(term)
-    
+
     try:
         unifiers = unify(term_val, pattern)
     except PatternMatchFailed:
@@ -898,7 +808,7 @@ def in_exp(node):
 
 #########################################################################
 def otherwise_exp(node):
-    
+
     (OTHERWISE, e1, e2) = node
     assert_match(OTHERWISE, 'otherwise')
 
@@ -923,7 +833,7 @@ def if_exp(node):
         return walk(else_exp)
 
 #########################################################################
-# NOTE: 'to-list' is not a semantic value and should never appear in 
+# NOTE: 'to-list' is not a semantic value and should never appear in
 #       any tests.  It is a constructor and should be expanded by the
 #       walk function before semantic processing.
 def to_list_exp(node):
@@ -973,7 +883,7 @@ def to_list_exp(node):
 # NOTE: this is the value view of the head tail constructor, for the
 #       pattern view of this constructor see unify.
 def head_tail_exp(node):
-    
+
     (HEAD_TAIL, head, tail) = node
     assert_match(HEAD_TAIL, 'head-tail')
 
@@ -992,7 +902,7 @@ def process_lineinfo(node):
 
     (LINEINFO, lineinfo_val) = node
     assert_match(LINEINFO, 'lineinfo')
-    
+
     #lhh
     #print("lineinfo: {}".format(lineinfo_val))
 
@@ -1004,7 +914,7 @@ def process_lineinfo(node):
 def walk(node):
     # node format: (TYPE, [child1[, child2[, ...]]])
     type = node[0]
-    
+
     if type in dispatch_dict:
         node_function = dispatch_dict[type]
         return node_function(node)
@@ -1014,52 +924,50 @@ def walk(node):
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
     # statements - statements do not produce return values
-    'lineinfo': process_lineinfo,
-    'noop'    : lambda node : None,
-    'attach'  : attach_stmt,
-    'detach'  : detach_stmt,
-    'unify'   : unify_stmt,
-    'while'   : while_stmt,
-    'repeat'  : repeat_stmt,
-    'for'     : for_stmt,
-    'global'  : global_stmt,
-    'return'  : return_stmt,
-    'break'   : break_stmt,
-    'if'      : if_stmt,
-    'throw'   : throw_stmt,
-    'try'     : try_stmt,
+    'lineinfo'      : process_lineinfo,
+    'noop'          : lambda node : None,
+    'attach'        : attach_stmt,
+    'detach'        : detach_stmt,
+    'unify'         : unify_stmt,
+    'while'         : while_stmt,
+    'repeat'        : repeat_stmt,
+    'for'           : for_stmt,
+    'global'        : global_stmt,
+    'return'        : return_stmt,
+    'break'         : break_stmt,
+    'if'            : if_stmt,
+    'throw'         : throw_stmt,
+    'try'           : try_stmt,
 
     # expressions - expressions do produce return values
-    'list'    : list_exp,
+    'list'          : list_exp,
     # raw-list is a list constructor that has the internal structure of an acutal list
     # just map it to an actual list an walk it - raw-list itself should never
     # appear in semantic processing -- it can appear in patterns as a constructor!
-    'raw-list' : lambda node : walk(('list', node[1])),
-    'to-list' : to_list_exp,
-    'head-tail' : head_tail_exp,
-    'dict-access' : lambda node : node,
-    'seq'     : lambda node : ('seq', walk(node[1]), walk(node[2])),
-    'none'    : lambda node : node,
-    'nil'     : lambda node : node,
-    'function': lambda node : node, # looks like a constant
-    'constructor' : lambda node : node, # looks like a constant
-    'string'  : lambda node : node,
-    'integer' : lambda node : node,
-    'real'    : lambda node : node,
-    'boolean' : lambda node : node,
+    'raw-list'      : lambda node : walk(('list', node[1])),
+    'to-list'       : to_list_exp,
+    'head-tail'     : head_tail_exp,
+    'dict-access'   : lambda node : node,
+    'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
+    'none'          : lambda node : node,
+    'nil'           : lambda node : node,
+    'function'      : lambda node : node, # looks like a constant
+    'constructor'   : lambda node : node, # looks like a constant
+    'string'        : lambda node : node,
+    'integer'       : lambda node : node,
+    'real'          : lambda node : node,
+    'boolean'       : lambda node : node,
     # quoted code should be treated like a constant if not ignore_quote
-    'quote'   : lambda node : node[1] if state.ignore_quote else node, 
+    'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
     # type tag used in conjunction with escaped code in order to store
     # foreign constants in Asteroid data structures
-    'foreign' : lambda node : node, 
-    'id'      : lambda node : state.symbol_table.lookup_sym(node[1]),
-    'apply'   : apply_exp,
-    'structure-ix' : structure_ix_exp,
-    'escape'  : escape_exp,
-    'is'      : is_exp,
-    'in'      : in_exp,
-    'otherwise' : otherwise_exp,
-    'if-exp'  : if_exp,
+    'foreign'       : lambda node : node,
+    'id'            : lambda node : state.symbol_table.lookup_sym(node[1]),
+    'apply-list'    : apply_list_exp,
+    'structure-ix'  : structure_ix_exp,
+    'escape'        : escape_exp,
+    'is'            : is_exp,
+    'in'            : in_exp,
+    'otherwise'     : otherwise_exp,
+    'if-exp'        : if_exp,
 }
-
-

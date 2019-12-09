@@ -1,11 +1,11 @@
 ###########################################################################################
 # Asteroid interpreter
 #
-# (c) 2018 - Lutz Hamel, University of Rhode Island
+# (c) 2018-2020 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
 import sys
-from asteroid_parser import Parser
+from asteroid_frontend import Parser
 from asteroid_state import state
 from asteroid_walk import walk
 from asteroid_walk import ThrowValue
@@ -16,12 +16,12 @@ from asteroid_version import VERSION
 
 # TODO: adjust the defaults
 def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False, version=False):
-    
+
     if version:
         print("** Asteroid Version {} **".format(VERSION))
 
     try:
-        # initialize the state object
+        # initialize state
         state.initialize()
 
         # build the AST
@@ -45,7 +45,7 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
         else:
             print("Error: {}: {}: unhandled Asteroid exception: {}"
                   .format(module, lineno, term2string(throw_val.value)))
-        
+
         sys.exit(1)
 
     except ReturnValue as inst:
@@ -71,4 +71,3 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
     except  BaseException as e:
             print("Error: {}".format(e))
             sys.exit(1)
-

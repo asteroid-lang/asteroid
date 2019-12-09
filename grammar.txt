@@ -14,6 +14,7 @@ New Grammar for Asteroid written in EBNF format.
         : NOOP
         | '.'
         | GLOBAL id_list '.'?
+        | NONLOCAL id_list '.'?
         | FUNCTION ID body_defs END FUNCTION
         | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
         | ATTACH primary TO ID '.'?
