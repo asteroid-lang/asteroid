@@ -145,13 +145,15 @@ def match(tag1, tag2):
         return False
 
 ###########################################################################################
-# expression nodes not allowed in terms or patterns for unification. these are all node
+# expression nodes not allowed in terms or patterns for unification. these are all nodes
 # that express some sort of computation
 
 unify_not_allowed = {
     'function',
     'to-list',
     'where-list',
+    'raw-to-list',
+    'raw-where-list',
     'if-exp',
     'foreign',
     'escape',
@@ -246,7 +248,7 @@ def unify(term, pattern):
             "variable '{}' in term not allowed"
             .format(term[1]))
 
-    elif pattern[0] == 'head-tail':
+    elif pattern[0] in ['head-tail', 'raw-head-tail']:
         # unpack the structures
         (HEAD_TAIL, pattern_head, pattern_tail) = pattern
         (LIST, list_val) = term
@@ -343,9 +345,9 @@ def promote(type1, type2, strict=True):
     else:
         if strict:
             if type1 == type2:
-                raise ValueError("binary operation on type {} not supported".format(type1))
+                raise ValueError("binary operation on type '{}' not supported".format(type1))
             else:
-                raise ValueError("type {} and type {} are incompatible".format(type1, type2))
+                raise ValueError("type '{}' and type '{}' are incompatible".format(type1, type2))
 
         else:
             return ('none', None)
@@ -362,7 +364,7 @@ def promote(type1, type2, strict=True):
 #     false
 #     zero of the numeric types: 0, 0.0.
 #     the empty string
-#     any empty list: (), [].
+#     any empty list: (,), [].
 #
 #  All other values are considered true, in particular any object or constructor.
 #
@@ -378,7 +380,7 @@ def map2boolean(value):
         return ('boolean', bool(value[1]))
 
     else:
-        raise ValueError('unsupported type {} as truth value'.format(value[0]))
+        raise ValueError("unsupported type '{}' as truth value".format(value[0]))
 
 ###########################################################################################
 def term2string(term):

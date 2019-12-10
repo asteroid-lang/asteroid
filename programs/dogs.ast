@@ -1,0 +1,44 @@
+load "standard".
+load "io".
+load "util".
+
+class Dog
+  with
+    data name.
+    data tricks.
+
+    function __init__
+      with self do
+        self@name = "".
+        self@tricks = [].
+      orwith self, name do
+        self@name = name.
+        self@tricks = [].
+      orwith self, name, tricks do
+        self@name = name.
+        self@tricks = tricks.
+      end function
+
+    function add_trick
+      with self, new_trick do
+        let self@tricks = self@tricks + [new_trick].
+      end function
+  end class
+
+-- Fido the dog
+let fido = Dog("Fido")
+
+-- use function 'add_trick' to add tricks to the object
+fido@add_trick("roll over").
+fido@add_trick("play dead").
+
+-- Buddy the dog
+let buddy = Dog("Buddy")
+
+-- use function 'add_trick' to add tricks to the object
+buddy@add_trick("roll over").
+buddy@add_trick("sit stay").
+
+-- print out the tricks
+print ("Fido's tricks: " + fido@tricks).
+print ("Buddy's tricks: " + buddy@tricks).

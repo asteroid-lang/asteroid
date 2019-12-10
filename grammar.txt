@@ -1,111 +1,127 @@
-New Grammar for Asteroid written in EBNF format.
+// Grammar for Asteroid written in EBNF format.
+// (c) Lutz Hamel, University of Rhode Island
 
-(c) 2019 - Lutz Hamel, University of Rhode Island
+prog
+  : stmt_list
 
-     prog:
-       stmt_list
+stmt_list
+  : stmt stmt_list
+  | empty
 
-     stmt_list
-       : LOAD STRING '.'? stmt_list
-       | stmt stmt_list
-       | empty
+stmt
+  : noop_stmt
+  | LOAD STRING '.'?
+  | GLOBAL id_list '.'?
+  | NONLOCAL id_list '.'?
+  | function_def
+  | CLASS ID WITH class_stmt_list END CLASS
+  | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
+  | ATTACH primary TO ID '.'?
+  | DETACH FROM ID '.'?
+  | LET pattern '=' exp '.'?
+  | FOR pattern IN exp DO stmt_list END FOR
+  | WHILE exp DO stmt_list END WHILE
+  | REPEAT DO? stmt_list UNTIL exp '.'?
+  | BREAK '.'?
+  | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END IF
+  | RETURN exp? '.'?
+  | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
+  | THROW exp '.'?
+  | call '.'?
 
-     stmt
-        : NOOP
-        | '.'
-        | GLOBAL id_list '.'?
-        | NONLOCAL id_list '.'?
-        | FUNCTION ID body_defs END FUNCTION
-        | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
-        | ATTACH primary TO ID '.'?
-        | DETACH FROM ID '.'?
-        | LET pattern '=' exp '.'?
-        | FOR pattern IN exp DO stmt_list END FOR
-        | WHILE exp DO stmt_list END WHILE
-        | REPEAT (DO?) stmt_list UNTIL exp '.'?
-        | BREAK '.'?
-        | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
-        | RETURN exp? '.'?
-        | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
-        | THROW exp '.'?
-        | call '.'?
+function_def
+  : FUNCTION ID body_defs END FUNCTION
 
-     id_list
-       : ID (',' ID)*
+class_stmt
+  : function_def
+  | DATA ID '.'?
+  | noop_stmt
 
-     body_defs
-       : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+class_stmt_list
+  : class_stmt class_stmt_list
+  | empty
 
-     pattern
-        : exp
+noop_stmt
+  : NOOP '.'?
+  | '.'
 
-     exp
-        : quote_exp (',' quote_exp?)*
+id_list
+  : ID (',' ID)*
 
-     quote_exp
-        : QUOTE head_tail
-        | head_tail
+body_defs
+  : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
 
-     head_tail
-        : conditional ('|' exp)?
+pattern
+  : exp
 
-     conditional
-        : compound
-            (
-               (OTHERWISE exp) |
-               (IF exp (ELSE exp)?)
-            )?
+exp
+  : quote_exp (',' quote_exp?)*
 
-     compound
-        : rel_exp0
-            (
-               (IS pattern) |
-               (IN exp) | // exp has to be a list
-               (TO exp (STEP exp)?) | // list comprehension
-               (WHERE pattern IN exp)     // list comprehension
-            )?
+quote_exp
+  : QUOTE head_tail
+  | head_tail
 
-     relational operators with their precedence
-     rel_exp0
-        : rel_exp1 (OR rel_exp1)*
+head_tail
+  : compound ('|' exp)?
 
-     rel_exp1
-        : rel_exp2 (AND rel_exp2)*
+compound
+  : rel_exp0
+      (
+         (IS pattern) |
+         (IN exp) |               // exp has to be a list
+         (TO exp (STEP exp)?) |   // list comprehension
+         (WHERE pattern IN exp)   // list comprehension
+      )?
 
-     rel_exp2
-        : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
+// relational operators with their precedences
+rel_exp0
+  : rel_exp1 (OR rel_exp1)*
 
-     rel_exp3
-        : arith_exp0 ((LE | LT  | GE | GT) arith_exp0)*
+rel_exp1
+  : rel_exp2 (AND rel_exp2)*
 
-     arith_exp0
-        : arith_exp1 ((PLUS | MINUS) arith_exp1)*
+rel_exp2
+  : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
 
-     arith_exp1
-        : call ((TIMES | DIVIDE) call)*
+rel_exp3
+  : arith_exp0 ((LE | LT  | GE | GT) arith_exp0)*
 
-     call
-        : index index*
+// arithmetic operators with their precedences
+arith_exp0
+  : arith_exp1 ((PLUS | MINUS) arith_exp1)*
 
-     index
-        : primary ('@' primary)*
+arith_exp1
+  : conditional ((TIMES | DIVIDE) conditional)*
 
-     primary
-        : INTEGER
-        | REAL
-        | STRING
-        | TRUE
-        | FALSE
-        | NONE
-        | ID
-        | '*' ID  // "dereference" a variable during pattern matching
-        | NOT primary
-        | MINUS primary
-        | ESCAPE STRING
-        | '(' exp? ')'
-        | '[' exp? ']' // list or list access
-        | '{' exp '}'  // exp should only produce integer and string typed expressions
-        | function_const
+conditional
+  : call
+      (
+         (OTHERWISE exp) |
+         (IF exp (ELSE exp)?)
+      )?
 
-     function_const
-        : LAMBDA body_defs
+call
+  : index index*
+
+index
+  : primary ('@' primary)*
+
+primary
+  : INTEGER
+  | REAL
+  | STRING
+  | TRUE
+  | FALSE
+  | NONE
+  | ID
+  | '*' ID  // "dereference" a variable during pattern matching
+  | NOT primary
+  | MINUS primary
+  | ESCAPE STRING
+  | '(' exp ')'  // empty parentheses NOT allowed!!
+  | '[' exp? ']' // list or list access
+  | '{' exp '}'  // exp should only produce integer and string typed expressions
+  | function_const
+
+function_const
+  : LAMBDA body_defs

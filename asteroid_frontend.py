@@ -31,44 +31,52 @@ exp_lookahead_no_ops = [
     'ID',
     '{',
     '[',
-    '(']
+    '(',
+    ]
 
 exp_lookahead = exp_lookahead_no_ops + [
                  'ESCAPE',
-                 '*',
-                 '-',
                  #'TIMES',
                  'MINUS',
                  'NOT',
                  'LAMBDA',
-                 'QUOTE']
+                 'QUOTE',
+                 ]
 
 stmt_lookahead = [
     '.',
     'ATTACH',
-    'DETACH',
+    'BREAK',
+    'CLASS',
     'CONSTRUCTOR',
+    'DETACH',
+    'FOR',
     'FUNCTION',
     'GLOBAL',
+    'IF',
     'LET',
+    'NONLOCAL',
     'NOOP',
     'REPEAT',
-    'WITH',
-    'FOR',
-    'WHILE',
-    'BREAK',
-    'IF',
     'RETURN',
-    'TRY',
     'THROW'
+    'TRY',
+    'WHILE',
+    'WITH',
     ] + exp_lookahead
+
+class_stmt_lookahead = [
+    '.',
+    'DATA',
+    'FUNCTION',
+    'NOOP',
+    ]
 
 ###########################################################################################
 class Parser:
 
     def __init__(self, filename="<input>"):
         self.lexer = Lexer()
-
         state.lineinfo = (filename,0)
 
     ###########################################################################################
@@ -91,19 +99,60 @@ class Parser:
 
     ###########################################################################################
     # stmt_list
-    #   : LOAD STRING [.] stmt_list
-    #   | stmt stmt_list
+    #   : stmt stmt_list
     #   | empty
     def stmt_list(self):
         dbg_print("parsing STMT_LIST")
 
-        if self.lexer.peek().type == 'LOAD':
+        if self.lexer.peek().type in stmt_lookahead:
+            lineinfo = ('lineinfo', state.lineinfo)
+            s = self.stmt()
+            (LIST, sl) = self.stmt_list()
+            return ('list', [lineinfo] + [s] +  sl)
+
+        else:
+            return ('list', [])
+
+    ###########################################################################################
+    # NOTE: periods are optional at end of sentences but leaving them out can
+    #       lead to ambiguities
+    # NOTE: the dot is also short hand for the 'noop' command
+    # NOTE: in ATTACH the primary should evaluate to a function constructor
+    #
+    # stmt
+    #    : NOOP
+    #    | '.'
+    #    | LOAD STRING '.'?
+    #    | GLOBAL id_list '.'?
+    #    | NONLOCAL id_list '.'?
+    #    | function_def
+    #    | CLASS ID WITH class_stmt_list END CLASS
+    #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
+    #    | ATTACH primary TO ID '.'?
+    #    | DETACH FROM ID '.'?
+    #    | LET pattern '=' exp '.'?
+    #    | FOR pattern IN exp DO stmt_list END FOR
+    #    | WHILE exp DO stmt_list END WHILE
+    #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
+    #    | BREAK
+    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
+    #    | RETURN exp? '.'?
+    #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
+    #    | THROW exp '.'?
+    #    | call '.'?
+    def stmt(self):
+        dbg_print("parsing STMT")
+        tt = self.lexer.peek().type  # tt - Token Type
+
+        if tt in ['NOOP', '.']:
+            return self.noop_stmt()
+
+        elif tt == 'LOAD':
             # expand the AST from the file into our current AST
             # using a nested parser object
             self.lexer.match('LOAD')
             str_tok = self.lexer.match('STRING')
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
 
             raw_pp = PurePath(str_tok.value)
             module_name = raw_pp.stem
@@ -158,81 +207,34 @@ class Parser:
             (LIST, sl) = self.stmt_list()
             return ('list', fstmts + sl)
 
-        elif self.lexer.peek().type in stmt_lookahead:
-            lineinfo = ('lineinfo', state.lineinfo)
-            s = self.stmt()
-            (LIST, sl) = self.stmt_list()
-            return ('list', [lineinfo] + [s] +  sl)
-
-        else:
-            return ('list', [])
-
-    ###########################################################################################
-    # NOTE: periods are optional at end of sentences but leaving them out can
-    #       lead to ambiguities
-    # NOTE: the dot is also short hand for the 'noop' command
-    # NOTE: in ATTACH the primary should evaluate to a function constructor
-    #
-    # stmt
-    #    : NOOP
-    #    | '.'
-    #    | GLOBAL id_list '.'?
-    #    | FUNCTION ID body_defs END FUNCTION
-    #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
-    #    | ATTACH primary TO ID '.'?
-    #    | DETACH FROM ID '.'?
-    #    | LET pattern '=' exp '.'?
-    #    | FOR pattern IN exp DO stmt_list END FOR
-    #    | WHILE exp DO stmt_list END WHILE
-    #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
-    #    | BREAK
-    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
-    #    | RETURN exp? '.'?
-    #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
-    #    | THROW exp '.'?
-    #    | call '.'?
-    def stmt(self):
-        dbg_print("parsing STMT")
-        tt = self.lexer.peek().type  # tt - Token Type
-
-        if tt == 'NOOP':
-            dbg_print("parsing NOOP")
-            self.lexer.match('NOOP')
-            return ('noop',)
-
-        elif tt == '.':
-            dbg_print("parsing '.'")
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
-            return ('noop',)
-
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
             self.lexer.match('GLOBAL')
             id_list = self.id_list()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('global', id_list)
 
         elif tt == 'NONLOCAL':
             dbg_print("parsing NONLOCAL")
             self.lexer.match('NONLOCAL')
             id_list = self.id_list()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('nonlocal', id_list)
 
         elif tt == 'FUNCTION':
-            dbg_print("parsing FUNCTION")
-            self.lexer.match('FUNCTION')
+            return self.function_def()
+
+        elif tt == 'CLASS':
+            dbg_print("parsing CLASS")
+            self.lexer.match('CLASS')
             id_tok = self.lexer.match('ID')
-            body_list = self.body_defs()
+            self.lexer.match('WITH')
+            stmts = self.class_stmt_list()
             self.lexer.match('END')
-            self.lexer.match('FUNCTION')
-            # functions are values bound to names
-            return ('unify',
-                    ('id',id_tok.value),
-                    ('function', body_list))
+            self.lexer.match('CLASS')
+            return ('class-def',
+                    ('id', id_tok.value),
+                    ('stmt-list', stmts))
 
         elif tt == 'CONSTRUCTOR':
             dbg_print("parsing CONSTRUCTOR")
@@ -241,8 +243,7 @@ class Parser:
             self.lexer.match('WITH')
             self.lexer.match('ARITY')
             int_tok = self.lexer.match('INTEGER')
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             # constructors are values bound to names
             return ('unify',
                     ('id', id_tok.value),
@@ -254,8 +255,7 @@ class Parser:
             fexp = self.primary()
             self.lexer.match('TO')
             cid_tok = self.lexer.match('ID')
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('attach',
                     ('fun-exp', fexp),
                     ('constr-id', cid_tok.value))
@@ -265,8 +265,7 @@ class Parser:
             self.lexer.match('DETACH')
             self.lexer.match('FROM')
             fid_tok = self.lexer.match('ID')
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('detach', ('id', fid_tok.value))
 
         elif tt == 'LET':
@@ -275,8 +274,7 @@ class Parser:
             p = self.pattern()
             self.lexer.match('=')
             v = self.exp()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('unify', p, v)
 
         elif tt == 'FOR':
@@ -313,8 +311,7 @@ class Parser:
             sl = self.stmt_list()
             self.lexer.match('UNTIL')
             e = self.exp()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('repeat',
                     ('stmt-list', sl),
                     ('until-exp', e))
@@ -346,8 +343,7 @@ class Parser:
             if self.lexer.peek().type == 'ELSE':
                 dbg_print("parsing ELSE")
                 self.lexer.match('ELSE')
-                if self.lexer.peek().type == 'DO':
-                    self.lexer.match('DO')
+                self.lexer.match_optional('DO')
                 stmts = self.stmt_list()
                 # make the else look like another elif with the condition set to 'true'
                 if_list.append(('if-clause', ('cond', ('boolean', True)), ('stmt-list', stmts)))
@@ -362,12 +358,10 @@ class Parser:
             self.lexer.match('RETURN')
             if self.lexer.peek().type in exp_lookahead:
                 e = self.exp()
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
+                self.lexer.match_optional('.')
                 return ('return', e)
             else:
-                if self.lexer.peek().type == '.':
-                    self.lexer.match('.')
+                self.lexer.match_optional('.')
                 return ('return', ('none', None))
 
         elif tt == 'TRY':
@@ -404,15 +398,76 @@ class Parser:
             dbg_print("parsing THROW")
             self.lexer.match('THROW')
             e = self.exp()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return ('throw', e)
 
         else:
             v = self.call()
-            if self.lexer.peek().type == '.':
-                self.lexer.match('.')
+            self.lexer.match_optional('.')
             return v
+
+    ###########################################################################################
+    # function_def
+    #  : FUNCTION ID body_defs END FUNCTION
+    def function_def(self):
+        dbg_print("parsing FUNCTION_DEF")
+        self.lexer.match('FUNCTION')
+        id_tok = self.lexer.match('ID')
+        body_list = self.body_defs()
+        self.lexer.match('END')
+        self.lexer.match('FUNCTION')
+        # functions are values bound to names
+        return ('unify',
+                ('id',id_tok.value),
+                ('function', body_list))
+
+    ###########################################################################################
+    # class_stmt
+    #  : function_def
+    #  | DATA ID '.'?
+    #  | noop_stmt
+    def class_stmt(self):
+        dbg_print("parsing CLASS_STMT")
+        tt = self.lexer.peek().type  # tt - Token Type
+
+        if tt == 'FUNCTION':
+            return self.function_def()
+
+        elif tt == 'DATA':
+            self.lexer.match('DATA')
+            id_tok = self.lexer.match('ID')
+            self.lexer.match_optional('.')
+            return ('data', ('id', id_tok.value))
+        else:
+            return self.noop_stmt()
+
+    ###########################################################################################
+    # class_stmt_list
+    #   : class_stmt class_stmt_list
+    #   | empty
+    def class_stmt_list(self):
+        dbg_print("parsing CLASS_STMT_LIST")
+
+        if self.lexer.peek().type in class_stmt_lookahead:
+            lineinfo = ('lineinfo', state.lineinfo)
+            s = self.class_stmt()
+            (LIST, sl) = self.class_stmt_list()
+            return ('list', [lineinfo] + [s] +  sl)
+        else:
+            return ('list', [])
+
+    ###########################################################################################
+    # noop_stmt
+    #  : NOOP '.'?
+    #  | '.'
+    def noop_stmt(self):
+        dbg_print("parsing NOOP_STMT")
+        if self.lexer.peek().type == 'NOOP':
+            self.lexer.match('NOOP')
+            self.lexer.match_optional('.')
+        else:
+            self.lexer.match('.')
+        return ('noop',)
 
     ###########################################################################################
     # id_list
@@ -504,7 +559,7 @@ class Parser:
 
     ###########################################################################################
     # head_tail
-    #    : conditional ('|' exp)?
+    #    : compound ('|' exp)?
     #
     # NOTE: * as a value this operator will construct a list from the semantic values of
     #         head and tail
@@ -515,7 +570,7 @@ class Parser:
     def head_tail(self):
         dbg_print("parsing HEAD_TAIL")
 
-        v = self.conditional()
+        v = self.compound()
 
         if self.lexer.peek().type == '|':
             self.lexer.match('|')
@@ -524,34 +579,6 @@ class Parser:
             v = ('head-tail', head, tail)
 
         return v
-
-    ###########################################################################################
-    # conditional
-    #    : compound
-    #        (
-    #           (OTHERWISE exp) |
-    #           (IF exp (ELSE exp)?) # expression level if-else
-    #        )?
-    def conditional(self):
-        dbg_print("parsing CONDITIONAL")
-
-        v = self.compound()
-
-        tt = self.lexer.peek().type
-        if tt  == 'OTHERWISE':
-            self.lexer.match('OTHERWISE')
-            v2 = self.exp()
-            return ('otherwise', v, v2)
-
-        elif tt == 'IF':
-            self.lexer.match('IF')
-            v2 = self.exp()
-            self.lexer.match('ELSE')
-            v3 = self.exp()
-            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
-
-        else:
-            return v
 
     ###########################################################################################
     # compound
@@ -584,12 +611,12 @@ class Parser:
             if self.lexer.peek().type == 'STEP':
                 self.lexer.match('STEP')
                 v3 = self.exp()
-                return ('to-list',
+                return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
                         ('step', v3))
             else:
-                return ('to-list',
+                return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
                         ('step', ('integer', '1')))
@@ -598,10 +625,10 @@ class Parser:
             self.lexer.match('WHERE')
             in_exp = self.exp()
             if in_exp[0] != 'in':
-                raise ValueError("syntax error: expect in got {}".format(in_exp[0]))
+                raise ValueError("syntax error: expected 'in' got '{}'".format(in_exp[0]))
 #            self.lexer.match('IN')
 #            v2 = self.exp()
-            return ('where-list', # list comprehension
+            return ('raw-where-list', # list comprehension
                     ('comp-exp', v),
                     ('in-exp', in_exp))
 
@@ -691,6 +718,34 @@ class Parser:
         return v
 
     ###########################################################################################
+    # conditional
+    #    : call
+    #        (
+    #           (OTHERWISE exp) |
+    #           (IF exp (ELSE exp)?) # expression level if-else
+    #        )?
+    def conditional(self):
+        dbg_print("parsing CONDITIONAL")
+
+        v = self.call()
+
+        tt = self.lexer.peek().type
+        if tt  == 'OTHERWISE':
+            self.lexer.match('OTHERWISE')
+            v2 = self.exp()
+            return ('otherwise', v, v2)
+
+        elif tt == 'IF':
+            self.lexer.match('IF')
+            v2 = self.exp()
+            self.lexer.match('ELSE')
+            v3 = self.exp()
+            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+
+        else:
+            return v
+
+    ###########################################################################################
     # function/constructor call
     #
     # call
@@ -748,7 +803,7 @@ class Parser:
     #    | NOT primary
     #    | MINUS primary
     #    | ESCAPE STRING
-    #    | '(' exp? ')' // see notes below on exp vs list
+    #    | '(' exp ')'  // see notes below on exp vs list
     #    | '[' exp? ']' // list or list access
     #    | '{' exp '}'  // exp should only produce integer and string typed expressions
     #    | function_const
@@ -807,24 +862,23 @@ class Parser:
 
         # TODO: need to look at list constructors for to-list, where-list and head-tail
         elif tt == '(':
-            # NOTE: here we implement a similar scheme to Python:
+            # Parenthesized expressions have the following meaning:
             #       (A)    means a parenthesized value A
             #       (A,)   means a list with a single value A
             #       (A, B) means a list with values A and B
-            #       ()     means empty list
+            #       ()     NOT ALLOWED
             # NOTE: the ',' is handled in exp
             self.lexer.match('(')
-            if self.lexer.peek().type in exp_lookahead:
-                v = self.exp() # list or value
-                if v[0] == 'raw-list':
-                    v = ('list', v[1])
-            elif self.lexer.peek().type == ')':
-                v = ('list', [])
-            else:
-                raise SyntaxError("Syntax Error:{}: at '{}'".format(
-                        self.lexer.peek().lineno,
-                        self.lexer.peek().value))
+            v = self.exp() # list or value
             self.lexer.match(')')
+            if v[0] == 'raw-list':
+                v = ('list', v[1])
+            elif v[0] == 'raw-to-list':
+                v = ('to-list', v[1])
+            elif v[0] == 'raw-where-list':
+                v = ('where-list', v[1])
+            elif v[0] == 'raw-head-tail':
+                v = ('head-tail', v[1])
             return v
 
         elif tt == '[':
@@ -833,12 +887,12 @@ class Parser:
                 v = self.exp()
                 if v[0] == 'raw-list': # we are putting brackets around a raw-list, turn it into a list
                     v = ('list', v[1])
-                elif v[0] == 'to-list': # don't do anything, just pass the list constructor
-                    pass
-                elif v[0] == 'where-list': # don't do anything, just pass the list constructor
-                    pass
-                elif v[0] == 'head-tail': # don't do anything, just pass the list constructor
-                    pass
+                elif v[0] == 'raw-to-list':
+                    v = ('to-list', v[1])
+                elif v[0] == 'raw-where-list':
+                    v = ('where-list', v[1])
+                elif v[0] == 'raw-head-tail':
+                    v = ('head-tail', v[1])
                 else:
                     # turn contents into a list (possibly nested lists)
                     v = ('list', [v])

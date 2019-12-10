@@ -828,12 +828,11 @@ dispatch_dict = {
     'try'           : try_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    # raw-list is a list constructor that has the internal structure of an acutal list
-    # just map it to an actual list an walk it - raw-list itself should never
-    # appear in semantic processing -- it can appear in patterns as a constructor!
-    'raw-list'      : lambda node : walk(('list', node[1])),
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
+    'raw-list'      : lambda node : walk(('list', node[1])),
+    'raw-to-list'   : lambda node : walk(('to-list', node[1])),
+    'raw-head-tail' : lambda node : walk(('head-tail', node[1])),
     'dict-access'   : lambda node : node,
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,

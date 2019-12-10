@@ -1,60 +1,61 @@
 ###########################################################################################
 # Lexer for Asteroid
 #
-# (c) 2018 - Lutz Hamel, University of Rhode Island
+# (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
 # NOTE: we copied the lexer from ply (version 3.11) so that
 # we have no installation dependencies other than python 3.x
 import lex
 from lex import LexToken
-
 from asteroid_state import state
 
 reserved = {
-    'and' : 'AND',
-    'arity' : 'ARITY',
-    'attach' : 'ATTACH',
-    'break' : 'BREAK',
-    'catch' : 'CATCH',
-    'constructor' : 'CONSTRUCTOR',
-    'detach' : 'DETACH',
-    'do' : 'DO',
-    'elif' : 'ELIF',
-    'else' : 'ELSE',
-    'end' : 'END',
-    'escape' : 'ESCAPE',
-    'for' : 'FOR',
-    'from' : 'FROM',
-    'function' : 'FUNCTION',
-    'global' : 'GLOBAL',
-    'nonlocal' : 'NONLOCAL',
-    'if' : 'IF',
-    'in' : 'IN',
-    'is' : 'IS',
-    'lambda' : 'LAMBDA',
-    'let' : 'LET',
-    'load' : 'LOAD',
-    'noop' : 'NOOP',
-    'not' : 'NOT',
-    'or' : 'OR',
-    'orwith' : 'ORWITH',
-    'otherwise' : 'OTHERWISE',
-    'repeat' : 'REPEAT',
-    'return' : 'RETURN',
-    'step' : 'STEP',
-    'then' : 'THEN',
-    'throw' : 'THROW',
-    'to' : 'TO',
-    'try' : 'TRY',
-    'until' : 'UNTIL',
-    'where' : 'WHERE',
-    'while' : 'WHILE',
-    'with' : 'WITH',
+    'and'           : 'AND',
+    'arity'         : 'ARITY',
+    'attach'        : 'ATTACH',
+    'break'         : 'BREAK',
+    'catch'         : 'CATCH',
+    'class'         : 'CLASS',
+    'constructor'   : 'CONSTRUCTOR',
+    'data'          : 'DATA',
+    'detach'        : 'DETACH',
+    'do'            : 'DO',
+    'elif'          : 'ELIF',
+    'else'          : 'ELSE',
+    'end'           : 'END',
+    'escape'        : 'ESCAPE',
+    'for'           : 'FOR',
+    'from'          : 'FROM',
+    'function'      : 'FUNCTION',
+    'global'        : 'GLOBAL',
+    'if'            : 'IF',
+    'in'            : 'IN',
+    'is'            : 'IS',
+    'lambda'        : 'LAMBDA',
+    'let'           : 'LET',
+    'load'          : 'LOAD',
+    'nonlocal'      : 'NONLOCAL',
+    'noop'          : 'NOOP',
+    'not'           : 'NOT',
+    'or'            : 'OR',
+    'orwith'        : 'ORWITH',
+    'otherwise'     : 'OTHERWISE',
+    'repeat'        : 'REPEAT',
+    'return'        : 'RETURN',
+    'step'          : 'STEP',
+    'then'          : 'THEN',
+    'throw'         : 'THROW',
+    'to'            : 'TO',
+    'try'           : 'TRY',
+    'until'         : 'UNTIL',
+    'where'         : 'WHERE',
+    'while'         : 'WHILE',
+    'with'          : 'WITH',
     # constants
-    'none' : 'NONE',
-    'true' : 'TRUE',
-    'false' : 'FALSE'
+    'none'          : 'NONE',
+    'true'          : 'TRUE',
+    'false'         : 'FALSE'
     }
 
 literals = ['.',',','=','{','}','(',')','[',']','|','@']
@@ -89,7 +90,6 @@ t_GE      = r'>='
 t_GT      = r'>'
 
 t_QUOTE   = r'\''
-
 
 t_ignore = ' \t'
 
@@ -137,6 +137,7 @@ class Lexer:
 
     def __init__(self):
         self.plylexer = lex.lex(debug=0)
+        self.curr_token = None
 
     def make_eof_token(self):
         if not self.curr_token:
@@ -168,9 +169,8 @@ class Lexer:
         if token_type not in tokens+literals:
             raise ValueError("unknown token type: '{}'.".format(token_type))
         elif token_type != self.curr_token.type:
-            raise ValueError("expected '{}' found '{}'.".format(
-                    token_type,
-                    self.curr_token.type))
+            raise ValueError("expected '{}' found '{}'."
+                             .format(token_type, self.curr_token.type))
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token
@@ -178,11 +178,18 @@ class Lexer:
             self.make_eof_token()
             return ct
 
+    def match_optional(self, token_type):
+        if token_type == self.curr_token.type:
+            return self.match(token_type)
+        else:
+            return None
+
+# test lexer
 if __name__ == "__main__":
 
     lexer = Lexer()
 
-    data = 'let x = y[1]{"foo"}.'
+    data = 'let x = y@{"foo"}.'
     lexer.input(data)
 
     while not lexer.EOF():
