@@ -210,6 +210,13 @@ def unify(term, pattern):
                 unifier += unify(term[i], pattern[i])
             return unifier
 
+    elif pattern[0] == 'none':
+        if term[0] != 'none':
+            raise PatternMatchFailed("expected 'none' got '{}'"
+                    .format(term[0]))
+        else:
+            return []
+
     # NOTE: functions are allowed in terms as long as they are matched
     # by a variable in the pattern - anything else will fail
     elif term[0] in (unify_not_allowed - {'function'}):
@@ -230,6 +237,25 @@ def unify(term, pattern):
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
         return unify(term[1], pattern)
+
+    elif term[0] == 'object' and pattern[0] == 'apply-list':
+        # unpack term
+        (OBJECT,
+         (CLASS_ID, (ID, class_id)),
+         (OBJECT_MEMORY, (LIST, obj_memory))) = term
+        # unpack pattern
+        (APPLY_LIST,
+         (LIST_1,
+          [(ID, constructor_id),
+           (LIST_2, pattern_memory)])) = pattern
+        if LIST_2 != 'list':
+            raise PatternMatchFailed(
+                "Constructor '{}' as an object needs list argument" \
+                .format(constructor_id))
+        if class_id != constructor_id:
+            raise PatternMatchFailed("expected type '{}' got type '{}'"
+                .format(constructor_id, class_id))
+        return unify(obj_memory, pattern_memory)
 
     elif pattern[0] == 'structure-ix': # list/constructor lval access
         unifier = (pattern, term)
@@ -405,6 +431,21 @@ def term2string(term):
                 term_string += ','
         term_string += ']'
         return term_string
+
+    elif TYPE == 'object':
+        (OBJECT,
+         (CLASS_ID, (ID, class_id)),
+         (OBJECT_MEMORY, (LIST, object_memory))) = term
+        term_string = class_id + '('
+        for ix in range(0, len(object_memory)):
+            term_string += term2string(object_memory[ix])
+            term_string += ', ' if ix != len(object_memory)-1 else ''
+        term_string += ')'
+        return term_string
+
+    elif TYPE == 'function':
+        # TODO: decide whether it makes sense to print out functions
+        return '(function ...)'
 
     elif TYPE == 'apply-list':
         (LIST, apply_list) = term[1]

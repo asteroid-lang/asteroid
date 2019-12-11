@@ -34,7 +34,7 @@ exp_lookahead_no_ops = [
     '(',
     ]
 
-exp_lookahead = exp_lookahead_no_ops + [
+exp_lookahead_old = exp_lookahead_no_ops + [
                  'ESCAPE',
                  #'TIMES',
                  'MINUS',
@@ -42,6 +42,28 @@ exp_lookahead = exp_lookahead_no_ops + [
                  'LAMBDA',
                  'QUOTE',
                  ]
+
+primary_lookahead = [
+    'INTEGER',
+    'REAL',
+    'STRING',
+    'TRUE',
+    'FALSE',
+    'NONE',
+    'ID',
+    'TIMES',
+    'NOT',
+    'MINUS',
+    'ESCAPE',
+    '{',
+    '[',
+    '(',
+    'LAMBDA',
+    ]
+
+exp_lookahead = [
+    'QUOTE',
+    ] + primary_lookahead
 
 stmt_lookahead = [
     '.',
@@ -55,15 +77,16 @@ stmt_lookahead = [
     'GLOBAL',
     'IF',
     'LET',
+    'LOAD',
     'NONLOCAL',
     'NOOP',
     'REPEAT',
     'RETURN',
-    'THROW'
+    'THROW',
     'TRY',
     'WHILE',
     'WITH',
-    ] + exp_lookahead
+    ] + primary_lookahead
 
 class_stmt_lookahead = [
     '.',
@@ -71,6 +94,8 @@ class_stmt_lookahead = [
     'FUNCTION',
     'NOOP',
     ]
+
+noop_stmt_lookahead = ['NOOP', '.']
 
 ###########################################################################################
 class Parser:
@@ -91,7 +116,7 @@ class Parser:
         dbg_print("parsing PROG")
         sl = self.stmt_list()
         if not self.lexer.EOF():
-            raise SyntaxError("Syntax Error: expected 'EOF' found '{}'." \
+            raise SyntaxError("expected 'EOF' found '{}'." \
                               .format(self.lexer.peek().type))
         else:
             dbg_print("parsing EOF")
@@ -144,7 +169,7 @@ class Parser:
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
 
-        if tt in ['NOOP', '.']:
+        if tt in noop_stmt_lookahead:
             return self.noop_stmt()
 
         elif tt == 'LOAD':
@@ -189,7 +214,7 @@ class Parser:
                     break
 
             if not file_found:
-                raise ValueError("Asteroid module {} not found"
+                raise ValueError("Asteroid module '{}' not found"
                                  .format(str_tok.value))
 
             #lhh
@@ -234,7 +259,7 @@ class Parser:
             self.lexer.match('CLASS')
             return ('class-def',
                     ('id', id_tok.value),
-                    ('stmt-list', stmts))
+                    ('member-list', stmts))
 
         elif tt == 'CONSTRUCTOR':
             dbg_print("parsing CONSTRUCTOR")
@@ -282,7 +307,7 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise ValueError("syntax error: expected 'in' expression in for loop")
+                raise SyntaxError("expected 'in' expression in for loop")
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
@@ -401,10 +426,14 @@ class Parser:
             self.lexer.match_optional('.')
             return ('throw', e)
 
-        else:
+        elif tt in primary_lookahead:
             v = self.call()
             self.lexer.match_optional('.')
             return v
+
+        else:
+            raise SyntaxError("syntax error at '{}'"
+                        .format(self.lexer.peek().value))
 
     ###########################################################################################
     # function_def
@@ -423,7 +452,7 @@ class Parser:
 
     ###########################################################################################
     # class_stmt
-    #  : function_def
+    #  : function_def '.'?
     #  | DATA ID '.'?
     #  | noop_stmt
     def class_stmt(self):
@@ -431,15 +460,31 @@ class Parser:
         tt = self.lexer.peek().type  # tt - Token Type
 
         if tt == 'FUNCTION':
-            return self.function_def()
+            f = self.function_def()
+            self.lexer.match_optional('.')
+            return f
 
         elif tt == 'DATA':
             self.lexer.match('DATA')
             id_tok = self.lexer.match('ID')
+            if self.lexer.peek().type == '=' :
+                self.lexer.match('=')
+                val = self.exp()
+            else:
+                val = ('none', None)
             self.lexer.match_optional('.')
-            return ('data', ('id', id_tok.value))
+            return ('data',
+                    ('id', id_tok.value),
+                    ('init-val', val))
+
+        elif tt in noop_stmt_lookahead:
+            # TODO: support noop statements in data statements
+            #return self.noop_stmt()
+            raise ValueError("noop statements in class defs not supported")
         else:
-            return self.noop_stmt()
+            raise SyntaxError(
+                "syntax error at '{}'"
+                .format(self.lexer.peek().value))
 
     ###########################################################################################
     # class_stmt_list
@@ -449,10 +494,9 @@ class Parser:
         dbg_print("parsing CLASS_STMT_LIST")
 
         if self.lexer.peek().type in class_stmt_lookahead:
-            lineinfo = ('lineinfo', state.lineinfo)
             s = self.class_stmt()
             (LIST, sl) = self.class_stmt_list()
-            return ('list', [lineinfo] + [s] +  sl)
+            return ('list', [s] +  sl)
         else:
             return ('list', [])
 
@@ -465,9 +509,14 @@ class Parser:
         if self.lexer.peek().type == 'NOOP':
             self.lexer.match('NOOP')
             self.lexer.match_optional('.')
-        else:
+            return ('noop',)
+        if self.lexer.peek().type == '.':
             self.lexer.match('.')
-        return ('noop',)
+            return ('noop',)
+        else:
+            raise SyntaxError(
+                "syntax error at '{}'"
+                .format(self.lexer.peek().value))
 
     ###########################################################################################
     # id_list
@@ -576,7 +625,7 @@ class Parser:
             self.lexer.match('|')
             head = v
             tail = self.exp()
-            v = ('head-tail', head, tail)
+            v = ('raw-head-tail', head, tail)
 
         return v
 
@@ -625,7 +674,7 @@ class Parser:
             self.lexer.match('WHERE')
             in_exp = self.exp()
             if in_exp[0] != 'in':
-                raise ValueError("syntax error: expected 'in' got '{}'".format(in_exp[0]))
+                raise SyntaxError("expected 'in' got '{}'".format(in_exp[0]))
 #            self.lexer.match('IN')
 #            v2 = self.exp()
             return ('raw-where-list', # list comprehension
@@ -695,7 +744,7 @@ class Parser:
     #    : arith_exp1 ((PLUS | MINUS) arith_exp1)*
     #
     # arith_exp1
-    #    : call ((TIMES | DIVIDE) call)*
+    #    : conditional ((TIMES | DIVIDE) call)*
     def arith_exp0(self):
         dbg_print("parsing ARITH_EXP")
         v = self.arith_exp1()
@@ -708,7 +757,7 @@ class Parser:
         return v
 
     def arith_exp1(self):
-        v = self.call()
+        v = self.conditional()
         while self.lexer.peek().type in ['TIMES', 'DIVIDE']:
             op_tok = self.lexer.peek()
             self.lexer.next()
@@ -756,8 +805,10 @@ class Parser:
         v = self.index()
 
         if self.lexer.peek().type in exp_lookahead_no_ops:
+        #if self.lexer.peek().type in primary_lookahead:
             apply_list = [v]
             while self.lexer.peek().type in exp_lookahead_no_ops:
+            #while self.lexer.peek().type in primary_lookahead:
                 v2 = self.index()
                 apply_list.append(v2)
             return ('apply-list', ('list', apply_list))
@@ -874,11 +925,11 @@ class Parser:
             if v[0] == 'raw-list':
                 v = ('list', v[1])
             elif v[0] == 'raw-to-list':
-                v = ('to-list', v[1])
+                v = ('to-list', v[1], v[2], v[3])
             elif v[0] == 'raw-where-list':
-                v = ('where-list', v[1])
+                v = ('where-list', v[1], v[2])
             elif v[0] == 'raw-head-tail':
-                v = ('head-tail', v[1])
+                v = ('head-tail', v[1], v[2])
             return v
 
         elif tt == '[':
@@ -888,20 +939,20 @@ class Parser:
                 if v[0] == 'raw-list': # we are putting brackets around a raw-list, turn it into a list
                     v = ('list', v[1])
                 elif v[0] == 'raw-to-list':
-                    v = ('to-list', v[1])
+                    v = ('to-list', v[1], v[2], v[3])
                 elif v[0] == 'raw-where-list':
-                    v = ('where-list', v[1])
+                    v = ('where-list', v[1], v[2])
                 elif v[0] == 'raw-head-tail':
-                    v = ('head-tail', v[1])
+                    v = ('head-tail', v[1], v[2])
                 else:
                     # turn contents into a list (possibly nested lists)
                     v = ('list', [v])
             elif self.lexer.peek().type == ']':
                 v = ('list', [])
             else:
-                raise SyntaxError("Syntax Error:{}: at '{}'".format(
-                        self.lexer.peek().lineno,
-                        self.lexer.peek().value))
+                raise SyntaxError(
+                    "syntax error at '{}'"
+                    .format(self.lexer.peek().value))
             self.lexer.match(']')
             return v
 
@@ -915,9 +966,9 @@ class Parser:
             return self.function_const()
 
         else:
-            raise SyntaxError("Syntax Error:{}: at '{}'".format(
-                    self.lexer.peek().lineno,
-                    self.lexer.peek().value))
+            raise SyntaxError(
+                "syntax error at '{}'"
+                .format(self.lexer.peek().value))
 
     ###########################################################################################
     # function_const

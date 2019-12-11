@@ -36,9 +36,9 @@ class SymTab:
     def set_config(self, c):
         self.scoped_symtab, self.globals, self.global_scope = c
 
-    def push_scope(self):
+    def push_scope(self, scope):
         # push a new dictionary and globals lookup onto the stacks - stacks grow to the left
-        self.scoped_symtab.insert(CURR_SCOPE,{})
+        self.scoped_symtab.insert(CURR_SCOPE, scope)
         self.globals.insert(CURR_SCOPE,[])
 
     def pop_scope(self):
@@ -46,8 +46,9 @@ class SymTab:
         if len(self.scoped_symtab) == 1:
             raise ValueError("cannot pop the global scope")
         else:
-            self.scoped_symtab.pop(CURR_SCOPE)
-            self.gobals.pop(CURR_SCOPE)
+            scope = self.scoped_symtab.pop(CURR_SCOPE)
+            self.globals.pop(CURR_SCOPE)
+            return scope
 
     def enter_sym(self, sym, value):
         # enter the symbol in the appropriate scope

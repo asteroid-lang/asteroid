@@ -4,6 +4,7 @@
 # (c) Lutz Hamel, University of Rhode Island
 #########################################################################
 
+from copy import deepcopy
 from asteroid_state import state
 from asteroid_support import assert_match
 from asteroid_support import unify
@@ -121,6 +122,25 @@ def read_at_ix(structure_val, index):
     # list: return the actual list
     if structure_val[0] == 'list':
         memory = structure_val[1] # get a reference to the memory
+        # compute the index
+        ix_val = walk(ix)
+
+    # for objects we access the object memory
+    elif structure_val[0] == 'object':
+        (OBJECT,
+         (CLASS_ID, (ID, class_id)),
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
+        # compute the index -- for objects this has to be done
+        # in the context of the class scope
+        class_val = state.symbol_table.lookup_sym(class_id)
+        # unpack the class value
+        (CLASS,
+         (MEMBER_NAMES, (LIST, member_names)),
+         (CLASS_MEMORY, (LIST, class_memory)),
+         (CLASS_SCOPE, class_scope)) = class_val
+        state.symbol_table.push_scope(class_scope)
+        ix_val = walk(ix)
+        state.symbol_table.pop_scope()
 
     # constructor: return the argument list as memory
     # NOTE: indexing a constructor that is applied to a constant
@@ -133,9 +153,8 @@ def read_at_ix(structure_val, index):
         if LIST_2 != 'list':
             raise ValueError("Constructor '{}' as an object needs list argument" \
                              .format(constructor_id))
-
-    # compute the index
-    ix_val = walk(ix)
+        # compute the index
+        ix_val = walk(ix)
 
     # index into memory and get value(s)
     if ix_val[0] == 'integer':
@@ -183,8 +202,28 @@ def store_at_ix(structure_val, index, value):
     assert_match(INDEX, 'index')
 
     # find the actual memory we need to access
+    # for lists it is just the python list
     if structure_val[0] == 'list':
         memory = structure_val[1]
+        # compute the index
+        ix_val = walk(ix)
+
+    # for objects we access the object memory
+    elif structure_val[0] == 'object':
+        (OBJECT,
+         (CLASS_ID, (ID, class_id)),
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
+        # compute the index -- for objects this has to be done
+        # in the context of the class scope
+        class_val = state.symbol_table.lookup_sym(class_id)
+        # unpack the class value
+        (CLASS,
+         (MEMBER_NAMES, (LIST, member_names)),
+         (CLASS_MEMORY, (LIST, class_memory)),
+         (CLASS_SCOPE, class_scope)) = class_val
+        state.symbol_table.push_scope(class_scope)
+        ix_val = walk(ix)
+        state.symbol_table.pop_scope()
 
     # constructor: return the argument list as memory
     # NOTE: indexing a constructor that is applied to a constant
@@ -197,9 +236,8 @@ def store_at_ix(structure_val, index, value):
         if LIST_2 != 'list':
             raise ValueError("Constructor '{}' as an object needs list argument" \
                              .format(constructor_id))
-
-    # compute the index
-    ix_val = walk(ix)
+        # compute the index
+        ix_val = walk(ix)
 
     # index into memory and set the value
     if ix_val[0] == 'integer':
@@ -251,11 +289,15 @@ def handle_call(fval, actual_val_args):
             break
 
     if not unified:
-        ValueError("none of the function bodies unified with actual parameters")
+        raise ValueError("none of the function bodies unified with actual parameters")
+
+    #lhh
+    #print("function unified with:")
+    #print(unifiers)
 
     # dynamic scoping for functions!!!
     save_symtab = state.symbol_table.get_config()
-    state.symbol_table.push_scope()
+    state.symbol_table.push_scope({})
     declare_formal_args(unifiers)
 
     # execute the function
@@ -534,6 +576,49 @@ def if_stmt(node):
             break
 
 #########################################################################
+def class_def_stmt(node):
+
+    (CLASS_DEF, (ID, class_id), (MEMBER_LIST, (LIST, member_list))) = node
+    assert_match(CLASS_DEF, 'class-def')
+    assert_match(ID, 'id')
+    assert_match(MEMBER_LIST, 'member-list')
+    assert_match(LIST, 'list')
+
+    # declare members
+    # member names are declared as variables whose value is the slot
+    # in a class object
+    class_memory = [] # this will serve as a template for instanciating objects
+    member_names = []
+    class_scope = {}
+    state.symbol_table.push_scope(class_scope)
+
+    for member_ix in range(len(member_list)):
+        member = member_list[member_ix]
+        if member[0] == 'data':
+            (DATA,
+             (ID, member_id),
+             (INIT_VAL, value)) = member
+            state.symbol_table.enter_sym(member_id, ('integer', member_ix))
+            class_memory.append(walk(value))
+            member_names.append(member_id)
+        elif member[0] == 'unify':
+            (UNIFY, (ID, member_id), function_value) = member
+            state.symbol_table.enter_sym(member_id, ('integer', member_ix))
+            class_memory.append(function_value)
+            member_names.append(member_id)
+        else:
+            raise ValueError("unsupported class member '{}'".format(member[0]))
+
+    state.symbol_table.pop_scope()
+
+    class_type = ('class',
+                  ('member-names', ('list', member_names)),
+                  ('class-memory', ('list', class_memory)),
+                  ('class-scope', class_scope))
+
+    state.symbol_table.enter_sym(class_id, class_type)
+
+#########################################################################
 def apply_list_exp(node):
 
     (APPLY_LIST, (LIST, apply_list)) = node
@@ -589,7 +674,7 @@ def apply_list_exp(node):
 
         # constructor call
         elif fval[0] == 'constructor': # return structure
-            (ID, constructor_id) = rev_list[apply_ix]
+            (ID, constructor_id) = ftree
             (ARITY, arity) = fval[1]
             # check arity match
             if arg_val[0] == 'none' and arity != 0:
@@ -606,6 +691,41 @@ def apply_list_exp(node):
                     .format(constructor_id, arity, len(arg_val[1])))
 
             arg_val = ('apply-list', ('list', [(ID, constructor_id), arg_val]))
+
+        # class constructor call
+        elif fval[0] == 'class':
+            (ID, class_id) = ftree
+            (CLASS,
+             (MEMBER_NAMES, (LIST, member_names)),
+             (CLASS_MEMORY, (LIST, class_memory)),
+             (CLASS_SCOPE, class_scope)) = fval
+
+            # create our object memory - memory cells now have initial values
+            # need to make a deep copy
+            object_memory = deepcopy(class_memory)
+            # create our object
+            obj_ref = ('object',
+                      ('class-id', ('id', class_id)),
+                      ('object-memory', ('list', object_memory)))
+            # if the class has an __init__ function call it on the object
+            # NOTE: constructor functions do not have return values.
+            if '__init__' in member_names:
+                slot_ix = member_names.index('__init__')
+                init_fval = class_memory[slot_ix]
+                # calling a member function - push class scope
+                state.symbol_table.push_scope(class_scope)
+                if arg_val[0] == 'none':
+                    handle_call(init_fval, obj_ref)
+                elif arg_val[0] != 'list':
+                    arg_val = ('list', [obj_ref, arg_val])
+                    handle_call(init_fval, arg_val)
+                elif arg_val[0] == 'list':
+                    arg_val[1].insert(0, obj_ref)
+                    handle_call(init_fval, arg_val)
+                state.symbol_table.pop_scope()
+
+            # return the new object as the next arg_val
+            arg_val = obj_ref
 
         else:
             raise ValueError("unknown apply term '{}'".format(fval[0]))
@@ -826,13 +946,14 @@ dispatch_dict = {
     'if'            : if_stmt,
     'throw'         : throw_stmt,
     'try'           : try_stmt,
+    'class-def'     : class_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
     'raw-list'      : lambda node : walk(('list', node[1])),
-    'raw-to-list'   : lambda node : walk(('to-list', node[1])),
-    'raw-head-tail' : lambda node : walk(('head-tail', node[1])),
+    'raw-to-list'   : lambda node : walk(('to-list', node[1], node[2], node[3])),
+    'raw-head-tail' : lambda node : walk(('head-tail', node[1], node[2])),
     'dict-access'   : lambda node : node,
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,

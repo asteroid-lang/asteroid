@@ -152,7 +152,7 @@ end function
 function cls
 ------------------------------------------------------------------
 -- clear screen
-with () do escape
+with none do escape
 "
 import os
 import platform
@@ -186,7 +186,7 @@ end function
 function random
 ------------------------------------------------------------------
 -- return a random floating point number in the range [0.0, 1.0).
-with () do return escape
+with none do return escape
 "
 import random
 global __retval__
