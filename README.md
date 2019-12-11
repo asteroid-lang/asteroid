@@ -45,7 +45,7 @@ Here is the canonical factorial program written in Asteroid,
 load "standard".
 load "io".
 
-function fact 
+function fact
     with 0 do
         return 1
     orwith n do
@@ -73,7 +73,7 @@ function qsort
     orwith [a] do
         return [a].
     orwith [pivot|rest] do
-        let less=[]. 
+        let less=[].
         let more=[].
         for e in rest do  
             if e < pivot do
@@ -82,10 +82,10 @@ function qsort
                 let more = more + [e].
             end if
         end for
-                        
+
         return qsort less + [pivot] + qsort more.
     end function
-    
+
 print (qsort [3,2,1,0])
 ```
 The last line of the program prints out the sorted list returned by the quicksort.  The output is,
@@ -95,7 +95,7 @@ The last line of the program prints out the sorted list returned by the quicksor
 The fact that Asteroid supports matching in all of its major programming constructs and that it has a very flexible view of the interpretations of experssion terms allows the developer to embed symbolic computation right into their programs. The following is a program that uses the [Peano axioms for addition](https://en.wikipedia.org/wiki/Peano_axioms#Addition) to compute addition symbolically.
 
 ```
--- implements Peano addition 
+-- implements Peano addition
 
 -- declare the successor function S as a term constructor  
 constructor S with arity 1.
@@ -122,11 +122,11 @@ load "standard".
 load "util".
 load "io".
 
-function inc 
+function inc
     with n do
         return n + 1.
     end function
-    
+
 attach inc to S.
 
 -- show that with this behavior both the original term and the rewritten term
@@ -145,7 +145,7 @@ As mentioned above, Asteroid has a very flexible view of the interpretation of e
 load "standard".  -- load the standard operator interpretations
 load "io".        -- load the io system
 
-function funny_add    -- define a function that given two 
+function funny_add    -- define a function that given two
     with a, b do      -- parameters a,b will multiply them
         return a * b.
     end function
@@ -166,44 +166,43 @@ load "standard".
 load "io".
 load "util".
 
-constructor Dog with arity 3.
+class Dog with
 
--- assemble the prototype object
-let dog_proto = Dog (
-  ("name", ""),
-  ("tricks", []),
-  ("add_trick",
-     lambda with (self,new_trick) do
-         let self@{"tricks"} = self@{"tricks"}+[new_trick])).
+  data name = "".
+  data tricks = [].
+
+  function add_trick
+    with self, new_trick do
+      let self@tricks = self@tricks + [new_trick].
+    end function
+
+  function __init__
+    with self, name do
+      let self@name = name.
+    end function
+
+  end class
 
 -- Fido the dog
-let fido = copy dog_proto.
-let fido@{"name"} = "Fido".
-
-fido@{"add_trick"} "roll over".
-fido@{"add_trick"} "play dead".
+let fido = Dog("Fido").
+fido@add_trick("roll over").
+fido@add_trick("play dead").
 
 -- Buddy the dog
-let buddy = copy dog_proto.
-let buddy@{"name"} = "Buddy".
-
-buddy@{"add_trick"} "roll over".
-buddy@{"add_trick"} "sit stay".
+let buddy = Dog("Buddy").
+buddy@add_trick("roll over").
+buddy@add_trick("sit stay").
 
 -- Fifi the dog
-let fifi = copy dog_proto.
-let fifi@{"name"} = "Fifi".
-
-fifi@{"add_trick"} "sit stay".
+let fifi = Dog("Fifi").
+fifi@add_trick("sit stay").
 
 -- print out all the names of dogs
 -- whose first trick is 'roll over'.
-let dogs = [fido, buddy, fifi]. 
+let dogs = [fido, buddy, fifi].
 
--- use pattern matching to find all the dogs whose first trick is "roll over"
-for Dog(("name",name), ("tricks",["roll over"|_]), _) in dogs do
+for Dog(name, ["roll over"|_], _, _) in dogs do
   print (name + " does roll over").
 end for
-
 ```
 Take a look at the [Asteroid User Guide](https://nbviewer.jupyter.org/github/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.ipynb) notebook for a more detailed discussion of the language.
