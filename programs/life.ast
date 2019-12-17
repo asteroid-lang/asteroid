@@ -110,7 +110,7 @@ function init_map
         for x in 0 to (xdim-1) do
             let row = [].
             for y in 0 to (ydim-1) do
-                let v = 1 if random() > thresh else 0.
+                let v = 1 if random(none) > thresh else 0.
                 let row = row + [v]
             end for
             let map = map + [row]
@@ -123,18 +123,19 @@ function init_map
 function life
     with maxgen, xdim, ydim do
 
+        -- create memory for both maps
         let map1 = init_map(xdim, ydim).
         let map2 = init_map(xdim, ydim).
 
         -- show the initial map
-        cls().
+        cls(none).
         print ("initial map").
         show_map(map1).
         -- exit("all done"). --lhh
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).
-            cls().
+            cls(none).
             print("map @ generation " + gen).
             show_map(map2).
             -- implement double buffering

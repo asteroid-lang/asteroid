@@ -21,51 +21,32 @@ def dbg_print(string):
 ###########################################################################################
 # LL(1) lookahead sets
 
-exp_lookahead_no_ops = [
-    'INTEGER',
-    'REAL',
-    'STRING',
-    'TRUE',
-    'FALSE',
-    'NONE',
-    'ID',
-    '{',
-    '[',
-    '(',
-    ]
-
-exp_lookahead_old = exp_lookahead_no_ops + [
-                 'ESCAPE',
-                 #'TIMES',
-                 'MINUS',
-                 'NOT',
-                 'LAMBDA',
-                 'QUOTE',
-                 ]
-
-primary_lookahead = [
-    'INTEGER',
-    'REAL',
-    'STRING',
-    'TRUE',
-    'FALSE',
-    'NONE',
-    'ID',
+ops = {
     'TIMES',
     'NOT',
     'MINUS',
+    }
+
+primary_lookahead = {
     'ESCAPE',
+    'LAMBDA',
+    'INTEGER',
+    'REAL',
+    'STRING',
+    'TRUE',
+    'FALSE',
+    'NONE',
+    'ID',
     '{',
     '[',
     '(',
-    'LAMBDA',
-    ]
+    } | ops
 
-exp_lookahead = [
-    'QUOTE',
-    ] + primary_lookahead
+exp_lookahead = {'QUOTE'} | primary_lookahead
 
-stmt_lookahead = [
+exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
+
+stmt_lookahead = {
     '.',
     'ATTACH',
     'BREAK',
@@ -86,23 +67,23 @@ stmt_lookahead = [
     'TRY',
     'WHILE',
     'WITH',
-    ] + primary_lookahead
+    } | primary_lookahead
 
-class_stmt_lookahead = [
+class_stmt_lookahead = {
     '.',
     'DATA',
     'FUNCTION',
     'NOOP',
-    ]
+    }
 
-noop_stmt_lookahead = ['NOOP', '.']
+noop_stmt_lookahead = {'NOOP', '.'}
 
 ###########################################################################################
 class Parser:
 
     def __init__(self, filename="<input>"):
         self.lexer = Lexer()
-        state.lineinfo = (filename,0)
+        state.lineinfo = (filename,1)
 
     ###########################################################################################
     def parse(self, input):

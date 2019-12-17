@@ -15,7 +15,13 @@ from asteroid_support import term2string
 from asteroid_version import VERSION
 
 # TODO: adjust the defaults
-def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, exceptions=False, version=False):
+def interp(input_stream,
+           input_name = "<input>",
+           tree_dump=False,
+           do_walk=True,
+           symtab_dump=False,
+           exceptions=False,
+           version=False):
 
     if version:
         print("** Asteroid Version {} **".format(VERSION))
@@ -25,7 +31,7 @@ def interp(input_stream, tree_dump=False, do_walk=True, symtab_dump=False, excep
         state.initialize()
 
         # build the AST
-        parser = Parser()
+        parser = Parser(input_name)
         state.AST = parser.parse(input_stream)
 
         # walk the AST

@@ -4,19 +4,16 @@ load "util".
 
 class Dog
   with
-    data name.
-    data tricks.
+    data name = "".
+    data tricks = [].
 
     function __init__
-      with self do
-        self@name = "".
-        self@tricks = [].
+      with self, name, tricks do
+        let self@name = name.
+        let self@tricks = tricks.
       orwith self, name do
-        self@name = name.
-        self@tricks = [].
-      orwith self, name, tricks do
-        self@name = name.
-        self@tricks = tricks.
+        let self@name = name.
+        let self@tricks = [].
       end function
 
     function add_trick
@@ -26,14 +23,14 @@ class Dog
   end class
 
 -- Fido the dog
-let fido = Dog("Fido")
+let fido = Dog("Fido").
 
 -- use function 'add_trick' to add tricks to the object
 fido@add_trick("roll over").
 fido@add_trick("play dead").
 
 -- Buddy the dog
-let buddy = Dog("Buddy")
+let buddy = Dog("Buddy").
 
 -- use function 'add_trick' to add tricks to the object
 buddy@add_trick("roll over").

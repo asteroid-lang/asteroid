@@ -1,0 +1,28 @@
+-- the quick sort
+-- (c) Lutz Hamel, University of Rhode Island
+
+load "standard".
+load "io".
+
+function qsort
+    with [] do
+        return [].
+    orwith [a] do
+        return [a].
+    orwith [pivot|rest] do
+        let less=[].
+        let more=[].
+
+        for e in rest do
+            if e < pivot do
+                let less = less + [e].
+            else
+                let more = more + [e].
+            end if
+        end for
+
+        return qsort less + [pivot] + qsort more.
+    end function
+
+-- print the sorted list
+print (qsort [3,2,1,0])
