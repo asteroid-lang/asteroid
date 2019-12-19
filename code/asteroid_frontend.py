@@ -175,11 +175,14 @@ class Parser:
             # 1. search in current directory (path[1])
             # 2. search in directory where Asteroid is installed (path[0])
             # 3. search in subdirectory where Asteroid was started
-            # lhh: does this work on all OS's?
+            # TODO: does this work on all OS's?
+            # TODO: should have an env variable to set search path
             search_list = []
             search_list.append(str_tok.value)
             search_list.append(str_tok.value + asteroid_file_suffix)
             search_list.append(sys.path[1] + '/' + module_name + asteroid_file_suffix)
+            search_list.append(sys.path[1] + '/modules/' + module_name + asteroid_file_suffix)
+            search_list.append(sys.path[0] + '/' + module_name + asteroid_file_suffix)
             search_list.append(sys.path[0] + '/modules/' + module_name + asteroid_file_suffix)
             search_list.append('modules/' + module_name + asteroid_file_suffix)
 
