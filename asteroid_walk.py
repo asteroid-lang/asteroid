@@ -633,7 +633,6 @@ def apply_list_exp(node):
 
     #lhh
     #print("rev-list: {}".format(rev_list))
-    #print(state.symbol_table.dbg_find_sym('x')+"\n\n")
 
     # first element must be a value to pass to a function
     arg_val = walk(rev_list[0])

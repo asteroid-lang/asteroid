@@ -95,6 +95,19 @@ state.ignore_quote = False
 end function
 
 ------------------------------------------------------------------
+function assert
+------------------------------------------------------------------
+-- map this to Python assert
+with item do escape
+"
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('item')
+assert item_val[1], 'assert call failed'
+"
+end function
+
+------------------------------------------------------------------
 function length
 ------------------------------------------------------------------
 with lst do return escape

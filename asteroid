@@ -5,6 +5,7 @@
 # (c) 2018 - Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
+import cProfile
 from argparse import ArgumentParser
 from asteroid_interp import interp
 
@@ -14,6 +15,7 @@ aparser.add_argument('-s','--symtab', action='store_true', help='symbol table du
 aparser.add_argument('-t','--tree', action='store_true', help='AST dump flag')
 aparser.add_argument('-v','--version', action='store_true', help='version flag')
 aparser.add_argument('-w','--no_walk', action='store_false', help='walk flag')
+aparser.add_argument('-p','--pstats', action='store_true', help='pstats flag')
 aparser.add_argument('input', metavar='input_file', help='Asteroid input file')
 
 args = aparser.parse_args()
@@ -23,9 +25,17 @@ input_stream = f.read()
 f.close()
 
 # execute interpreter
-interp(input_stream=input_stream,
+interp_object = \
+'''interp(input_stream=input_stream,
        input_name = args.input,
        tree_dump=args.tree,
        do_walk=args.no_walk,
        symtab_dump=args.symtab,
-       version=args.version)
+       version=args.version)'''
+
+if args.pstats:
+    # generates pstats into the file 'pstats'
+    # see https://docs.python.org/3/library/profile.html
+    cProfile.run(interp_object, 'pstats')
+else:
+    exec(interp_object)
