@@ -7,6 +7,9 @@
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
 
+-- TODO: assumes only a single function has been attached to a
+--       constructor -- needs to check if more than one and
+--       remove all attached functions.
 ------------------------------------------------------------------
 -- ARITHMETIC OPERATORS --
 ------------------------------------------------------------------
@@ -103,8 +106,3 @@ try
 catch _ do
     ...
 end try
-
-
-
-
-

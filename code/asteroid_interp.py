@@ -1,7 +1,7 @@
 ###########################################################################################
 # Asteroid interpreter
 #
-# (c) 2018-2020 - Lutz Hamel, University of Rhode Island
+# (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
 import sys

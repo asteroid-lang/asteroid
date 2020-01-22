@@ -1,7 +1,7 @@
 ###########################################################################################
 # Asteroid support code
 #
-# (c) 2018 - Lutz Hamel, University of Rhode Island
+# (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
 from asteroid_state import state
