@@ -450,10 +450,10 @@ def term2string(term):
     elif TYPE == 'apply-list':
         (LIST, apply_list) = term[1]
         term_string = term2string(apply_list[0])
-        term_string += '('
+        #lhh term_string += '('
         for ix in range(1, len(apply_list)):
             term_string += term2string(apply_list[ix])
-        term_string += ')'
+        #lhh term_string += ')'
         return term_string
 
     elif TYPE == 'quote':

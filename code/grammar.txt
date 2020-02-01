@@ -35,7 +35,6 @@ function_def
 class_stmt
   : function_def
   | DATA ID ('=' exp)? '.'?
-  | noop_stmt
 
 class_stmt_list
   : class_stmt class_stmt_list

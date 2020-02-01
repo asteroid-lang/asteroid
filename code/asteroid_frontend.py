@@ -126,8 +126,7 @@ class Parser:
     # NOTE: in ATTACH the primary should evaluate to a function constructor
     #
     # stmt
-    #    : NOOP
-    #    | '.'
+    #    : noop_stmt
     #    | LOAD STRING '.'?
     #    | GLOBAL id_list '.'?
     #    | NONLOCAL id_list '.'?
@@ -461,10 +460,6 @@ class Parser:
                     ('id', id_tok.value),
                     ('init-val', val))
 
-        elif tt in noop_stmt_lookahead:
-            # TODO: support noop statements in data statements
-            #return self.noop_stmt()
-            raise ValueError("noop statements in class defs not supported")
         else:
             raise SyntaxError(
                 "syntax error at '{}'"

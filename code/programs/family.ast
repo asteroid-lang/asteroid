@@ -1,0 +1,37 @@
+-- a small program that demonstrates that patterns can be used both
+-- for constructing as well as destructuring of terms.
+
+-- load modules
+load "io".
+load "util".
+
+-- family constructors for our pattern
+constructor Family with arity 3.
+constructor Parent with arity 1.
+constructor Children with arity 1.
+
+-- first-class family pattern
+-- note: the quote operator prevents immediate evaluation
+let family_pattern = Family(Parent('p1), Parent('p2), Children('c,)).
+print family_pattern.
+
+-- create a family using the family pattern as a constructor
+function build_family
+  with pattern, p1, p2, c do
+    return eval(pattern). -- use first-class pattern as a constructor
+  end function
+
+-- destructure a family using pattern matching
+function destructure_family
+  with pattern, term do
+    let *pattern = term. -- use first-class pattern as pattern
+    return [p1, p2, c].
+  end function
+
+-- build a family
+let family = build_family(family_pattern, "Harry", "Bridget", ["Sue", "Peter"]).
+print family.
+
+-- destructure a family
+let members = destructure_family(family_pattern, family).
+print members.
