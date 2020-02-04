@@ -144,7 +144,7 @@ load "standard".  -- load the standard operator interpretations
 load "io".        -- load the io system
 
 function funny_add    -- define a function that given two
-    with a, b do      -- parameters a,b will multiply them
+    with (a, b) do      -- parameters a,b will multiply them
         return a * b.
     end function
 
@@ -170,12 +170,12 @@ class Dog with
   data tricks = [].
 
   function add_trick
-    with self, new_trick do
+    with (self, new_trick) do
       let self@tricks = self@tricks + [new_trick].
     end function
 
   function __init__
-    with self, name do
+    with (self, name) do
       let self@name = name.
     end function
 
