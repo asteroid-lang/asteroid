@@ -112,13 +112,14 @@ primary
   | NOT primary
   | MINUS primary
   | ESCAPE STRING
-  | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
+  | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | '{' exp '}'  // exp should only produce integer and string typed expressions
   | function_const
 
 tuple_stuff
   : exp (',' exp?)*
+  | empty
 
 list_stuff
   : exp ((',' exp)+) | '|' exp)?
