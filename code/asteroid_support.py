@@ -137,9 +137,7 @@ def assert_match(input, expected):
 # check if the two type tags match
 def match(tag1, tag2):
 
-    if tag1 in ['list', 'raw-list'] and  tag2 in ['list', 'raw-list']:
-        return True
-    elif tag1 == tag2:
+    if tag1 == tag2:
         return True
     else:
         return False
@@ -200,10 +198,10 @@ def unify(term, pattern):
     elif isinstance(term, list) or isinstance(pattern, list):
         if not(isinstance(term, list)) or not(isinstance(pattern, list)):
             raise PatternMatchFailed(
-                "term and pattern do not agree on list constructor")
+                "term and pattern do not agree on list/tuple constructor")
         elif len(term) != len(pattern):
             raise PatternMatchFailed(
-                "term and pattern lists are not the same length")
+                "term and pattern lists/tuples are not the same length")
         else:
             unifier = []
             for i in range(len(term)):
@@ -245,17 +243,17 @@ def unify(term, pattern):
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
         # unpack pattern
         (APPLY_LIST,
-         (LIST_1,
+         (LIST,
           [(ID, constructor_id),
-           (LIST_2, pattern_memory)])) = pattern
-        if LIST_2 != 'list':
+           (TUPLE, pattern_tuple)])) = pattern
+        if TUPLE != 'tuple':
             raise PatternMatchFailed(
-                "Constructor '{}' as an object needs list argument" \
+                "Constructor '{}' expected tuple argument" \
                 .format(constructor_id))
         if class_id != constructor_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(constructor_id, class_id))
-        return unify(obj_memory, pattern_memory)
+        return unify(obj_memory, pattern_tuple)
 
     elif pattern[0] == 'structure-ix': # list/constructor lval access
         unifier = (pattern, term)
@@ -274,7 +272,7 @@ def unify(term, pattern):
             "variable '{}' in term not allowed"
             .format(term[1]))
 
-    elif pattern[0] in ['head-tail', 'raw-head-tail']:
+    elif pattern[0] == 'head-tail':
         # unpack the structures
         (HEAD_TAIL, pattern_head, pattern_tail) = pattern
         (LIST, list_val) = term
@@ -421,15 +419,17 @@ def term2string(term):
         val = term[1]
         return str(val).lower()
 
-    elif TYPE == 'list':
+    elif TYPE in ['list', 'tuple']:
         val = term[1]
-        term_string = '['
+        term_string = '[' if TYPE == 'list' else '('
         l = len(val)
         for i in range(l):
             term_string += term2string(val[i])
             if i != l-1:
                 term_string += ','
-        term_string += ']'
+        if l == 1 and TYPE == 'tuple': # proper 1-tuple notation
+            term_string += ','
+        term_string += ']' if TYPE == 'list' else ')'
         return term_string
 
     elif TYPE == 'object':
@@ -450,16 +450,17 @@ def term2string(term):
     elif TYPE == 'apply-list':
         (LIST, apply_list) = term[1]
         term_string = term2string(apply_list[0])
-        #lhh term_string += '('
         for ix in range(1, len(apply_list)):
+            if apply_list[ix][0] not in ['tuple', 'apply_list']:
+                term_string += '('
             term_string += term2string(apply_list[ix])
-        #lhh term_string += ')'
+            if apply_list[ix][0] not in ['tuple', 'apply_list']:
+                term_string += ')'
         return term_string
 
     elif TYPE == 'quote':
-        # printing out a term string -- just ignore the quote
         val = term[1]
-        return term2string(val)
+        return "'" + term2string(val)
 
     elif TYPE == 'nil':
         return ''

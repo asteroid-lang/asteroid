@@ -54,43 +54,38 @@ pattern
   : exp
 
 exp
-  : quote_exp (',' quote_exp?)*
+  : quote_exp
 
 quote_exp
-  : QUOTE head_tail
-  | head_tail
-
-head_tail
-  : compound ('|' exp)?
+  : QUOTE compound
+  | compound
 
 compound
-  : rel_exp0
+  : logic_exp0
       (
          (IS pattern) |
          (IN exp) |               // exp has to be a list
          (TO exp (STEP exp)?) |   // list comprehension
-         (WHERE pattern IN exp)   // list comprehension
       )?
 
-// relational operators with their precedences
+// operators with their precedences
+logic_exp0
+  : logic_exp1 (OR logic_exp1)*
+
+logic_exp1
+  : rel_exp0 (AND rel_exp0)*
+
 rel_exp0
-  : rel_exp1 (OR rel_exp1)*
+  : rel_exp1 (('==' | '=/=' /* not equal */) rel_exp1)*
 
 rel_exp1
-  : rel_exp2 (AND rel_exp2)*
+  : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
 
-rel_exp2
-  : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
-
-rel_exp3
-  : arith_exp0 ((LE | LT  | GE | GT) arith_exp0)*
-
-// arithmetic operators with their precedences
 arith_exp0
-  : arith_exp1 ((PLUS | MINUS) arith_exp1)*
+  : arith_exp1 (('+' | '-') arith_exp1)*
 
 arith_exp1
-  : conditional ((TIMES | DIVIDE) conditional)*
+  : conditional (('*' | '/') conditional)*
 
 conditional
   : call
@@ -117,10 +112,17 @@ primary
   | NOT primary
   | MINUS primary
   | ESCAPE STRING
-  | '(' exp ')'  // empty parentheses NOT allowed!!
-  | '[' exp? ']' // list or list access
+  | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
+  | '[' list_stuff ']'  // list or list access
   | '{' exp '}'  // exp should only produce integer and string typed expressions
   | function_const
+
+tuple_stuff
+  : exp (',' exp?)*
+
+list_stuff
+  : exp ((',' exp)+) | '|' exp)?
+  | empty
 
 function_const
   : LAMBDA body_defs

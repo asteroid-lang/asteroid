@@ -437,7 +437,6 @@ class Parser:
     # class_stmt
     #  : function_def '.'?
     #  | DATA ID '.'?
-    #  | noop_stmt
     def class_stmt(self):
         dbg_print("parsing CLASS_STMT")
         tt = self.lexer.peek().type  # tt - Token Type
@@ -547,80 +546,39 @@ class Parser:
 
     ###########################################################################################
     # exp
-    #    : quote_exp (',' quote_exp?)*
-    #
-    # NOTE: trailing comma means single element list!
-    # NOTE: raw-list nodes are list nodes that were constructed with just the comma constructor
-    #       they should work just like list nodes in the context of interpretation
-    #
+    #    : quote_exp
     def exp(self):
         dbg_print("parsing EXP")
-
         v = self.quote_exp()
-
-        if self.lexer.peek().type == ',':
-            raw_list = [v]
-            while self.lexer.peek().type == ',':
-                self.lexer.match(',')
-                if self.lexer.peek().type in exp_lookahead:
-                    e = self.quote_exp()
-                    raw_list.append(e)
-            return ('raw-list', raw_list)
-
-        else:
-            return v
+        return v
 
     ###########################################################################################
     # quote_exp
-    #    : QUOTE head_tail
-    #    | head_tail
+    #    : QUOTE compound
+    #    | compound
     def quote_exp(self):
         dbg_print("parsing QUOTE_EXP")
 
         if self.lexer.peek().type == 'QUOTE':
             self.lexer.match('QUOTE')
-            v = self.head_tail()
+            v = self.compound()
             return ('quote', v)
         else:
-            v = self.head_tail()
+            v = self.compound()
             return v
 
     ###########################################################################################
-    # head_tail
-    #    : compound ('|' exp)?
-    #
-    # NOTE: * as a value this operator will construct a list from the semantic values of
-    #         head and tail
-    #       * as a pattern this operator will be unified with a list such that head will
-    #         unify with the first element of the list and tail with the remaining list
-    # NOTE: this is a list constructor and therefore should never appear in the semantic
-    #       processing, use walk to expand the list before processing it.
-    def head_tail(self):
-        dbg_print("parsing HEAD_TAIL")
-
-        v = self.compound()
-
-        if self.lexer.peek().type == '|':
-            self.lexer.match('|')
-            head = v
-            tail = self.exp()
-            v = ('raw-head-tail', head, tail)
-
-        return v
-
-    ###########################################################################################
     # compound
-    #    : rel_exp0
+    #    : logic_exp0
     #        (
     #           (IS pattern) |
     #           (IN exp) | // exp has to be a list
     #           (TO exp (STEP exp)?) | // list comprehension
-    #           (WHERE pattern IN exp)     // list comprehension
     #        )?
     def compound(self):
         dbg_print("parsing COMPOUND")
 
-        v = self.rel_exp0()
+        v = self.logic_exp0()
 
         tt = self.lexer.peek().type
         if tt == 'IS':
@@ -649,81 +607,71 @@ class Parser:
                         ('stop', v2),
                         ('step', ('integer', '1')))
 
-        elif tt == 'WHERE':
-            self.lexer.match('WHERE')
-            in_exp = self.exp()
-            if in_exp[0] != 'in':
-                raise SyntaxError("expected 'in' got '{}'".format(in_exp[0]))
-#            self.lexer.match('IN')
-#            v2 = self.exp()
-            return ('raw-where-list', # list comprehension
-                    ('comp-exp', v),
-                    ('in-exp', in_exp))
-
         else:
             return v
 
     ###########################################################################################
-    # NOTE: all terms are expressed as apply-list nodes of their corresponding constructor names
+    # NOTE: all terms are expressed as apply-list nodes of their corresponding
+    #       constructor names
     ###########################################################################################
-    # relational operators with their precedence
+    # logic/relational/arithmetic operators with their precedence
+    # logic_exp0
+    #   : logic_exp1 (OR logic_exp1)*
+    #
+    # logic_exp1
+    #   : rel_exp1 (AND rel_exp1)*
+    #
     # rel_exp0
-    #    : rel_exp1 (OR rel_exp1)*
+    #   : rel_exp1 (('==' | '=/=' /* not equal */) rel_exp1)*
     #
     # rel_exp1
-    #    : rel_exp2 (AND rel_exp2)*
+    #   : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
     #
-    # rel_exp2
-    #    : rel_exp3 (('==' | '=/=' /* not equal */) rel_exp3)*
+    # arith_exp0
+    #   : arith_exp1 (('+' | '-') arith_exp1)*
     #
-    # rel_exp3
-    #    : arith_exp0 (('LE' | 'LT'  | 'GE' | 'GT') arith_exp0)*
-    def rel_exp0(self):
-        dbg_print("parsing REL_EXP")
-        v = self.rel_exp1()
+    # arith_exp1
+    #   : conditional (('*' | '/') conditional)*
+    #
+    def logic_exp0(self):
+        dbg_print("parsing LOGIC/REL/ARITH EXP")
+        v = self.logic_exp1()
         while self.lexer.peek().type == 'OR':
             self.lexer.match('OR')
-            v2 = self.rel_exp1()
+            v2 = self.logic_exp1()
             op_sym = '__or__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
-    def rel_exp1(self):
-        v = self.rel_exp2()
+    def logic_exp1(self):
+        v = self.rel_exp0()
         while self.lexer.peek().type == 'AND':
             self.lexer.match('AND')
-            v2 = self.rel_exp2()
+            v2 = self.rel_exp0()
             op_sym = '__and__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
-    def rel_exp2(self):
-        v = self.rel_exp3()
+    def rel_exp0(self):
+        v = self.rel_exp1()
         while self.lexer.peek().type in ['EQ', 'NE']:
             op_tok = self.lexer.peek()
             self.lexer.next()
-            v2 = self.rel_exp3()
+            v2 = self.rel_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
-    def rel_exp3(self):
+    def rel_exp1(self):
         v = self.arith_exp0()
         while self.lexer.peek().type in ['LE', 'LT', 'GE', 'GT']:
             op_tok = self.lexer.peek()
             self.lexer.next()
             v2 = self.arith_exp0()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
-    ###########################################################################################
-    # arithmetic operators with their precedence
-    # arith_exp0
-    #    : arith_exp1 ((PLUS | MINUS) arith_exp1)*
-    #
-    # arith_exp1
-    #    : conditional ((TIMES | DIVIDE) call)*
     def arith_exp0(self):
         dbg_print("parsing ARITH_EXP")
         v = self.arith_exp1()
@@ -732,7 +680,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
     def arith_exp1(self):
@@ -742,7 +690,7 @@ class Parser:
             self.lexer.next()
             v2 = self.call()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('list', [v, v2])]))
+            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
     ###########################################################################################
@@ -817,8 +765,7 @@ class Parser:
             return v
 
     ###########################################################################################
-    # NOTE: in EVAL the primary should evaluate to a string
-    # NOTE: EVAL allows the user to patch python code into the interpreter and therefore
+    # NOTE: ESCAPE allows the user to patch python code into the interpreter and therefore
     #       is able to create custom extension to the interpreter
     #
     # primary
@@ -833,8 +780,8 @@ class Parser:
     #    | NOT primary
     #    | MINUS primary
     #    | ESCAPE STRING
-    #    | '(' exp ')'  // see notes below on exp vs list
-    #    | '[' exp? ']' // list or list access
+    #    | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
+    #    | '[' list_stuff ']'  // list or list access
     #    | '{' exp '}'  // exp should only produce integer and string typed expressions
     #    | function_const
     def primary(self):
@@ -890,48 +837,20 @@ class Parser:
             str_tok = self.lexer.match('STRING')
             return ('escape', str_tok.value)
 
-        # TODO: need to look at list constructors for to-list, where-list and head-tail
         elif tt == '(':
             # Parenthesized expressions have the following meaning:
             #       (A)    means a parenthesized value A
-            #       (A,)   means a list with a single value A
-            #       (A, B) means a list with values A and B
-            #       ()     NOT ALLOWED
-            # NOTE: the ',' is handled in exp
+            #       (A,)   means a tuple with a single value A
+            #       (A, B) means a tuple with values A and B
+            #       ()     shorthand for 'none'
             self.lexer.match('(')
-            v = self.exp() # list or value
+            v = self.tuple_stuff()
             self.lexer.match(')')
-            if v[0] == 'raw-list':
-                v = ('list', v[1])
-            elif v[0] == 'raw-to-list':
-                v = ('to-list', v[1], v[2], v[3])
-            elif v[0] == 'raw-where-list':
-                v = ('where-list', v[1], v[2])
-            elif v[0] == 'raw-head-tail':
-                v = ('head-tail', v[1], v[2])
             return v
 
         elif tt == '[':
             self.lexer.match('[')
-            if self.lexer.peek().type in exp_lookahead:
-                v = self.exp()
-                if v[0] == 'raw-list': # we are putting brackets around a raw-list, turn it into a list
-                    v = ('list', v[1])
-                elif v[0] == 'raw-to-list':
-                    v = ('to-list', v[1], v[2], v[3])
-                elif v[0] == 'raw-where-list':
-                    v = ('where-list', v[1], v[2])
-                elif v[0] == 'raw-head-tail':
-                    v = ('head-tail', v[1], v[2])
-                else:
-                    # turn contents into a list (possibly nested lists)
-                    v = ('list', [v])
-            elif self.lexer.peek().type == ']':
-                v = ('list', [])
-            else:
-                raise SyntaxError(
-                    "syntax error at '{}'"
-                    .format(self.lexer.peek().value))
+            v = self.list_stuff()
             self.lexer.match(']')
             return v
 
@@ -950,6 +869,56 @@ class Parser:
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
+    # tuple_stuff
+    #   : exp (',' exp?)*
+    #   | empty
+    def tuple_stuff(self):
+        dbg_print("parsing TUPLE_STUFF")
+        if self.lexer.peek().type in exp_lookahead:
+            v = self.exp()
+            if self.lexer.peek().type == ',': # if ',' exists - tuple!
+                tuple_list = [v]
+                while self.lexer.peek().type == ',':
+                    self.lexer.match(',')
+                    if self.lexer.peek().type in exp_lookahead:
+                        e = self.exp()
+                        tuple_list.append(e)
+                return ('tuple', tuple_list)
+
+            else: # just parenthesized value - drop parentheses
+                return v
+        else:
+            # empty parentheses are a shorthand for 'none'
+            return ('none', None)
+
+    ###########################################################################################
+    # list_stuff
+    #   : exp ((',' exp)+) | '|' exp)?
+    #   | empty
+    def list_stuff(self):
+        dbg_print("parsing LIST_STUFF")
+        if self.lexer.peek().type in exp_lookahead:
+            v = self.exp()
+            if v[0] == 'raw-to-list':
+                return ('to-list', v[1], v[2], v[3])
+            elif self.lexer.peek().type == ',': # if ',' exists - list!
+                list_list = [v]
+                while self.lexer.peek().type == ',':
+                    self.lexer.match(',')
+                    e = self.exp()
+                    list_list.append(e)
+                return ('list', list_list)
+            elif self.lexer.peek().type == '|': # if '|' exists - head/tail op!
+                self.lexer.match('|')
+                h = v
+                t = self.exp()
+                return ('head-tail', h, t)
+            else:
+                return ('list', [v])
+        else:
+            return ('list', [])
+
+    ###########################################################################################
     # function_const
     #    : LAMBDA body_defs
     def function_const(self):
@@ -958,10 +927,3 @@ class Parser:
         body_list = self.body_defs()
 
         return ('function', body_list)
-
-###########################################################################################
-### test the parser
-if __name__ == "__main__":
-
-    test = 'load "io". print "Hello World!"'
-    parser.parse(test)

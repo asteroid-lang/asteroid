@@ -89,7 +89,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
             if mode == "read":
                 return walk(e_list[1])
             elif mode == "write":
-                val_list[ix] = ('list', [key, value])
+                val_list[ix] = ('tuple', [key, value])
                 return val_list
             else:
                 raise ValueError("unsupported mode in dictionary handling")
@@ -98,7 +98,7 @@ def handle_dict_ix(val_list, key, value=None, mode="read"):
     if mode == "read":
         raise ValueError("dictionary key {} not found".format(key_val))
     elif mode == "write":
-        val_list.append(('list', [key, value]))
+        val_list.append(('tuple', [key, value]))
         return val_list
     else:
         raise ValueError("unsupported mode in dictionary handling")
@@ -143,18 +143,21 @@ def read_at_ix(structure_val, index):
         state.symbol_table.pop_scope()
 
     # constructor: return the argument list as memory
-    # NOTE: indexing a constructor that is applied to a constant
-    #       will fail since there is no memory here.
     elif structure_val[0] == 'apply-list':
         (APPLY_LIST,
-         (LIST_1,
+         (LIST,
           [(ID, constructor_id),
-           (LIST_2, memory)])) = structure_val # get a reference to the memory
-        if LIST_2 != 'list':
-            raise ValueError("Constructor '{}' as an object needs list argument" \
-                             .format(constructor_id))
+           (CHILDREN_TYPE, children)])) = structure_val # get a reference to the memory
+        if CHILDREN_TYPE != 'tuple':
+            # if children is not a tuple make it look like a list
+            memory = [(CHILDREN_TYPE, children)]
+        else:
+            memory = children
         # compute the index
         ix_val = walk(ix)
+
+    else:
+        raise ValueError("'{}' is not a structure".format(structure_val[0]))
 
     # index into memory and get value(s)
     if ix_val[0] == 'integer':
@@ -191,7 +194,7 @@ def read_at_ix(structure_val, index):
         return ('list', return_memory)
 
     else:
-        raise ValueError("index op '{}' not yet implemented".format(ix_val[0]))
+        raise ValueError("index op '{}' not supported".format(ix_val[0]))
 
 #########################################################################
 # we are indexing into the memory of either a list or a constructor to
@@ -230,14 +233,20 @@ def store_at_ix(structure_val, index, value):
     #       will fail since there is no memory here.
     elif structure_val[0] == 'apply-list':
         (APPLY_LIST,
-         (LIST_1,
+         (LIST,
           [(ID, constructor_id),
-           (LIST_2, memory)])) = structure_val
-        if LIST_2 != 'list':
-            raise ValueError("Constructor '{}' as an object needs list argument" \
-                             .format(constructor_id))
+           (CHILDREN_TYPE, children)])) = structure_val
+        if CHILDREN_TYPE != 'tuple':
+            # if children is not a tuple make it look like a list
+            memory = [(CHILDREN_TYPE, children)]
+        else:
+            memory = children
         # compute the index
         ix_val = walk(ix)
+
+    else:
+        raise ValueError("'{}' is not a structure".format(structure_val[0]))
+
 
     # index into memory and set the value
     if ix_val[0] == 'integer':
@@ -457,13 +466,13 @@ def try_stmt(node):
 
     except PatternMatchFailed as inst:
         # convert a Python string to an Asteroid string
-        except_val = ('list',
+        except_val = ('tuple',
                       [('string', 'PatternMatchFailed'), ('string', inst.value)])
         inst_val = inst
 
     except Exception as inst:
         # convert exception args to an Asteroid string
-        except_val = ('list',
+        except_val = ('tuple',
                       [('string', 'Exception'), ('string', str(inst))])
         inst_val = inst
 
@@ -648,24 +657,28 @@ def apply_list_exp(node):
         fval = walk(ftree)
 
         # object member function
+        # NOTE: object member functions and functions that are embedded
+        #       in a term structure built from constructors look the
+        #       the same, but only object member functions are passed
+        #       an object reference.
         if fval[0] == 'function' and ftree[0] == 'structure-ix':
-            # we are dealing with a member function call. compute
-            # the object reference and make that the first actual argument
-            # to the function.
             (STRUCTURE_IX, obj_tree, index_list) = ftree
             obj_ref = walk(obj_tree)
-            if arg_val[0] == 'none':
-                arg_val = handle_call(fval, obj_ref)
-            elif arg_val[0] != 'list':
-                new_arg_val = ('list', [obj_ref, arg_val])
-                arg_val = handle_call(fval, new_arg_val)
-            elif arg_val[0] == 'list':
-                arg_val[1].insert(0, obj_ref)
+            if obj_ref[0] == 'object': # insert object ref
+                if arg_val[0] == 'none':
+                    arg_val = handle_call(fval, obj_ref)
+                elif arg_val[0] != 'tuple':
+                    new_arg_val = ('tuple', [obj_ref, arg_val])
+                    arg_val = handle_call(fval, new_arg_val)
+                elif arg_val[0] == 'tuple':
+                    arg_val[1].insert(0, obj_ref)
+                    arg_val = handle_call(fval, arg_val)
+                else:
+                    raise ValueError(
+                        "unknown parameter type '{}' in apply"
+                        .format(arg_val[0]))
+            else: # it is a function embedded in a term structure - just call it
                 arg_val = handle_call(fval, arg_val)
-            else:
-                raise ValueError(
-                    "unknown parameter type '{}' in apply"
-                    .format(arg_val[0]))
 
         # regular function call
         elif fval[0] == 'function':
@@ -680,14 +693,14 @@ def apply_list_exp(node):
                 raise ValueError(
                     "constructor '{}' arity mismatch, expected {} got 0"
                     .format(constructor_id, arity))
-            elif arg_val[0] != 'list' and arity != 1:
-                raise ValueError(
-                    "constructor '{}' arity mismatch, expected {} got 1"
-                    .format(constructor_id, arity))
-            elif arg_val[0] == 'list' and (len(arg_val[1]) != arity) :
+            elif arg_val[0] == 'tuple' and (len(arg_val[1]) != arity) :
                 raise ValueError(
                     "constructor '{}' arity mismatch, expected {} got {}"
                     .format(constructor_id, arity, len(arg_val[1])))
+            elif arg_val[0] != 'tuple' and arity != 1:
+                raise ValueError(
+                    "constructor '{}' arity mismatch, expected {} got 1"
+                    .format(constructor_id, arity))
 
             arg_val = ('apply-list', ('list', [(ID, constructor_id), arg_val]))
 
@@ -715,10 +728,10 @@ def apply_list_exp(node):
                 state.symbol_table.push_scope(class_scope)
                 if arg_val[0] == 'none':
                     handle_call(init_fval, obj_ref)
-                elif arg_val[0] != 'list':
-                    arg_val = ('list', [obj_ref, arg_val])
+                elif arg_val[0] != 'tuple':
+                    arg_val = ('tuple', [obj_ref, arg_val])
                     handle_call(init_fval, arg_val)
-                elif arg_val[0] == 'list':
+                elif arg_val[0] == 'tuple':
                     arg_val[1].insert(0, obj_ref)
                     handle_call(init_fval, arg_val)
                 state.symbol_table.pop_scope()
@@ -765,6 +778,19 @@ def list_exp(node):
         outlist.append(walk(e))
 
     return ('list', outlist)
+
+#########################################################################
+def tuple_exp(node):
+
+    (TUPLE, intuple) = node
+    assert_match(TUPLE, 'tuple')
+
+    outtuple = []
+
+    for e in intuple:
+        outtuple.append(walk(e))
+
+    return ('tuple', outtuple)
 
 #########################################################################
 def escape_exp(node):
@@ -948,11 +974,10 @@ dispatch_dict = {
     'class-def'     : class_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
+    'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
-    'raw-list'      : lambda node : walk(('list', node[1])),
     'raw-to-list'   : lambda node : walk(('to-list', node[1], node[2], node[3])),
-    'raw-head-tail' : lambda node : walk(('head-tail', node[1], node[2])),
     'dict-access'   : lambda node : node,
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,

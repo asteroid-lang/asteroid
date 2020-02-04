@@ -12,18 +12,18 @@ constructor Children with arity 1.
 
 -- first-class family pattern
 -- note: the quote operator prevents immediate evaluation
-let family_pattern = Family(Parent('p1), Parent('p2), Children('c,)).
+let family_pattern = Family(Parent('p1), Parent('p2), Children('c)).
 print family_pattern.
 
 -- create a family using the family pattern as a constructor
 function build_family
-  with pattern, p1, p2, c do
+  with (pattern, p1, p2, c) do
     return eval(pattern). -- use first-class pattern as a constructor
   end function
 
 -- destructure a family using pattern matching
 function destructure_family
-  with pattern, term do
+  with (pattern, term) do
     let *pattern = term. -- use first-class pattern as pattern
     return [p1, p2, c].
   end function

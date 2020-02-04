@@ -22,11 +22,11 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function add_op 
+function add_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_support import term2string
 from asteroid_state import state
@@ -44,15 +44,15 @@ elif type == 'string':
 
 else:
     raise ValueError('unsupported type {} in +'.format(type))
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function subtract_op 
+function subtract_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -66,13 +66,13 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type {} in -'.format(type))
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function mult_op 
+function mult_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
 global __retval__
 from asteroid_support import promote
@@ -88,13 +88,13 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in *')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function divide_op 
+function divide_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
 global __retval__
 from asteroid_support import promote
@@ -113,7 +113,7 @@ elif type == 'real':
 
 else:
     raise ValueError('unsupported type in /')
-"     
+"
 end function
 
 ------------------------------------------------------------------
@@ -121,43 +121,43 @@ end function
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function and_op 
+function and_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import map2boolean
 from asteroid_state import state
 
-b1 = map2boolean(state.symbol_table.lookup_sym('a')) 
-b2 = map2boolean(state.symbol_table.lookup_sym('b')) 
+b1 = map2boolean(state.symbol_table.lookup_sym('a'))
+b2 = map2boolean(state.symbol_table.lookup_sym('b'))
 
 if b1[1] == True and b2[1] == True:
    __retval__ = ('boolean', True)
 
 else:
    __retval__ = ('boolean', False)
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function or_op 
+function or_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import map2boolean
 from asteroid_state import state
 
-b1 = map2boolean(state.symbol_table.lookup_sym('a')) 
-b2 = map2boolean(state.symbol_table.lookup_sym('b')) 
+b1 = map2boolean(state.symbol_table.lookup_sym('a'))
+b2 = map2boolean(state.symbol_table.lookup_sym('b'))
 
 if b1[1] == False and b2[1] == False:
    __retval__ = ('boolean', False)
 
 else:
    __retval__ = ('boolean', True)
-"     
+"
 end function
 
 ------------------------------------------------------------------
@@ -165,11 +165,11 @@ end function
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function eq_op 
+function eq_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -183,15 +183,15 @@ if type in ['integer', 'real', 'list', 'string']:
 
 else:
     raise ValueError('unsupported type in ==')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function ne_op 
+function ne_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -205,15 +205,15 @@ if type in ['integer', 'real', 'list', 'string']:
 
 else:
     raise ValueError('unsupported type in =/=')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function le_op 
+function le_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -227,15 +227,15 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in <=')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function lt_op 
+function lt_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -249,15 +249,15 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in <')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function ge_op 
+function ge_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -271,15 +271,15 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in >=')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function gt_op 
+function gt_op
 ------------------------------------------------------------------
-with a, b do return escape 
+with (a,b) do return escape 
 "
-global __retval__ 
+global __retval__
 from asteroid_support import promote
 from asteroid_state import state
 
@@ -295,7 +295,7 @@ if type in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in >')
-"     
+"
 end function
 
 ------------------------------------------------------------------
@@ -303,11 +303,11 @@ end function
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function uminus_op 
+function uminus_op
 ------------------------------------------------------------------
-with a do return escape 
+with a do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_state import state
 
 val_a = state.symbol_table.lookup_sym('a')
@@ -317,15 +317,15 @@ if val_a[0] in ['integer', 'real']:
 
 else:
     raise ValueError('unsupported type in unary minus')
-"     
+"
 end function
 
 ------------------------------------------------------------------
-function not_op 
+function not_op
 ------------------------------------------------------------------
-with a do return escape 
+with a do return escape
 "
-global __retval__ 
+global __retval__
 from asteroid_support import map2boolean
 from asteroid_state import state
 
@@ -341,8 +341,5 @@ elif val_a[1] == True:
 
 else:
     raise ValueError('not a boolean value in not')
-"     
+"
 end function
-
-
-
