@@ -1,8 +1,0 @@
-load "io".
-
-let df = csv_read("tennis.csv", true).
-let r = csv_row(df, 2).
-print (r).
-
-let c = csv_col(df, 3).
-print (c).
