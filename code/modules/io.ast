@@ -5,11 +5,7 @@
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
--- PRINTING FUNCTIONS
-------------------------------------------------------------------
-
-------------------------------------------------------------------
-function raw_print 
+function raw_print
 ------------------------------------------------------------------
 -- dumps the AST to screen
 with item do
@@ -24,7 +20,7 @@ return none
 end function
 
 ------------------------------------------------------------------
-function print 
+function print
 ------------------------------------------------------------------
 with item do
 escape
@@ -52,4 +48,3 @@ prompt_val = state.symbol_table.lookup_sym('prompt')
 __retval__ = ('string', input(term2string(prompt_val)))
 "
 end function
-

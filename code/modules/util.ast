@@ -110,16 +110,16 @@ end function
 ------------------------------------------------------------------
 function length
 ------------------------------------------------------------------
-with lst do return escape
+with item do return escape
 "
 global __retval__
 from asteroid_state import state
 
-item_val = state.symbol_table.lookup_sym('lst')
+item_val = state.symbol_table.lookup_sym('item')
 
-if item_val[0] != 'list':
+if item_val[0] not in ['list','tuple']:
    raise ValueError(
-   	 'length expected a list got {}'
+   	 'length expected a list or tuple got {}'
 	 .format(item_val[0]))
 
 __retval__ = ('integer', len(item_val[1]))
@@ -224,5 +224,30 @@ assert_match(TYPE, 'integer')
 assert_match(TYPE, 'integer')
 
 __retval__ = ('integer', random.randint(lo_val, hi_val))
+"
+end function
+
+------------------------------------------------------------------
+function zip
+------------------------------------------------------------------
+-- implements Python's zip function
+with (list1,list2) do return escape
+"
+import random
+from asteroid_support import assert_match
+global __retval__
+
+(TYPE, list1_val) = state.symbol_table.lookup_sym('list1')
+assert_match(TYPE, 'list')
+(TYPE, list2_val) = state.symbol_table.lookup_sym('list2')
+assert_match(TYPE, 'list')
+
+l = list(zip(list1_val,list2_val))
+out_list = []
+for p in l:
+  (i,t) = p
+  out_list.append(('tuple',[i,t]))
+  
+__retval__ = ('list', out_list)
 "
 end function

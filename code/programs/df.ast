@@ -1,0 +1,11 @@
+load "dataframe".
+load "io".
+
+let df = DataFrame().
+df@read_csv("tennis.csv",true).
+
+let r = df@row(3).
+print(r).
+
+let c = df@col(3).
+print(c).

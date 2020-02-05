@@ -215,9 +215,9 @@ def unify(term, pattern):
         else:
             return []
 
-    # NOTE: functions are allowed in terms as long as they are matched
+    # NOTE: functions/foreign are allowed in terms as long as they are matched
     # by a variable in the pattern - anything else will fail
-    elif term[0] in (unify_not_allowed - {'function'}):
+    elif term[0] in (unify_not_allowed - {'function', 'foreign'}):
         raise PatternMatchFailed(
             "term of type '{}' not allowed in pattern matching"
             .format(term[0]))
