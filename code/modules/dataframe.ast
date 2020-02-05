@@ -1,10 +1,22 @@
+------------------------------------------------------------------
+-- Asteroid DataFrames implemented using Python's Pandas lib.
+--
+-- TODO: this is more of a proof of concept implementation
+-- demonstrating that we can have objects with escaped
+-- implementations.  DataFrames needs lots more functionality.
+------------------------------------------------------------------
+
 class DataFrame with
 
-  data df.
+------------------------------------------------------------------
+data df.
+------------------------------------------------------------------
 
-  function read_csv with (self,file,header_row) do escape
+------------------------------------------------------------------
+function read_csv
+------------------------------------------------------------------
+with (self,file,header_row) do escape
 "
-global __retval__
 from asteroid_state import state
 import pandas
 
@@ -17,13 +29,19 @@ header_row_val = state.symbol_table.lookup_sym('header_row')
  (CLASS_ID, (ID, class_id)),
  (OBJECT_MEMORY, (LIST, memory))) = self_val
 
+# read as Pandas dataframe
 df = pandas.read_csv(file_val[1], header=0 if header_row_val[1] else None)
+
 # the dataframe is in the first slot in the object memory
+# store the Pandas dataframe as a foreign object in this slot
 memory[0] = ('foreign', df)
 "
-   end function
+end function.
 
-  function row with (self,ix) do return escape
+------------------------------------------------------------------
+function row
+------------------------------------------------------------------
+with (self,ix) do return escape
 "
 global __retval__
 import numpy
@@ -58,10 +76,12 @@ for e in row:
 
 __retval__ = ('list', lst)
 "
-  end function
+end function.
 
-
-  function col with (self,ix) do return escape
+------------------------------------------------------------------
+function col
+------------------------------------------------------------------
+with (self,ix) do return escape
 "
 global __retval__
 from asteroid_state import state
@@ -95,6 +115,6 @@ for e in col:
 
 __retval__ = ('list', lst)
 "
-  end function
+end function.
 
 end class

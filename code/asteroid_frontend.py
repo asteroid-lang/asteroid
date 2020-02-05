@@ -436,7 +436,7 @@ class Parser:
     ###########################################################################################
     # class_stmt
     #  : function_def '.'?
-    #  | DATA ID '.'?
+    #  | DATA ID ('=' exp)? '.'?
     def class_stmt(self):
         dbg_print("parsing CLASS_STMT")
         tt = self.lexer.peek().type  # tt - Token Type
@@ -554,18 +554,41 @@ class Parser:
 
     ###########################################################################################
     # quote_exp
-    #    : QUOTE compound
-    #    | compound
+    #    : QUOTE head_tail
+    #    | head_tail
     def quote_exp(self):
         dbg_print("parsing QUOTE_EXP")
 
         if self.lexer.peek().type == 'QUOTE':
             self.lexer.match('QUOTE')
-            v = self.compound()
+            v = self.head_tail()
             return ('quote', v)
         else:
-            v = self.compound()
+            v = self.head_tail()
             return v
+
+    ###########################################################################################
+    # head_tail
+    #    : compound ('|' exp)?
+    #
+    # NOTE: * as a value this operator will construct a list from the semantic values of
+    #         head and tail
+    #       * as a pattern this operator will be unified with a list such that head will
+    #         unify with the first element of the list and tail with the remaining list
+    # NOTE: this is a list constructor and therefore should never appear in the semantic
+    #       processing, use walk to expand the list before processing it.
+    def head_tail(self):
+        dbg_print("parsing HEAD_TAIL")
+
+        v = self.compound()
+
+        if self.lexer.peek().type == '|':
+            self.lexer.match('|')
+            head = v
+            tail = self.exp()
+            v = ('raw-head-tail', head, tail)
+
+        return v
 
     ###########################################################################################
     # compound
@@ -893,7 +916,7 @@ class Parser:
 
     ###########################################################################################
     # list_stuff
-    #   : exp ((',' exp)+) | '|' exp)?
+    #   : exp (',' exp)*
     #   | empty
     def list_stuff(self):
         dbg_print("parsing LIST_STUFF")
@@ -901,6 +924,8 @@ class Parser:
             v = self.exp()
             if v[0] == 'raw-to-list':
                 return ('to-list', v[1], v[2], v[3])
+            elif v[0] == 'raw-head-tail':
+                return ('head-tail', v[1], v[2])
             elif self.lexer.peek().type == ',': # if ',' exists - list!
                 list_list = [v]
                 while self.lexer.peek().type == ',':
@@ -908,11 +933,6 @@ class Parser:
                     e = self.exp()
                     list_list.append(e)
                 return ('list', list_list)
-            elif self.lexer.peek().type == '|': # if '|' exists - head/tail op!
-                self.lexer.match('|')
-                h = v
-                t = self.exp()
-                return ('head-tail', h, t)
             else:
                 return ('list', [v])
         else:

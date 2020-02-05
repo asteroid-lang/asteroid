@@ -33,7 +33,7 @@ function_def
   : FUNCTION ID body_defs END FUNCTION
 
 class_stmt
-  : function_def
+  : function_def '.'?
   | DATA ID ('=' exp)? '.'?
 
 class_stmt_list
@@ -57,8 +57,11 @@ exp
   : quote_exp
 
 quote_exp
-  : QUOTE compound
-  | compound
+  : QUOTE head_tail
+  | head_tail
+
+head_tail
+  : compound ('|' exp)?
 
 compound
   : logic_exp0
@@ -122,7 +125,7 @@ tuple_stuff
   | empty
 
 list_stuff
-  : exp ((',' exp)+) | '|' exp)?
+  : exp (',' exp)*
   | empty
 
 function_const

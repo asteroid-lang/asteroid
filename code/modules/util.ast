@@ -242,12 +242,16 @@ assert_match(TYPE, 'list')
 (TYPE, list2_val) = state.symbol_table.lookup_sym('list2')
 assert_match(TYPE, 'list')
 
+# zip it with Python's zip
 l = list(zip(list1_val,list2_val))
+
+# turn Python tuples into Asteroid tuples and
+# put them onto an output list
 out_list = []
 for p in l:
   (i,t) = p
   out_list.append(('tuple',[i,t]))
-  
+
 __retval__ = ('list', out_list)
 "
 end function

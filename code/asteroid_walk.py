@@ -978,6 +978,7 @@ dispatch_dict = {
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
     'raw-to-list'   : lambda node : walk(('to-list', node[1], node[2], node[3])),
+    'raw-head-tail' : lambda node : walk(('head-tail', node[1], node[2])),
     'dict-access'   : lambda node : node,
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,
@@ -991,7 +992,7 @@ dispatch_dict = {
     # quoted code should be treated like a constant if not ignore_quote
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
     # type tag used in conjunction with escaped code in order to store
-    # foreign constants in Asteroid data structures
+    # foreign objects in Asteroid data structures
     'foreign'       : lambda node : node,
     'id'            : lambda node : state.symbol_table.lookup_sym(node[1]),
     'apply-list'    : apply_list_exp,

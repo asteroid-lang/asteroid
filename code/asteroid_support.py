@@ -272,7 +272,7 @@ def unify(term, pattern):
             "variable '{}' in term not allowed"
             .format(term[1]))
 
-    elif pattern[0] == 'head-tail':
+    elif pattern[0] in ['head-tail', 'raw-head-tail']:
         # unpack the structures
         (HEAD_TAIL, pattern_head, pattern_tail) = pattern
         (LIST, list_val) = term
