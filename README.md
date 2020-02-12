@@ -3,7 +3,7 @@
 
 # Asteroid the Programming Language
 
-Asteroid is a general purpose programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching is supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed and returned from functions as well as manipulated computationally.
+Asteroid is a multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Lua](http://www.lua.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching is supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed and returned from functions as well as manipulated computationally.
 
 OK, before we get started here is the obligatory *Hello World!* program written in Asteroid,
 ```
@@ -33,6 +33,66 @@ Here we use the head-tail operator as a pattern to match a list. The loop iterat
 ```
 1
 2
+```
+The following program randomizes a list of names and then creates teams of three
+from the randomized list.
+```
+load "standard".
+load "util".
+load "io".
+
+-- team participants
+let names = [
+    "Sofia",
+    "Andrew",
+    "Evan",
+    "Patrick",
+    "Julio",
+    "Zachary",
+    "Joshua",
+    "Emily",
+    "Samantha",
+    "Timothy",
+    "Shannon"
+  ]
+
+-- randomize names
+let l = length(names).
+for i in 0 to l-1 do
+  let r = randint(0, l-1).
+  -- swap names in 'names'
+  let (names@i,names@r) = (names@r,names@i).
+end for
+
+-- select teams of three
+-- Note: 'teams' is a list of lists
+let teams = [].
+repeat do
+  if length(names) < 3 do
+    -- append the remaining names as a team to teams
+    let teams = teams + [names].
+    let names = []. -- no more names to process
+  else do
+    -- pattern match the first three names
+    -- match 'names' with the rest of the names list
+    let [m1 | m2 | m3 | names] = names.
+    -- make a team of the pattern-matched names
+    -- and append that team to teams
+    let teams = teams + [[m1,m2,m3]].
+  end if
+until names is [].
+
+-- print teams
+-- index teams and then print the team member names out
+-- in a nice formatted way
+for (i,team) in zip(1 to length(teams),teams) do
+  let team_str = "".
+  repeat do
+    let [name|team] = team.
+    let team_str = team_str + name + ("" if team is [] else ", ").
+  until team is [].
+  print("team " + i + (":  " if i < 10 else ": ") + team_str)
+end for
 ```
 Pattern matching can also happen on function arguments using the `with` or `orwith` keywords.
 Here is the canonical factorial program written in Asteroid,
