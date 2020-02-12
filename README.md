@@ -56,13 +56,8 @@ let names = [
     "Shannon"
   ]
 
--- randomize names
-let l = length(names).
-for i in 0 to l-1 do
-  let r = randint(0, l-1).
-  -- swap names in 'names'
-  let (names@i,names@r) = (names@r,names@i).
-end for
+-- shuffle names
+let names = shuffle(names).
 
 -- select teams of three
 -- Note: 'teams' is a list of lists

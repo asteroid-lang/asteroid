@@ -228,6 +228,23 @@ __retval__ = ('integer', random.randint(lo_val, hi_val))
 end function
 
 ------------------------------------------------------------------
+function shuffle
+------------------------------------------------------------------
+-- return a random permutation of a given list
+with lst do return escape
+"
+import random
+from asteroid_support import assert_match
+global __retval__
+
+(LIST, list_val) = state.symbol_table.lookup_sym('lst')
+assert_match(LIST, 'list')
+random.shuffle(list_val) # in-place shuffle
+__retval__ = ('list', list_val)
+"
+end function
+
+------------------------------------------------------------------
 function zip
 ------------------------------------------------------------------
 -- implements Python's zip function
