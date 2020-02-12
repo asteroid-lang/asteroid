@@ -120,7 +120,7 @@ def read_at_ix(structure_val, index):
 
     # find the actual memory we need to access
     # list: return the actual list
-    if structure_val[0] == 'list':
+    if structure_val[0] in ['list', 'tuple']:
         memory = structure_val[1] # get a reference to the memory
         # compute the index
         ix_val = walk(ix)
