@@ -346,13 +346,14 @@ def promote(type1, type2, strict=True):
     type hierarchies
 
                  boolean < integer < real < string
-
                  list < string
+                 tuple < string
+                 none
     '''
 
-    if type1 == 'string' and type2 in['string', 'real', 'integer', 'list', 'boolean']:
+    if type1 == 'string' and type2 in['string','real','integer','list','tuple','boolean']:
         return 'string'
-    if type2 == 'string' and type1 in['string', 'real', 'integer', 'list', 'boolean']:
+    if type2 == 'string' and type1 in['string','real','integer','list','tuple','boolean']:
         return 'string'
     elif type1 == 'real' and type2 in ['real', 'integer', 'boolean']:
         return 'real'
@@ -366,6 +367,8 @@ def promote(type1, type2, strict=True):
         return 'boolean'
     elif type1 == 'list' and type2 == 'list':
         return 'list'
+    elif type1 == 'tuple' and type2 == 'tuple':
+        return 'tuple'
     else:
         if strict:
             if type1 == type2:
