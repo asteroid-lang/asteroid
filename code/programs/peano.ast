@@ -23,4 +23,4 @@ function reduce
         return term.
     end function
 
-print (reduce('S(S(0)) + S(S(S(0))))).
+print (reduce(S(S(0)) + S(S(S(0))))).

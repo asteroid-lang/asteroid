@@ -110,12 +110,13 @@ function reduce
     end function
 
 -- construct a term we want to reduce  
-let n = 'S(S(0)) + (S(S(S(0)))).
+let n = S(S(0)) + (S(S(S(0)))).
 
 -- and reduce it!
 let rn = reduce n.
 
 -- attach inc interpretation to the S constructor
+-- load standard interpretation for `+`
 load "standard".
 load "util".
 load "io".
@@ -135,7 +136,7 @@ The output of this program is,
 ```
 true
 ```
-meaning that the symbolic reduction and the value based computation computed exactly the same thing,
+meaning that the reduced term and the original term with `S` interpreted as the increment function and `+` interpreted in the standard way give the same result,
 namely the value `5`.
 
 As mentioned above, Asteroid has a very flexible view of the interpretation of expression terms which allows the programmer to attach new interpretations to constructor symbols on the fly.  Consider the following program which attaches a new interpretation to the `+` operator symbol, performs a computation, and then removes that interpretation restoring the original interpretation,
@@ -157,7 +158,7 @@ print (3 + 2).                  -- this will print out the value 5
 ```
 The output of the first `print` statement is 6 because `funny_add` attached to the `+` symbol multiplies its arguments.  The second `print` statement outputs the expected value 5 since we are back at the standard interpretation of the `+` symbol.
 
-Asteroid also supports prototype-based OO style programming inspired by Lua.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" using pattern matching.
+Asteroid also supports prototype-based OO style programming.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" using pattern matching.
 
 ```
 load "standard".
@@ -202,5 +203,10 @@ let dogs = [fido, buddy, fifi].
 for Dog(name, ["roll over"|_], _, _) in dogs do
   print (name + " does roll over").
 end for
+```
+The output of this program is,
+```
+Fido does roll over
+Buddy does roll over
 ```
 Take a look at the [Asteroid User Guide](https://nbviewer.jupyter.org/github/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.ipynb) notebook for a more detailed discussion of the language.

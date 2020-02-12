@@ -118,7 +118,9 @@ def t_STRING(t):
     return t
 
 def t_COMMENT(t):
-    r'--.*'
+    # hash comment is only here to support the shebang for linux
+    # so that Asteroid scripts can run as "executables"
+    r'--.* | \#.*'
     pass
 
 def t_NEWLINE(t):

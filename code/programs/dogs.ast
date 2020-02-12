@@ -8,16 +8,16 @@ class Dog
     data tricks = [].
 
     function __init__
-      with self, name, tricks do
+      with (self, name, tricks) do
         let self@name = name.
         let self@tricks = tricks.
-      orwith self, name do
+      orwith (self, name) do
         let self@name = name.
         let self@tricks = [].
       end function
 
     function add_trick
-      with self, new_trick do
+      with (self, new_trick) do
         let self@tricks = self@tricks + [new_trick].
       end function
   end class

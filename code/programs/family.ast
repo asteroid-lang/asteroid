@@ -5,7 +5,7 @@
 load "io".
 load "util".
 
--- family constructors for our pattern
+-- family term constructors for our pattern
 constructor Family with arity 3.
 constructor Parent with arity 1.
 constructor Children with arity 1.
@@ -15,8 +15,8 @@ constructor Children with arity 1.
 let family_pattern = Family(Parent('p1), Parent('p2), Children('c)).
 print family_pattern.
 
--- create a family using the family pattern as a constructor
-function build_family
+-- construct a family using the family pattern as a constructor
+function construct_family
   with (pattern, p1, p2, c) do
     return eval(pattern). -- use first-class pattern as a constructor
   end function
@@ -28,8 +28,8 @@ function destructure_family
     return [p1, p2, c].
   end function
 
--- build a family
-let family = build_family(family_pattern, "Harry", "Bridget", ["Sue", "Peter"]).
+-- construct a family
+let family = construct_family(family_pattern,"Harry","Bridget",["Sue","Peter"]).
 print family.
 
 -- destructure a family
