@@ -13,6 +13,7 @@ from asteroid_state import state
 reserved = {
     'and'           : 'AND',
     'arity'         : 'ARITY',
+    'assert'        : 'ASSERT',
     'attach'        : 'ATTACH',
     'break'         : 'BREAK',
     'catch'         : 'CATCH',

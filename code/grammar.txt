@@ -13,6 +13,7 @@ stmt
   | LOAD STRING '.'?
   | GLOBAL id_list '.'?
   | NONLOCAL id_list '.'?
+  | ASSERT exp '.'?
   | function_def
   | CLASS ID WITH class_stmt_list END CLASS
   | CONSTRUCTOR ID WITH ARITY INTEGER '.'?

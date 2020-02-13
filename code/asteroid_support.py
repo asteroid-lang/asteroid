@@ -14,55 +14,6 @@ class PatternMatchFailed(Exception):
     def __str__(self):
         return(repr(self.value))
 
-#########################################################################
-def len_seq(seq_list):
-
-    if seq_list[0] == 'nil':
-        return 0
-
-    elif seq_list[0] == 'seq':
-        # unpack the seq node
-        (SEQ, p1, p2) = seq_list
-
-        return 1 + len_seq(p2)
-
-    else:
-            raise ValueError("unknown node type: {}".format(seq_list[0]))
-
-###########################################################################################
-def reverse_node_list(node_type, node_list):
-    '''
-    shallow reversal of a nil terminated node_type list
-    assumes the structure of node_type node: (node_type, element, next)
-    NOTE: the list needs to be ('nil',) terminated
-    '''
-
-    new_list = ('nil',)
-
-    e = node_list
-    while(e[0] != 'nil'):
-        new_list = (node_type, e[1], new_list)
-        e = e[2]
-
-    return new_list
-
-###########################################################################################
-def append_node_list(node_type, list1, list2):
-    '''
-    append list2 to list1.  assume 'nil' terminated lists of node_type
-    NOTE: there is a more efficient way of doing this by iterating...
-    '''
-
-    if list1[0] == 'nil':
-        return list2
-
-    else:
-        return (node_type,
-                list1[1],
-                append_node_list(node_type,
-                                 list1[2],
-                                 list2))
-
 ###########################################################################################
 def dump_AST(node):
     '''

@@ -388,6 +388,16 @@ def global_stmt(node):
         state.symbol_table.enter_global(id_val)
 
 #########################################################################
+def assert_stmt(node):
+
+    (ASSERT, exp) = node
+    assert_match(ASSERT, 'assert')
+
+    exp_val = walk(exp)
+    # mapping asteroid assert into python assert
+    assert exp_val[1], 'assert failed'
+
+#########################################################################
 def attach_stmt(node):
 
     (ATTACH, (FUN_EXP, fexp), (CONSTR_ID, sym)) = node
@@ -959,6 +969,7 @@ dispatch_dict = {
     # statements - statements do not produce return values
     'lineinfo'      : process_lineinfo,
     'noop'          : lambda node : None,
+    'assert'        : assert_stmt,
     'attach'        : attach_stmt,
     'detach'        : detach_stmt,
     'unify'         : unify_stmt,

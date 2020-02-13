@@ -24,26 +24,18 @@ let names = [
 let names = shuffle(names).
 
 -- select teams of three
--- Note: teams is a list of lists
 let teams = [].
 repeat do
   if length(names) < 3 do
-    -- append the remaining names as a team to teams
     let teams = teams + [names].
-    let names = []. -- no more names to process
+    let names = [].
   else do
-    -- pattern match the first three names
-    -- match 'names' with the rest of the names list
-    let [m1 | m2 | m3 | names] = names.
-    -- make a team of the pattern-matched names
-    -- and append that team to teams
+    let [m1 | m2 | m3 | names] = names. -- pattern match the first three names
     let teams = teams + [[m1,m2,m3]].
   end if
 until names is [].
 
 -- print teams
--- index teams and then print the team member names out
--- in a nice formatted way
 for (i,team) in zip(1 to length(teams),teams) do
   let team_str = "".
   repeat do

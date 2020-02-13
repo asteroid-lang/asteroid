@@ -48,6 +48,7 @@ exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 
 stmt_lookahead = {
     '.',
+    'ASSERT',
     'ATTACH',
     'BREAK',
     'CLASS',
@@ -228,6 +229,13 @@ class Parser:
             id_list = self.id_list()
             self.lexer.match_optional('.')
             return ('nonlocal', id_list)
+
+        elif tt == 'ASSERT':
+            dbg_print("parsing ASSERT")
+            self.lexer.match('ASSERT')
+            exp = self.exp()
+            self.lexer.match_optional('.')
+            return ('assert', exp)
 
         elif tt == 'FUNCTION':
             return self.function_def()
