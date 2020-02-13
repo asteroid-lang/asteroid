@@ -39,9 +39,9 @@ function array_shape
 --------------------------------------------------------------------------
 function compute_new_state
     -- Compute a new map2 from an old map1
-    with map1, map2 do
+    with (map1, map2) do
 
-        let xdim, ydim = array_shape(map1).
+        let (xdim,ydim) = array_shape(map1).
 
         -- compute our new map
         for x in 0 to (xdim-1) do
@@ -79,7 +79,7 @@ function show_map
     -- and space for dead ones.
     with map do
 
-        let xdim, ydim = array_shape(map).
+        let (xdim,ydim) = array_shape(map).
 
         -- need to do a deep copy because we are modifying the map
         let display_map = copy(map).
@@ -100,7 +100,7 @@ function show_map
 
 --------------------------------------------------------------------------
 function init_map
-    with xdim, ydim do
+    with (xdim, ydim) do
 
         let thresh = 0.8.
         let map = [].
@@ -121,7 +121,7 @@ function init_map
 
 --------------------------------------------------------------------------
 function life
-    with maxgen, xdim, ydim do
+    with (maxgen, xdim, ydim) do
 
         -- create memory for both maps
         let map1 = init_map(xdim, ydim).
@@ -139,7 +139,7 @@ function life
             print("map @ generation " + gen).
             show_map(map2).
             -- implement double buffering
-            let map1, map2 = map2, map1. -- swap the maps
+            let (map1,map2) = (map2,map1). -- swap the maps
         end for
 
     end function
