@@ -50,7 +50,6 @@ reserved = {
     'to'            : 'TO',
     'try'           : 'TRY',
     'until'         : 'UNTIL',
-    'where'         : 'WHERE',
     'while'         : 'WHILE',
     'with'          : 'WITH',
     # constants
