@@ -214,7 +214,7 @@ print (3 + 2).                  -- this will print out the value 5
 ```
 The output of the first `print` statement is 6 because `funny_add` attached to the `+` symbol multiplies its arguments.  The second `print` statement outputs the expected value 5 since we are back at the standard interpretation of the `+` symbol.
 
-Asteroid also supports prototype-based OO style programming.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" using pattern matching.
+Asteroid also supports prototype-based OO style programming.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching.
 
 ```
 load "standard".
