@@ -60,7 +60,6 @@ let names = [
 let names = shuffle(names).
 
 -- select teams of three
--- Note: 'teams' is a list of lists
 let teams = [].
 repeat do
   if length(names) < 3 do
@@ -69,17 +68,12 @@ repeat do
     let names = []. -- no more names to process
   else do
     -- pattern match the first three names
-    -- match 'names' with the rest of the names list
     let [m1 | m2 | m3 | names] = names.
-    -- make a team of the pattern-matched names
-    -- and append that team to teams
     let teams = teams + [[m1,m2,m3]].
   end if
 until names is [].
 
 -- print teams
--- index teams and then print the team member names out
--- in a nice formatted way
 for (i,team) in zip(1 to length(teams),teams) do
   let team_str = "".
   repeat do
@@ -88,6 +82,13 @@ for (i,team) in zip(1 to length(teams),teams) do
   until team is [].
   print("team " + i + (":  " if i < 10 else ": ") + team_str)
 end for
+```
+Here is one instance of output from the program,
+```
+team 1:  Evan, Timothy, Andrew
+team 2:  Patrick, Joshua, Julio
+team 3:  Zachary, Emily, Shannon
+team 4:  Sofia, Samantha
 ```
 Pattern matching can also happen on function arguments using the `with` or `orwith` keywords.
 Here is the canonical factorial program written in Asteroid,
