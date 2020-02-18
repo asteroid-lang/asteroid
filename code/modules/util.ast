@@ -221,12 +221,13 @@ function shuffle
 with lst do return escape
 "
 import random
+import copy
 from asteroid_support import assert_match
 global __retval__
 
 (LIST, list_val) = state.symbol_table.lookup_sym('lst')
 assert_match(LIST, 'list')
-random.shuffle(list_val) # in-place shuffle
+random.shuffle(copy.copy(list_val)) # do not shuffle in place
 __retval__ = ('list', list_val)
 "
 end function
