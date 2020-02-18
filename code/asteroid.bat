@@ -1,2 +1,2 @@
 @echo off
-python %ASTEROID%\asteroid %1 %2 %3 %4 %5
+python %ASTEROID_ROOT%\code\asteroid %1 %2 %3 %4 %5
