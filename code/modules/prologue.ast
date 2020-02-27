@@ -1,0 +1,322 @@
+------------------------------------------------------------------
+-- prologue.ast
+--
+-- the standard Asteroid prologue defining global functions.
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+-- List member functions
+------------------------------------------------------------------
+
+-- NOTE: these functions must appear the
+-- 'list_member_functions' dictionary
+
+-- for implementation details see python lists in
+-- https://docs.python.org/3/tutorial/datastructures.html
+------------------------------------------------------------------
+function __list_length__
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+
+if self_val[0] != 'list':
+   raise ValueError('__list_length__ expected a list got {}'
+	     .format(self_val[0]))
+
+__retval__ = ('integer', len(self_val[1]))
+"
+end function
+
+------------------------------------------------------------------
+function __list_append__
+------------------------------------------------------------------
+with (self,item) do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+
+self_val[1].append(item_val)
+"
+end function
+
+------------------------------------------------------------------
+function __list_extend__
+------------------------------------------------------------------
+with (self,item) do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+assert_match(item_val[0],'list')
+
+self_val[1].extend(item_val)
+"
+end function
+
+------------------------------------------------------------------
+function __list_insert__
+------------------------------------------------------------------
+with (self,ix,item) do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+ix_val = state.symbol_table.lookup_sym('ix')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+assert_match(ix_val[0],'integer')
+
+self_val[1].insert(ix_val[1],item_val)
+"
+end function
+
+------------------------------------------------------------------
+function __list_remove__
+------------------------------------------------------------------
+with (self,item) do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+
+self_val[1].remove(ix_val[1],item_val)
+"
+end function
+
+------------------------------------------------------------------
+function __list_pop__
+------------------------------------------------------------------
+with (self,ix) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+ix_val = state.symbol_table.lookup_sym('ix')
+
+assert_match(self_val[0],'list')
+assert_match(ix_val[0],'integer')
+
+__retval__ = self_val[1].pop(ix_val[1])
+"
+orwith self do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'list')
+
+__retval__ = self_val[1].pop()
+"
+end function
+
+------------------------------------------------------------------
+function __list_clear__
+------------------------------------------------------------------
+with self do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'list')
+self_val[1].clear()
+"
+end function
+
+------------------------------------------------------------------
+function __list_index__
+------------------------------------------------------------------
+with (self,item,startix,endix) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+startix_val = state.symbol_table.lookup_sym('startix')
+endix_val = state.symbol_table.lookup_sym('endix')
+
+assert_match(self_val[0],'list')
+assert_match(startix_val[0],'integer')
+assert_match(endix_val[0],'integer')
+
+__retval__ = ('integer', self_val[1].index(item_val[1],
+                            startix_val[1],
+                            endix_val[1]))
+"
+orwith (self,item,startix) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+startix_val = state.symbol_table.lookup_sym('startix')
+
+assert_match(self_val[0],'list')
+assert_match(startix_val[0],'integer')
+
+__retval__ = ('integer', self_val[1].index(item_val[1], startix_val[1]))
+"
+orwith (self,item) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+
+__retval__ = ('integer', self_val[1].index(item_val[1]))
+"
+end function
+
+------------------------------------------------------------------
+function __list_count__
+------------------------------------------------------------------
+with (self,item) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'list')
+
+__retval__ = self_val[1].count(item_val)
+"
+end function
+
+------------------------------------------------------------------
+function __list_sort__
+------------------------------------------------------------------
+with (self,reverse) do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+reverse_val = state.symbol_table.lookup_sym('reverse')
+
+assert_match(self_val[0],'list')
+assert_match(reverse_val[0],'boolean')
+
+self_val[1].sort(reverse=reverse_val[1])
+"
+orwith self do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'list')
+self_val[1].sort()
+"
+end function
+
+------------------------------------------------------------------
+function __list_reverse__
+------------------------------------------------------------------
+with self do escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'list')
+self_val[1].reverse()
+"
+end function
+
+------------------------------------------------------------------
+function __list_copy__
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'list')
+__retval__ = ('list', self_val[1].copy()
+"
+end function
+
+------------------------------------------------------------------
+-- String member functions
+------------------------------------------------------------------
+
+-- NOTE: these functions must appear the
+-- 'string_member_functions' dictionary
+
+-- for implementation details see python lists in
+-- https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
+
+------------------------------------------------------------------
+function __string_length__
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+
+assert_match(self_val[0],'string')
+
+__retval__ = ('integer', len(self_val[1]))
+"
+end function
+
+------------------------------------------------------------------
+function __string_explode__
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+assert_match(self_val[0],'string')
+__retval__ = ('list', [('string', char) for char in self_val[1]])
+"
+end function
+
+------------------------------------------------------------------
+function __string_join__
+------------------------------------------------------------------
+with (self,item) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+
+assert_match(self_val[0],'string')
+assert_match(item_val[0],'list')
+
+raw_list = []
+for (t,v) in item_val[1]:
+  raw_list.append(v)
+
+__retval__ = ('string', self_val[1].join(raw_list))
+"
+end function

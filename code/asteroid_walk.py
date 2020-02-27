@@ -12,6 +12,33 @@ from asteroid_support import map2boolean
 from asteroid_support import PatternMatchFailed
 
 #########################################################################
+# this dictionary maps list member function names to function
+# implementations given in the Asteroid prologue.
+list_member_functions = {
+    "length"    : "__list_length__",
+    "append"    : "__list_append__",
+    "extend"    : "__list_extend__",
+    "insert"    : "__list_insert__",
+    "remove"    : "__list_remove__",
+    "pop"       : "__list_pop__",
+    "clear"     : "__list_clear__",
+    "index"     : "__list_index__",
+    "count"     : "__list_count__",
+    "sort"      : "__list_sort__",
+    "reverse"   : "__list_reverse__",
+    "copy"      : "__list_copy__",
+    }
+
+#########################################################################
+# this dictionary maps string member function names to function
+# implementations given in the Asteroid prologue.
+string_member_functions = {
+    "length"    : "__string_length__",
+    "explode"   : "__string_explode__",
+    "join"      : "__string_join__",
+    }
+
+#########################################################################
 __retval__ = None  # return value register for escaped code
 
 #########################################################################
@@ -120,12 +147,26 @@ def read_at_ix(structure_val, index):
 
     # find the actual memory we need to access
     # list: return the actual list
-    if structure_val[0] in ['list', 'tuple']:
-        memory = structure_val[1] # get a reference to the memory
-        # compute the index
-        #lhh
-        #print(ix)
-        ix_val = walk(ix)
+    if structure_val[0] in ['list', 'tuple', 'string']:
+        if structure_val[0] == 'list' \
+        and ix[0] == 'id' \
+        and ix[1] in list_member_functions:
+            # we are looking at the function name of a list member
+            # function - find the implementation and return it.
+            impl_name = list_member_functions[ix[1]]
+            return state.symbol_table.lookup_sym(impl_name)
+        elif structure_val[0] == 'string' \
+        and ix[0] == 'id' \
+        and ix[1] in string_member_functions:
+            # we are looking at the function name of a tring member
+            # function - find the implementation and return it.
+            impl_name = string_member_functions[ix[1]]
+            return state.symbol_table.lookup_sym(impl_name)
+        else:
+            # get a reference to the memory
+            memory = structure_val[1]
+            # compute the index
+            ix_val = walk(ix)
 
     # for objects we access the object memory
     elif structure_val[0] == 'object':
@@ -163,7 +204,10 @@ def read_at_ix(structure_val, index):
 
     # index into memory and get value(s)
     if ix_val[0] == 'integer':
-        return memory[ix_val[1]]
+        if structure_val[0] == 'string':
+            return ('string', memory[ix_val[1]])
+        else:
+            return memory[ix_val[1]]
 
     elif ix_val[0] == 'dict-access':
         (DICT_KEY_TYPE, dict_key) = walk(ix_val[1])
@@ -193,7 +237,10 @@ def read_at_ix(structure_val, index):
             else:
                 raise ValueError("unsupported list index")
 
-        return ('list', return_memory)
+        if structure_val[0] == 'string':
+            return ('string',"".join(return_memory))
+        else:
+            return ('list', return_memory)
 
     else:
         raise ValueError("index op '{}' not supported".format(ix_val[0]))
@@ -676,7 +723,9 @@ def apply_list_exp(node):
         if fval[0] == 'function' and ftree[0] == 'structure-ix':
             (STRUCTURE_IX, obj_tree, index_list) = ftree
             obj_ref = walk(obj_tree)
-            if obj_ref[0] == 'object': # insert object ref
+            # Note: lists are objects/mutable data structures, they
+            # have member functions defined in the Asteroid prologue.
+            if obj_ref[0] in ['object','list','string']: # insert object ref
                 if arg_val[0] == 'none':
                     arg_val = handle_call(fval, obj_ref)
                 elif arg_val[0] != 'tuple':

@@ -5,6 +5,7 @@
 ###########################################################################################
 
 import sys
+from pathlib import Path
 from asteroid_frontend import Parser
 from asteroid_state import state
 from asteroid_walk import walk
@@ -13,6 +14,9 @@ from asteroid_walk import ReturnValue
 from asteroid_support import dump_AST
 from asteroid_support import term2string
 from asteroid_version import VERSION
+
+# the prologue file is expected to be in the 'modules' folder
+prologue_name = 'prologue.ast'
 
 # TODO: adjust the defaults
 def interp(input_stream,
@@ -30,9 +34,21 @@ def interp(input_stream,
         # initialize state
         state.initialize()
 
+        # load the prologue file
+        prologue_file = sys.path[1] + '/modules/' + prologue_name
+        if not Path(prologue_file).is_file():
+            raise ValueError("Asteroid prologue '{}' not found"
+                             .format(prologue_file))
+        with open(prologue_file) as f:
+            state.modules.append(prologue_name)
+            data = f.read()
+            pparser = Parser(prologue_name)
+            (LIST, pstmts) = pparser.parse(data)
+
         # build the AST
         parser = Parser(input_name)
-        state.AST = parser.parse(input_stream)
+        (LIST, istmts) = parser.parse(input_stream)
+        state.AST = ('list', pstmts + istmts)
 
         # walk the AST
         if tree_dump:
