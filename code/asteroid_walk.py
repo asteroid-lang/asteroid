@@ -27,6 +27,7 @@ list_member_functions = {
     "sort"      : "__list_sort__",
     "reverse"   : "__list_reverse__",
     "copy"      : "__list_copy__",
+    "shuffle"   : "__list_shuffle__",
     }
 
 #########################################################################

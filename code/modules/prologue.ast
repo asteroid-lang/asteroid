@@ -260,6 +260,22 @@ __retval__ = ('list', self_val[1].copy()
 end function
 
 ------------------------------------------------------------------
+function __list_shuffle__
+------------------------------------------------------------------
+-- return a random permutation of a given list - in place!
+with self do escape
+"
+import random
+import copy
+from asteroid_support import assert_match
+
+(LIST, self_val) = state.symbol_table.lookup_sym('self')
+assert_match(LIST, 'list')
+random.shuffle(self_val)
+"
+end function
+
+------------------------------------------------------------------
 -- String member functions
 ------------------------------------------------------------------
 

@@ -35,10 +35,20 @@ def interp(input_stream,
         state.initialize()
 
         # load the prologue file
-        prologue_file = sys.path[1] + '/modules/' + prologue_name
-        if not Path(prologue_file).is_file():
+        prologue_file_base = '/modules/' + prologue_name
+
+        if Path(sys.path[0] + prologue_file_base).is_file():
+            prologue_file = sys.path[0] + prologue_file_base
+            #lhh
+            #print("path[0]:"+prologue_file)
+        elif Path(sys.path[1] + prologue_file_base).is_file():
+            prologue_file = sys.path[1] + prologue_file_base
+            #lhh
+            #print("path[1]:"+prologue_file)
+        else:
             raise ValueError("Asteroid prologue '{}' not found"
-                             .format(prologue_file))
+                             .format(prologue_file_base))
+
         with open(prologue_file) as f:
             state.modules.append(prologue_name)
             data = f.read()

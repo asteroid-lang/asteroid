@@ -12,7 +12,7 @@ df@read_csv("names.csv",true).
 let names = df@col(0).
 
 -- shuffle names
-shuffle(names).
+names@shuffle().
 
 -- select teams of three
 let teams = [].
