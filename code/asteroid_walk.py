@@ -123,6 +123,8 @@ def read_at_ix(structure_val, index):
     if structure_val[0] in ['list', 'tuple']:
         memory = structure_val[1] # get a reference to the memory
         # compute the index
+        #lhh
+        #print(ix)
         ix_val = walk(ix)
 
     # for objects we access the object memory

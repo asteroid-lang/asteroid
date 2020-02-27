@@ -1,10 +1,8 @@
 -- implements Peano addition using a lookup table for the rewrite rules
 
-load "standard".
 load "util".
 load "io".
 
-detach from __plus__ . -- we want to use '+' as constructor
 constructor S with arity 1.
 
 let rule_table = [
@@ -14,8 +12,7 @@ let rule_table = [
 
 function reduce
     with term do
-        for i in 0 to length(rule_table) - 1 do
-            let (lhs, rhs) = rule_table@i.
+        for (lhs, rhs) in rule_table do
             if term is *lhs do
                 return eval(rhs).
             end if

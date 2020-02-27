@@ -95,25 +95,6 @@ state.ignore_quote = False
 end function
 
 ------------------------------------------------------------------
-function length
-------------------------------------------------------------------
-with item do return escape
-"
-global __retval__
-from asteroid_state import state
-
-item_val = state.symbol_table.lookup_sym('item')
-
-if item_val[0] not in ['list','tuple']:
-   raise ValueError(
-   	 'length expected a list or tuple got {}'
-	 .format(item_val[0]))
-
-__retval__ = ('integer', len(item_val[1]))
-"
-end function
-
-------------------------------------------------------------------
 function exit
 ------------------------------------------------------------------
 with msg do escape
@@ -217,18 +198,16 @@ end function
 ------------------------------------------------------------------
 function shuffle
 ------------------------------------------------------------------
--- return a random permutation of a given list
-with lst do return escape
+-- return a random permutation of a given list - in place!
+with lst do escape
 "
 import random
 import copy
 from asteroid_support import assert_match
-global __retval__
 
 (LIST, list_val) = state.symbol_table.lookup_sym('lst')
 assert_match(LIST, 'list')
-random.shuffle(copy.copy(list_val)) # do not shuffle in place
-__retval__ = ('list', list_val)
+random.shuffle(list_val)
 "
 end function
 
@@ -258,5 +237,24 @@ for p in l:
   out_list.append(('tuple',[i,t]))
 
 __retval__ = ('list', out_list)
+"
+end function
+
+------------------------------------------------------------------
+function length
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('item')
+
+if item_val[0] not in ['list','tuple']:
+   raise ValueError(
+   	 'length expected a list or tuple got {}'
+	 .format(item_val[0]))
+
+__retval__ = ('integer', len(item_val[1]))
 "
 end function

@@ -233,6 +233,10 @@ def unify(term, pattern):
                 "head-tail operator expected type 'list' got type '{}'"
                 .format(LIST))
 
+        if not len(list_val):
+            raise PatternMatchFailed(
+                "head-tail operator expected a non-empty list")
+
         list_head = list_val[0]
         list_tail = ('list', list_val[1:])
 

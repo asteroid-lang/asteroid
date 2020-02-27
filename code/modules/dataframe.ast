@@ -117,4 +117,44 @@ __retval__ = ('list', lst)
 "
 end function.
 
+------------------------------------------------------------------
+function nrow
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+self_val = state.symbol_table.lookup_sym('self')
+
+# destructure object
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+ # the dataframe is in the first slot in the object memory
+(FOREIGN, df_val) = memory[0]
+__retval__ = ('integer', df_val.shape[0])
+"
+end function.
+
+------------------------------------------------------------------
+function ncol
+------------------------------------------------------------------
+with self do return escape
+"
+global __retval__
+from asteroid_state import state
+self_val = state.symbol_table.lookup_sym('self')
+
+# destructure object
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+ # the dataframe is in the first slot in the object memory
+(FOREIGN, df_val) = memory[0]
+__retval__ = ('integer', df_val.shape[1])
+"
+end function.
+
 end class

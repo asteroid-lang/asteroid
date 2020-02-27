@@ -4,43 +4,33 @@
 load "standard".
 load "util".
 load "io".
+load "dataframe".
 
 -- team participants
-let names = [
-    "Sofia",
-    "Andrew",
-    "Evan",
-    "Patrick",
-    "Julio",
-    "Zachary",
-    "Joshua",
-    "Emily",
-    "Samantha",
-    "Timothy",
-    "Shannon"
-  ]
+let df = DataFrame().
+df@read_csv("names.csv",true).
+let names = df@col(0).
 
 -- shuffle names
-let names = shuffle(names).
+shuffle(names).
 
 -- select teams of three
 let teams = [].
 repeat do
   if length(names) < 3 do
     let teams = teams + [names].
-    let names = [].
-  else do
-    let [m1 | m2 | m3 | names] = names. -- pattern match the first three names
+    break.
+  elif names is [m1|m2|m3|names] do
     let teams = teams + [[m1,m2,m3]].
   end if
 until names is [].
 
 -- print teams
 for (i,team) in zip(1 to length(teams),teams) do
-  let team_str = "".
+  let team_str = "team " + i + (":  " if i < 10 else ": ").
   repeat do
     let [name|team] = team.
     let team_str = team_str + name + ("" if team is [] else ", ").
   until team is [].
-  print("team " + i + (":  " if i < 10 else ": ") + team_str)
+  print team_str.
 end for
