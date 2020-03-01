@@ -14,30 +14,14 @@ from asteroid_support import PatternMatchFailed
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
-list_member_functions = {
-    "length"    : "__list_length__",
-    "append"    : "__list_append__",
-    "extend"    : "__list_extend__",
-    "insert"    : "__list_insert__",
-    "remove"    : "__list_remove__",
-    "pop"       : "__list_pop__",
-    "clear"     : "__list_clear__",
-    "index"     : "__list_index__",
-    "count"     : "__list_count__",
-    "sort"      : "__list_sort__",
-    "reverse"   : "__list_reverse__",
-    "copy"      : "__list_copy__",
-    "shuffle"   : "__list_shuffle__",
-    }
+# see 'prologue.ast' for details
+list_member_functions = dict()
 
 #########################################################################
 # this dictionary maps string member function names to function
 # implementations given in the Asteroid prologue.
-string_member_functions = {
-    "length"    : "__string_length__",
-    "explode"   : "__string_explode__",
-    "join"      : "__string_join__",
-    }
+# see 'prologue.ast' for details
+string_member_functions = dict()
 
 #########################################################################
 __retval__ = None  # return value register for escaped code

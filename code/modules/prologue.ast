@@ -15,6 +15,28 @@
 
 -- for implementation details see python lists in
 -- https://docs.python.org/3/tutorial/datastructures.html
+
+-- list member function association table
+escape
+"
+global list_member_functions
+
+list_member_functions.update({
+    'length'    : '__list_length__',
+    'append'    : '__list_append__',
+    'extend'    : '__list_extend__',
+    'insert'    : '__list_insert__',
+    'remove'    : '__list_remove__',
+    'pop'       : '__list_pop__',
+    'clear'     : '__list_clear__',
+    'index'     : '__list_index__',
+    'count'     : '__list_count__',
+    'sort'      : '__list_sort__',
+    'reverse'   : '__list_reverse__',
+    'copy'      : '__list_copy__',
+    'shuffle'   : '__list_shuffle__',
+    })
+".
 ------------------------------------------------------------------
 function __list_length__
 ------------------------------------------------------------------
@@ -285,6 +307,16 @@ end function
 -- for implementation details see python lists in
 -- https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str
 
+escape
+"
+global string_member_functions
+
+string_member_functions.update({
+    'length'    : '__string_length__',
+    'explode'   : '__string_explode__',
+    'join'      : '__string_join__',
+    })
+".
 ------------------------------------------------------------------
 function __string_length__
 ------------------------------------------------------------------
