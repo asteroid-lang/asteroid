@@ -65,7 +65,7 @@ repeat do
   if length(names) < 3 do
     -- append the remaining names as a team to teams
     let teams = teams + [names].
-    let names = []. -- no more names to process
+    break.
   else do
     -- pattern match the first three names
     let [m1 | m2 | m3 | names] = names.
@@ -90,7 +90,7 @@ team 2:  Patrick, Joshua, Julio
 team 3:  Zachary, Emily, Shannon
 team 4:  Sofia, Samantha
 ```
-Pattern matching can also happen on function arguments using the `with` or `orwith` keywords.
+Pattern matching can also happen on function arguments using the `with` or `orwith` keywords.  This can be viewed as multiple dynamic dispatch.
 Here is the canonical factorial program written in Asteroid,
 
 ```
@@ -150,6 +150,7 @@ The fact that Asteroid supports matching in all of its major programming constru
 
 ```
 -- implements Peano addition
+load "io".
 
 -- declare the successor function S as a term constructor  
 constructor S with arity 1.
@@ -169,31 +170,14 @@ function reduce
 let n = S(S(0)) + (S(S(S(0)))).
 
 -- and reduce it!
-let rn = reduce n.
-
--- attach inc interpretation to the S constructor
--- load standard interpretation for `+`
-load "standard".
-load "util".
-load "io".
-
-function inc
-    with n do
-        return n + 1.
-    end function
-
-attach inc to S.
-
--- show that with this behavior both the original term and the rewritten term
--- evaluate to the same value
-print ((eval rn) == (eval n)).
+print(reduce n).
 ```
 The output of this program is,
 ```
-true
+S(S(S(S(S(0)))))
 ```
-meaning that the reduced term and the original term with `S` interpreted as the increment function and `+` interpreted in the standard way give the same result,
-namely the value `5`.
+If we interpret `S` as the successor function then this is
+the value `5`.
 
 As mentioned above, Asteroid has a very flexible view of the interpretation of expression terms which allows the programmer to attach new interpretations to constructor symbols on the fly.  Consider the following program which attaches a new interpretation to the `+` operator symbol, performs a computation, and then removes that interpretation restoring the original interpretation,
 ```

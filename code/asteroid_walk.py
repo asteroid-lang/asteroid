@@ -71,51 +71,6 @@ def declare_formal_args(unifiers):
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
-def handle_dict_ix(val_list, key, value=None, mode="read"):
-    # a dictionary is a list of 2-tuples, first component is the key, second
-    # component is the value.
-    # this function handles both reading and writing dictionary lists
-
-    (KEY_TYPE, key_val) = key
-
-    for ix in range(len(val_list)):
-        e = val_list[ix]
-        #lhh
-        #print(e)
-
-        (LIST, e_list) = e
-
-        if not isinstance(e_list, list):
-            raise ValueError("internal error: unsupported dictionary format")
-
-        if len(e_list) != 2:
-            raise ValueError("unsupported dictionary format (2)")
-
-        (ENTRY_KEY_TYPE, entry_key) = e_list[0]
-
-        if ENTRY_KEY_TYPE != KEY_TYPE:
-            raise ValueError("wrong dictionary key type - expected {} got {}".
-                             format(KEY_TYPE, ENTRY_KEY_TYPE))
-
-        if entry_key == key_val: # return the value
-            if mode == "read":
-                return walk(e_list[1])
-            elif mode == "write":
-                val_list[ix] = ('tuple', [key, value])
-                return val_list
-            else:
-                raise ValueError("unsupported mode in dictionary handling")
-
-    # fell through the loop -- key doesn't exit
-    if mode == "read":
-        raise ValueError("dictionary key {} not found".format(key_val))
-    elif mode == "write":
-        val_list.append(('tuple', [key, value]))
-        return val_list
-    else:
-        raise ValueError("unsupported mode in dictionary handling")
-
-#########################################################################
 # we are indexing into the memory of either a list or a constructor to
 # read the memory.
 #
@@ -194,13 +149,6 @@ def read_at_ix(structure_val, index):
         else:
             return memory[ix_val[1]]
 
-    elif ix_val[0] == 'dict-access':
-        (DICT_KEY_TYPE, dict_key) = walk(ix_val[1])
-        if DICT_KEY_TYPE not in ['integer', 'string']:
-            raise ValueError("dictionary key type {} not supported (1)".
-                             format(DICT_KEY_TYPE))
-        return handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key))
-
     elif ix_val[0] == 'list':
         if len(ix_val[1]) == 0:
             raise ValueError("index list is empty")
@@ -211,14 +159,6 @@ def read_at_ix(structure_val, index):
 
             if IX_EXP_TYPE == 'integer':
                 return_memory.append(memory[ix_exp])
-
-            elif IX_EXP_TYPE == 'dict-access':
-                (DICT_KEY_TYPE, dict_key, *_) = ix_exp
-                if DICT_KEY_TYPE not in ['integer', 'string']:
-                    raise ValueError("dictionary key type '{}' not supported"\
-                                     .format(DICT_KEY_TYPE))
-                return_memory.append(handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key)))
-
             else:
                 raise ValueError("unsupported list index")
 
@@ -286,13 +226,6 @@ def store_at_ix(structure_val, index, value):
     if ix_val[0] == 'integer':
         memory[ix_val[1]] = value
         return
-
-    elif ix_val[0] == 'dict-access':
-        (DICT_KEY_TYPE, dict_key) = walk(ix_val[1])
-        if DICT_KEY_TYPE not in ['integer', 'string']:
-            raise ValueError("dictionary key type {} not supported (2)".
-                             format(DICT_KEY_TYPE))
-        return handle_dict_ix(memory, (DICT_KEY_TYPE, dict_key), value, "write")
 
     elif ix_val[0] == 'list':
         raise ValueError("slicing in patterns not supported")
@@ -1026,7 +959,6 @@ dispatch_dict = {
     'head-tail'     : head_tail_exp,
     'raw-to-list'   : lambda node : walk(('to-list', node[1], node[2], node[3])),
     'raw-head-tail' : lambda node : walk(('head-tail', node[1], node[2])),
-    'dict-access'   : lambda node : node,
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,
     'nil'           : lambda node : node,

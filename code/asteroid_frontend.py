@@ -885,12 +885,6 @@ class Parser:
             self.lexer.match(']')
             return v
 
-        elif tt == '{':
-            self.lexer.match('{')
-            v = self.exp()
-            self.lexer.match('}')
-            return ('dict-access', v)
-
         elif tt == 'LAMBDA':
             return self.function_const()
 

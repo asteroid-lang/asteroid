@@ -1,0 +1,4 @@
+escape 
+"
+print('hello world')
+".
