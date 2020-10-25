@@ -10,6 +10,12 @@ from asteroid_support import assert_match
 from asteroid_support import unify
 from asteroid_support import map2boolean
 from asteroid_support import PatternMatchFailed
+from asteroid_support import data_only
+from asteroid_support import data_ix_list
+from asteroid_support import promote
+from asteroid_frontend import operator_symbols
+from asteroid_frontend import binary_operators
+from asteroid_frontend import unary_operators
 
 #########################################################################
 # this dictionary maps list member function names to function
@@ -111,17 +117,17 @@ def read_at_ix(structure_val, index):
     # for objects we access the object memory
     elif structure_val[0] == 'object':
         (OBJECT,
-         (CLASS_ID, (ID, class_id)),
+         (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, memory))) = structure_val
         # compute the index -- for objects this has to be done
-        # in the context of the class scope
-        class_val = state.symbol_table.lookup_sym(class_id)
-        # unpack the class value
-        (CLASS,
+        # in the context of the struct scope
+        struct_val = state.symbol_table.lookup_sym(struct_id)
+        # unpack the struct value
+        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (CLASS_MEMORY, (LIST, class_memory)),
-         (CLASS_SCOPE, class_scope)) = class_val
-        state.symbol_table.push_scope(class_scope)
+         (STRUCT_MEMORY, (LIST, struct_memory)),
+         (STRUCT_SCOPE, struct_scope)) = struct_val
+        state.symbol_table.push_scope(struct_scope)
         ix_val = walk(ix)
         state.symbol_table.pop_scope()
 
@@ -188,17 +194,17 @@ def store_at_ix(structure_val, index, value):
     # for objects we access the object memory
     elif structure_val[0] == 'object':
         (OBJECT,
-         (CLASS_ID, (ID, class_id)),
+         (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, memory))) = structure_val
         # compute the index -- for objects this has to be done
-        # in the context of the class scope
-        class_val = state.symbol_table.lookup_sym(class_id)
-        # unpack the class value
-        (CLASS,
+        # in the context of the struct scope
+        struct_val = state.symbol_table.lookup_sym(struct_id)
+        # unpack the struct value
+        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (CLASS_MEMORY, (LIST, class_memory)),
-         (CLASS_SCOPE, class_scope)) = class_val
-        state.symbol_table.push_scope(class_scope)
+         (STRUCT_MEMORY, (LIST, struct_memory)),
+         (STRUCT_SCOPE, struct_scope)) = struct_val
+        state.symbol_table.push_scope(struct_scope)
         ix_val = walk(ix)
         state.symbol_table.pop_scope()
 
@@ -233,6 +239,120 @@ def store_at_ix(structure_val, index, value):
     else:
         raise ValueError("index op '{}' in patterns not supported"
                          .format(ix_val[0]))
+
+#########################################################################
+def handle_builtins(node):
+
+    (APPLY_LIST, (LIST, apply_list)) = node
+    assert_match(APPLY_LIST, 'apply-list')
+
+    if apply_list[0][0] != 'id':
+        raise ValueError("expected an operator id")
+
+    opname = apply_list[0][1]
+
+    if opname in binary_operators:
+        (TUPLE, args)= apply_list[1]
+        val_a = walk(args[0])
+        val_b = walk(args[1])
+
+        if opname == '__plus__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real', 'list', 'boolean']:
+                return (type, val_a[1] + val_b[1])
+            elif type == 'string':
+                return (type, term2string(val_a) + term2string(val_b))
+            else:
+                raise ValueError('unsupported type {} in +'.format(type))
+        elif opname == '__minus__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return (type, val_a[1] - val_b[1])
+            else:
+                raise ValueError('unsupported type {} in -'.format(type))
+        elif opname == '__times__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return (type, val_a[1] * val_b[1])
+            else:
+                raise ValueError('unsupported type in *')
+        elif opname == '__divide__':
+            type = promote(val_a[0], val_b[0])
+            if type == 'integer':
+                return (type, int(val_a[1]) // int(val_b[1]))
+            elif type == 'real':
+                return ('real', float(val_a[1]) / float(val_b[1]))
+            else:
+                raise ValueError('unsupported type in /')
+        elif opname == '__or__':
+            # NOTE: do we need to typecheck here?
+            if val_a[1] == True or val_b[1] == True:
+               return ('boolean', True)
+            else:
+               return ('boolean', False)
+        elif opname == '__and__':
+            # NOTE: do we need to typecheck here?
+            if val_a[1] == True and val_b[1] == True:
+               return ('boolean', True)
+            else:
+               return ('boolean', False)
+        elif opname == '__eq__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real', 'list', 'string']:
+                return ('boolean', val_a[1] == val_b[1])
+            else:
+                raise ValueError('unsupported type in ==')
+        elif opname  == '__ne__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real', 'list', 'string']:
+                return ('boolean', val_a[1] != val_b[1])
+            else:
+                raise ValueError('unsupported type in =/=')
+        elif opname == '__le__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return ('boolean', val_a[1] <= val_b[1])
+            else:
+                raise ValueError('unsupported type in <=')
+        elif opname == '__lt__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return ('boolean', val_a[1] < val_b[1])
+            else:
+                raise ValueError('unsupported type in <')
+        elif opname == '__ge__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return ('boolean', val_a[1] >= val_b[1])
+            else:
+                raise ValueError('unsupported type in >=')
+        elif opname == '__gt__':
+            type = promote(val_a[0], val_b[0])
+            if type in ['integer', 'real']:
+                return ('boolean', val_a[1] > val_b[1])
+            else:
+                raise ValueError('unsupported type in >')
+        else:
+            raise ValueError('unknown builtin binary opname {}'.format(opname))
+
+    elif opname in unary_operators:
+        arg = apply_list[1]
+        arg_val = walk(arg)
+
+        if opname == '__not__':
+            if arg_val[1] == False:
+                return ('boolean', True)
+            elif arg_val[1] == True:
+                return ('boolean', False)
+            else:
+                raise ValueError('not a boolean value in not')
+        elif opname == '__uminus__':
+            if arg_val[0] in ['integer', 'real']:
+                __retval__ = (arg_val[0], - arg_val[1])
+            else:
+                raise ValueError('unsupported type in unary minus')
+        else:
+            raise ValueError('unknown builtin unary opname {}'.format(opname))
 
 #########################################################################
 def handle_call(fval, actual_val_args):
@@ -562,21 +682,21 @@ def if_stmt(node):
             break
 
 #########################################################################
-def class_def_stmt(node):
+def struct_def_stmt(node):
 
-    (CLASS_DEF, (ID, class_id), (MEMBER_LIST, (LIST, member_list))) = node
-    assert_match(CLASS_DEF, 'class-def')
+    (STRUCT_DEF, (ID, struct_id), (MEMBER_LIST, (LIST, member_list))) = node
+    assert_match(STRUCT_DEF, 'struct-def')
     assert_match(ID, 'id')
     assert_match(MEMBER_LIST, 'member-list')
     assert_match(LIST, 'list')
 
     # declare members
     # member names are declared as variables whose value is the slot
-    # in a class object
-    class_memory = [] # this will serve as a template for instanciating objects
+    # in a struct object
+    struct_memory = [] # this will serve as a template for instanciating objects
     member_names = []
-    class_scope = {}
-    state.symbol_table.push_scope(class_scope)
+    struct_scope = {}
+    state.symbol_table.push_scope(struct_scope)
 
     for member_ix in range(len(member_list)):
         member = member_list[member_ix]
@@ -585,30 +705,35 @@ def class_def_stmt(node):
              (ID, member_id),
              (INIT_VAL, value)) = member
             state.symbol_table.enter_sym(member_id, ('integer', member_ix))
-            class_memory.append(walk(value))
+            struct_memory.append(walk(value))
             member_names.append(member_id)
         elif member[0] == 'unify':
             (UNIFY, (ID, member_id), function_value) = member
             state.symbol_table.enter_sym(member_id, ('integer', member_ix))
-            class_memory.append(function_value)
+            struct_memory.append(function_value)
             member_names.append(member_id)
         else:
-            raise ValueError("unsupported class member '{}'".format(member[0]))
+            raise ValueError("unsupported struct member '{}'".format(member[0]))
 
     state.symbol_table.pop_scope()
 
-    class_type = ('class',
+    struct_type = ('struct',
                   ('member-names', ('list', member_names)),
-                  ('class-memory', ('list', class_memory)),
-                  ('class-scope', class_scope))
+                  ('struct-memory', ('list', struct_memory)),
+                  ('struct-scope', struct_scope))
 
-    state.symbol_table.enter_sym(class_id, class_type)
+    state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
 def apply_list_exp(node):
 
     (APPLY_LIST, (LIST, apply_list)) = node
     assert_match(APPLY_LIST, 'apply-list')
+
+    # handle builtin operators that look like apply lists.
+    if apply_list[0][0] == 'id' \
+    and apply_list[0][1] in operator_symbols:
+        return handle_builtins(node)
 
     # handle a list of apply terms:
     # e.g. inc inc 1
@@ -683,28 +808,28 @@ def apply_list_exp(node):
 
             arg_val = ('apply-list', ('list', [(ID, constructor_id), arg_val]))
 
-        # class constructor call
-        elif fval[0] == 'class':
-            (ID, class_id) = ftree
-            (CLASS,
+        # object constructor call
+        elif fval[0] == 'struct':
+            (ID, struct_id) = ftree
+            (STRUCT,
              (MEMBER_NAMES, (LIST, member_names)),
-             (CLASS_MEMORY, (LIST, class_memory)),
-             (CLASS_SCOPE, class_scope)) = fval
+             (STRUCT_MEMORY, (LIST, struct_memory)),
+             (STRUCT_SCOPE, struct_scope)) = fval
 
             # create our object memory - memory cells now have initial values
             # need to make a deep copy
-            object_memory = deepcopy(class_memory)
+            object_memory = deepcopy(struct_memory)
             # create our object
             obj_ref = ('object',
-                      ('class-id', ('id', class_id)),
+                      ('struct-id', ('id', struct_id)),
                       ('object-memory', ('list', object_memory)))
-            # if the class has an __init__ function call it on the object
+            # if the struct has an __init__ function call it on the object
             # NOTE: constructor functions do not have return values.
             if '__init__' in member_names:
                 slot_ix = member_names.index('__init__')
-                init_fval = class_memory[slot_ix]
-                # calling a member function - push class scope
-                state.symbol_table.push_scope(class_scope)
+                init_fval = struct_memory[slot_ix]
+                # calling a member function - push struct scope
+                state.symbol_table.push_scope(struct_scope)
                 if arg_val[0] == 'none':
                     handle_call(init_fval, obj_ref)
                 elif arg_val[0] != 'tuple':
@@ -714,6 +839,24 @@ def apply_list_exp(node):
                     arg_val[1].insert(0, obj_ref)
                     handle_call(init_fval, arg_val)
                 state.symbol_table.pop_scope()
+            # the struct does not have an __init__ function but
+            # we have a constructor call with args, e.g. Foo(1,2)
+            # try to apply a default constructor by copying the
+            # values from the arg list to the data slots of the object
+            elif arg_val[0] != 'none':
+                if arg_val[0] != 'tuple':
+                    arg_array = [arg_val]
+                else:
+                    arg_array = arg_val[1]
+                data_memory = data_only(object_memory)
+                if len(data_memory) != len(arg_array):
+                    raise ValueError(
+                        "default constructor expected {} arguments got {}"
+                        .format(len(data_memory), len(arg_array)))
+                # copy initializers into object memory
+                data_ix = data_ix_list(object_memory)
+                for (i,k) in zip(data_ix, range(0,len(data_memory))):
+                    object_memory[i] = arg_array[k]
 
             # return the new object as the next arg_val
             arg_val = obj_ref
@@ -951,7 +1094,7 @@ dispatch_dict = {
     'if'            : if_stmt,
     'throw'         : throw_stmt,
     'try'           : try_stmt,
-    'class-def'     : class_def_stmt,
+    'struct-def'    : struct_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'tuple'         : tuple_exp,

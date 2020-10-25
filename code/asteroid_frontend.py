@@ -51,7 +51,6 @@ stmt_lookahead = {
     'ASSERT',
     'ATTACH',
     'BREAK',
-    'CLASS',
     'CONSTRUCTOR',
     'DETACH',
     'FOR',
@@ -64,13 +63,14 @@ stmt_lookahead = {
     'NOOP',
     'REPEAT',
     'RETURN',
+    'STRUCTURE',
     'THROW',
     'TRY',
     'WHILE',
     'WITH',
     } | primary_lookahead
 
-class_stmt_lookahead = {
+struct_stmt_lookahead = {
     '.',
     'DATA',
     'FUNCTION',
@@ -78,6 +78,31 @@ class_stmt_lookahead = {
     }
 
 noop_stmt_lookahead = {'NOOP', '.'}
+###########################################################################################
+# symbols for builtin operators.
+# NOTE: if you add new builtins make sure to keep this table in sync.
+
+binary_operators = {
+    '__plus__',
+    '__minus__',
+    '__times__',
+    '__divide__',
+    '__or__',
+    '__and__',
+    '__eq__',
+    '__ne__',
+    '__le__',
+    '__lt__',
+    '__ge__',
+    '__gt__',
+    }
+
+unary_operators = {
+    '__uminus__',
+    '__not__',
+    }
+
+operator_symbols = binary_operators | unary_operators
 
 ###########################################################################################
 class Parser:
@@ -132,7 +157,7 @@ class Parser:
     #    | GLOBAL id_list '.'?
     #    | NONLOCAL id_list '.'?
     #    | function_def
-    #    | CLASS ID WITH class_stmt_list END CLASS
+    #    | STRUCTURE ID WITH struct_stmt_list END STRUCTURE?
     #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
     #    | ATTACH primary TO ID '.'?
     #    | DETACH FROM ID '.'?
@@ -240,15 +265,15 @@ class Parser:
         elif tt == 'FUNCTION':
             return self.function_def()
 
-        elif tt == 'CLASS':
-            dbg_print("parsing CLASS")
-            self.lexer.match('CLASS')
+        elif tt == 'STRUCTURE':
+            dbg_print("parsing STRUCTURE")
+            self.lexer.match('STRUCTURE')
             id_tok = self.lexer.match('ID')
             self.lexer.match('WITH')
-            stmts = self.class_stmt_list()
+            stmts = self.struct_stmt_list()
             self.lexer.match('END')
-            self.lexer.match('CLASS')
-            return ('class-def',
+            self.lexer.match_optional('STRUCTURE')
+            return ('struct-def',
                     ('id', id_tok.value),
                     ('member-list', stmts))
 
@@ -442,11 +467,11 @@ class Parser:
                 ('function', body_list))
 
     ###########################################################################################
-    # class_stmt
+    # struct_stmt
     #  : function_def '.'?
     #  | DATA ID ('=' exp)? '.'?
-    def class_stmt(self):
-        dbg_print("parsing CLASS_STMT")
+    def struct_stmt(self):
+        dbg_print("parsing STRUCT_STMT")
         tt = self.lexer.peek().type  # tt - Token Type
 
         if tt == 'FUNCTION':
@@ -473,15 +498,15 @@ class Parser:
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
-    # class_stmt_list
-    #   : class_stmt class_stmt_list
+    # struct_stmt_list
+    #   : struct_stmt struct_stmt_list
     #   | empty
-    def class_stmt_list(self):
-        dbg_print("parsing CLASS_STMT_LIST")
+    def struct_stmt_list(self):
+        dbg_print("parsing STRUCT_STMT_LIST")
 
-        if self.lexer.peek().type in class_stmt_lookahead:
-            s = self.class_stmt()
-            (LIST, sl) = self.class_stmt_list()
+        if self.lexer.peek().type in struct_stmt_lookahead:
+            s = self.struct_stmt()
+            (LIST, sl) = self.struct_stmt_list()
             return ('list', [s] +  sl)
         else:
             return ('list', [])
@@ -642,8 +667,8 @@ class Parser:
             return v
 
     ###########################################################################################
-    # NOTE: all terms are expressed as apply-list nodes of their corresponding
-    #       constructor names
+    # NOTE: Builtin operators are mapped to apply lists so that they don't have to be
+    #       special cased during pattern matching.  See operator_symbols above.
     ###########################################################################################
     # logic/relational/arithmetic operators with their precedence
     # logic_exp0

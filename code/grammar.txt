@@ -15,11 +15,12 @@ stmt
   | NONLOCAL id_list '.'?
   | ASSERT exp '.'?
   | function_def
-  | CLASS ID WITH class_stmt_list END CLASS
-  | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
-  | ATTACH primary TO ID '.'?
-  | DETACH FROM ID '.'?
+  | STRUCTURE ID WITH struct_stmt_list END STRUCTURE?
+  | CONSTRUCTOR ID WITH ARITY INTEGER '.'? // DEL
+  | ATTACH primary TO ID '.'? // DEL
+  | DETACH FROM ID '.'? // DEL
   | LET pattern '=' exp '.'?
+  | LOOP stmt_list END LOOP // NEW
   | FOR pattern IN exp DO stmt_list END FOR
   | WHILE exp DO stmt_list END WHILE
   | REPEAT DO? stmt_list UNTIL exp '.'?
@@ -33,13 +34,13 @@ stmt
 function_def
   : FUNCTION ID body_defs END FUNCTION
 
-class_stmt
-  : function_def '.'?
-  | DATA ID ('=' exp)? '.'?
+  struct_stmt_list
+    : struct_stmt struct_stmt_list
+    | empty
 
-class_stmt_list
-  : class_stmt class_stmt_list
-  | empty
+  struct_stmt
+    : function_def '.'?
+    | DATA ID ('=' exp)? '.'?
 
 noop_stmt
   : NOOP '.'?
@@ -118,7 +119,6 @@ primary
   | ESCAPE STRING
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
-  | '{' exp '}'  // exp should only produce integer and string typed expressions
   | function_const
 
 tuple_stuff

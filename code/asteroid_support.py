@@ -190,21 +190,22 @@ def unify(term, pattern):
     elif term[0] == 'object' and pattern[0] == 'apply-list':
         # unpack term
         (OBJECT,
-         (CLASS_ID, (ID, class_id)),
+         (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
         # unpack pattern
         (APPLY_LIST,
          (LIST,
-          [(ID, constructor_id),
+          [(ID, apply_id),
            (TUPLE, pattern_tuple)])) = pattern
         if TUPLE != 'tuple':
             raise PatternMatchFailed(
                 "Constructor '{}' expected tuple argument" \
-                .format(constructor_id))
-        if class_id != constructor_id:
+                .format(apply_id))
+        if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
-                .format(constructor_id, class_id))
-        return unify(obj_memory, pattern_tuple)
+                .format(apply_id, struct_id))
+        # only pattern match on object data members
+        return unify(data_only(obj_memory), pattern_tuple)
 
     elif pattern[0] == 'structure-ix': # list/constructor lval access
         unifier = (pattern, term)
@@ -260,16 +261,16 @@ def unify(term, pattern):
 
         # unpack the apply-list structures
         (APPLY_LIST,
-         (LIST, [(ID, t_constr_id), t_arg])) = term
+         (LIST, [(ID, t_id), t_arg])) = term
 
         (APPLY_LIST,
-         (LIST, [(ID, p_constr_id), p_arg])) = pattern
+         (LIST, [(ID, p_id), p_arg])) = pattern
 
-        # make sure constructors match
-        if t_constr_id != p_constr_id:
+        # make sure apply id's match
+        if t_id != p_id:
             raise PatternMatchFailed(
                 "term '{}' does not match pattern '{}'"
-                .format(t_constr_id, p_constr_id))
+                .format(t_id, p_id))
 
         # unify the args
         return unify(t_arg, p_arg)
@@ -365,6 +366,31 @@ def map2boolean(value):
         raise ValueError("unsupported type '{}' as truth value".format(value[0]))
 
 ###########################################################################################
+def data_only(memory):
+    '''
+    filter an object memory and return a memory with only data values.
+    '''
+    data_memory = list()
+
+    for item in memory:
+        if item[0] != 'function':
+            data_memory.append(item)
+
+    return data_memory
+
+###########################################################################################
+def data_ix_list(memory):
+    '''
+    compute the set of indexes that point to data members in the object memory
+    '''
+    ix_list = list()
+    for i in range(0,len(memory)):
+        if (memory[i])[0] != 'function':
+            ix_list.append(i)
+
+    return ix_list
+
+###########################################################################################
 def term2string(term):
 
     TYPE = term[0]
@@ -392,12 +418,13 @@ def term2string(term):
 
     elif TYPE == 'object':
         (OBJECT,
-         (CLASS_ID, (ID, class_id)),
+         (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, object_memory))) = term
-        term_string = class_id + '('
-        for ix in range(0, len(object_memory)):
-            term_string += term2string(object_memory[ix])
-            term_string += ', ' if ix != len(object_memory)-1 else ''
+        data_memory = data_only(object_memory)
+        term_string = struct_id + '('
+        for ix in range(0, len(data_memory)):
+            term_string += term2string(data_memory[ix])
+            term_string += ',' if ix != len(data_memory)-1 else ''
         term_string += ')'
         return term_string
 
