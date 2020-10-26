@@ -1,8 +1,7 @@
-load "standard".
 load "io".
 load "util".
 
-class Dog
+structure Dog
   with
     data name = "".
     data tricks = [].
@@ -14,13 +13,13 @@ class Dog
       orwith (self, name) do
         let self@name = name.
         let self@tricks = [].
-      end function
+      end
 
     function add_trick
       with (self, new_trick) do
         let self@tricks = self@tricks + [new_trick].
-      end function
-  end class
+      end
+  end
 
 -- Fido the dog
 let fido = Dog("Fido").

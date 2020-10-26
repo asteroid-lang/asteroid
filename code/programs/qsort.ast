@@ -1,7 +1,6 @@
 -- the quick sort
 -- (c) Lutz Hamel, University of Rhode Island
 
-load "standard".
 load "io".
 
 function qsort
@@ -18,11 +17,11 @@ function qsort
                 let less = less + [e].
             else
                 let more = more + [e].
-            end if
-        end for
+            end
+        end
 
         return qsort less + [pivot] + qsort more.
-    end function
+    end 
 
 -- print the sorted list
 print (qsort [3,2,1,0])

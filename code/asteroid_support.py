@@ -197,17 +197,17 @@ def unify(term, pattern):
          (LIST,
           [(ID, apply_id),
            (TUPLE, pattern_tuple)])) = pattern
-        if TUPLE != 'tuple':
-            raise PatternMatchFailed(
-                "Constructor '{}' expected tuple argument" \
-                .format(apply_id))
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(apply_id, struct_id))
+        # if this is true then we are looking at a unary object pattern
+        # map it into a unary tuple
+        if TUPLE != 'tuple':
+            pattern_tuple = [(TUPLE, pattern_tuple)]
         # only pattern match on object data members
         return unify(data_only(obj_memory), pattern_tuple)
 
-    elif pattern[0] == 'structure-ix': # list/constructor lval access
+    elif pattern[0] == 'structure-ix': # list lval access
         unifier = (pattern, term)
         return [unifier]
 
@@ -251,11 +251,13 @@ def unify(term, pattern):
         p = state.symbol_table.lookup_sym(sym)
         return unify(term,p)
 
-    elif pattern[0] == 'apply-list': # constructor
+    # builtin operators look like apply lists with operator names
+    elif pattern[0] == 'apply-list':
         if term[0] != pattern[0]: # make sure both are apply-lists
             raise PatternMatchFailed(
                 "term and pattern disagree on 'apply-list' node")
-        elif len(term[1]) > 2 or len(pattern[1]) > 2: # make sure only constructors
+        # make sure the apply list looks ok -- see below
+        elif len(term[1]) > 2 or len(pattern[1]) > 2:
             raise PatternMatchFailed(
                 "illegal function applications in pattern or term")
 
@@ -349,7 +351,8 @@ def promote(type1, type2, strict=True):
 #     the empty string
 #     any empty list: (,), [].
 #
-#  All other values are considered true, in particular any object or constructor.
+#  All other values are considered true, in particular any object is considered
+#  to be a true value.
 #
 def map2boolean(value):
 
@@ -362,6 +365,7 @@ def map2boolean(value):
     elif value[0] in  ['integer', 'real', 'list', 'string']:
         return ('boolean', bool(value[1]))
 
+    # TODO: look at objects as truth values
     else:
         raise ValueError("unsupported type '{}' as truth value".format(value[0]))
 

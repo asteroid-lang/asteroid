@@ -1,7 +1,6 @@
 -- given a list of names generate
 -- and print teams of three
 
-load "standard".
 load "util".
 load "io".
 load "dataframe".
@@ -22,7 +21,7 @@ repeat do
     break.
   elif names is [m1|m2|m3|names] do
     let teams = teams + [[m1,m2,m3]].
-  end if
+  end
 until names is [].
 
 -- print teams
@@ -33,4 +32,4 @@ for (i,team) in zip(1 to length(teams),teams) do
     let team_str = team_str + name + ("" if team is [] else ", ").
   until team is [].
   print team_str.
-end for
+end 

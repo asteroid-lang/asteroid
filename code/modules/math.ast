@@ -39,4 +39,4 @@ if val_a[0] not in ['integer','real']:
   raise ValueError('unsupported type {} for sqrt'.format(val_a[0]))
 __retval__ = ('real',sqrt(val_a[1]))
 "
-end function
+end 

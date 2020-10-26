@@ -22,7 +22,7 @@ from asteroid_state import state
 (TYPE, item_val) = state.symbol_table.lookup_sym('item')
 __retval__ = ('integer', int(item_val))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function real
@@ -35,7 +35,7 @@ from asteroid_state import state
 (TYPE, item_val) = state.symbol_table.lookup_sym('item')
 __retval__ = ('real', float(item_val))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function boolean
@@ -48,7 +48,7 @@ from asteroid_state import state
 (TYPE, item_val) = state.symbol_table.lookup_sym('item')
 __retval__ = ('boolean', bool(float(item_val)))
 "
-end function
+end
 
 ------------------------------------------------------------------
 -- TYPE TESTING FUNCTIONS --
@@ -65,18 +65,18 @@ from asteroid_state import state
 (TYPE, item_val) = state.symbol_table.lookup_sym('item')
 __retval__ = ('boolean', (TYPE == 'list'))
 "
-end function
+end
 
 ------------------------------------------------------------------
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-constructor Error
-------------------------------------------------------------------
--- use this constructor to throw error exceptions with a
+-- use this structure to throw error exceptions with a
 -- single argument
-with arity 1.
+structure Error with
+  data err_val.
+  end
 
 ------------------------------------------------------------------
 function eval
@@ -92,7 +92,7 @@ state.ignore_quote = True
 __retval__ = walk(item_val)
 state.ignore_quote = False
 "
-end function
+end
 
 ------------------------------------------------------------------
 function exit
@@ -111,7 +111,7 @@ if MSGTYPE != 'string':
 print(msg_val)
 sys.exit(1)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function copy
@@ -127,7 +127,7 @@ obj_val = state.symbol_table.lookup_sym('obj')
 
 __retval__ = copy.deepcopy(obj_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function cls
@@ -143,7 +143,7 @@ if platform.win32_ver()[0]:
 else:
     os.system('clear')
 "
-end function
+end
 
 ------------------------------------------------------------------
 function sleep
@@ -161,7 +161,7 @@ if not TYPE in ['integer','real']:
 
 time.sleep(val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function random
@@ -174,7 +174,7 @@ global __retval__
 
 __retval__ = ('real', random.random())
 "
-end function
+end
 
 ------------------------------------------------------------------
 function randint
@@ -193,7 +193,7 @@ assert_match(TYPE, 'integer')
 
 __retval__ = ('integer', random.randint(lo_val, hi_val))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function zip
@@ -222,7 +222,7 @@ for p in l:
 
 __retval__ = ('list', out_list)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function length
@@ -241,4 +241,4 @@ if item_val[0] not in ['list','tuple']:
 
 __retval__ = ('integer', len(item_val[1]))
 "
-end function
+end 

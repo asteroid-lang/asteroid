@@ -13,6 +13,7 @@ from asteroid_support import PatternMatchFailed
 from asteroid_support import data_only
 from asteroid_support import data_ix_list
 from asteroid_support import promote
+from asteroid_support import term2string
 from asteroid_frontend import operator_symbols
 from asteroid_frontend import binary_operators
 from asteroid_frontend import unary_operators
@@ -77,8 +78,8 @@ def declare_formal_args(unifiers):
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
-# we are indexing into the memory of either a list or a constructor to
-# read the memory.
+# we are indexing into the memory of either a list/tuple/string or an
+# object to read the memory.
 #
 # NOTE: when indexed with a scalar it will return a single value,
 # that value of course could be a list etc.  When index with a list
@@ -104,7 +105,7 @@ def read_at_ix(structure_val, index):
         elif structure_val[0] == 'string' \
         and ix[0] == 'id' \
         and ix[1] in string_member_functions:
-            # we are looking at the function name of a tring member
+            # we are looking at the function name of a string member
             # function - find the implementation and return it.
             impl_name = string_member_functions[ix[1]]
             return state.symbol_table.lookup_sym(impl_name)
@@ -130,20 +131,6 @@ def read_at_ix(structure_val, index):
         state.symbol_table.push_scope(struct_scope)
         ix_val = walk(ix)
         state.symbol_table.pop_scope()
-
-    # constructor: return the argument list as memory
-    elif structure_val[0] == 'apply-list':
-        (APPLY_LIST,
-         (LIST,
-          [(ID, constructor_id),
-           (CHILDREN_TYPE, children)])) = structure_val # get a reference to the memory
-        if CHILDREN_TYPE != 'tuple':
-            # if children is not a tuple make it look like a list
-            memory = [(CHILDREN_TYPE, children)]
-        else:
-            memory = children
-        # compute the index
-        ix_val = walk(ix)
 
     else:
         raise ValueError("'{}' is not a structure".format(structure_val[0]))
@@ -177,7 +164,7 @@ def read_at_ix(structure_val, index):
         raise ValueError("index op '{}' not supported".format(ix_val[0]))
 
 #########################################################################
-# we are indexing into the memory of either a list or a constructor to
+# we are indexing into the memory of either a list or an object to
 # write into the memory.
 def store_at_ix(structure_val, index, value):
 
@@ -208,24 +195,8 @@ def store_at_ix(structure_val, index, value):
         ix_val = walk(ix)
         state.symbol_table.pop_scope()
 
-    # constructor: return the argument list as memory
-    # NOTE: indexing a constructor that is applied to a constant
-    #       will fail since there is no memory here.
-    elif structure_val[0] == 'apply-list':
-        (APPLY_LIST,
-         (LIST,
-          [(ID, constructor_id),
-           (CHILDREN_TYPE, children)])) = structure_val
-        if CHILDREN_TYPE != 'tuple':
-            # if children is not a tuple make it look like a list
-            memory = [(CHILDREN_TYPE, children)]
-        else:
-            memory = children
-        # compute the index
-        ix_val = walk(ix)
-
     else:
-        raise ValueError("'{}' is not a structure".format(structure_val[0]))
+        raise ValueError("'{}' is not mutable a structure".format(structure_val[0]))
 
 
     # index into memory and set the value
@@ -348,7 +319,7 @@ def handle_builtins(node):
                 raise ValueError('not a boolean value in not')
         elif opname == '__uminus__':
             if arg_val[0] in ['integer', 'real']:
-                __retval__ = (arg_val[0], - arg_val[1])
+                return (arg_val[0], - arg_val[1])
             else:
                 raise ValueError('unsupported type in unary minus')
         else:
@@ -485,30 +456,6 @@ def assert_stmt(node):
     assert exp_val[1], 'assert failed'
 
 #########################################################################
-def attach_stmt(node):
-
-    (ATTACH, (FUN_EXP, fexp), (CONSTR_ID, sym)) = node
-    assert_match(ATTACH, 'attach')
-    assert_match(FUN_EXP, 'fun-exp')
-    assert_match(CONSTR_ID, 'constr-id')
-
-    fval = walk(fexp)
-
-    if fval[0] != 'function':
-        raise ValueError("expected a function in attach for '{}'"
-                         .format(sym))
-    else:
-        state.symbol_table.attach_to_sym(sym, fval)
-
-#########################################################################
-def detach_stmt(node):
-
-    (DETACH, (ID, id)) = node
-    assert_match(DETACH, 'detach')
-
-    state.symbol_table.detach_from_sym(id)
-
-#########################################################################
 def unify_stmt(node):
 
     (UNIFY, pattern, exp) = node
@@ -596,6 +543,20 @@ def try_stmt(node):
     raise inst_val
 
 #########################################################################
+def loop_stmt(node):
+
+    (LOOP, body_stmts) = node
+    assert_match(LOOP, 'loop')
+
+    (STMT_LIST, body) = body_stmts
+
+    try:
+        while True:
+            walk(body)
+    except Break:
+        pass
+
+#########################################################################
 def while_stmt(node):
 
     (WHILE, cond_exp, body_stmts) = node
@@ -639,7 +600,7 @@ def for_stmt(node):
 
     (IN, pattern, list_term) = in_exp
 
-    # expand the list_term in case the list is expressed as a constructor
+    # expand the list_term
     (LIST, list_val) = walk(list_term)
 
     # for each term on the list unfiy with pattern, declare the bound variables,
@@ -752,17 +713,14 @@ def apply_list_exp(node):
     #print("arg_val: {}".format(arg_val))
 
     # step thru all the apply terms each of which needs to produce a
-    # function/constructor value - the current function application
+    # function value - the current function application
     # will produce the input value (arg_val) for the next application
     for apply_ix in range(1, len(rev_list)):
         ftree = rev_list[apply_ix]
         fval = walk(ftree)
 
         # object member function
-        # NOTE: object member functions and functions that are embedded
-        #       in a term structure built from constructors look the
-        #       the same, but only object member functions are passed
-        #       an object reference.
+        # NOTE: object member functions are passed an object reference.
         if fval[0] == 'function' and ftree[0] == 'structure-ix':
             (STRUCTURE_IX, obj_tree, index_list) = ftree
             obj_ref = walk(obj_tree)
@@ -787,26 +745,6 @@ def apply_list_exp(node):
         # regular function call
         elif fval[0] == 'function':
             arg_val = handle_call(fval, arg_val)
-
-        # constructor call
-        elif fval[0] == 'constructor': # return structure
-            (ID, constructor_id) = ftree
-            (ARITY, arity) = fval[1]
-            # check arity match
-            if arg_val[0] == 'none' and arity != 0:
-                raise ValueError(
-                    "constructor '{}' arity mismatch, expected {} got 0"
-                    .format(constructor_id, arity))
-            elif arg_val[0] == 'tuple' and (len(arg_val[1]) != arity) :
-                raise ValueError(
-                    "constructor '{}' arity mismatch, expected {} got {}"
-                    .format(constructor_id, arity, len(arg_val[1])))
-            elif arg_val[0] != 'tuple' and arity != 1:
-                raise ValueError(
-                    "constructor '{}' arity mismatch, expected {} got 1"
-                    .format(constructor_id, arity))
-
-            arg_val = ('apply-list', ('list', [(ID, constructor_id), arg_val]))
 
         # object constructor call
         elif fval[0] == 'struct':
@@ -1082,10 +1020,9 @@ dispatch_dict = {
     'lineinfo'      : process_lineinfo,
     'noop'          : lambda node : None,
     'assert'        : assert_stmt,
-    'attach'        : attach_stmt,
-    'detach'        : detach_stmt,
     'unify'         : unify_stmt,
     'while'         : while_stmt,
+    'loop'          : loop_stmt,
     'repeat'        : repeat_stmt,
     'for'           : for_stmt,
     'global'        : global_stmt,
@@ -1106,7 +1043,6 @@ dispatch_dict = {
     'none'          : lambda node : node,
     'nil'           : lambda node : node,
     'function'      : lambda node : node, # looks like a constant
-    'constructor'   : lambda node : node, # looks like a constant
     'string'        : lambda node : node,
     'integer'       : lambda node : node,
     'real'          : lambda node : node,

@@ -52,14 +52,12 @@ class SymTab:
 
     def enter_sym(self, sym, value):
         # enter the symbol in the appropriate scope
-        # we enter the value as a list because if sym is a constructor
-        # we can attach additional functions
         if sym in self.globals[CURR_SCOPE]:
             scope_dict = self.global_scope
         else:
             scope_dict = self.scoped_symtab[CURR_SCOPE]
 
-        scope_dict[sym] = [value]
+        scope_dict[sym] = value
 
     def enter_global(self, sym):
         # enter the symbol in the global table at the appropriate scope
@@ -73,8 +71,7 @@ class SymTab:
             else:
                 return None
         else:
-            val_list = dict[sym]
-            return val_list[0]
+            return dict[sym]
 
     def update_sym(self, sym, value):
         # find the first occurence of sym
@@ -84,37 +81,7 @@ class SymTab:
         if not dict:
             raise ValueError("'{}' is not defined".format(sym))
         else:
-            dict[sym] = [value]
-            return
-
-    def attach_to_sym(self, sym, fvalue):
-        # find the first occurence of sym in the symtab stack
-        # and attach new function value
-
-        if fvalue[0] != 'function':
-            ValueError("Attach for '{}' needs a function value."
-                       .format(sym))
-
-        dict = self.find_sym(sym)
-        if not dict:
-            raise ValueError("'{}' is not defined".format(sym))
-        else:
-            dict[sym].insert(0, fvalue)
-            return
-
-    def detach_from_sym(self, sym):
-        # find the first occurence of sym in the symtab stack
-        # and detach toplevel function
-
-        dict = self.find_sym(sym)
-        if not dict:
-            raise ValueError("'{}' is not defined".format(sym))
-        else:
-            val_list = dict[sym]
-            if len(val_list) == 1:
-                raise ValueError("Cannot detach constructor from {}.".format(sym))
-            else:
-                val_list.pop(0)
+            dict[sym] = value
             return
 
     def is_symbol_local(self, sym):

@@ -17,7 +17,7 @@ item_val = state.symbol_table.lookup_sym('item')
 pprint(item_val)
 "
 return none
-end function
+end
 
 ------------------------------------------------------------------
 function print
@@ -31,7 +31,7 @@ item_val = state.symbol_table.lookup_sym('item')
 print(term2string(item_val))
 "
 return none
-end function
+end
 
 ------------------------------------------------------------------
 function input
@@ -47,4 +47,4 @@ from asteroid_state import state
 prompt_val = state.symbol_table.lookup_sym('prompt')
 __retval__ = ('string', input(term2string(prompt_val)))
 "
-end function
+end 

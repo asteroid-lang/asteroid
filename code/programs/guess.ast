@@ -2,7 +2,6 @@
 -- written by Lutz Hamel, (c) 2018, University of Rhode Island
 
 
-load "standard".
 load "util".
 load "io".
 
@@ -25,21 +24,21 @@ while guesses_made < 6 do
 
     if guess < number do
         print "Your guess is too low."
-    end if
+    end
 
     if guess > number do
         print "Your guess is too high."
-    end if
+    end
 
     if guess == number do
         break.
-    end if
-end while
+    end
+end
 
 if guess == number do
     print ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
 else do
     print ("Nope. The number I was thinking of was " + number).
-end if
+end 
 
 print "".

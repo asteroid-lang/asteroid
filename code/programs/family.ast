@@ -6,27 +6,33 @@ load "io".
 load "util".
 
 -- family term constructors for our pattern
-constructor Family with arity 3.
-constructor Parent with arity 1.
-constructor Children with arity 1.
+structure Family
+  with
+    data parent1.
+    data parent2.
+    data children.
+  end
+
+structure Parent with data name end
+structure Children with data list end
 
 -- first-class family pattern
 -- note: the quote operator prevents immediate evaluation
-let family_pattern = Family(Parent('p1), Parent('p2), Children('c)).
+let family_pattern = 'Family(Parent(p1), Parent(p2), Children(c)).
 print family_pattern.
 
 -- construct a family using the family pattern as a constructor
 function construct_family
   with (pattern, p1, p2, c) do
     return eval(pattern). -- use first-class pattern as a constructor
-  end function
+  end
 
 -- destructure a family using pattern matching
 function destructure_family
   with (pattern, term) do
     let *pattern = term. -- use first-class pattern as pattern
     return [p1, p2, c].
-  end function
+  end
 
 -- construct a family
 let family = construct_family(family_pattern,"Harry","Bridget",["Sue","Peter"]).

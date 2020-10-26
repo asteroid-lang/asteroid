@@ -37,7 +37,6 @@ primary_lookahead = {
     'FALSE',
     'NONE',
     'ID',
-    '{',
     '[',
     '(',
     } | ops
@@ -49,16 +48,14 @@ exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 stmt_lookahead = {
     '.',
     'ASSERT',
-    'ATTACH',
     'BREAK',
-    'CONSTRUCTOR',
-    'DETACH',
     'FOR',
     'FUNCTION',
     'GLOBAL',
     'IF',
     'LET',
     'LOAD',
+    'LOOP',
     'NONLOCAL',
     'NOOP',
     'REPEAT',
@@ -149,7 +146,6 @@ class Parser:
     # NOTE: periods are optional at end of sentences but leaving them out can
     #       lead to ambiguities
     # NOTE: the dot is also short hand for the 'noop' command
-    # NOTE: in ATTACH the primary should evaluate to a function constructor
     #
     # stmt
     #    : noop_stmt
@@ -158,10 +154,10 @@ class Parser:
     #    | NONLOCAL id_list '.'?
     #    | function_def
     #    | STRUCTURE ID WITH struct_stmt_list END STRUCTURE?
-    #    | CONSTRUCTOR ID WITH ARITY INTEGER '.'?
     #    | ATTACH primary TO ID '.'?
     #    | DETACH FROM ID '.'?
     #    | LET pattern '=' exp '.'?
+   #     | LOOP stmt_list END LOOP?
     #    | FOR pattern IN exp DO stmt_list END FOR
     #    | WHILE exp DO stmt_list END WHILE
     #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
@@ -272,42 +268,10 @@ class Parser:
             self.lexer.match('WITH')
             stmts = self.struct_stmt_list()
             self.lexer.match('END')
-            self.lexer.match_optional('STRUCTURE')
+            #self.lexer.match_optional('STRUCTURE')
             return ('struct-def',
                     ('id', id_tok.value),
                     ('member-list', stmts))
-
-        elif tt == 'CONSTRUCTOR':
-            dbg_print("parsing CONSTRUCTOR")
-            self.lexer.match('CONSTRUCTOR')
-            id_tok = self.lexer.match('ID')
-            self.lexer.match('WITH')
-            self.lexer.match('ARITY')
-            int_tok = self.lexer.match('INTEGER')
-            self.lexer.match_optional('.')
-            # constructors are values bound to names
-            return ('unify',
-                    ('id', id_tok.value),
-                    ('constructor', ('arity', int_tok.value)))
-
-        elif tt == 'ATTACH':
-            dbg_print("parsing ATTACH")
-            self.lexer.match('ATTACH')
-            fexp = self.primary()
-            self.lexer.match('TO')
-            cid_tok = self.lexer.match('ID')
-            self.lexer.match_optional('.')
-            return ('attach',
-                    ('fun-exp', fexp),
-                    ('constr-id', cid_tok.value))
-
-        elif tt == 'DETACH':
-            dbg_print("parsing DETACH")
-            self.lexer.match('DETACH')
-            self.lexer.match('FROM')
-            fid_tok = self.lexer.match('ID')
-            self.lexer.match_optional('.')
-            return ('detach', ('id', fid_tok.value))
 
         elif tt == 'LET':
             dbg_print("parsing LET")
@@ -318,6 +282,16 @@ class Parser:
             self.lexer.match_optional('.')
             return ('unify', p, v)
 
+        elif tt == 'LOOP':
+            dbg_print("parsing LOOP")
+            self.lexer.match('LOOP')
+            self.lexer.match_optional('DO')
+            sl = self.stmt_list()
+            self.lexer.match('END')
+            #self.lexer.match_optional('LOOP')
+            return ('loop',
+                    ('stmt-list', sl))
+
         elif tt == 'FOR':
             dbg_print("parsing FOR")
             self.lexer.match('FOR')
@@ -327,7 +301,7 @@ class Parser:
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
-            self.lexer.match('FOR')
+            #self.lexer.match_optional('FOR')
             return ('for',
                     ('in-exp', e),
                     ('stmt-list', sl))
@@ -339,7 +313,7 @@ class Parser:
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
-            self.lexer.match('WHILE')
+            #self.lexer.match_optional('WHILE')
             return ('while',
                     ('cond-exp', e),
                     ('stmt-list', sl))
@@ -347,8 +321,7 @@ class Parser:
         elif tt == 'REPEAT':
             dbg_print("parsing REPEAT")
             self.lexer.match('REPEAT')
-            if self.lexer.peek().type == 'DO':
-                self.lexer.match('DO')
+            self.lexer.match_optional('DO')
             sl = self.stmt_list()
             self.lexer.match('UNTIL')
             e = self.exp()
@@ -390,7 +363,7 @@ class Parser:
                 if_list.append(('if-clause', ('cond', ('boolean', True)), ('stmt-list', stmts)))
 
             self.lexer.match('END')
-            self.lexer.match('IF')
+            #self.lexer.match_optional('IF')
             return ('if', ('list', if_list))
 
 
@@ -429,7 +402,7 @@ class Parser:
                 catch_list.append(('catch',('pattern', pattern), ('stmt-list', stmts)))
 
             self.lexer.match('END')
-            self.lexer.match('TRY')
+            #self.lexer.match_optional('TRY')
 
             return ('try',
                     ('stmt-list', try_stmts),
@@ -460,7 +433,7 @@ class Parser:
         id_tok = self.lexer.match('ID')
         body_list = self.body_defs()
         self.lexer.match('END')
-        self.lexer.match('FUNCTION')
+        #self.lexer.match('FUNCTION')
         # functions are values bound to names
         return ('unify',
                 ('id',id_tok.value),
@@ -838,7 +811,6 @@ class Parser:
     #    | ESCAPE STRING
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
     #    | '[' list_stuff ']'  // list or list access
-    #    | '{' exp '}'  // exp should only produce integer and string typed expressions
     #    | function_const
     def primary(self):
         dbg_print("parsing PRIMARY")
@@ -886,7 +858,11 @@ class Parser:
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
             v = self.primary()
-            return ('apply-list', ('list', [('id', '__uminus__'), v]))
+            # if v is a real or integer constant we apply __uminus__
+            if v[0] in ['integer', 'real']:
+                return (v[0], - v[1])
+            else:
+                return ('apply-list', ('list', [('id', '__uminus__'), v]))
 
         elif tt == 'ESCAPE':
             self.lexer.match('ESCAPE')

@@ -1,4 +1,3 @@
-load "standard".
 load "util".
 load "io".
 
@@ -7,4 +6,4 @@ cls().
 for i in 1 to 5 do
     print ("Random value " + random()).
     sleep(.5)
-end for
+end 

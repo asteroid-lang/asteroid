@@ -3,11 +3,15 @@
 load "util".
 load "io".
 
-constructor S with arity 1.
+structure S with data x end
+structure add with
+  data x.
+  data y.
+  end
 
 let rule_table = [
-    ('x + 0, 'reduce(x)),
-    ('x + S(y), 'S(reduce(x + y)))
+    ('add(x,0), 'reduce(x)),
+    ('add(x,S(y)), 'S(reduce(add(x,y))))
     ].
 
 function reduce
@@ -15,9 +19,9 @@ function reduce
         for (lhs, rhs) in rule_table do
             if term is *lhs do
                 return eval(rhs).
-            end if
-        end for
+            end
+        end
         return term.
-    end function
+    end
 
-print (reduce(S(S(0)) + S(S(S(0))))).
+print (reduce(add(S(S(0)),S(S(S(0)))))).

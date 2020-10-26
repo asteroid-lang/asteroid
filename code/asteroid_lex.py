@@ -12,14 +12,10 @@ from asteroid_state import state
 
 reserved = {
     'and'           : 'AND',
-    'arity'         : 'ARITY',
     'assert'        : 'ASSERT',
-    'attach'        : 'ATTACH',
     'break'         : 'BREAK',
     'catch'         : 'CATCH',
-    'constructor'   : 'CONSTRUCTOR',
     'data'          : 'DATA',
-    'detach'        : 'DETACH',
     'do'            : 'DO',
     'elif'          : 'ELIF',
     'else'          : 'ELSE',
@@ -35,6 +31,7 @@ reserved = {
     'lambda'        : 'LAMBDA',
     'let'           : 'LET',
     'load'          : 'LOAD',
+    'loop'          : 'LOOP',
     'nonlocal'      : 'NONLOCAL',
     'noop'          : 'NOOP',
     'not'           : 'NOT',
@@ -45,7 +42,6 @@ reserved = {
     'return'        : 'RETURN',
     'step'          : 'STEP',
     'structure'     : 'STRUCTURE',
-    'then'          : 'THEN',
     'throw'         : 'THROW',
     'to'            : 'TO',
     'try'           : 'TRY',
@@ -58,7 +54,7 @@ reserved = {
     'false'         : 'FALSE'
     }
 
-literals = ['.',',','=','{','}','(',')','[',']','|','@']
+literals = ['.',',','=','(',')','[',']','|','@']
 
 tokens = [
           'PLUS',

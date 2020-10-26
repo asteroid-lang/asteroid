@@ -53,7 +53,7 @@ if self_val[0] != 'list':
 
 __retval__ = ('integer', len(self_val[1]))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_append__
@@ -69,7 +69,7 @@ assert_match(self_val[0],'list')
 
 self_val[1].append(item_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_extend__
@@ -86,7 +86,7 @@ assert_match(item_val[0],'list')
 
 self_val[1].extend(item_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_insert__
@@ -104,7 +104,7 @@ assert_match(ix_val[0],'integer')
 
 self_val[1].insert(ix_val[1],item_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_remove__
@@ -120,7 +120,7 @@ assert_match(self_val[0],'list')
 
 self_val[1].remove(ix_val[1],item_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_pop__
@@ -148,7 +148,7 @@ assert_match(self_val[0],'list')
 
 __retval__ = self_val[1].pop()
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_clear__
@@ -161,7 +161,7 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
 self_val[1].clear()
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_index__
@@ -210,7 +210,7 @@ assert_match(self_val[0],'list')
 
 __retval__ = ('integer', self_val[1].index(item_val[1]))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_count__
@@ -227,7 +227,7 @@ assert_match(self_val[0],'list')
 
 __retval__ = self_val[1].count(item_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_sort__
@@ -252,7 +252,7 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
 self_val[1].sort()
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_reverse__
@@ -265,7 +265,7 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
 self_val[1].reverse()
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_copy__
@@ -279,7 +279,7 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
 __retval__ = ('list', self_val[1].copy()
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __list_shuffle__
@@ -295,7 +295,7 @@ from asteroid_support import assert_match
 assert_match(LIST, 'list')
 random.shuffle(self_val)
 "
-end function
+end
 
 ------------------------------------------------------------------
 -- String member functions
@@ -331,7 +331,7 @@ assert_match(self_val[0],'string')
 
 __retval__ = ('integer', len(self_val[1]))
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __string_explode__
@@ -345,7 +345,7 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'string')
 __retval__ = ('list', [('string', char) for char in self_val[1]])
 "
-end function
+end
 
 ------------------------------------------------------------------
 function __string_join__
@@ -367,4 +367,4 @@ for (t,v) in item_val[1]:
 
 __retval__ = ('string', self_val[1].join(raw_list))
 "
-end function
+end 

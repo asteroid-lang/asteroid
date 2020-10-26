@@ -1,7 +1,6 @@
 -- conway's game of life written in Asteroid
 -- written by Lutz Hamel, (c) 2018, University of Rhode Island
 
-load "standard".
 load "util".
 load "io".
 
@@ -13,7 +12,7 @@ function display_array
         let nrows = length(ar).    -- grab the rows
         if nrows is 0 do
             throw Error("Array contains no data").
-        end if
+        end
 
         let ncols = length(ar@0). -- grab the cols
 
@@ -21,12 +20,12 @@ function display_array
             let row_str = "".
             for j in 0 to (ncols-1) do
                 let row_str = row_str + ar@i@j.
-            end for
+            end
             print(row_str)
-        end for
+        end
 
         -- sleep(.5)
-    end function
+    end
 
 --------------------------------------------------------------------------
 function array_shape
@@ -34,7 +33,7 @@ function array_shape
         let xdim = length(arr).
         let ydim = length(arr@0).
         return (xdim, ydim)
-    end function
+    end
 
 --------------------------------------------------------------------------
 function compute_new_state
@@ -63,15 +62,15 @@ function compute_new_state
                     let map2@x@y = 1.
                 else do
                     let map2@x@y = 0.
-                end if
+                end
 
                 -- element is dead
                 if map1@x@y==0 and ct==3 do
                     let map2@x@y = 1.
-                end if
-            end for
-        end for
-    end function
+                end
+            end -- for
+        end -- for
+    end -- function
 
 --------------------------------------------------------------------------
 function show_map
@@ -90,13 +89,13 @@ function show_map
                     let display_map@x@y = "*".
                 else do
                     let display_map@x@y = " ".
-                end if
-            end for
-        end for
+                end
+            end
+        end
 
         display_array(display_map).
 
-    end function
+    end
 
 --------------------------------------------------------------------------
 function init_map
@@ -112,12 +111,12 @@ function init_map
             for y in 0 to (ydim-1) do
                 let v = 1 if random(none) > thresh else 0.
                 let row = row + [v]
-            end for
+            end
             let map = map + [row]
-        end for
+        end
 
         return map
-    end function
+    end
 
 --------------------------------------------------------------------------
 function life
@@ -128,22 +127,22 @@ function life
         let map2 = init_map(xdim, ydim).
 
         -- show the initial map
-        cls(none).
+        cls().
         print ("initial map").
         show_map(map1).
         -- exit("all done"). --lhh
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).
-            cls(none).
+            cls().
             print("map @ generation " + gen).
             show_map(map2).
             -- implement double buffering
             let (map1,map2) = (map2,map1). -- swap the maps
-        end for
+        end
 
-    end function
+    end
 
 --------------------------------------------------------------------------
 -- run it!
-life(5, 20, 30).
+life(100, 20, 30).

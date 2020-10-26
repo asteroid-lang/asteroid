@@ -6,7 +6,7 @@
 -- implementations.  DataFrames needs lots more functionality.
 ------------------------------------------------------------------
 
-class DataFrame with
+structure DataFrame with
 
 ------------------------------------------------------------------
 data df.
@@ -36,7 +36,7 @@ df = pandas.read_csv(file_val[1], header=0 if header_row_val[1] else None)
 # store the Pandas dataframe as a foreign object in this slot
 memory[0] = ('foreign', df)
 "
-end function.
+end
 
 ------------------------------------------------------------------
 function row
@@ -76,7 +76,7 @@ for e in row:
 
 __retval__ = ('list', lst)
 "
-end function.
+end
 
 ------------------------------------------------------------------
 function col
@@ -115,7 +115,7 @@ for e in col:
 
 __retval__ = ('list', lst)
 "
-end function.
+end
 
 ------------------------------------------------------------------
 function nrow
@@ -135,7 +135,7 @@ self_val = state.symbol_table.lookup_sym('self')
 (FOREIGN, df_val) = memory[0]
 __retval__ = ('integer', df_val.shape[0])
 "
-end function.
+end
 
 ------------------------------------------------------------------
 function ncol
@@ -155,6 +155,5 @@ self_val = state.symbol_table.lookup_sym('self')
 (FOREIGN, df_val) = memory[0]
 __retval__ = ('integer', df_val.shape[1])
 "
-end function.
-
-end class
+end 
+end -- structure
