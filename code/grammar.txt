@@ -29,7 +29,7 @@ stmt
   | call '.'?
 
 function_def
-  : FUNCTION ID body_defs END 
+  : FUNCTION ID body_defs END
 
   struct_stmt_list
     : struct_stmt struct_stmt_list
@@ -114,6 +114,7 @@ primary
   | NOT primary
   | MINUS primary
   | ESCAPE STRING
+  | EVAL exp 
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const

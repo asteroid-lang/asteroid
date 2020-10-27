@@ -362,12 +362,9 @@ def handle_call(fval, actual_val_args):
     #print("function unified with:")
     #print(unifiers)
 
-    # dynamic scoping for functions!!!
-    # NOTE: this is due to the fact that eval patterns needs to be
-    # dynamic in order to capture the local variables when patterns
-    # are used as constructors.
+    # static scoping for functions
     save_symtab = state.symbol_table.get_config()
-    #state.symbol_table.set_config(closure)
+    state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
     declare_formal_args(unifiers)
 
@@ -690,6 +687,27 @@ def struct_def_stmt(node):
                   ('struct-scope', struct_scope))
 
     state.symbol_table.enter_sym(struct_id, struct_type)
+
+#########################################################################
+def eval_exp(node):
+
+    (EVAL, exp) = node
+    assert_match(EVAL, 'eval')
+    # lhh
+    #print("in eval with {}".format(node))
+
+    # Note: eval is essentially a macro call - that is a function
+    # call without pushing a symbol table record.  That means
+    # we have to first evaluate the argument to 'eval' before
+    # walking the term.  This is safe because if the arg is already
+    # the actual term it will be quoted and nothing happens if it is
+    # a variable it will be expanded to the actual term.
+    exp_val_expand = walk(exp)
+    # now walk the actual term
+    state.ignore_quote = True
+    exp_val = walk(exp_val_expand)
+    state.ignore_quote = False
+    return exp_val
 
 #########################################################################
 def apply_list_exp(node):
@@ -1064,6 +1082,7 @@ dispatch_dict = {
     'integer'       : lambda node : node,
     'real'          : lambda node : node,
     'boolean'       : lambda node : node,
+    'eval'          : eval_exp,
     # quoted code should be treated like a constant if not ignore_quote
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
     # type tag used in conjunction with escaped code in order to store

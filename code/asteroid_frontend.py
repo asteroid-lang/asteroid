@@ -29,6 +29,7 @@ ops = {
 
 primary_lookahead = {
     'ESCAPE',
+    'EVAL',
     'LAMBDA',
     'INTEGER',
     'REAL',
@@ -152,10 +153,9 @@ class Parser:
     #    | LOAD STRING '.'?
     #    | GLOBAL id_list '.'?
     #    | NONLOCAL id_list '.'?
+    #    | ASSERT exp '.'?
     #    | function_def
     #    | STRUCTURE ID WITH struct_stmt_list END STRUCTURE?
-    #    | ATTACH primary TO ID '.'?
-    #    | DETACH FROM ID '.'?
     #    | LET pattern '=' exp '.'?
    #     | LOOP stmt_list END LOOP?
     #    | FOR pattern IN exp DO stmt_list END FOR
@@ -809,6 +809,7 @@ class Parser:
     #    | NOT primary
     #    | MINUS primary
     #    | ESCAPE STRING
+    #    | EVAL exp
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
     #    | '[' list_stuff ']'  // list or list access
     #    | function_const
@@ -868,6 +869,11 @@ class Parser:
             self.lexer.match('ESCAPE')
             str_tok = self.lexer.match('STRING')
             return ('escape', str_tok.value)
+
+        elif tt == 'EVAL':
+            self.lexer.match('EVAL')
+            exp = self.exp()
+            return ('eval', exp)
 
         elif tt == '(':
             # Parenthesized expressions have the following meaning:

@@ -78,21 +78,22 @@ structure Error with
   data err_val.
   end
 
+-- NOTE: this moved into the interpreter
 ------------------------------------------------------------------
-function eval
+-- function eval
 ------------------------------------------------------------------
 -- evaluates a term in the current term interpretation environment
-with item do return escape
-"
-global __retval__
-from asteroid_state import state
+-- with item do return escape
+--"
+--global __retval__
+--from asteroid_state import state
 
-item_val = state.symbol_table.lookup_sym('item')
-state.ignore_quote = True
-__retval__ = walk(item_val)
-state.ignore_quote = False
-"
-end
+--item_val = state.symbol_table.lookup_sym('item')
+--state.ignore_quote = True
+--__retval__ = walk(item_val)
+--state.ignore_quote = False
+--"
+--end
 
 ------------------------------------------------------------------
 function exit
@@ -241,4 +242,4 @@ if item_val[0] not in ['list','tuple']:
 
 __retval__ = ('integer', len(item_val[1]))
 "
-end 
+end
