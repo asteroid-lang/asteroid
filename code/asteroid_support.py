@@ -98,7 +98,7 @@ def match(tag1, tag2):
 # that express some sort of computation
 
 unify_not_allowed = {
-    'function',
+    'function-val',
     'to-list',
     'where-list',
     'raw-to-list',
@@ -168,7 +168,7 @@ def unify(term, pattern):
 
     # NOTE: functions/foreign are allowed in terms as long as they are matched
     # by a variable in the pattern - anything else will fail
-    elif term[0] in (unify_not_allowed - {'function', 'foreign'}):
+    elif term[0] in (unify_not_allowed - {'function-val', 'foreign'}):
         raise PatternMatchFailed(
             "term of type '{}' not allowed in pattern matching"
             .format(term[0]))
@@ -377,7 +377,7 @@ def data_only(memory):
     data_memory = list()
 
     for item in memory:
-        if item[0] != 'function':
+        if item[0] != 'function-val':
             data_memory.append(item)
 
     return data_memory
@@ -389,7 +389,7 @@ def data_ix_list(memory):
     '''
     ix_list = list()
     for i in range(0,len(memory)):
-        if (memory[i])[0] != 'function':
+        if (memory[i])[0] != 'function-val':
             ix_list.append(i)
 
     return ix_list
@@ -432,7 +432,7 @@ def term2string(term):
         term_string += ')'
         return term_string
 
-    elif TYPE == 'function':
+    elif TYPE == 'function-val':
         # TODO: decide whether it makes sense to print out functions
         return '(function ...)'
 

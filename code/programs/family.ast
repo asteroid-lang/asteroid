@@ -35,6 +35,7 @@ function destructure_family
   end
 
 -- construct a family
+print "hello".
 let family = construct_family(family_pattern,"Harry","Bridget",["Sue","Peter"]).
 print family.
 

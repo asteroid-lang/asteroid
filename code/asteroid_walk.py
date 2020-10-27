@@ -328,8 +328,8 @@ def handle_builtins(node):
 #########################################################################
 def handle_call(fval, actual_val_args):
 
-    (FUNCTION, body_list) = fval
-    assert_match(FUNCTION, 'function')
+    (FUNCTION_VAL, body_list, closure) = fval
+    assert_match(FUNCTION_VAL, 'function-val')
 
     #lhh
     #print('in handle_call')
@@ -363,7 +363,11 @@ def handle_call(fval, actual_val_args):
     #print(unifiers)
 
     # dynamic scoping for functions!!!
+    # NOTE: this is due to the fact that eval patterns needs to be
+    # dynamic in order to capture the local variables when patterns
+    # are used as constructors.
     save_symtab = state.symbol_table.get_config()
+    #state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
     declare_formal_args(unifiers)
 
@@ -669,9 +673,11 @@ def struct_def_stmt(node):
             struct_memory.append(walk(value))
             member_names.append(member_id)
         elif member[0] == 'unify':
-            (UNIFY, (ID, member_id), function_value) = member
+            (UNIFY, (ID, member_id), function_exp) = member
             state.symbol_table.enter_sym(member_id, ('integer', member_ix))
-            struct_memory.append(function_value)
+            # Note: we have to bind a function VALUE into the structure memory
+            function_val = walk(function_exp)
+            struct_memory.append(function_val)
             member_names.append(member_id)
         else:
             raise ValueError("unsupported struct member '{}'".format(member[0]))
@@ -721,7 +727,7 @@ def apply_list_exp(node):
 
         # object member function
         # NOTE: object member functions are passed an object reference.
-        if fval[0] == 'function' and ftree[0] == 'structure-ix':
+        if fval[0] == 'function-val' and ftree[0] == 'structure-ix':
             (STRUCTURE_IX, obj_tree, index_list) = ftree
             obj_ref = walk(obj_tree)
             # Note: lists are objects/mutable data structures, they
@@ -743,7 +749,7 @@ def apply_list_exp(node):
                 arg_val = handle_call(fval, arg_val)
 
         # regular function call
-        elif fval[0] == 'function':
+        elif fval[0] == 'function-val':
             arg_val = handle_call(fval, arg_val)
 
         # object constructor call
@@ -991,6 +997,17 @@ def head_tail_exp(node):
     return ('list', [head_val] + tail_val)
 
 #########################################################################
+# turn a function expression into a closure.
+def function_exp(node):
+
+    (FUNCTION_EXP, body_list) = node
+    assert_match(FUNCTION_EXP,'function-exp')
+
+    return ('function-val',
+            body_list,
+            state.symbol_table.get_config())
+
+#########################################################################
 def process_lineinfo(node):
 
     (LINEINFO, lineinfo_val) = node
@@ -1042,7 +1059,7 @@ dispatch_dict = {
     'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,
     'nil'           : lambda node : node,
-    'function'      : lambda node : node, # looks like a constant
+    'function-exp'  : function_exp,
     'string'        : lambda node : node,
     'integer'       : lambda node : node,
     'real'          : lambda node : node,
