@@ -20,10 +20,9 @@ let [x,2,y] = [1,2,3].
 ```
 here the list `[1,2,3]` is matched against the pattern `[x,2,y]` successfully with the corresponding assignments `x` &map; 1 and `y` &map; 3.
 
-Pattern matching can also occur in iteration. Consider,
+Pattern matching can also occur in iteration. Consider the following program that prints out the names of persons whose name contains a lower case 'p',
 ```
 load "io".
-load "util".
 
 -- define what persons look like
 structure Person with
@@ -64,7 +63,7 @@ function fact
         return 1
     orwith n do
         return n * fact (n-1).
-    end function
+    end
 
 println ("The factorial of 3 is: " + fact (3)).
 ```
@@ -93,11 +92,11 @@ function qsort
                 let less = less + [e].
             else do
                 let more = more + [e].
-            end if
-        end for
+            end
+        end
 
         return qsort less + [pivot] + qsort more.
-    end function
+    end
 
 print (qsort [3,2,1,0])
 ```
@@ -112,7 +111,6 @@ Asteroid also supports prototype-based OO style programming.  Here is the [dog e
 
 ```
 load "io".
-load "util".
 
 structure Dog with
     data name = "".
@@ -132,15 +130,11 @@ structure Dog with
 
 -- Fido the dog
 let fido = Dog("Fido").
-
--- use function 'add_trick' to add tricks to the object
 fido@add_trick("roll over").
 fido@add_trick("play dead").
 
 -- Buddy the dog
 let buddy = Dog("Buddy").
-
--- use function 'add_trick' to add tricks to the object
 buddy@add_trick("roll over").
 buddy@add_trick("sit stay").
 
@@ -163,7 +157,7 @@ load "io".
 
 function match with (subject, pattern) do
     return subject is *pattern.
-end function
+end
 
 println (match('1+1, '_+_)).
 ```
