@@ -98,7 +98,7 @@ function qsort
         return qsort less + [pivot] + qsort more.
     end
 
-print (qsort [3,2,1,0])
+println (qsort [3,2,1,0])
 ```
 The last line of the program prints out the sorted list returned by the quicksort.  The output is,
 ```
@@ -157,7 +157,7 @@ load "io".
 
 function match with (subject, pattern) do
     return subject is *pattern.
-end
+    end
 
 println (match('1+1, '_+_)).
 ```
