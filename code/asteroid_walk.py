@@ -779,8 +779,8 @@ def apply_list_exp(node):
              (STRUCT_SCOPE, struct_scope)) = fval
 
             # create our object memory - memory cells now have initial values
-            # need to make a deep copy
-            object_memory = deepcopy(struct_memory)
+            # TODO: why is this not shared among objects?
+            object_memory = struct_memory.copy()
             # create our object
             obj_ref = ('object',
                       ('struct-id', ('id', struct_id)),
@@ -1034,7 +1034,7 @@ def named_pattern_exp(node):
     assert_match(NAMED_PATTERN,'named-pattern')
 
     return walk(pattern)
-    
+
 #########################################################################
 def process_lineinfo(node):
 

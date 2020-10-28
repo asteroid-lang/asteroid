@@ -112,6 +112,7 @@ def t_STRING(t):
     (module, lineno) = state.lineinfo
     state.lineinfo = (module, lineno + lines)
     t.value = t.value[1:-1] # strip the quotes
+    from pprint import pprint
     return t
 
 def t_COMMENT(t):
