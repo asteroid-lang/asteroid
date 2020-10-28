@@ -78,7 +78,7 @@ structure Error with
   data err_val.
   end
 
--- NOTE: this moved into the interpreter
+-- NOTE: this moved into the interpreter as an eval expression.
 ------------------------------------------------------------------
 -- function eval
 ------------------------------------------------------------------

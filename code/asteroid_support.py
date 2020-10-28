@@ -5,6 +5,7 @@
 ###########################################################################################
 
 from asteroid_state import state
+from re import match as re_match
 
 #########################################################################
 class PatternMatchFailed(Exception):
@@ -131,17 +132,23 @@ def unify(term, pattern):
           stores the term 'a@[0] into lval a@[0].
     '''
     #lhh
-    #print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
+    # print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
 
-    if isinstance(term, (int, float, bool, str)):
-        try:
-            if term == pattern:
-                return []
-            else:
-                raise PatternMatchFailed(
-                    "{} is not the same as {}"
-                    .format(term, pattern))
-        except: # just in case the comparison above throws an exception
+    # NOTE: in the first rules where we test instances we are comparing
+    # Python level values, if they don't match exactly then we have
+    # a pattern match fail.
+    if isinstance(term, str): # apply regular expression match
+        if isinstance(pattern, str) and re_match(pattern, term):
+            return [] # return empty unifier
+        else:
+            raise PatternMatchFailed(
+                "regular expression {} did not match {}"
+                .format(pattern, term))
+
+    elif isinstance(term, (int, float, bool)):
+        if term == pattern:
+            return [] # return an empty unifier
+        else:
             raise PatternMatchFailed(
                 "{} is not the same as {}"
                 .format(term, pattern))
