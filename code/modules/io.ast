@@ -20,7 +20,7 @@ return none
 end
 
 ------------------------------------------------------------------
-function print
+function println
 ------------------------------------------------------------------
 with item do
 escape
@@ -29,6 +29,20 @@ from asteroid_state import state
 from asteroid_support import term2string
 item_val = state.symbol_table.lookup_sym('item')
 print(term2string(item_val))
+"
+return none
+end
+
+------------------------------------------------------------------
+function print
+------------------------------------------------------------------
+with item do
+escape
+"
+from asteroid_state import state
+from asteroid_support import term2string
+item_val = state.symbol_table.lookup_sym('item')
+print(term2string(item_val),end='')
 "
 return none
 end
@@ -47,4 +61,4 @@ from asteroid_state import state
 prompt_val = state.symbol_table.lookup_sym('prompt')
 __retval__ = ('string', input(term2string(prompt_val)))
 "
-end 
+end

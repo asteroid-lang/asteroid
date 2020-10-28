@@ -1026,6 +1026,16 @@ def function_exp(node):
             state.symbol_table.get_config())
 
 #########################################################################
+# Named patterns - when walking a named pattern we are interpreting a
+# a pattern as a constructor - ignore the name
+def named_pattern_exp(node):
+
+    (NAMED_PATTERN, name, pattern) = node
+    assert_match(NAMED_PATTERN,'named-pattern')
+
+    return walk(pattern)
+    
+#########################################################################
 def process_lineinfo(node):
 
     (LINEINFO, lineinfo_val) = node
@@ -1096,4 +1106,5 @@ dispatch_dict = {
     'in'            : in_exp,
     'otherwise'     : otherwise_exp,
     'if-exp'        : if_exp,
+    'named-pattern' : named_pattern_exp,
 }

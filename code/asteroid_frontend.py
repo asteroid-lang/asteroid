@@ -804,13 +804,13 @@ class Parser:
     #    | TRUE
     #    | FALSE
     #    | NONE
-    #    | ID
-    #    | '*' ID  // "dereference" a variable during pattern matching
+    #    | ID (':' exp)?  // named patterns when ': exp' exists
+    #    | '*' ID         // "dereference" a variable during pattern matching
     #    | NOT primary
     #    | MINUS primary
     #    | ESCAPE STRING
     #    | EVAL exp
-    #    | '(' tuple_stuff ')' // tuple/parenthesized expr - empty parentheses NOT allowed!!
+    #    | '(' tuple_stuff ')' // tuple/parenthesized expr
     #    | '[' list_stuff ']'  // list or list access
     #    | function_const
     def primary(self):
@@ -844,7 +844,14 @@ class Parser:
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
-            return ('id', tok.value)
+            if self.lexer.peek().type == ':': # if ':' exists - named pattern
+                self.lexer.match(':')
+                v = self.exp()
+                return ('named-pattern',
+                        ('id', tok.value),
+                        v)
+            else:
+                return ('id', tok.value)
 
         elif tt == 'TIMES':
             self.lexer.match('TIMES')

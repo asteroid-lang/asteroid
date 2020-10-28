@@ -166,6 +166,11 @@ def unify(term, pattern):
                 unifier += unify(term[i], pattern[i])
             return unifier
 
+    elif pattern[0] == 'named-pattern':
+        # unpack pattern
+        (NAMED_PATTERN, name, p) = pattern
+        return unify(term, p) + [(name, term)]
+
     elif pattern[0] == 'none':
         if term[0] != 'none':
             raise PatternMatchFailed("expected 'none' got '{}'"

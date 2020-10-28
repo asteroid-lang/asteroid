@@ -109,12 +109,12 @@ primary
   | TRUE
   | FALSE
   | NONE
-  | ID
+  | ID (':' exp)? // named patterns when ': exp' exists
   | '*' ID  // "dereference" a variable during pattern matching
   | NOT primary
   | MINUS primary
   | ESCAPE STRING
-  | EVAL exp 
+  | EVAL exp
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const
