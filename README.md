@@ -113,8 +113,8 @@ Asteroid also supports prototype-based OO style programming.  Here is the [dog e
 load "io".
 
 structure Dog with
-    data name = "".
-    data tricks = [].
+    data name.
+    data tricks.
 
     function __init__
       with (self, name) do
