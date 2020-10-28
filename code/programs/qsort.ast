@@ -21,7 +21,7 @@ function qsort
         end
 
         return qsort less + [pivot] + qsort more.
-    end 
+    end
 
 -- print the sorted list
-print (qsort [3,2,1,0])
+println (qsort [3,2,1,0])

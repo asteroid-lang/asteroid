@@ -31,5 +31,5 @@ for (i,team) in zip(1 to length(teams),teams) do
     let [name|team] = team.
     let team_str = team_str + name + ("" if team is [] else ", ").
   until team is [].
-  print team_str.
-end 
+  println team_str.
+end

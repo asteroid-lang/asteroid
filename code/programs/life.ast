@@ -21,7 +21,7 @@ function display_array
             for j in 0 to (ncols-1) do
                 let row_str = row_str + ar@i@j.
             end
-            print(row_str)
+            println(row_str)
         end
 
         -- sleep(.5)
@@ -128,14 +128,14 @@ function life
 
         -- show the initial map
         cls().
-        print ("initial map").
+        println ("initial map").
         show_map(map1).
         -- exit("all done"). --lhh
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).
             cls().
-            print("map @ generation " + gen).
+            println("map @ generation " + gen).
             show_map(map2).
             -- implement double buffering
             let (map1,map2) = (map2,map1). -- swap the maps

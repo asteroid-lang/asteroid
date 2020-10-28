@@ -14,5 +14,5 @@ let people = [
     ].
 
 for Person(name:".*p.*",_,_) in people do
-  print name.
+  println name.
 end

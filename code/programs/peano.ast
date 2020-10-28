@@ -24,4 +24,4 @@ function reduce
         return term.
     end
 
-print (reduce(add(S(S(0)),S(S(S(0)))))).
+println (reduce(add(S(S(0)),S(S(S(0)))))).

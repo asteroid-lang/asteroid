@@ -25,7 +25,8 @@ def interp(input_stream,
            do_walk=True,
            symtab_dump=False,
            exceptions=False,
-           version=False):
+           version=False,
+           prologue=True):
 
     if version:
         print("** Asteroid Version {} **".format(VERSION))
@@ -34,31 +35,36 @@ def interp(input_stream,
         # initialize state
         state.initialize()
 
-        # load the prologue file
-        prologue_file_base = '/modules/' + prologue_name
+        # read in prologue
+        if prologue:
+            # load the prologue file
+            prologue_file_base = '/modules/' + prologue_name
 
-        if Path(sys.path[0] + prologue_file_base).is_file():
-            prologue_file = sys.path[0] + prologue_file_base
-            #lhh
-            #print("path[0]:"+prologue_file)
-        elif Path(sys.path[1] + prologue_file_base).is_file():
-            prologue_file = sys.path[1] + prologue_file_base
-            #lhh
-            #print("path[1]:"+prologue_file)
-        else:
-            raise ValueError("Asteroid prologue '{}' not found"
-                             .format(prologue_file_base))
+            if Path(sys.path[0] + prologue_file_base).is_file():
+                prologue_file = sys.path[0] + prologue_file_base
+                #lhh
+                #print("path[0]:"+prologue_file)
+            elif Path(sys.path[1] + prologue_file_base).is_file():
+                prologue_file = sys.path[1] + prologue_file_base
+                #lhh
+                #print("path[1]:"+prologue_file)
+            else:
+                raise ValueError("Asteroid prologue '{}' not found"
+                                .format(prologue_file_base))
 
-        with open(prologue_file) as f:
-            state.modules.append(prologue_name)
-            data = f.read()
-            pparser = Parser(prologue_name)
-            (LIST, pstmts) = pparser.parse(data)
+            with open(prologue_file) as f:
+                state.modules.append(prologue_name)
+                data = f.read()
+                pparser = Parser(prologue_name)
+                (LIST, pstmts) = pparser.parse(data)
 
         # build the AST
         parser = Parser(input_name)
         (LIST, istmts) = parser.parse(input_stream)
-        state.AST = ('list', pstmts + istmts)
+        if prologue:
+            state.AST = ('list', pstmts + istmts)
+        else:
+            state.AST = ('list', istmts)
 
         # walk the AST
         if tree_dump:

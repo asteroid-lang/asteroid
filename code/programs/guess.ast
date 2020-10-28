@@ -5,29 +5,29 @@
 load "util".
 load "io".
 
-print "".
-print "     \||||||||||||||||||/".
-print "    - Guess that Number -".
-print "     /||||||||||||||||||\".
-print "".
+println "".
+println "     \||||||||||||||||||/".
+println "    - Guess that Number -".
+println "     /||||||||||||||||||\".
+println "".
 
 
 let name = input("Hello! What is your name? ").
 let guesses_made = 0.
 let number = randint(1, 20).
 
-print (name + ", I am thinking of a number between 1 and 20, can you guess it?").
+println (name + ", I am thinking of a number between 1 and 20, can you guess it?").
 
 while guesses_made < 6 do
     let guess = integer(input("Take a guess: ")).
     let guesses_made = guesses_made + 1.
 
     if guess < number do
-        print "Your guess is too low."
+        println "Your guess is too low."
     end
 
     if guess > number do
-        print "Your guess is too high."
+        println "Your guess is too high."
     end
 
     if guess == number do
@@ -36,9 +36,9 @@ while guesses_made < 6 do
 end
 
 if guess == number do
-    print ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
+    println ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
 else do
-    print ("Nope. The number I was thinking of was " + number).
-end 
+    println ("Nope. The number I was thinking of was " + number).
+end
 
-print "".
+println "".

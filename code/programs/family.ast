@@ -19,7 +19,7 @@ structure Children with data list end
 -- first-class family pattern
 -- note: the quote operator prevents immediate evaluation
 let family_pattern = 'Family(Parent(p1), Parent(p2), Children(c)).
-print family_pattern.
+println family_pattern.
 
 -- construct a family using the family pattern as a constructor
 function construct_family
@@ -36,8 +36,8 @@ function destructure_family
 
 -- construct a family
 let family = construct_family(family_pattern,"Harry","Bridget",["Sue","Peter"]).
-print family.
+println family.
 
 -- destructure a family
 let members = destructure_family(family_pattern, family).
-print members.
+println members.

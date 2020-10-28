@@ -36,5 +36,5 @@ buddy@add_trick("roll over").
 buddy@add_trick("sit stay").
 
 -- print out the tricks
-print ("Fido's tricks: " + fido@tricks).
-print ("Buddy's tricks: " + buddy@tricks).
+println ("Fido's tricks: " + fido@tricks).
+println ("Buddy's tricks: " + buddy@tricks).
