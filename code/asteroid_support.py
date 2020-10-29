@@ -460,8 +460,9 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'quote':
+        # we are printing out a term - just ignore the quote operator
         val = term[1]
-        return "'" + term2string(val)
+        return term2string(val)
 
     elif TYPE == 'nil':
         return ''

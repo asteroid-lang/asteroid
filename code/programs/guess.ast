@@ -1,5 +1,5 @@
 -- guess that number game from http://inventwithpython.com/invent4thed/
--- written by Lutz Hamel, (c) 2018, University of Rhode Island
+-- written by Lutz Hamel, (c) University of Rhode Island
 
 
 load "util".

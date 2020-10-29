@@ -48,6 +48,19 @@ return none
 end
 
 ------------------------------------------------------------------
+function read
+------------------------------------------------------------------
+-- read string from stdin
+with none do return
+escape
+"
+global __retval__
+from sys import stdin
+__retval__ = ('string', stdin.read())
+"
+end
+
+------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
 -- mapping the Asteroid input function onto the
@@ -59,6 +72,11 @@ global __retval__
 from asteroid_support import term2string
 from asteroid_state import state
 prompt_val = state.symbol_table.lookup_sym('prompt')
-__retval__ = ('string', input(term2string(prompt_val)))
+if prompt_val[0] == 'none':
+  __retval__ = ('string', input())
+elif prompt_val[0] != 'string':
+  raise ValueError('input function requires a string prompt')
+else:
+  __retval__ = ('string', input(prompt_val[1]))
 "
 end

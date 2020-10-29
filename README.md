@@ -118,29 +118,29 @@ structure Dog with
 
     function __init__
       with (self, name) do
-        let self@name = name.
-        let self@tricks = [].
+        let self @name = name.
+        let self @tricks = [].
       end
 
     function add_trick
       with (self, new_trick) do
-        let self@tricks = self@tricks + [new_trick].
+        let self @tricks = self @tricks + [new_trick].
       end
     end
 
 -- Fido the dog
 let fido = Dog("Fido").
-fido@add_trick("roll over").
-fido@add_trick("play dead").
+fido @add_trick("roll over").
+fido @add_trick("play dead").
 
 -- Buddy the dog
 let buddy = Dog("Buddy").
-buddy@add_trick("roll over").
-buddy@add_trick("sit stay").
+buddy @add_trick("roll over").
+buddy @add_trick("sit stay").
 
 -- print out the tricks
-println ("Fido's tricks: " + fido@tricks).
-println ("Buddy's tricks: " + buddy@tricks).
+println ("Fido's tricks: " + fido @tricks).
+println ("Buddy's tricks: " + buddy @tricks).
 ```
 The output of this program is,
 ```

@@ -1,5 +1,5 @@
 -- conway's game of life written in Asteroid
--- written by Lutz Hamel, (c) 2018, University of Rhode Island
+-- written by Lutz Hamel, (c) University of Rhode Island
 
 load "util".
 load "io".
@@ -9,29 +9,27 @@ function display_array
     -- display the contents of an array, wait for .5sec
     with ar do
 
-        let nrows = length(ar).    -- grab the rows
+        let nrows = length ar.    -- grab the rows
         if nrows is 0 do
-            throw Error("Array contains no data").
+            throw Error "Array contains no data".
         end
 
-        let ncols = length(ar@0). -- grab the cols
+        let ncols = length ar@0. -- grab the cols
 
         for i in 0 to (nrows-1) do
             let row_str = "".
             for j in 0 to (ncols-1) do
                 let row_str = row_str + ar@i@j.
             end
-            println(row_str)
+            println row_str.
         end
-
-        -- sleep(.5)
     end
 
 --------------------------------------------------------------------------
 function array_shape
     with arr do
-        let xdim = length(arr).
-        let ydim = length(arr@0).
+        let xdim = length arr.
+        let ydim = length arr@0.
         return (xdim, ydim)
     end
 
@@ -40,7 +38,7 @@ function compute_new_state
     -- Compute a new map2 from an old map1
     with (map1, map2) do
 
-        let (xdim,ydim) = array_shape(map1).
+        let (xdim,ydim) = array_shape map1.
 
         -- compute our new map
         for x in 0 to (xdim-1) do
@@ -78,10 +76,10 @@ function show_map
     -- and space for dead ones.
     with map do
 
-        let (xdim,ydim) = array_shape(map).
+        let (xdim,ydim) = array_shape map.
 
         -- need to do a deep copy because we are modifying the map
-        let display_map = copy(map).
+        let display_map = copy map.
 
         for x in 0 to (xdim-1) do
             for y in 0 to (ydim-1) do
@@ -93,7 +91,7 @@ function show_map
             end
         end
 
-        display_array(display_map).
+        display_array display_map.
 
     end
 
@@ -109,7 +107,7 @@ function init_map
         for x in 0 to (xdim-1) do
             let row = [].
             for y in 0 to (ydim-1) do
-                let v = 1 if random(none) > thresh else 0.
+                let v = 1 if random() > thresh else 0.
                 let row = row + [v]
             end
             let map = map + [row]
@@ -128,9 +126,8 @@ function life
 
         -- show the initial map
         cls().
-        println ("initial map").
-        show_map(map1).
-        -- exit("all done"). --lhh
+        println "initial map".
+        show_map map1.
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).

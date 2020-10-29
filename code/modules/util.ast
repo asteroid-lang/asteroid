@@ -243,3 +243,83 @@ if item_val[0] not in ['list','tuple']:
 __retval__ = ('integer', len(item_val[1]))
 "
 end
+
+
+------------------------------------------------------------------
+-- HashTable
+-- Asteroid hash table implementation using Python dictionaries
+------------------------------------------------------------------
+structure HashTable with
+
+------------------------------------------------------------------
+data table.
+
+------------------------------------------------------------------
+function __init__
+-- constructor for HashTable initializes the underlying dictionary
+with self do
+escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+
+# destructure object
+(OBJECT,
+ (STRUCT_ID, (ID, struct_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+# the table is in the first slot in the object memory
+# store the dictionary as a foreign object in this slot
+memory[0] = ('foreign', dict())
+"
+return none
+end
+
+------------------------------------------------------------------
+function insert
+with (self,name,value) do
+escape
+"
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+name_val = state.symbol_table.lookup_sym('name')
+value_val = state.symbol_table.lookup_sym('value')
+
+# destructure object
+(OBJECT,
+ (STRUCT_ID, (ID, struct_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+# the table is in the first slot in the object memory
+# insert name-value pair
+(FOREIGN, dictionary) = memory[0]
+dictionary[name_val] = value_val
+"
+return none
+end
+
+------------------------------------------------------------------
+function get
+with (self,name) do return escape
+"
+from asteroid_state import state
+global __retval__
+
+self_val = state.symbol_table.lookup_sym('self')
+name_val = state.symbol_table.lookup_sym('name')
+
+# destructure object
+(OBJECT,
+ (STRUCT_ID, (ID, struct_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+# the table is in the first slot in the object memory
+# get the value_val associated with name_val
+(FOREIGN, dictionary) = memory[0]
+__retval__ = dictionary[name_val]
+"
+end
+
+end -- structure
