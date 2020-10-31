@@ -1,0 +1,7 @@
+load "io".
+load "util".
+
+let h = HashTable().
+h@insert("hello","there").
+println (h@get("hello")).
+

@@ -117,7 +117,6 @@ self_val = state.symbol_table.lookup_sym('self')
 item_val = state.symbol_table.lookup_sym('item')
 
 assert_match(self_val[0],'list')
-
 self_val[1].remove(ix_val[1],item_val)
 "
 end
@@ -270,6 +269,7 @@ end
 ------------------------------------------------------------------
 function __list_copy__
 ------------------------------------------------------------------
+-- make a shallow copy of the list
 with self do return escape
 "
 global __retval__
@@ -277,7 +277,7 @@ from asteroid_state import state
 
 self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
-__retval__ = ('list', self_val[1].copy()
+__retval__ = ('list', self_val[1].copy())
 "
 end
 
@@ -326,9 +326,7 @@ global __retval__
 from asteroid_state import state
 
 self_val = state.symbol_table.lookup_sym('self')
-
 assert_match(self_val[0],'string')
-
 __retval__ = ('integer', len(self_val[1]))
 "
 end
@@ -367,4 +365,4 @@ for (t,v) in item_val[1]:
 
 __retval__ = ('string', self_val[1].join(raw_list))
 "
-end 
+end

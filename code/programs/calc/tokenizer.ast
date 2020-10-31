@@ -1,0 +1,71 @@
+-- a simple tokenizer for our calc language
+-- it take a string as input and returns a stream of tokens as output.
+-- it uses the Stream structure available from util and demonstrates
+-- how regular expression can be used during pattern matching.
+-- Lutz Hamel, (c) University of Rhode Island
+
+load "util".
+load "io".
+
+structure Token with
+  data type.
+  data value.
+  end
+
+function make_number_token
+  with input_stream do
+    let number = input_stream @get().
+    while input_stream @peek() is "[0-9]" do
+      input_stream @next().
+      let number = number + input_stream @get().
+    end
+    return Token("number",integer(number)).
+  end
+
+function tokenize
+  with input do
+    let input_stream = Stream(input @explode()).
+    let output_stream = Stream().
+    -- TODO: precedence 'not'
+    while not (input_stream @eof()) do
+      let c = input_stream @get().
+      if c is "[0-9]" do
+        let token = make_number_token(input_stream).
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "\+" do
+        let token = Token("add","+").
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "-" do
+        let token = Token("sub","-").
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "\*" do
+        let token = Token("mul","*").
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "/" do
+          let token = Token("div","/").
+          input_stream @next().
+          output_stream @append(token).
+      elif c is "\(" do
+        let token = Token("lparen","(").
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "\)" do
+        let token = Token("rparen",")").
+        input_stream @next().
+        output_stream @append(token).
+      elif c is "[\n\t ]" do
+        noop.
+        input_stream @next().
+      else do
+        throw Error("unknown symbol: " + c).
+      end
+    end
+    return output_stream.
+  end
+
+--let output_stream = tokenize("(101+1)*2").
+-- println output_stream @__string__().

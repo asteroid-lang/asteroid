@@ -1,0 +1,102 @@
+-- Asteroid implementation of a simple calculator language
+-- The interpreter will read an expression from stdin and output is
+-- written to stdout.  The program
+--   (2+3)*2
+-- will print the value 10.  In order to terminate interactively
+-- provided input you will have to type <CR><Cntrl-D>
+-- Lutz Hamel, (c) University of Rhode Island
+
+load "io".
+load "lexer".
+
+-------------------------------------------------------------------------
+-- A recursive descent parser implementing the following grammar:
+-- <expression> ::= <mulexp> { ('+' <mulexp>) | ('-' <mulexp>) }
+-- <mulexp>     ::= <rootexp> { ('*' <rootexp>) | ('/' <rootexp>) }
+-- <rootexp>    ::= number | '-' <rootexp> | '(' <expression> ')'
+-- The parser implements arithmetic on integer values
+
+function expression
+  with lexer do
+    let val = mulexp(lexer).
+    loop do
+      let token = lexer @get().
+      if not token do
+        break.
+      elif token @type == "add" do
+        lexer @match("add").
+        let val = val + mulexp(lexer).
+      elif token @type == "sub" do
+        lexer @match("sub").
+        let val = val - mulexp(lexer)
+      else do
+        break.
+      end
+    end
+    return val.
+  end
+
+function mulexp
+  with lexer do
+    let val = rootexp(lexer).
+    if not (lexer @get()) do
+      return val.
+    end
+    loop do
+      let token = lexer @get().
+      if not token do
+        break.
+      elif token @type == "mul" do
+        lexer @match("mul").
+        let val = val * rootexp(lexer).
+      elif token @type == "div" do
+        lexer @match("div").
+        let val = val / rootexp(lexer)
+      else do
+        break.
+      end
+    end
+    return val.
+  end
+
+function rootexp
+  with lexer do
+    try
+      let Token(type,val) = lexer @get().
+    catch _ do
+      return none.
+    end
+    if type == "number" do
+      lexer @match("number").
+      return val.
+    elif type == "sub" do
+      lexer @match("sub").
+      -- TODO: bug the following does not work
+      -- return - rootexp(lexer).
+      return -1 * rootexp(lexer).
+    elif type == "lparen" do
+      lexer @match("lparen").
+      let val = expression(lexer).
+      lexer @match("rparen").
+      return val.
+    else do
+      throw Error("syntax error at token "+val).
+    end
+  end
+
+-------------------------------------------------------------------------
+-- driver part of the script
+
+-- tokenize input
+let input = read().
+let lexer = Lexer(tokenize(input)).
+-- println lexer.
+
+-- parse and interpret input
+let val = expression(lexer).
+if not (lexer @eof()) do
+  throw Error("tokens still in input stream")
+end
+
+-- print out the final value of the parsed and interpreted expression
+println val.

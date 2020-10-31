@@ -14,7 +14,7 @@ $ cat simple.ast
 
 load "io".
 
-print ((lambda with n do return n+1) 1).
+println ((lambda with n do return n+1) 1).
 $
 $ asteroid simple.ast
 2

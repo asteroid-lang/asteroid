@@ -17,7 +17,7 @@ stmt
   | function_def
   | STRUCTURE ID WITH struct_stmt_list END
   | LET pattern '=' exp '.'?
-  | LOOP stmt_list END
+  | LOOP DO? stmt_list END
   | FOR pattern IN exp DO stmt_list END
   | WHILE exp DO stmt_list END
   | REPEAT DO? stmt_list UNTIL exp '.'?

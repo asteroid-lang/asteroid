@@ -155,16 +155,16 @@ class Parser:
     #    | NONLOCAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | function_def
-    #    | STRUCTURE ID WITH struct_stmt_list END STRUCTURE?
+    #    | STRUCTURE ID WITH struct_stmt_list END
     #    | LET pattern '=' exp '.'?
-   #     | LOOP stmt_list END LOOP?
-    #    | FOR pattern IN exp DO stmt_list END FOR
-    #    | WHILE exp DO stmt_list END WHILE
+    #    | LOOP DO? stmt_list END
+    #    | FOR pattern IN exp DO stmt_list END
+    #    | WHILE exp DO stmt_list END
     #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
     #    | BREAK
-    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END IF
+    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END 
     #    | RETURN exp? '.'?
-    #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END TRY
+    #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
     #    | call '.'?
     def stmt(self):

@@ -14,6 +14,7 @@ from asteroid_support import data_only
 from asteroid_support import data_ix_list
 from asteroid_support import promote
 from asteroid_support import term2string
+from asteroid_support import map2boolean
 from asteroid_frontend import operator_symbols
 from asteroid_frontend import binary_operators
 from asteroid_frontend import unary_operators
@@ -311,9 +312,10 @@ def handle_builtins(node):
         arg_val = walk(arg)
 
         if opname == '__not__':
-            if arg_val[1] == False:
+            val = map2boolean(arg_val)
+            if val[1] == False:
                 return ('boolean', True)
-            elif arg_val[1] == True:
+            elif val[1] == True:
                 return ('boolean', False)
             else:
                 raise ValueError('not a boolean value in not')
@@ -321,7 +323,9 @@ def handle_builtins(node):
             if arg_val[0] in ['integer', 'real']:
                 return (arg_val[0], - arg_val[1])
             else:
-                raise ValueError('unsupported type in unary minus')
+                raise ValueError(
+                    'unsupported type {} in unary minus'
+                    .format(arg_val[0]))
         else:
             raise ValueError('unknown builtin unary opname {}'.format(opname))
 
@@ -407,7 +411,7 @@ def declare_unifiers(unifiers):
 
         elif lval[0] == 'structure-ix': # list/structure lval access
             # Note: structures have to be declared before index access
-            # can be successful!!  They have to be declared so that therefore
+            # can be successful!!  They have to be declared so that there
             # is memory associated with the structure.
 
             (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = lval
@@ -847,6 +851,9 @@ def structure_ix_exp(node):
     # is fed to the following index op.
     for ix_ix in range(0, len(index_list)):
         structure_val = read_at_ix(structure_val, index_list[ix_ix])
+        #lhh
+        #from pprint import pprint
+        #pprint(structure_val)
 
     return structure_val
 

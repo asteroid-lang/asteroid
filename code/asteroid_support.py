@@ -377,7 +377,9 @@ def map2boolean(value):
     elif value[0] in  ['integer', 'real', 'list', 'string']:
         return ('boolean', bool(value[1]))
 
-    # TODO: look at objects as truth values
+    elif value[0] == 'object':
+        return ('boolean', True)
+
     else:
         raise ValueError("unsupported type '{}' as truth value".format(value[0]))
 
