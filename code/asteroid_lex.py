@@ -55,7 +55,7 @@ reserved = {
     'false'         : 'FALSE',
     }
 
-literals = [':','.',',','=','(',')','[',']','|','@','%']
+literals = [':','.',',','=','(',')','[',']','|','@']
 
 tokens = [
           'PLUS',
@@ -74,6 +74,7 @@ tokens = [
           'ID',
           'QUOTE',
           'TYPECLASS',
+          'CMATCH',
           ] + list(reserved.values())
 
 t_PLUS    = r'\+'
@@ -91,14 +92,23 @@ t_QUOTE   = r'\''
 
 t_ignore = ' \t'
 
+def t_TYPECLASS(t):
+    r'\%[a-zA-Z_][a-zA-Z_0-9]*'
+    # check for typeclass keywords
+    # for the values get rid of the preceeding '%'
+    if t.value[1:] == 'if':
+        t.type = 'CMATCH'
+        t.value = t.value[1:]
+        return t
+    else:
+        t.type = 'TYPECLASS'
+        t.value = t.value[1:]
+        return t
+
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    # check for typeclass keywords
-    if t.value in ['string','real','integer','list','tuple','boolean']:
-        t.type = 'TYPECLASS'
-    else:
-        # Check for reserved words
-        t.type = reserved.get(t.value,'ID')
+    # Check for reserved words
+    t.type = reserved.get(t.value,'ID')
     return t
 
 # TODO: scientific notation for real numbers

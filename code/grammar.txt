@@ -92,6 +92,7 @@ arith_exp1
 conditional
   : call
       (
+         (CMATCH exp) |   // CMATCH == '%'IF
          (OTHERWISE exp) |
          (IF exp (ELSE exp)?)
       )?
@@ -118,16 +119,7 @@ primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const
-  | '%' typeclass
-
-typeclass
-  : CINTEGER
-  | CREAL
-  | CBOOLEAN
-  | CSTRING
-  | CLIST
-  | CTUPLE
-  | ID // structure ID
+  | TYPECLASS // TYPECLASS == '%'<typename>
 
 tuple_stuff
   : exp (',' exp?)*

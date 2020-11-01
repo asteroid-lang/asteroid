@@ -40,7 +40,7 @@ primary_lookahead = {
     'ID',
     '[',
     '(',
-    '%',
+    'TYPECLASS',
     } | ops
 
 exp_lookahead = {'QUOTE'} | primary_lookahead
@@ -727,6 +727,7 @@ class Parser:
     # conditional
     #    : call
     #        (
+    #           (CMATCH exp) | // CMATCH == '%'IF
     #           (OTHERWISE exp) |
     #           (IF exp (ELSE exp)?) # expression level if-else
     #        )?
@@ -736,7 +737,12 @@ class Parser:
         v = self.call()
 
         tt = self.lexer.peek().type
-        if tt  == 'OTHERWISE':
+        if tt == 'CMATCH':
+            self.lexer.match('CMATCH')
+            e = self.exp()
+            return ('cmatch', v, e)
+
+        elif tt  == 'OTHERWISE':
             self.lexer.match('OTHERWISE')
             v2 = self.exp()
             return ('otherwise', v, v2)
@@ -744,9 +750,12 @@ class Parser:
         elif tt == 'IF':
             self.lexer.match('IF')
             v2 = self.exp()
-            self.lexer.match('ELSE')
-            v3 = self.exp()
-            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+            if self.lexer.peek().type == 'ELSE':
+                self.lexer.match('ELSE')
+                v3 = self.exp()
+                return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+            else:
+                return ('if-exp',v2, v, ('nil',))
 
         else:
             return v
@@ -814,7 +823,7 @@ class Parser:
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
     #    | '[' list_stuff ']'  // list or list access
     #    | function_const
-    #    | '%' typeclass
+    #    | TYPECLASS // TYPECLASS == '%'<typename>
     def primary(self):
         dbg_print("parsing PRIMARY")
 
@@ -904,31 +913,8 @@ class Parser:
         elif tt == 'LAMBDA':
             return self.function_const()
 
-        elif tt == '%':
-            self.lexer.match('%')
-            v = self.typeclass()
-            return v
-
-        else:
-            raise SyntaxError(
-                "syntax error at '{}'"
-                .format(self.lexer.peek().value))
-
-    ###########################################################################################
-    # typeclass
-    #   : TYPECLASS
-    #   | ID // structure ID
-    def typeclass(self):
-        dbg_print("parsing TYPECLASS")
-
-        tt = self.lexer.peek().type
-
-        if tt == 'TYPECLASS':
+        elif tt == 'TYPECLASS':
             tok = self.lexer.match('TYPECLASS')
-            return ('typeclass', tok.value)
-
-        if tt == 'ID':
-            tok = self.lexer.match('ID')
             return ('typeclass', tok.value)
 
         else:
