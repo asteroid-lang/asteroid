@@ -1062,6 +1062,16 @@ def process_lineinfo(node):
     state.lineinfo = lineinfo_val
 
 #########################################################################
+def typeclass_exp(node):
+
+    (TYPECLASS, type) = node
+    assert_match(TYPECLASS, 'typeclass')
+
+    raise ValueError(
+            "typeclass {} cannot appear in expressions or constructors"
+            .format(type))
+            
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
@@ -1123,4 +1133,5 @@ dispatch_dict = {
     'if-exp'        : if_exp,
     'named-pattern' : named_pattern_exp,
     'member-function-val' : lambda node : node,
+    'typeclass'     : typeclass_exp,
 }

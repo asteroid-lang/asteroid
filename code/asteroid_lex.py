@@ -52,10 +52,10 @@ reserved = {
     # constants
     'none'          : 'NONE',
     'true'          : 'TRUE',
-    'false'         : 'FALSE'
+    'false'         : 'FALSE',
     }
 
-literals = [':','.',',','=','(',')','[',']','|','@']
+literals = [':','.',',','=','(',')','[',']','|','@','%']
 
 tokens = [
           'PLUS',
@@ -72,7 +72,8 @@ tokens = [
           'REAL',
           'STRING',
           'ID',
-          'QUOTE'
+          'QUOTE',
+          'TYPECLASS',
           ] + list(reserved.values())
 
 t_PLUS    = r'\+'
@@ -92,7 +93,12 @@ t_ignore = ' \t'
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
-    t.type = reserved.get(t.value,'ID')    # Check for reserved words
+    # check for typeclass keywords
+    if t.value in ['string','real','integer','list','tuple','boolean']:
+        t.type = 'TYPECLASS'
+    else:
+        # Check for reserved words
+        t.type = reserved.get(t.value,'ID')
     return t
 
 # TODO: scientific notation for real numbers

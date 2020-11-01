@@ -40,6 +40,7 @@ primary_lookahead = {
     'ID',
     '[',
     '(',
+    '%',
     } | ops
 
 exp_lookahead = {'QUOTE'} | primary_lookahead
@@ -813,6 +814,7 @@ class Parser:
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
     #    | '[' list_stuff ']'  // list or list access
     #    | function_const
+    #    | '%' typeclass
     def primary(self):
         dbg_print("parsing PRIMARY")
 
@@ -901,6 +903,33 @@ class Parser:
 
         elif tt == 'LAMBDA':
             return self.function_const()
+
+        elif tt == '%':
+            self.lexer.match('%')
+            v = self.typeclass()
+            return v
+
+        else:
+            raise SyntaxError(
+                "syntax error at '{}'"
+                .format(self.lexer.peek().value))
+
+    ###########################################################################################
+    # typeclass
+    #   : TYPECLASS
+    #   | ID // structure ID
+    def typeclass(self):
+        dbg_print("parsing TYPECLASS")
+
+        tt = self.lexer.peek().type
+
+        if tt == 'TYPECLASS':
+            tok = self.lexer.match('TYPECLASS')
+            return ('typeclass', tok.value)
+
+        if tt == 'ID':
+            tok = self.lexer.match('ID')
+            return ('typeclass', tok.value)
 
         else:
             raise SyntaxError(

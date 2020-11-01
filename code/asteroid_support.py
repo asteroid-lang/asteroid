@@ -166,6 +166,26 @@ def unify(term, pattern):
                 unifier += unify(term[i], pattern[i])
             return unifier
 
+    elif pattern[0] == 'typeclass':
+        typeclass = pattern[1]
+        if typeclass in ['string','real','integer','list','tuple','boolean']:
+            if typeclass == term[0]:
+                return []
+            else:
+                raise PatternMatchFailed(
+                    "expected typeclass {} got a term of type {}"
+                    .format(typeclass, term[0]))
+        elif term[0] == 'object':
+            (OBJECT,
+                (STRUCT_ID, (ID, struct_id)),
+                (OBJECT_MEMORY, LIST)) = term
+            if struct_id == typeclass:
+                    return []
+            else:
+                raise PatternMatchFailed(
+                    "expected typeclass {} got an object of type {}"
+                    .format(typeclass, struct_id))
+
     elif pattern[0] == 'named-pattern':
         # unpack pattern
         (NAMED_PATTERN, name, p) = pattern
