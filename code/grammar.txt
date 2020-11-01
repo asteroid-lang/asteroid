@@ -111,8 +111,8 @@ primary
   | NONE
   | ID (':' exp)? // named patterns when ': exp' exists
   | '*' ID  // "dereference" a variable during pattern matching
-  | NOT primary
-  | MINUS primary
+  | NOT call
+  | MINUS call
   | ESCAPE STRING
   | EVAL exp
   | '(' tuple_stuff ')' // tuple/parenthesized expr

@@ -39,7 +39,7 @@ function expression
 function mulexp
   with lexer do
     let val = rootexp(lexer).
-    if not (lexer @get()) do
+    if not lexer @get() do
       return val.
     end
     loop do
@@ -71,9 +71,7 @@ function rootexp
       return val.
     elif type == "sub" do
       lexer @match("sub").
-      -- TODO: bug the following does not work
-      -- return - rootexp(lexer).
-      return -1 * rootexp(lexer).
+      return - rootexp(lexer).
     elif type == "lparen" do
       lexer @match("lparen").
       let val = expression(lexer).

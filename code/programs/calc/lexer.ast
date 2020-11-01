@@ -9,29 +9,29 @@ structure Lexer with
 
   function get
     with self do
-      return (self @token_stream) @get().
+      return self @token_stream @get().
     end
 
   function next
     with self do
-      (self @token_stream) @next().
+      self @token_stream @next().
     end
 
   function peek
     with self do
-      return (self @token_stream) @peek().
+      return self @token_stream @peek().
     end
 
   function eof
     with self do
-      return (self @token_stream) @eof().
+      return self @token_stream @eof().
     end
 
   function match
     with (self,token_type) do
-      let token = (self @token_stream) @get().
+      let token = self @token_stream @get().
       if token @type == token_type do
-        (self @token_stream) @next().
+        self @token_stream @next().
       else do
         throw Error("expected token "+token_type+" got "+token @type).
       end

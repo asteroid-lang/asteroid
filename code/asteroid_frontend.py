@@ -162,7 +162,7 @@ class Parser:
     #    | WHILE exp DO stmt_list END
     #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
     #    | BREAK
-    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END 
+    #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END
     #    | RETURN exp? '.'?
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
@@ -806,8 +806,8 @@ class Parser:
     #    | NONE
     #    | ID (':' exp)?  // named patterns when ': exp' exists
     #    | '*' ID         // "dereference" a variable during pattern matching
-    #    | NOT primary
-    #    | MINUS primary
+    #    | NOT call
+    #    | MINUS call
     #    | ESCAPE STRING
     #    | EVAL exp
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
@@ -860,12 +860,12 @@ class Parser:
 
         elif tt == 'NOT':
             self.lexer.match('NOT')
-            v = self.primary()
+            v = self.call()
             return ('apply-list', ('list', [('id', '__not__'), v]))
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
-            v = self.primary()
+            v = self.call()
             # if v is a real or integer constant we apply __uminus__
             if v[0] in ['integer', 'real']:
                 return (v[0], - v[1])

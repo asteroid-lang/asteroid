@@ -26,8 +26,7 @@ function tokenize
   with input do
     let input_stream = Stream(input @explode()).
     let output_stream = Stream().
-    -- TODO: precedence 'not'
-    while not (input_stream @eof()) do
+    while not input_stream @eof() do
       let c = input_stream @get().
       if c is "[0-9]" do
         let token = make_number_token(input_stream).

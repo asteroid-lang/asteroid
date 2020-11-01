@@ -102,14 +102,20 @@ def read_at_ix(structure_val, index):
             # we are looking at the function name of a list member
             # function - find the implementation and return it.
             impl_name = list_member_functions[ix[1]]
-            return state.symbol_table.lookup_sym(impl_name)
+            # remember the object reference.
+            return ('member-function-val',
+                    structure_val,
+                    state.symbol_table.lookup_sym(impl_name))
         elif structure_val[0] == 'string' \
         and ix[0] == 'id' \
         and ix[1] in string_member_functions:
             # we are looking at the function name of a string member
             # function - find the implementation and return it.
             impl_name = string_member_functions[ix[1]]
-            return state.symbol_table.lookup_sym(impl_name)
+            # remember the object reference.
+            return ('member-function-val',
+                    structure_val,
+                    state.symbol_table.lookup_sym(impl_name))
         else:
             # get a reference to the memory
             memory = structure_val[1]
@@ -140,6 +146,12 @@ def read_at_ix(structure_val, index):
     if ix_val[0] == 'integer':
         if structure_val[0] == 'string':
             return ('string', memory[ix_val[1]])
+        elif structure_val[0] == 'object' \
+        and memory[ix_val[1]][0] == 'function-val':
+            # remember the object reference.
+            return ('member-function-val',
+                    structure_val,
+                    memory[ix_val[1]])
         else:
             return memory[ix_val[1]]
 
@@ -749,26 +761,22 @@ def apply_list_exp(node):
 
         # object member function
         # NOTE: object member functions are passed an object reference.
-        if fval[0] == 'function-val' and ftree[0] == 'structure-ix':
-            (STRUCTURE_IX, obj_tree, index_list) = ftree
-            obj_ref = walk(obj_tree)
+        if fval[0] == 'member-function-val':
+            (MEMBER_FUNCTION_VAL, obj_ref, function_val) = fval
             # Note: lists are objects/mutable data structures, they
             # have member functions defined in the Asteroid prologue.
-            if obj_ref[0] in ['object','list','string']: # insert object ref
-                if arg_val[0] == 'none':
-                    arg_val = handle_call(fval, obj_ref)
-                elif arg_val[0] != 'tuple':
-                    new_arg_val = ('tuple', [obj_ref, arg_val])
-                    arg_val = handle_call(fval, new_arg_val)
-                elif arg_val[0] == 'tuple':
-                    arg_val[1].insert(0, obj_ref)
-                    arg_val = handle_call(fval, arg_val)
-                else:
-                    raise ValueError(
-                        "unknown parameter type '{}' in apply"
-                        .format(arg_val[0]))
-            else: # it is a function embedded in a term structure - just call it
-                arg_val = handle_call(fval, arg_val)
+            if arg_val[0] == 'none':
+                arg_val = handle_call(function_val, obj_ref)
+            elif arg_val[0] != 'tuple':
+                new_arg_val = ('tuple', [obj_ref, arg_val])
+                arg_val = handle_call(function_val, new_arg_val)
+            elif arg_val[0] == 'tuple':
+                arg_val[1].insert(0, obj_ref)
+                arg_val = handle_call(function_val, arg_val)
+            else:
+                raise ValueError(
+                    "unknown parameter type '{}' in apply"
+                    .format(arg_val[0]))
 
         # regular function call
         elif fval[0] == 'function-val':
@@ -1114,4 +1122,5 @@ dispatch_dict = {
     'otherwise'     : otherwise_exp,
     'if-exp'        : if_exp,
     'named-pattern' : named_pattern_exp,
+    'member-function-val' : lambda node : node,
 }
