@@ -155,10 +155,10 @@ def unify(term, pattern):
         unifiers = unify(term, pexp)
         # evaluate the conditional expression in the
         # context of the unifiers.
-        state.symbol_table.push_scope({})
+        #state.symbol_table.push_scope({})
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
-        state.symbol_table.pop_scope()
+        #state.symbol_table.pop_scope()
         if bool_val[1]:
             return unifiers
         else:

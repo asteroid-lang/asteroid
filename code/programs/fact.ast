@@ -1,7 +1,7 @@
 -- Factorial
 -- An implementation of factorial with properly
--- constrained inputs with pattern matching
--- using type classes and conditional matching
+-- constrained inputs using pattern matching
+-- with type classes and conditional matching
 
 load "io".
 load "util".

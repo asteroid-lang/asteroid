@@ -6,15 +6,19 @@ load "io".
 load "util".
 
 -- family term constructors for our pattern
-structure Family
-  with
-    data parent1.
-    data parent2.
-    data children.
+structure Family with
+  data parent1.
+  data parent2.
+  data children.
   end
 
-structure Parent with data name end
-structure Children with data list end
+structure Parent with
+  data name.
+  end
+
+structure Children with
+  data list.
+  end
 
 -- first-class family pattern
 -- note: the quote operator prevents immediate evaluation

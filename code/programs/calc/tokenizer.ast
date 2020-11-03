@@ -45,9 +45,9 @@ function tokenize
         input_stream @next().
         output_stream @append(token).
       elif c is "/" do
-          let token = Token("div","/").
-          input_stream @next().
-          output_stream @append(token).
+        let token = Token("div","/").
+        input_stream @next().
+        output_stream @append(token).
       elif c is "\(" do
         let token = Token("lparen","(").
         input_stream @next().
@@ -57,7 +57,6 @@ function tokenize
         input_stream @next().
         output_stream @append(token).
       elif c is "[\n\t ]" do
-        noop.
         input_stream @next().
       else do
         throw Error("unknown symbol: " + c).
