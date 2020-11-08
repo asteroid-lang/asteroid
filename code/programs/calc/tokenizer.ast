@@ -19,7 +19,7 @@ function make_number_token
       input_stream @next().
       let number = number + input_stream @get().
     end
-    return Token("number",integer(number)).
+    return Token("number",tointeger(number)).
   end
 
 function tokenize

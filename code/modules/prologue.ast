@@ -256,13 +256,15 @@ end
 ------------------------------------------------------------------
 function __list_reverse__
 ------------------------------------------------------------------
-with self do escape
+with self do return escape
 "
 from asteroid_state import state
+global __retval__
 
 self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'list')
 self_val[1].reverse()
+__retval__ = self_val
 "
 end
 

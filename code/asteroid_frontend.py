@@ -867,7 +867,7 @@ class Parser:
         elif tt == 'TIMES':
             self.lexer.match('TIMES')
             id_tok = self.lexer.match('ID')
-            return ('deref', id_tok.value)
+            return ('deref', ('id', id_tok.value))
 
         elif tt == 'NOT':
             self.lexer.match('NOT')

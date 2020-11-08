@@ -116,7 +116,7 @@ def unify(term, pattern):
           stores the term 'a@[0] into lval a@[0].
     '''
     #lhh
-    # print("unifying:\nterm {}\npattern {}\n\n".format(term, pattern))
+    #print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
     # NOTE: in the first rules where we test instances we are comparing
     # Python level values, if they don't match exactly then we have
@@ -227,16 +227,17 @@ def unify(term, pattern):
         (APPLY_LIST,
          (LIST,
           [(ID, apply_id),
-           (TUPLE, pattern_tuple)])) = pattern
+           arg])) = pattern
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(apply_id, struct_id))
-        # if this is true then we are looking at a unary object pattern
-        # map it into a unary tuple
-        if TUPLE != 'tuple':
-            pattern_tuple = [(TUPLE, pattern_tuple)]
+        # we are comparing raw lists here
+        if arg[0] == 'tuple':
+            pattern_list = arg[1]
+        else:
+            pattern_list = [arg]
         # only pattern match on object data members
-        return unify(data_only(obj_memory), pattern_tuple)
+        return unify(data_only(obj_memory), pattern_list)
 
     elif pattern[0] == 'structure-ix': # list lval access
         unifier = (pattern, term)
@@ -277,8 +278,8 @@ def unify(term, pattern):
         unifier += unify(list_tail, pattern_tail)
         return unifier
 
-    elif pattern[0] == 'deref':  # ('deref', id)
-        sym = pattern[1]
+    elif pattern[0] == 'deref':  # ('deref', ('id', sym))
+        (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
         return unify(term,p)
 
@@ -1348,6 +1349,16 @@ def cmatch_exp(node):
     return walk(exp)
 
 #########################################################################
+def deref_exp(node):
+
+    (DEREF, id_exp) = node
+    assert_match(DEREF, 'deref')
+
+    # deref operators are only meaningful during pattern matching
+    # ignore during a value walk.
+    return walk(id_exp)
+
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
@@ -1411,4 +1422,5 @@ dispatch_dict = {
     'member-function-val' : lambda node : node,
     'typeclass'     : typeclass_exp,
     'cmatch'        : cmatch_exp,
+    'deref'         : deref_exp,
 }

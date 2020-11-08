@@ -351,7 +351,7 @@ data curr_ix.
 ------------------------------------------------------------------
 function __init__
   with (self, stream) do
-    assert is_list(stream).
+    assert islist(stream).
     let self @stream = stream @copy(). -- shallow copy of input list
     let self @curr_ix = 0.
   orwith self do
@@ -362,8 +362,7 @@ function __init__
   ------------------------------------------------------------------
   function eof
     with self do
-      -- TODO: @ operator associativity
-      if self @curr_ix == (self @stream) @length() do
+      if self @curr_ix == self @stream @length() do
         return true.
       else do
         return false.
