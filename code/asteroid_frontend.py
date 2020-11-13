@@ -59,24 +59,16 @@ stmt_lookahead = {
     'LOAD',
     'LOOP',
     'NONLOCAL',
-    'NOOP',
     'REPEAT',
     'RETURN',
     'STRUCTURE',
     'THROW',
+    'TRAIT',
     'TRY',
     'WHILE',
     'WITH',
     } | primary_lookahead
 
-struct_stmt_lookahead = {
-    '.',
-    'DATA',
-    'FUNCTION',
-    'NOOP',
-    }
-
-noop_stmt_lookahead = {'NOOP', '.'}
 ###########################################################################################
 # symbols for builtin operators.
 # NOTE: if you add new builtins make sure to keep this table in sync.
@@ -130,19 +122,15 @@ class Parser:
 
     ###########################################################################################
     # stmt_list
-    #   : stmt stmt_list
-    #   | empty
+    #   : stmt*
     def stmt_list(self):
         dbg_print("parsing STMT_LIST")
 
-        if self.lexer.peek().type in stmt_lookahead:
-            lineinfo = ('lineinfo', state.lineinfo)
-            s = self.stmt()
-            (LIST, sl) = self.stmt_list()
-            return ('list', [lineinfo] + [s] +  sl)
-
-        else:
-            return ('list', [])
+        sl = []
+        while self.lexer.peek().type in stmt_lookahead:
+            sl += [('lineinfo', state.lineinfo)]
+            sl += [self.stmt()]
+        return ('list', sl)
 
     ###########################################################################################
     # NOTE: periods are optional at end of sentences but leaving them out can
@@ -150,13 +138,13 @@ class Parser:
     # NOTE: the dot is also short hand for the 'noop' command
     #
     # stmt
-    #    : noop_stmt
+    #    : '.' // NOOP
     #    | LOAD STRING '.'?
     #    | GLOBAL id_list '.'?
     #    | NONLOCAL id_list '.'?
     #    | ASSERT exp '.'?
-    #    | function_def
-    #    | STRUCTURE ID WITH struct_stmt_list END
+    #    | STRUCTURE ID WITH struct_stmts END
+    #    | TRAIT ID WITH trait_stmts END
     #    | LET pattern '=' exp '.'?
     #    | LOOP DO? stmt_list END
     #    | FOR pattern IN exp DO stmt_list END
@@ -167,13 +155,15 @@ class Parser:
     #    | RETURN exp? '.'?
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
+    #    | function_def
     #    | call '.'?
     def stmt(self):
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
 
-        if tt in noop_stmt_lookahead:
-            return self.noop_stmt()
+        if tt == '.':
+            self.lexer.match('.')
+            return ('noop',)
 
         elif tt == 'LOAD':
             # expand the AST from the file into our current AST
@@ -267,10 +257,20 @@ class Parser:
             self.lexer.match('STRUCTURE')
             id_tok = self.lexer.match('ID')
             self.lexer.match('WITH')
-            stmts = self.struct_stmt_list()
+            stmts = self.struct_stmts()
             self.lexer.match('END')
-            #self.lexer.match_optional('STRUCTURE')
             return ('struct-def',
+                    ('id', id_tok.value),
+                    ('member-list', stmts))
+
+        elif tt == 'TRAIT':
+            dbg_print("parsing TRAIT")
+            self.lexer.match('TRAIT')
+            id_tok = self.lexer.match('ID')
+            self.lexer.match('WITH')
+            stmts = self.trait_stmts()
+            self.lexer.match('END')
+            return ('trait-def',
                     ('id', id_tok.value),
                     ('member-list', stmts))
 
@@ -441,19 +441,12 @@ class Parser:
                 ('function-exp', body_list))
 
     ###########################################################################################
-    # struct_stmt
-    #  : function_def '.'?
-    #  | DATA ID ('=' exp)? '.'?
-    def struct_stmt(self):
-        dbg_print("parsing STRUCT_STMT")
-        tt = self.lexer.peek().type  # tt - Token Type
+    # data_stmt
+    #  : DATA ID ('=' exp)? '.'?
+    def data_stmt(self):
+        dbg_print("parsing DATA_STMT")
 
-        if tt == 'FUNCTION':
-            f = self.function_def()
-            self.lexer.match_optional('.')
-            return f
-
-        elif tt == 'DATA':
+        if self.lexer.peek().type == 'DATA':
             self.lexer.match('DATA')
             id_tok = self.lexer.match('ID')
             if self.lexer.peek().type == '=' :
@@ -472,36 +465,55 @@ class Parser:
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
-    # struct_stmt_list
-    #   : struct_stmt struct_stmt_list
-    #   | empty
-    def struct_stmt_list(self):
-        dbg_print("parsing STRUCT_STMT_LIST")
+    # trait_stmt
+    #  : TRAIT ID '.'?
+    def trait_stmt(self):
+        dbg_print("parsing TRAIT_STMT")
 
-        if self.lexer.peek().type in struct_stmt_lookahead:
-            s = self.struct_stmt()
-            (LIST, sl) = self.struct_stmt_list()
-            return ('list', [s] +  sl)
-        else:
-            return ('list', [])
-
-    ###########################################################################################
-    # noop_stmt
-    #  : NOOP '.'?
-    #  | '.'
-    def noop_stmt(self):
-        dbg_print("parsing NOOP_STMT")
-        if self.lexer.peek().type == 'NOOP':
-            self.lexer.match('NOOP')
+        if self.lexer.peek().type  == 'TRAIT':
+            self.lexer.match('TRAIT')
+            id_tok = self.lexer.match('ID')
             self.lexer.match_optional('.')
-            return ('noop',)
-        if self.lexer.peek().type == '.':
-            self.lexer.match('.')
-            return ('noop',)
+            return ('trait',
+                    ('id', id_tok.value))
         else:
             raise SyntaxError(
                 "syntax error at '{}'"
                 .format(self.lexer.peek().value))
+
+    ###########################################################################################
+    # struct_stmts
+    #   : (TRAIT ID .'?')* (data_stmt)* (function_def '.'?)* '.'*
+    def struct_stmts(self):
+        dbg_print("parsing STRUCT_STMTS")
+
+        sl = []
+        while self.lexer.peek().type == 'TRAIT':
+            sl += [self.trait_stmt()]
+        while self.lexer.peek().type == 'DATA':
+            sl += [self.data_stmt()]
+        while self.lexer.peek().type == 'FUNCTION':
+            sl += [self.function_def()]
+            self.lexer.match_optional('.')
+        while self.lexer.peek().type == '.':
+            self.lexer.match('.')
+        return ('list', sl)
+
+    ###########################################################################################
+    # trait_stmts
+    #   : (data_stmt)* (function_def '.'?)* '.'*
+    def trait_stmts(self):
+        dbg_print("parsing TRAIT_STMTS")
+
+        sl = []
+        while self.lexer.peek().type == 'DATA':
+            sl += [self.data_stmt()]
+        while self.lexer.peek().type == 'FUNCTION':
+            sl += [self.function_def()]
+            self.lexer.match_optional('.')
+        while self.lexer.peek().type == '.':
+            self.lexer.match('.')
+        return ('list', sl)
 
     ###########################################################################################
     # id_list

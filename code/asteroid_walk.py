@@ -972,6 +972,40 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
+def trait_def_stmt(node):
+
+    (TRAIT_DEF, (ID, trait_id), (MEMBER_LIST, (LIST, member_list))) = node
+    assert_match(TRAIT_DEF, 'trait-def')
+    assert_match(ID, 'id')
+    assert_match(MEMBER_LIST, 'member-list')
+    assert_match(LIST, 'list')
+
+    # construct a member-names list so we can easily check if there is
+    # an overlap of members in the structure definition using traits
+    # Note: this is strictly there for convenience sake, we can always
+    # recover the information from the member-list
+    member_names = []
+    for member_ix in range(len(member_list)):
+        member = member_list[member_ix]
+        if member[0] == 'data':
+            (DATA,
+             (ID, member_id),
+             val_exp) = member
+            member_names.append(member_id)
+        elif member[0] == 'unify':
+            (UNIFY, (ID, member_id), function_exp) = member
+            member_names.append(member_id)
+        else:
+            raise ValueError("unsupported trait member '{}'".format(member[0]))
+
+    trait_type = ('trait',
+                  ('member-names', ('list', member_names)),
+                  ('member-list', ('list', member_list)))
+
+    # declare our trait type in the symbol table
+    state.symbol_table.enter_sym(trait_id, trait_type)
+
+#########################################################################
 def eval_exp(node):
 
     (EVAL, exp) = node
@@ -1397,6 +1431,7 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
+    'trait-def'     : trait_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'tuple'         : tuple_exp,
