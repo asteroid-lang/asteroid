@@ -5,8 +5,7 @@ prog
   : stmt_list
 
 stmt_list
-  : stmt stmt_list
-  | empty
+  : stmt*
 
 stmt
   : noop_stmt
@@ -14,30 +13,32 @@ stmt
   | GLOBAL id_list '.'?
   | NONLOCAL id_list '.'?
   | ASSERT exp '.'?
-  | function_def
-  | STRUCTURE ID WITH struct_stmt_list END
+  | STRUCTURE ID WITH struct_stmts END
+  | TRAIT ID WITH trait_stmts END
   | LET pattern '=' exp '.'?
   | LOOP DO? stmt_list END
   | FOR pattern IN exp DO stmt_list END
   | WHILE exp DO stmt_list END
   | REPEAT DO? stmt_list UNTIL exp '.'?
-  | BREAK '.'?
   | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-  | RETURN exp? '.'?
-  | TRY stmt_list (CATCH pattern DO stmt_list)+ END
+  | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
+  | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
   | THROW exp '.'?
+  | BREAK '.'?
+  | RETURN exp? '.'?
+  | function_def
   | call '.'?
 
 function_def
   : FUNCTION ID body_defs END
 
-  struct_stmt_list
-    : struct_stmt struct_stmt_list
-    | empty
+struct_stmts
+  : (TRAIT ID .'?')* (DATA ID ('=' exp)? '.'?)* (function_def '.'?)*
+  | noop_stmt
 
-  struct_stmt
-    : function_def '.'?
-    | DATA ID ('=' exp)? '.'?
+trait_stmts
+  : (DATA ID ('=' exp)? '.'?)* (function_def '.'?)*
+  | noop_stmt
 
 noop_stmt
   : NOOP '.'?
@@ -49,6 +50,11 @@ id_list
 body_defs
   : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
 
+// NOTE: There is no syntactic difference between a pattern
+// and an expression. We introduce the 'pattern' nonterminal
+// to highlight the SEMANTIC difference between patterns and
+// expressions.
+
 pattern
   : exp
 
@@ -57,6 +63,7 @@ exp
 
 quote_exp
   : QUOTE head_tail
+  | PATTERN WITH head_tail
   | head_tail
 
 head_tail
@@ -78,7 +85,7 @@ logic_exp1
   : rel_exp0 (AND rel_exp0)*
 
 rel_exp0
-  : rel_exp1 (('==' | '=/=' /* not equal */) rel_exp1)*
+  : rel_exp1 (('==' | '=/=' ) rel_exp1)*
 
 rel_exp1
   : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
@@ -110,8 +117,8 @@ primary
   | TRUE
   | FALSE
   | NONE
-  | ID (':' exp)? // named patterns when ': exp' exists
-  | '*' ID  // "dereference" a variable during pattern matching
+  | ID (':' exp)?  // named patterns when ': exp' exists
+  | '*' ID         // "dereference" a variable during pattern matching
   | NOT call
   | MINUS call
   | ESCAPE STRING
@@ -119,7 +126,7 @@ primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const
-  | TYPECLASS // TYPECLASS == '%'<typename>
+  | TYPECLASS           // TYPECLASS == '%'<typename>
 
 tuple_stuff
   : exp (',' exp?)*

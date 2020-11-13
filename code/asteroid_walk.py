@@ -985,10 +985,16 @@ def eval_exp(node):
     # walking the term.  This is safe because if the arg is already
     # the actual term it will be quoted and nothing happens if it is
     # a variable it will be expanded to the actual term.
+    #lhh
+    #print("before expand: {}".format(exp))
     exp_val_expand = walk(exp)
+    #lhh
+    #print("after expand: {}".format(exp_val_expand))
     # now walk the actual term
     state.ignore_quote = True
     exp_val = walk(exp_val_expand)
+    #lhh
+    #print("after walk: {}".format(exp_val))
     state.ignore_quote = False
     return exp_val
 
@@ -1356,7 +1362,9 @@ def deref_exp(node):
 
     # deref operators are only meaningful during pattern matching
     # ignore during a value walk.
-    return walk(id_exp)
+    # NOTE: the second walk is necessary to interpret what we retrieved
+    # through the indirection
+    return walk(walk(id_exp))
 
 #########################################################################
 # walk
