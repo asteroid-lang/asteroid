@@ -45,7 +45,6 @@ reserved = {
     'structure'     : 'STRUCTURE',
     'throw'         : 'THROW',
     'to'            : 'TO',
-    'trait'         : 'TRAIT',
     'try'           : 'TRY',
     'until'         : 'UNTIL',
     'while'         : 'WHILE',

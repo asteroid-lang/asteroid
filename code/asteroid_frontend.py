@@ -63,7 +63,6 @@ stmt_lookahead = {
     'RETURN',
     'STRUCTURE',
     'THROW',
-    'TRAIT',
     'TRY',
     'WHILE',
     'WITH',
@@ -263,17 +262,6 @@ class Parser:
                     ('id', id_tok.value),
                     ('member-list', stmts))
 
-        elif tt == 'TRAIT':
-            dbg_print("parsing TRAIT")
-            self.lexer.match('TRAIT')
-            id_tok = self.lexer.match('ID')
-            self.lexer.match('WITH')
-            stmts = self.trait_stmts()
-            self.lexer.match('END')
-            return ('trait-def',
-                    ('id', id_tok.value),
-                    ('member-list', stmts))
-
         elif tt == 'LET':
             dbg_print("parsing LET")
             self.lexer.match('LET')
@@ -442,7 +430,7 @@ class Parser:
 
     ###########################################################################################
     # data_stmt
-    #  : DATA ID ('=' exp)? '.'?
+    #  : DATA ID ('=' exp)?
     def data_stmt(self):
         dbg_print("parsing DATA_STMT")
 
@@ -458,61 +446,43 @@ class Parser:
             return ('data',
                     ('id', id_tok.value),
                     ('init-val', val))
-
         else:
             raise SyntaxError(
                 "syntax error at '{}'"
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
-    # trait_stmt
-    #  : TRAIT ID '.'?
-    def trait_stmt(self):
-        dbg_print("parsing TRAIT_STMT")
+    # struct_stmt
+    #   : data_stmt '.'?
+    #   | function_def '.'?
+    #   | '.'
+    def struct_stmt(self):
+        dbg_print("parsing STRUCT_STMT")
 
-        if self.lexer.peek().type  == 'TRAIT':
-            self.lexer.match('TRAIT')
-            id_tok = self.lexer.match('ID')
+        if self.lexer.peek().type == 'DATA':
+            s = self.data_stmt()
             self.lexer.match_optional('.')
-            return ('trait',
-                    ('id', id_tok.value))
+            return s
+        elif self.lexer.peek().type == 'FUNCTION':
+            s = self.function_def()
+            self.lexer.match_optional('.')
+            return s
+        elif self.lexer.peek().type == '.':
+            self.lexer.match_optional('.')
+            return ('noop',)
         else:
             raise SyntaxError(
                 "syntax error at '{}'"
                 .format(self.lexer.peek().value))
-
     ###########################################################################################
     # struct_stmts
-    #   : (TRAIT ID .'?')* (data_stmt)* (function_def '.'?)* '.'*
+    #   : struct_stmt*
     def struct_stmts(self):
         dbg_print("parsing STRUCT_STMTS")
 
         sl = []
-        while self.lexer.peek().type == 'TRAIT':
-            sl += [self.trait_stmt()]
-        while self.lexer.peek().type == 'DATA':
-            sl += [self.data_stmt()]
-        while self.lexer.peek().type == 'FUNCTION':
-            sl += [self.function_def()]
-            self.lexer.match_optional('.')
-        while self.lexer.peek().type == '.':
-            self.lexer.match('.')
-        return ('list', sl)
-
-    ###########################################################################################
-    # trait_stmts
-    #   : (data_stmt)* (function_def '.'?)* '.'*
-    def trait_stmts(self):
-        dbg_print("parsing TRAIT_STMTS")
-
-        sl = []
-        while self.lexer.peek().type == 'DATA':
-            sl += [self.data_stmt()]
-        while self.lexer.peek().type == 'FUNCTION':
-            sl += [self.function_def()]
-            self.lexer.match_optional('.')
-        while self.lexer.peek().type == '.':
-            self.lexer.match('.')
+        while self.lexer.peek().type in ['DATA', 'FUNCTION', '.']:
+            sl += [self.struct_stmt()]
         return ('list', sl)
 
     ###########################################################################################

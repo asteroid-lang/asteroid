@@ -14,7 +14,6 @@ stmt
   | NONLOCAL id_list '.'?
   | ASSERT exp '.'?
   | STRUCTURE ID WITH struct_stmts END
-  | TRAIT ID WITH trait_stmts END
   | LET pattern '=' exp '.'?
   | LOOP DO? stmt_list END
   | FOR pattern IN exp DO stmt_list END
@@ -35,14 +34,13 @@ function_def
 data_stmt
   : DATA ID ('=' exp)? '.'?
 
-trait_stmt
-  : TRAIT ID .'?'
+struct_stmt
+  : data_stmt '.'?
+  | function_def '.'?
+  | '.'
 
 struct_stmts
-  : (trait_stmt)* (data_stmt)* (function_def '.'?)* '.'*
-
-trait_stmts
-  : (data_stmt)* (function_def '.'?)* '.'*
+  : struct_stmt*
 
 id_list
   : ID (',' ID)*
