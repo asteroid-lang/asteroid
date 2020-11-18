@@ -13,7 +13,7 @@ structure Token with
   end
 
 function make_number_token
-  with input_stream do
+  with input_stream:%Stream do
     let number = input_stream @get().
     while input_stream @peek() is "[0-9]" do
       input_stream @next().
@@ -23,7 +23,7 @@ function make_number_token
   end
 
 function tokenize
-  with input do
+  with input:%string do
     let input_stream = Stream(input @explode()).
     let output_stream = Stream().
     while not input_stream @eof() do

@@ -17,17 +17,17 @@ load "lexer".
 -- The parser implements arithmetic on integer values
 
 function expression
-  with lexer do
+  with lexer:%Lexer do
     let val = mulexp(lexer).
     loop do
       let token = lexer @get().
       if not token do
         break.
       elif token @type == "add" do
-        lexer @match("add").
+        lexer @token_match("add").
         let val = val + mulexp(lexer).
       elif token @type == "sub" do
-        lexer @match("sub").
+        lexer @token_match("sub").
         let val = val - mulexp(lexer)
       else do
         break.
@@ -37,7 +37,7 @@ function expression
   end
 
 function mulexp
-  with lexer do
+  with lexer:%Lexer do
     let val = rootexp(lexer).
     if not lexer @get() do
       return val.
@@ -47,10 +47,10 @@ function mulexp
       if not token do
         break.
       elif token @type == "mul" do
-        lexer @match("mul").
+        lexer @token_match("mul").
         let val = val * rootexp(lexer).
       elif token @type == "div" do
-        lexer @match("div").
+        lexer @token_match("div").
         let val = val / rootexp(lexer)
       else do
         break.
@@ -60,22 +60,22 @@ function mulexp
   end
 
 function rootexp
-  with lexer do
+  with lexer:%Lexer do
     try
       let Token(type,val) = lexer @get().
     catch _ do
       return none.
     end
     if type == "number" do
-      lexer @match("number").
+      lexer @token_match("number").
       return val.
     elif type == "sub" do
-      lexer @match("sub").
+      lexer @token_match("sub").
       return - rootexp(lexer).
     elif type == "lparen" do
-      lexer @match("lparen").
+      lexer @token_match("lparen").
       let val = expression(lexer).
-      lexer @match("rparen").
+      lexer @token_match("rparen").
       return val.
     else do
       throw Error("syntax error at token "+val).
@@ -88,7 +88,7 @@ function rootexp
 -- tokenize input
 let input = read().
 let lexer = Lexer(tokenize(input)).
--- println lexer.
+#println lexer.
 
 -- parse and interpret input
 let val = expression(lexer).

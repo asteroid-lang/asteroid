@@ -879,7 +879,7 @@ class Parser:
 
         elif tt == 'EVAL':
             self.lexer.match('EVAL')
-            exp = self.exp()
+            exp = self.primary()
             return ('eval', exp)
 
         elif tt == '(':

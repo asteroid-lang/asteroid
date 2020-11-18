@@ -31,11 +31,14 @@ stmt
 function_def
   : FUNCTION ID body_defs END
 
+body_defs
+  : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+
 data_stmt
   : DATA ID ('=' exp)? '.'?
 
 struct_stmt
-  : data_stmt '.'?
+  : data_stmt
   | function_def '.'?
   | '.'
 
@@ -44,9 +47,6 @@ struct_stmts
 
 id_list
   : ID (',' ID)*
-
-body_defs
-  : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
 
 // NOTE: There is no syntactic difference between a pattern
 // and an expression. We introduce the 'pattern' nonterminal
@@ -120,7 +120,7 @@ primary
   | NOT call
   | MINUS call
   | ESCAPE STRING
-  | EVAL exp
+  | EVAL primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const

@@ -27,7 +27,7 @@ structure Lexer with
       return self @token_stream @eof().
     end
 
-  function match
+  function token_match
     with (self,token_type) do
       let token = self @token_stream @get().
       if token @type == token_type do
