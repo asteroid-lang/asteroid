@@ -6,8 +6,10 @@
 ###########################################################################################
 
 import cProfile
+import sys
 from argparse import ArgumentParser
 from asteroid_interp import interp
+from asteroid_version import VERSION
 
 # parse command line args
 aparser = ArgumentParser()
@@ -16,9 +18,14 @@ aparser.add_argument('-t','--tree', action='store_true', help='AST dump flag')
 aparser.add_argument('-v','--version', action='store_true', help='version flag')
 aparser.add_argument('-w','--no_walk', action='store_false', help='walk flag')
 aparser.add_argument('-p','--pstats', action='store_true', help='pstats flag')
+aparser.add_argument('-l','--no_prologue', action='store_false', help='prologue flag')
 aparser.add_argument('input', metavar='input_file', help='Asteroid input file')
 
 args = aparser.parse_args()
+
+if args.version:
+    print("** Asteroid Version {} **".format(VERSION))
+    sys.exit(0)
 
 f = open(args.input, 'r')
 input_stream = f.read()
@@ -31,7 +38,8 @@ interp_object = \
        tree_dump=args.tree,
        do_walk=args.no_walk,
        symtab_dump=args.symtab,
-       version=args.version)'''
+       version=args.version,
+       prologue=args.no_prologue)'''
 
 if args.pstats:
     # generates pstats into the file 'pstats'

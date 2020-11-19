@@ -30,6 +30,7 @@ def interp(input_stream,
 
     if version:
         print("** Asteroid Version {} **".format(VERSION))
+        sys.exit(0)
 
     try:
         # initialize state
