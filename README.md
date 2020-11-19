@@ -1,7 +1,6 @@
-<!-- ![](asteroid-clipart.jpg) -->
-<img src="asteroid-clipart.jpg" height="42" width="42">
+![asteroid](asteroid-clipart-small.jpg)
 
-# Asteroid the Programming Language
+# Asteroid: The Programming Language
 
 Asteroid is an open-source, multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Rust](https://www.rust-lang.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching is supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed to and returned from functions as well as manipulated computationally.
 
@@ -166,4 +165,4 @@ Here the function `match` takes a subject term and a pattern and returns
 
 ## For more Information...
 
-Take a look at the [Asteroid User Guide](https://nbviewer.jupyter.org/github/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.ipynb) notebook for a more detailed discussion of the language.
+Take a look at the [Asteroid User Guide](https://github.com/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.md) for a more detailed discussion of the language.
