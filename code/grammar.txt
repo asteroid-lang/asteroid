@@ -1,5 +1,9 @@
+////////////////////////////////////////////////////////////////////////////////////////
 // Grammar for Asteroid written in EBNF format.
 // (c) Lutz Hamel, University of Rhode Island
+
+////////////////////////////////////////////////////////////////////////////////////////
+// statements
 
 prog
   : stmt_list
@@ -48,6 +52,10 @@ struct_stmts
 id_list
   : ID (',' ID)*
 
+////////////////////////////////////////////////////////////////////////////////////////
+// expressions/patterns
+
+////////////////////////////////////////////////////////////////////////////////////////
 // NOTE: There is no syntactic difference between a pattern
 // and an expression. We introduce the 'pattern' nonterminal
 // to highlight the SEMANTIC difference between patterns and
@@ -75,7 +83,6 @@ compound
          (TO exp (STEP exp)?) |   // list comprehension
       )?
 
-// operators with their precedences
 logic_exp0
   : logic_exp1 (OR logic_exp1)*
 
