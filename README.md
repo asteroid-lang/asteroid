@@ -2,77 +2,108 @@
 
 # Asteroid: The Programming Language
 
-Asteroid is an open-source, dynamically typed, multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Rust](https://www.rust-lang.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching are supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed to and returned from functions as well as manipulated computationally.
+Asteroid open source, dynamically typed, multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Rust](https://www.rust-lang.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching are supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed to and returned from functions as well as manipulated computationally. For more information and a user guide for the language you can check out Asteroid at its [Github repository](https://github.com/lutzhamel/asteroid).
 
 ## The Basics
 
-OK, before we get started here is the obligatory *Hello World!* program written in Asteroid,
+OK, before we get started here is the obligatory ''Hello World!'' program written in Asteroid,
 ```
 load "io".
-
 println "Hello World!".
 ```
-Since pattern matching is at the core of Asteroid we find that
-the simplest pattern matching occurs in Asteroid's `let` statement. For example,
+Since pattern matching is at the core of Asteroid we find that the simplest pattern matching occurs in Asteroid's `let` statement. For example,
 ```
 let [x,2,y] = [1,2,3].
 ```
-here the list `[1,2,3]` is matched against the pattern `[x,2,y]` successfully with the corresponding assignments `x` &map; 1 and `y` &map; 3.
-
-Pattern matching can also occur in iteration. Consider the following program that prints out the names of persons whose name contains a lower case 'p',
+here the list  `[1,2,3]` is matched against the pattern `[x,2,y]` successfully with the corresponding assignments x→1 and y→3. Pattern matching can also occur in iteration. Consider the following program that prints out the names of persons whose name contains a lower case 'p',
 ```
 load "io".
 
 -- define what persons look like
+
 structure Person with
-    data name.
-    data age.
-    data gender.
-    end
+    data name.
+    data age.
+    data gender.
+    end
 
 -- define a list of persons
+
 let people = [
-    Person("George", 32, "M"),
-    Person("Sophie", 46, "F"),
-    Person("Oliver", 21, "X")
-    ].
+    Person("George", 32, "M"),
+    Person("Sophie", 46, "F"),
+    Person("Oliver", 21, "X")
+    ].
 
 -- print names of persons that contain 'p'
+
 for Person(name:".*p.*",_,_) in people do
-  println name.
+  println name.
 end
 ```
-In the for-loop we pattern-match Person objects and then use regular expressions on the name.  The output of this program is,
+In the for-loop we pattern-match Person objects and then use regular expressions on the name.  The output of this program is,
 ```
 Sophie
 ```
 
-## Pattern Matching in Function Arguments
+## Object-Oriented Programming in Asteroid
 
-Pattern matching can also happen on function arguments using the `with` or `orwith` keywords.  This can be viewed as multiple dynamic dispatch.
-Here is the canonical factorial program written in Asteroid,
-
+Asteroid also supports OO style programming.  Here is the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation implemented in Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching. The `[ _ | _ ]` is known as the head-tail operator related to the cons function in Lisp and allows you to decompose a list into the first element and the rest of the list.
 ```
--- Factorial
-
 load "io".
 
-function fact
-    with 0 do
-        return 1
-    orwith n do
-        return n * fact (n-1).
+-- Dog objects
+structure Dog with
+
+  data name.
+  data tricks.
+
+  -- member function
+  function add_trick
+    with (self, new_trick) do
+      let self @tricks = self @tricks + [new_trick].
     end
 
-println ("The factorial of 3 is: " + fact (3)).
+  -- constructor
+  function __init__
+    with (self, name) do
+      let self @name = name.
+      let self @tricks = [].
+    end
+
+  end -- structure
+
+-- Fido the dog
+let fido = Dog("Fido").
+fido @add_trick("roll over").
+fido @add_trick("play dead").
+
+-- Buddy the dog
+let buddy = Dog("Buddy").
+buddy @add_trick("roll over").
+buddy @add_trick("sit stay").
+
+-- Fifi the dog
+let fifi = Dog("Fifi").
+fifi @add_trick("sit stay").
+
+-- print out all the names of dogs
+-- whose first trick is 'roll over'.
+let dogs = [fido, buddy, fifi].
+
+for Dog(name, ["roll over"|_]) in dogs do
+    println (name + " does roll over").
+end
 ```
-As one would expect, the output is,
+The output is,
 ```
-The factorial of 3 is: 6
+Fido does roll over
+Buddy does roll over
 ```
 
-The following quicksort implementation has slightly more complicated patterns for the function
-arguments. Asteroid inherits this functionality from functional programming languages such as ML.  
+## Pattern Matching in Functions
+
+Asteroid supports functional programming style pattern matching on the arguments to a function dispatching the function implementation corresponding to the pattern matched.  This is related to multiple dispatch implemented in languages like [Raku](https://www.raku.org/). The following Quicksort implementation demonstrates this functionality.  Here we see three distinct patterns each with their own implementation of the corresponding function body,  
 ```
 -- Quicksort
 
@@ -99,69 +130,81 @@ function qsort
 
 println (qsort [3,2,1,0]).
 ```
-The last line of the program prints out the sorted list returned by the quicksort.  The output is,
+The last line of the program prints out the sorted list returned by the Quicksort.  The output is,
 ```
 [0,1,2,3]
 ```
 
-## Object-Oriented Programming in Asteroid
+## Type and Conditional Patterns
 
-Asteroid also supports OO style programming.  Here is the [dog example](docs.python.org/3/tutorial/classes.html) from the Python documentation cast into Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching.
-
+Asteroid supports patterns that match whole type classes.  For instance, `%integer` matches any integer but will fail with any other type.  A conditional pattern is a pattern that only matches if a condition is fulfilled in addition to the structural match.  Here is a recursive implementation of the factorial function where we use type and conditional patterns to appropriately restrict the domain of the function,
 ```
 load "io".
+load "util".
 
-structure Dog with
-    data name.
-    data tricks.
-
-    function __init__
-      with (self, name) do
-        let self @name = name.
-        let self @tricks = [].
-      end
-
-    function add_trick
-      with (self, new_trick) do
-        let self @tricks = self @tricks + [new_trick].
-      end
+function fact
+    with 0 do
+        return 1
+    orwith (n:%integer) %if n > 0 do
+        return n * fact (n-1).
+    orwith (n:%integer) %if n < 0 do
+        throw Error("factorial is not defined for "+n).
     end
 
--- Fido the dog
-let fido = Dog("Fido").
-fido @add_trick("roll over").
-fido @add_trick("play dead").
+println ("The factorial of 3 is: " + fact (3)).
+```
+We use the type pattern `%integer` to restrict the domain of the function to integer values and then we use the conditional patterns to select the appropriate function implementation.  The pattern `n:%integer` is called a named pattern where the variable `n` binds to whatever integer the type pattern `%integer` has matched.  That binding becomes immediately available for usage as can be seen in the conditional patterns.
 
--- Buddy the dog
-let buddy = Dog("Buddy").
-buddy @add_trick("roll over").
-buddy @add_trick("sit stay").
+Type patterns are extremely useful in dynamically typed languages like Asteroid in order to provide some additional type safety that would otherwise not be available. Type patterns are also available for user defined types. Consider,
+```
+load "io".
+load "util".
 
--- print out the tricks
-println ("Fido's tricks: " + fido @tricks).
-println ("Buddy's tricks: " + buddy @tricks).
+structure A with
+    data a.
+    data b.
+    end
+
+let a = A(1,2).
+let v:%A = a.
+
+println (tostring v).
 ```
-The output of this program is,
+In the pattern `v:%A` the variable `v` will be bound to objects that the type pattern `%A` matches and that pattern will only match objects of type `A`.
+
+## The `is` Predicate
+
+Pattern matching can be performed anywhere in Asteroid programs where expressions are allowed using the `is` predicate.  Here is a simple program that demonstrates the `is` predicate,
 ```
-Fido's tricks: [roll over,play dead]
-Buddy's tricks: [roll over,sit stay]
+let true = (1,2) is (x,y).
+assert ((x,y) is (1,2)).
 ```
+The right operand to the predicate is the pattern and the left the subject term.  The first statement destructures the `(1,2)` tuple and the second statement asserts that the tuple constructed from the constituent parts has the same structure as the original tuple.
+
+The `is` is useful for providing pattern matching capabilities in control structures like if-then-else statements and loops.
 
 ## Patterns as First-Class Citizens
 
-As we mentioned at the beginning, in Asteroid patterns are first-class
-citizens.  The following is a small program that demonstrates that,
+One of the distinguishing features of Asteroid is the fact that it supports patterns as first-class citizens.  That means, patterns can be stored in variables, passed to functions, and computationally manipulated.  Here is the factorial program from above rewritten using first-class patterns,
 ```
 load "io".
+load "util".
 
-function match with (subject, pattern) do
-    return subject is *pattern.
-end
+let POS_INT = pattern with (x:%integer) %if x > 0.
+let NEG_INT = pattern with (x:%integer) %if x < 0.
 
-println (match('1+1, '_+_)).
+function fact
+    with 0 do
+        return 1
+    orwith n:*POS_INT do
+        return n * fact (n-1).
+    orwith n:*NEG_INT do
+        throw Error("factorial is not defined for "+n).
+    end
+
+println ("The factorial of 3 is: " + fact (3)).
 ```
-Here the function `match` takes a subject term and a pattern and returns
-`true` if there is a match otherwise it returns `false`. The quote character prevents Asteroid from immediately trying to evaluate that term.
+The interesting part of first-class patterns is that the definition point and the use-point of patterns are physically separated resulting in code that is much easier to read and in addition to that it makes patterns reusable resulting in highly maintainable code.
 
 ## For more Information...
 
