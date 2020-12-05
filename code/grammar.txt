@@ -122,7 +122,7 @@ primary
   | TRUE
   | FALSE
   | NONE
-  | ID (':' exp)?  // named patterns when ': exp' exists
+  | ID (':' pattern)?  // named patterns when ': pattern' exists
   | '*' ID         // "dereference" a variable during pattern matching
   | NOT call
   | MINUS call
