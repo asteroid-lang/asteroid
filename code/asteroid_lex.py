@@ -73,7 +73,7 @@ tokens = [
           'STRING',
           'ID',
           'QUOTE',
-          'TYPECLASS',
+          'TYPEMATCH',
           'CMATCH',
           ] + list(reserved.values())
 
@@ -92,16 +92,16 @@ t_QUOTE   = r'\''
 
 t_ignore = ' \t'
 
-def t_TYPECLASS(t):
+def t_TYPEMATCH(t):
     r'\%[a-zA-Z_][a-zA-Z_0-9]*'
-    # check for typeclass keywords
+    # check for typematch keywords
     # for the values get rid of the preceeding '%'
     if t.value[1:] == 'if':
         t.type = 'CMATCH'
         t.value = t.value[1:]
         return t
     else:
-        t.type = 'TYPECLASS'
+        t.type = 'TYPEMATCH'
         t.value = t.value[1:]
         return t
 

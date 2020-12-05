@@ -131,7 +131,7 @@ primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr
   | '[' list_stuff ']'  // list or list access
   | function_const
-  | TYPECLASS           // TYPECLASS == '%'<typename>
+  | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
 tuple_stuff
   : exp (',' exp?)*

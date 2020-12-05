@@ -5,13 +5,10 @@
 ###########################################################################################
 
 import sys
+from asteroid_globals import asteroid_file_suffix
 from pathlib import Path, PurePath
 from asteroid_lex import Lexer
 from asteroid_state import state
-
-###########################################################################################
-# this is used to compute the filename extensions of the modules
-asteroid_file_suffix = ".ast"
 
 ###########################################################################################
 def dbg_print(string):
@@ -40,7 +37,7 @@ primary_lookahead = {
     'ID',
     '[',
     '(',
-    'TYPECLASS',
+    'TYPEMATCH',
     } | ops
 
 exp_lookahead = {'QUOTE'} | primary_lookahead
@@ -67,32 +64,6 @@ stmt_lookahead = {
     'WHILE',
     'WITH',
     } | primary_lookahead
-
-###########################################################################################
-# symbols for builtin operators.
-# NOTE: if you add new builtins make sure to keep this table in sync.
-
-binary_operators = {
-    '__plus__',
-    '__minus__',
-    '__times__',
-    '__divide__',
-    '__or__',
-    '__and__',
-    '__eq__',
-    '__ne__',
-    '__le__',
-    '__lt__',
-    '__ge__',
-    '__gt__',
-    }
-
-unary_operators = {
-    '__uminus__',
-    '__not__',
-    }
-
-operator_symbols = binary_operators | unary_operators
 
 ###########################################################################################
 class Parser:
@@ -812,7 +783,7 @@ class Parser:
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
     #    | '[' list_stuff ']'  // list or list access
     #    | function_const
-    #    | TYPECLASS // TYPECLASS == '%'<typename>
+    #    | TYPEMATCH // TYPEMATCH == '%'<typename>
     def primary(self):
         dbg_print("parsing PRIMARY")
 
@@ -902,9 +873,9 @@ class Parser:
         elif tt == 'LAMBDA':
             return self.function_const()
 
-        elif tt == 'TYPECLASS':
-            tok = self.lexer.match('TYPECLASS')
-            return ('typeclass', tok.value)
+        elif tt == 'TYPEMATCH':
+            tok = self.lexer.match('TYPEMATCH')
+            return ('typematch', tok.value)
 
         else:
             raise SyntaxError(

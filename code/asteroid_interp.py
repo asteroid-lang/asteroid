@@ -5,14 +5,12 @@
 ###########################################################################################
 
 import sys
+from asteroid_globals import *
+from  asteroid_support import *
 from pathlib import Path
 from asteroid_frontend import Parser
 from asteroid_state import state
 from asteroid_walk import walk
-from asteroid_walk import ThrowValue
-from asteroid_walk import ReturnValue
-from asteroid_support import dump_AST
-from asteroid_support import term2string
 from asteroid_version import VERSION
 
 # the prologue file is expected to be in the 'modules' folder
