@@ -240,4 +240,23 @@ def term2string(term):
             "unknown type '{}' in term2string"
             .format(TYPE))
 
-###########################################################################################
+##############################################################################################
+# determines the lenth of a head-tail node by walking to the end. The length is then returned
+# from this function as in integer.
+# example input : [h1|h2|h3|tail]
+#         output: 3
+# The output is 3 because the input heal-tail pattern has 3 heads.
+############################################################################################## 
+def head_tail_length( node ):
+    #counter to hold length of head-tail statement
+    ctr = 1
+    #Try to walk down the tree, incrementing the counter
+    #return the counter when we fail
+    while(1):
+        try:
+            node = node[2]
+        except:
+            return ctr
+        else:
+            ctr += 1
+##############################################################################################

@@ -35,7 +35,7 @@ def match(tag1, tag2):
         return False
 
 ###########################################################################################
-def unify(term, pattern):
+def unify(term, pattern, unifying = True ):
     '''
     unify term and pattern recursively and return the unifier.
     this unification allows for the same variable to appear
@@ -52,9 +52,25 @@ def unify(term, pattern):
     NOTE: if the pattern looks like an lval then it is treated like an lval, e.g.
             let a@[0] = 'a@[0].
           stores the term 'a@[0] into lval a@[0].
+    NOTE: Default argument unifying is set to be true. If we are unifying, then we are
+          evaluating unification between a pattern and a term. If we are not 
+          unifying, then we are evaluating subsumption between two patterns for the
+          purpose of detecting redundant/useless pattern clauses in functions.
     '''
     #lhh
-    #print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
+    # print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
+
+    # if unifying:
+    #     print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
+    # else:
+    #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
+
+    # We don't care what the pattern is called if evaluating subsumption.
+    try:
+        if ((not unifying) and (term[0] == 'named-pattern')):
+            term = term[2]
+    except:
+        pass
 
     # NOTE: in the first rules where we test instances we are comparing
     # Python level values, if they don't match exactly then we have
@@ -85,12 +101,27 @@ def unify(term, pattern):
         else:
             unifier = []
             for i in range(len(term)):
-                unifier += unify(term[i], pattern[i])
+                if unifying:
+                    unifier += unify(term[i], pattern[i])
+                else:
+                    unifier += unify(term[i], pattern[i], False)
             return unifier
 
     elif pattern[0] == 'cmatch':
+
+        if not unifying:
+            # condtional pattern subsumption
+            print("Warning: Condtional patterns not supported for redundancy analysis.")
+            print("\t Redundant or useless pattern clauses may exist in function definition(s).")
+            pass
+
         (CMATCH, pexp, cond_exp) = pattern
-        unifiers = unify(term, pexp)
+
+        if unifying:
+            unifiers = unify(term, pexp)
+        else:
+            unifiers = unify(term, pexp, False)
+
         # evaluate the conditional expression in the
         # context of the unifiers.
         #state.symbol_table.push_scope({})
@@ -105,13 +136,28 @@ def unify(term, pattern):
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
+        nodePosition = 0 #indicates index of where we will 'look' next
+
         if typematch in ['string','real','integer','list','tuple','boolean']:
-            if typematch == term[0]:
+
+            if (not unifying):              
+
+                #we want to walk a different path for this node 
+                if (term[0] == 'typematch'):
+                    nodePosition = 1  
+
+                #dont forget that lists/head-tails can subsume each other                      
+                elif (term[0] in ['list','head-tail']):
+                    if ((typematch == 'list') and (term[0] in ['list','head-tail'])):
+                        return []                                  
+
+            if typematch == term[nodePosition]:         
                 return []
             else:
                 raise PatternMatchFailed(
                     "expected typematch {} got a term of type {}"
-                    .format(typematch, term[0]))
+                    .format(typematch, term[nodePosition]))
+
         elif term[0] == 'object':
             (OBJECT,
                 (STRUCT_ID, (ID, struct_id)),
@@ -123,10 +169,17 @@ def unify(term, pattern):
                     "expected typematch {} got an object of type {}"
                     .format(typematch, struct_id))
 
+        # ttc
+        # Should we have an else here?
+
     elif pattern[0] == 'named-pattern':
         # unpack pattern
         (NAMED_PATTERN, name, p) = pattern
-        return unify(term, p) + [(name, term)]
+
+        if unifying:
+            return unify(term, p ) + [(name, term )]
+        else:
+            return unify(term, p, False) 
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -149,12 +202,18 @@ def unify(term, pattern):
 
     elif pattern[0] == 'quote':
         # quotes on the pattern side can always be ignored
-        return unify(term, pattern[1])
+        if unifying:
+            return unify(term, pattern[1])
+        else:
+            return unify(term, pattern[1], False)
 
     elif term[0] == 'quote' and pattern[0] not in ['id', 'structure-ix']:
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
-        return unify(term[1], pattern)
+        if unifying:
+            return unify(term[1], pattern)
+        else:
+            return unify(term, pattern[1], False)
 
     elif term[0] == 'object' and pattern[0] == 'apply-list':
         # unpack term
@@ -175,11 +234,19 @@ def unify(term, pattern):
         else:
             pattern_list = [arg]
         # only pattern match on object data members
-        return unify(data_only(obj_memory), pattern_list)
+        if unifying:
+            return unify(data_only(obj_memory), pattern_list)
+        else:
+            return unify(data_only(obj_memory), pattern_list, False)
 
     elif pattern[0] == 'structure-ix': # list lval access
         unifier = (pattern, term)
         return [unifier]
+
+    elif term[0] == 'id' and unifying: # variable in term not allowed
+        raise PatternMatchFailed(      # when unifying
+            "variable '{}' in term not allowed"
+            .format(term[1]))
 
     elif pattern[0] == 'id': # variable in pattern add to unifier
         sym = pattern[1]
@@ -189,37 +256,54 @@ def unify(term, pattern):
             unifier = (pattern, term)
             return [unifier]
 
-    elif term[0] == 'id': # variable in term not allowed
-        raise PatternMatchFailed(
-            "variable '{}' in term not allowed"
-            .format(term[1]))
-
     elif pattern[0] in ['head-tail', 'raw-head-tail']:
-        # unpack the structures
-        (HEAD_TAIL, pattern_head, pattern_tail) = pattern
-        (LIST, list_val) = term
 
-        if LIST != 'list':
-            raise PatternMatchFailed(
-                "head-tail operator expected type 'list' got type '{}'"
-                .format(LIST))
+        # if we are unifying or we are not evaluating subsumption
+        #  to another head-tail
+        if unifying or term[0] not in ['head-tail', 'raw-head-tail']:
+            (HEAD_TAIL, pattern_head, pattern_tail) = pattern
+            (LIST, list_val) = term
 
-        if not len(list_val):
-            raise PatternMatchFailed(
-                "head-tail operator expected a non-empty list")
+            if LIST != 'list':
+                raise PatternMatchFailed(
+                    "head-tail operator expected type 'list' got type '{}'"
+                    .format(LIST))
 
-        list_head = list_val[0]
-        list_tail = ('list', list_val[1:])
+            if not len(list_val):
+                raise PatternMatchFailed(
+                    "head-tail operator expected a non-empty list")
 
-        unifier = []
-        unifier += unify(list_head, pattern_head)
-        unifier += unify(list_tail, pattern_tail)
-        return unifier
+            list_head = list_val[0]
+            list_tail = ('list', list_val[1:])
+
+            unifier = []
+            if unifying:
+                unifier += unify(list_head, pattern_head)
+                unifier += unify(list_tail, pattern_tail)
+            else:
+                unifier += unify(list_head, pattern_head,False)
+                unifier += unify(list_tail, pattern_tail,False)
+            return unifier
+        else: #Else we are evaluating subsumption to another head-tail
+            lengthH = head_tail_length(pattern) #H->higher order of predcence
+            lengthL = head_tail_length(term)    #L->lower order of predcence
+            if lengthH == 2 and lengthL != 2:
+                return unify(pattern[1],term[1],False)  
+            if (lengthH > lengthL):
+                raise PatternMatchFailed(
+                    "Subsumption relatioship broken, pattern will not be rendered redundant.")
+            else:
+                (HEAD_TAIL, patternH_head, patternH_tail) = pattern
+                (HEAD_TAIL, patternL_head, patternL_tail) = term
+                return unify(patternL_head,patternH_head,False) + unify(patternL_tail,patternH_tail,False)
 
     elif pattern[0] == 'deref':  # ('deref', ('id', sym))
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
-        return unify(term,p)
+        if unifying:
+            return unify(term,p)
+        else:
+            return unify(term,p, False)
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply-list':
@@ -245,7 +329,10 @@ def unify(term, pattern):
                 .format(t_id, p_id))
 
         # unify the args
-        return unify(t_arg, p_arg)
+        if unifying:
+            return unify(t_arg, p_arg)
+        else:
+            return unify(t_arg, p_arg,False)
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
         raise PatternMatchFailed(
@@ -262,7 +349,10 @@ def unify(term, pattern):
         #print("unifying {}".format(pattern[0]))
         unifier = []
         for i in range(1,len(term)):
-            unifier += unify(term[i], pattern[i])
+            if unifying:
+                unifier += unify(term[i], pattern[i])
+            else:
+                unifier += unify(term[i], pattern[i], False)
         #lhh
         #print("returning unifier: {}".format(unifier))
         return unifier
