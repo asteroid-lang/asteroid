@@ -46,61 +46,6 @@ In the for-loop we pattern-match Person objects and then use regular expressions
 Sophie
 ```
 
-## Object-Oriented Programming in Asteroid
-
-Asteroid also supports OO style programming.  Here is the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation implemented in Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching. The `[ _ | _ ]` is known as the head-tail operator related to the cons function in Lisp and allows you to decompose a list into the first element and the rest of the list.
-```
-load "io".
-
--- Dog objects
-structure Dog with
-
-  data name.
-  data tricks.
-
-  -- member function
-  function add_trick
-    with (self, new_trick) do
-      let self @tricks = self @tricks + [new_trick].
-    end
-
-  -- constructor
-  function __init__
-    with (self, name) do
-      let self @name = name.
-      let self @tricks = [].
-    end
-
-  end -- structure
-
--- Fido the dog
-let fido = Dog("Fido").
-fido @add_trick("roll over").
-fido @add_trick("play dead").
-
--- Buddy the dog
-let buddy = Dog("Buddy").
-buddy @add_trick("roll over").
-buddy @add_trick("sit stay").
-
--- Fifi the dog
-let fifi = Dog("Fifi").
-fifi @add_trick("sit stay").
-
--- print out all the names of dogs
--- whose first trick is 'roll over'.
-let dogs = [fido, buddy, fifi].
-
-for Dog(name, ["roll over"|_]) in dogs do
-    println (name + " does roll over").
-end
-```
-The output is,
-```
-Fido does roll over
-Buddy does roll over
-```
-
 ## Pattern Matching in Functions
 
 Asteroid supports functional programming style pattern matching on the arguments to a function dispatching the function implementation corresponding to the pattern matched.  This is related to multiple dispatch implemented in languages like [Raku](https://www.raku.org/). The following Quicksort implementation demonstrates this functionality.  Here we see three distinct patterns each with their own implementation of the corresponding function body,  
@@ -205,6 +150,61 @@ function fact
 println ("The factorial of 3 is: " + fact (3)).
 ```
 The interesting part of first-class patterns is that the definition point and the use-point of patterns are physically separated resulting in code that is much easier to read and in addition to that it makes patterns reusable resulting in highly maintainable code.
+
+## Object-Oriented Programming in Asteroid
+
+Asteroid also supports OO style programming.  Here is the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation implemented in Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching. The `[ _ | _ ]` is known as the head-tail operator related to the cons function in Lisp and allows you to decompose a list into the first element and the rest of the list.
+```
+load "io".
+
+-- Dog objects
+structure Dog with
+
+  data name.
+  data tricks.
+
+  -- member function
+  function add_trick
+    with (self, new_trick) do
+      let self @tricks = self @tricks + [new_trick].
+    end
+
+  -- constructor
+  function __init__
+    with (self, name) do
+      let self @name = name.
+      let self @tricks = [].
+    end
+
+  end -- structure
+
+-- Fido the dog
+let fido = Dog("Fido").
+fido @add_trick("roll over").
+fido @add_trick("play dead").
+
+-- Buddy the dog
+let buddy = Dog("Buddy").
+buddy @add_trick("roll over").
+buddy @add_trick("sit stay").
+
+-- Fifi the dog
+let fifi = Dog("Fifi").
+fifi @add_trick("sit stay").
+
+-- print out all the names of dogs
+-- whose first trick is 'roll over'.
+let dogs = [fido, buddy, fifi].
+
+for Dog(name, ["roll over"|_]) in dogs do
+    println (name + " does roll over").
+end
+```
+The output is,
+```
+Fido does roll over
+Buddy does roll over
+```
 
 ## For more Information...
 
