@@ -209,3 +209,5 @@ Buddy does roll over
 ## For more Information...
 
 Take a look at the [Asteroid User Guide](https://github.com/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.md) for a more detailed discussion of the language.
+
+Try Asteroid at [Repl.it](https://repl.it/@lutzhamel/Asteroid#README.md)
