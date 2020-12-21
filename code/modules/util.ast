@@ -240,7 +240,7 @@ __retval__ = ('list', out_list)
 end
 
 ------------------------------------------------------------------
-function length
+function len
 ------------------------------------------------------------------
 with item do return escape
 "
@@ -249,14 +249,55 @@ from asteroid_state import state
 
 item_val = state.symbol_table.lookup_sym('item')
 
-if item_val[0] not in ['list','tuple']:
+if item_val[0] not in ['list','tuple','string']:
    raise ValueError(
-   	 'length expected a list or tuple got {}'
+   	 'len expected a list, tuple, or string got {}'
 	 .format(item_val[0]))
 
 __retval__ = ('integer', len(item_val[1]))
 "
 end
+
+------------------------------------------------------------------
+function ascii
+------------------------------------------------------------------
+-- given a char return the corresponding ASCII code.
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('item')
+
+if item_val[0] != 'string':
+   raise ValueError(
+   	 'ascii expected a string got {}'
+	 .format(item_val[0]))
+
+__retval__ = ('integer', ord(item_val[1]))
+"
+end
+
+------------------------------------------------------------------
+function achar
+------------------------------------------------------------------
+-- given a decimal ASCII code return the corresponding character symbol
+with item do return escape
+"
+global __retval__
+from asteroid_state import state
+
+item_val = state.symbol_table.lookup_sym('item')
+
+if item_val[0] != 'integer':
+   raise ValueError(
+   	 'achar expected an integer got {}'
+	 .format(item_val[0]))
+
+__retval__ = ('string', str(chr(item_val[1])))
+"
+end
+
 
 
 ------------------------------------------------------------------
@@ -336,7 +377,7 @@ __retval__ = dictionary[name_val]
 "
 end
 
-end -- structure
+end -- HashTable
 
 ------------------------------------------------------------------
 -- Stream
@@ -442,4 +483,29 @@ __retval__ = ('string', term2string(memory[0]))
 "
 end
 
-end -- structure
+end -- Stream
+
+------------------------------------------------------------------
+-- Pick
+-- A pick object holds a list of items that
+-- we can randomly pick from with the 'pick'
+-- member function
+structure Pick with
+
+    data items.
+
+    function pick with (self,n) do
+        let l = [].
+        for i in 1 to n do
+            let ix = randint(0, self @items @length()-1).
+            l @append(self @items @ix).
+        end
+        return l.
+    end
+
+    --make sure that we only pass lists into the constructor
+    function __init__ with (self,l:%list) do
+        let self @items = l.
+    end
+    
+end -- Pick

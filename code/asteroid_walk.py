@@ -56,11 +56,13 @@ def unify(term, pattern):
     #lhh
     #print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
+    ### Python value level matching
     # NOTE: in the first rules where we test instances we are comparing
     # Python level values, if they don't match exactly then we have
     # a pattern match fail.
     if isinstance(term, str): # apply regular expression match
-        if isinstance(pattern, str) and re_match(pattern, term):
+        if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
+            # Note: a pattern needs to match the whole term.
             return [] # return empty unifier
         else:
             raise PatternMatchFailed(
@@ -87,6 +89,12 @@ def unify(term, pattern):
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i])
             return unifier
+
+    ### Asteroid value level matching
+    elif pattern[0] == 'string' and term[0] != 'string':
+        # regular expression applied to a non-string structure
+        # this is possible because all data types are subtypes of string
+        return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'cmatch':
         (CMATCH, pexp, cond_exp) = pattern
