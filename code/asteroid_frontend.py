@@ -395,7 +395,6 @@ class Parser:
         body_list = self.body_defs()
         self.lexer.match('END')
         #self.lexer.match('FUNCTION')
-        # functions are values bound to names
 
         # check if any useless patterns exist within the function
         check_redundancy( body_list, id_tok )

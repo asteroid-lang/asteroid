@@ -65,7 +65,9 @@ def unify(term, pattern, unifying = True ):
     # else:
     #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
-    # We don't care what the pattern is called if evaluating subsumption.
+    # 1. We don't care what the pattern is called if evaluating subsumption.
+    # 2. A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
+    # check allows us to unpack it normally as opposed to checking each time we unpack.
     try:
         if ((not unifying) and (term[0] == 'named-pattern')):
             term = term[2]
@@ -110,7 +112,11 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'cmatch':
 
         if not unifying:
-            # condtional pattern subsumption
+
+            ### Condtional Pattern Subsumption
+            # The current behavior for Asteroid when encoutering a conditional pattern when
+            # evaluating subsumption is to throw a warning.
+            
             print("Warning: Condtional patterns not supported for redundancy analysis.")
             print("\t Redundant or useless pattern clauses may exist in function definition(s).")
             pass
@@ -136,27 +142,27 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
-        nodePosition = 0 #indicates index of where we will 'look' next
+        nextIndex = 0 #indicates index of where we will 'look' next
 
         if typematch in ['string','real','integer','list','tuple','boolean']:
 
             if (not unifying):              
 
-                #we want to walk a different path for this node 
+                #walk a different path for this node 
                 if (term[0] == 'typematch'):
-                    nodePosition = 1  
+                    nextIndex = 1  
 
-                #dont forget that lists/head-tails can subsume each other                      
+                #handle lists/head-tails subsuming each other                      
                 elif (term[0] in ['list','head-tail']):
                     if ((typematch == 'list') and (term[0] in ['list','head-tail'])):
                         return []                                  
 
-            if typematch == term[nodePosition]:         
+            if typematch == term[nextIndex]:         
                 return []
             else:
                 raise PatternMatchFailed(
                     "expected typematch {} got a term of type {}"
-                    .format(typematch, term[nodePosition]))
+                    .format(typematch, term[nextIndex]))
 
         elif term[0] == 'object':
             (OBJECT,
@@ -284,15 +290,22 @@ def unify(term, pattern, unifying = True ):
                 unifier += unify(list_head, pattern_head,False)
                 unifier += unify(list_tail, pattern_tail,False)
             return unifier
+
         else: #Else we are evaluating subsumption to another head-tail
-            lengthH = head_tail_length(pattern) #H->higher order of predcence
-            lengthL = head_tail_length(term)    #L->lower order of predcence
+
+            lengthH = head_tail_length(pattern) #H->higher order of predcence pattern
+            lengthL = head_tail_length(term)    #L->lower order of predcence pattern
+
             if lengthH == 2 and lengthL != 2:
                 return unify(pattern[1],term[1],False)  
-            if (lengthH > lengthL):
+
+            if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
+                                    # then length of the lower precedence pattern, it is
+                                    # not redundant
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
-            else:
+
+            else: #Else we continue evaluating the different terms in the head-tail pattern
                 (HEAD_TAIL, patternH_head, patternH_tail) = pattern
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
                 return unify(patternL_head,patternH_head,False) + unify(patternL_tail,patternH_tail,False)

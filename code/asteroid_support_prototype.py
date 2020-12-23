@@ -11,7 +11,6 @@ from asteroid_support import assert_match, head_tail_length
 ##############################################################################################
 class RedundantPatternFound(Exception):
     """Exception raised for detection of redundant pattern in function declaration.
-
     Attributes:
         pattern1 -- The pattern with the higher order of precedence (comparer).
         line1    -- The line number location of pattern 1 in its file.
@@ -178,7 +177,8 @@ def term2string(term):
         return ''
     
     ############################################# Newly added #########
-    elif TYPE == 'head-tail':
+
+    elif TYPE == 'head-tail':           # Handle a head-tail pattern
         length = head_tail_length(term)
         term_string = "["
         for ix in range(1,length):
@@ -200,24 +200,19 @@ def term2string(term):
         term_string += "]"
         return term_string
     
-    elif TYPE == 'named-pattern':
+    elif TYPE == 'named-pattern':       # Handle a named pattern
         
         (NAMED_PATTERN,ID,pattern) = term
         term_string = ID[1] + ':'
         
-        return term_string + term2string(pattern)
+        return term_string + term2string(pattern)  
     
-    elif TYPE == 'typeclass':
-        (TYPECLASS,cType) = term
-        term_string = cType
-        return term_string    
-    
-    elif TYPE == 'typematch':
+    elif TYPE == 'typematch':           # Handle a type pattern
         (TYPECLASS,cType) = term
         term_string = cType
         return term_string   
         
-    else:
+    else:                               # Defaults to raise ValueError exception.
         print(term)
         raise ValueError(
             "unknown type '{}' in term2string"
