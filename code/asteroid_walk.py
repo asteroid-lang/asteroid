@@ -483,13 +483,13 @@ def handle_builtins(node):
                 raise ValueError('unsupported type in /')
         elif opname == '__or__':
             # NOTE: do we need to typecheck here?
-            if val_a[1] == True or val_b[1] == True:
+            if map2boolean(val_a)[1] == True or map2boolean(val_b)[1] == True:
                return ('boolean', True)
             else:
                return ('boolean', False)
         elif opname == '__and__':
             # NOTE: do we need to typecheck here?
-            if val_a[1] == True and val_b[1] == True:
+            if map2boolean(val_a)[1] == True and map2boolean(val_b)[1] == True:
                return ('boolean', True)
             else:
                return ('boolean', False)

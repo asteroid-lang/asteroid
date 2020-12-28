@@ -45,8 +45,8 @@ with item do return escape
 global __retval__
 from asteroid_state import state
 
-(TYPE, item_val) = state.symbol_table.lookup_sym('item')
-__retval__ = ('boolean', bool(float(item_val)))
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('boolean', bool(item_val[1]))
 "
 end
 
@@ -216,7 +216,6 @@ function zip
 -- implements Python's zip function
 with (list1,list2) do return escape
 "
-import random
 from asteroid_support import assert_match
 global __retval__
 
@@ -236,6 +235,28 @@ for p in l:
   out_list.append(('tuple',[i,t]))
 
 __retval__ = ('list', out_list)
+"
+end
+
+------------------------------------------------------------------
+function unzip
+------------------------------------------------------------------
+-- unzip a list of pairs.
+with (list) do return escape
+"
+from asteroid_support import assert_match
+global __retval__
+
+(TYPE, list_val) = state.symbol_table.lookup_sym('list')
+assert_match(TYPE, 'list')
+
+c1list, c2list = ([],[])
+for (TUPLE, [c1,c2]) in list_val:
+    assert_match(TUPLE, 'tuple')
+    c1list.append(c1)
+    c2list.append(c2)
+
+__retval__ = ('tuple', [('list', c1list), ('list',c2list)])
 "
 end
 
@@ -373,7 +394,44 @@ name_val = state.symbol_table.lookup_sym('name')
 # the table is in the first slot in the object memory
 # get the value_val associated with name_val
 (FOREIGN, dictionary) = memory[0]
-__retval__ = dictionary[name_val]
+if name_val not in dictionary.keys():
+    __retval__ = ('none', None)
+else:
+    __retval__ = dictionary[name_val]
+"
+end
+
+------------------------------------------------------------------
+function aslist
+with (self) do return escape
+"
+from asteroid_state import state
+global __retval__
+
+self_val = state.symbol_table.lookup_sym('self')
+
+# destructure object
+(OBJECT,
+ (STRUCT_ID, (ID, struct_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+# the table is in the first slot in the object memory
+# get the value_val associated with name_val
+(FOREIGN, dictionary) = memory[0]
+
+# zip the keys and the values
+kl = dictionary.keys()
+vl = dictionary.values()
+l = list(zip(kl,vl))
+
+# turn Python tuples into Asteroid tuples and
+# put them onto an output list
+out_list = []
+for p in l:
+  (i,t) = p
+  out_list.append(('tuple',[i,t]))
+
+__retval__ = ('list', out_list)
 "
 end
 
@@ -507,5 +565,5 @@ structure Pick with
     function __init__ with (self,l:%list) do
         let self @items = l.
     end
-    
+
 end -- Pick

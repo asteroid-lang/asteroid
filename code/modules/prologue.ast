@@ -428,6 +428,7 @@ string_member_functions.update({
     'split' : '__string_split__',
     'toupper' : '__string_toupper__',
     'tolower' : '__string_tolower__',
+    'index' : '__string_index__',
     })
 ".
 ------------------------------------------------------------------
@@ -628,5 +629,64 @@ self_val = state.symbol_table.lookup_sym('self')
 assert_match(self_val[0],'string')
 
 __retval__ = ('string', self_val[1].lower())
+"
+end
+
+------------------------------------------------------------------
+function __string_index__
+------------------------------------------------------------------
+with (self,item,startix,endix) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+startix_val = state.symbol_table.lookup_sym('startix')
+endix_val = state.symbol_table.lookup_sym('endix')
+assert_match(self_val[0],'string')
+assert_match(item_val[0],'string')
+assert_match(startix_val[0],'integer')
+assert_match(endix_val[0],'integer')
+
+val = self_val[1].find(item_val[1], startix_val[1], endix_val[1])
+if val == -1:
+    __retval__ = ('none', Non')
+else:
+    __retval__ = ('integer',val)
+"
+orwith (self,item,startix) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+startix_val = state.symbol_table.lookup_sym('startix')
+assert_match(self_val[0],'string')
+assert_match(item_val[0],'string')
+assert_match(startix_val[0],'integer')
+
+val = self_val[1].find(item_val[1], startix_val[1])
+if val == -1:
+    __retval__ = ('none', None)
+else:
+    __retval__ = ('integer',val)
+"
+orwith (self,item) do return escape
+"
+global __retval__
+from asteroid_state import state
+
+self_val = state.symbol_table.lookup_sym('self')
+item_val = state.symbol_table.lookup_sym('item')
+assert_match(self_val[0],'string')
+assert_match(item_val[0],'string')
+
+val = self_val[1].find(item_val[1])
+if val == -1:
+    __retval__ = ('none', None)
+else:
+    __retval__ = ('integer',val)
 "
 end
