@@ -27,14 +27,14 @@ println family_pattern.
 
 -- construct a family using the family pattern as a constructor
 function construct_family
-  with (pattern, p1, p2, c) do
-    return eval(pattern). -- use first-class pattern as a constructor
+  with (pat, p1, p2, c) do
+    return eval(pat). -- use first-class pattern as a constructor
   end
 
 -- destructure a family using pattern matching
 function destructure_family
-  with (pattern, term) do
-    let *pattern = term. -- use first-class pattern as pattern
+  with (pat, term) do
+    let *pat = term. -- use first-class pattern as pattern
     return [p1, p2, c].
   end
 

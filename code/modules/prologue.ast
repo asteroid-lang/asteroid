@@ -429,8 +429,10 @@ string_member_functions.update({
     'toupper' : '__string_toupper__',
     'tolower' : '__string_tolower__',
     'index' : '__string_index__',
+    'flip' : '__string_flip__',
     })
-".
+    "
+
 ------------------------------------------------------------------
 function __string_length__
 ------------------------------------------------------------------
@@ -496,12 +498,13 @@ end
 ------------------------------------------------------------------
 function __string_replace__
 ------------------------------------------------------------------
--- Return a copy of the string with all occurrences of substring
--- old replaced by new. If the optional argument count is given,
+-- Return a copy of the string with all occurrences of regular expression pattern
+-- old replaced by the string new. If the optional argument count is given,
 -- only the first count occurrences are replaced.
-with (self,old,new,count) do return escape
+with (self:%string,old:%string,new:%string,count:%integer) do return escape
 "
 global __retval__
+from re import sub
 from asteroid_state import state
 
 self_val = state.symbol_table.lookup_sym('self')
@@ -509,27 +512,28 @@ old_val = state.symbol_table.lookup_sym('old')
 new_val = state.symbol_table.lookup_sym('new')
 count_val = state.symbol_table.lookup_sym('count')
 
-assert_match(self_val[0],'string')
-assert_match(old_val[0],'string')
-assert_match(new_val[0],'string')
-assert_match(count_val[0],'integer')
+#assert_match(self_val[0],'string')
+#assert_match(old_val[0],'string')
+#assert_match(new_val[0],'string')
+#assert_match(count_val[0],'integer')
 
-__retval__ = ('string', self_val[1].replace(old_val[1], new_val[1], count_val[1]))
+__retval__ = ('string', sub(old_val[1], new_val[1], self_val[1], count_val[1]))
 "
-orwith (self,old,new) do return escape
+orwith (self:%string,old:%string,new:%string) do return escape
 "
 global __retval__
+from re import sub
 from asteroid_state import state
 
 self_val = state.symbol_table.lookup_sym('self')
 old_val = state.symbol_table.lookup_sym('old')
 new_val = state.symbol_table.lookup_sym('new')
 
-assert_match(self_val[0],'string')
-assert_match(old_val[0],'string')
-assert_match(new_val[0],'string')
+#assert_match(self_val[0],'string')
+#assert_match(old_val[0],'string')
+#assert_match(new_val[0],'string')
 
-__retval__ = ('string', self_val[1].replace(old_val[1], new_val[1]))
+__retval__ = ('string', sub(old_val[1], new_val[1],self_val[1]))
 "
 end
 
@@ -689,4 +693,11 @@ if val == -1:
 else:
     __retval__ = ('integer',val)
 "
+end
+
+------------------------------------------------------------------
+function __string_flip__
+------------------------------------------------------------------
+with (self:%string) do
+    return ((self @explode()) @reverse()) @join("").
 end
