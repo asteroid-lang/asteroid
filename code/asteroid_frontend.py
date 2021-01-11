@@ -9,6 +9,7 @@ from asteroid_globals import asteroid_file_suffix
 from pathlib import Path, PurePath
 from asteroid_lex import Lexer
 from asteroid_state import state
+from asteroid_support_prototype import check_redundancy
 
 ###########################################################################################
 def dbg_print(string):
@@ -394,6 +395,10 @@ class Parser:
         body_list = self.body_defs()
         self.lexer.match('END')
         #self.lexer.match('FUNCTION')
+
+        # check if any useless patterns exist within the function
+        check_redundancy( body_list, id_tok )
+
         # functions are values bound to names
         return ('unify',
                 ('id',id_tok.value),
