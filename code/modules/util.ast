@@ -296,10 +296,8 @@ end
 ------------------------------------------------------------------
 structure HashTable with
 
-------------------------------------------------------------------
 data table.
 
-------------------------------------------------------------------
 function __init__
 -- constructor for HashTable initializes the underlying dictionary
 with self do
@@ -321,7 +319,6 @@ memory[0] = ('foreign', dict())
 return none
 end
 
-------------------------------------------------------------------
 function insert
 with (self,name,value) do
 escape
@@ -345,7 +342,6 @@ dictionary[name_val] = value_val
 return none
 end
 
-------------------------------------------------------------------
 function get
 with (self,name) do return escape
 "
@@ -370,7 +366,6 @@ else:
 "
 end
 
-------------------------------------------------------------------
 function aslist
 with (self) do return escape
 "
@@ -412,11 +407,9 @@ end -- HashTable
 ------------------------------------------------------------------
 structure Stream with
 
-------------------------------------------------------------------
 data stream.
 data curr_ix.
 
-------------------------------------------------------------------
 function __init__
   with (self, stream) do
     assert islist(stream).
@@ -427,17 +420,15 @@ function __init__
     let self @curr_ix = 0.
   end
 
-  ------------------------------------------------------------------
-  function eof
-    with self do
-      if self @curr_ix == self @stream @length() do
-        return true.
-      else do
-        return false.
-      end
+function eof
+  with self do
+    if self @curr_ix == self @stream @length() do
+      return true.
+    else do
+      return false.
     end
+  end
 
-------------------------------------------------------------------
 function peek
   with self do
     if self @eof() do
@@ -451,7 +442,6 @@ function peek
     end
   end
 
-------------------------------------------------------------------
 function next
   with self do
     if self @eof() do
@@ -461,7 +451,6 @@ function next
     end
   end
 
-------------------------------------------------------------------
 function get
   with self do
     if self @eof() do
@@ -471,13 +460,11 @@ function get
     end
   end
 
-------------------------------------------------------------------
 function rewind
   with self do
     let self @curr_ix = 0.
   end
 
-------------------------------------------------------------------
 function map
   with (self,f) do
     for i in 0 to (self @stream) @length()-1 do
@@ -485,13 +472,11 @@ function map
     end
   end
 
-------------------------------------------------------------------
 function append
   with (self,item) do
     (self @stream) @append(item).
   end
 
-------------------------------------------------------------------
 function __string__
 with self do return
 escape
