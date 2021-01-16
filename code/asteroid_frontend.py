@@ -397,7 +397,7 @@ class Parser:
         #self.lexer.match('FUNCTION')
 
         # check if any useless patterns exist within the function
-        check_redundancy( body_list, id_tok )
+        #lhh check_redundancy( body_list, id_tok )
 
         # functions are values bound to names
         return ('unify',
