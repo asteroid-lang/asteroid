@@ -71,7 +71,7 @@ val_b = state.symbol_table.lookup_sym('b')
 val_p = state.symbol_table.lookup_sym('p')
 
 if val_b[0] not in ['integer','real']:
-  raise ValueError('unsupported type {} for sqrt'.format(val_b[0]))
+  raise ValueError('unsupported type {} for pow'.format(val_b[0]))
 
 __retval__ = (val_b[0],val_b[1]**val_p[1])
 "
@@ -90,12 +90,29 @@ val_v = state.symbol_table.lookup_sym('v')
 val_d = state.symbol_table.lookup_sym('d')
 
 if val_v[0] not in ['integer','real']:
-  raise ValueError('unsupported type {} for sqrt'.format(val_v[0]))
+  raise ValueError('unsupported type {} for mod'.format(val_v[0]))
 
 if val_d[0] not in ['integer','real']:
-  raise ValueError('unsupported type {} for sqrt'.format(val_d[0]))
+  raise ValueError('unsupported type {} for mod'.format(val_d[0]))
 
 __retval__ = (promote(val_v[0],val_d[0]),val_v[1] % val_d[1])
+"
+end
+
+------------------------------------------------------------------
+function gcd
+------------------------------------------------------------------
+with (a:%integer,b:%integer) do return escape
+"
+global __retval__
+from asteroid_state import state
+from math import gcd
+
+val_a = state.symbol_table.lookup_sym('a')
+val_b = state.symbol_table.lookup_sym('b')
+
+
+__retval__ = ('integer', gcd(val_a[1], val_b[1]))
 "
 end
 
@@ -113,20 +130,50 @@ __retval__ = ('real', random.random())
 end
 
 ------------------------------------------------------------------
-function randint
+function randint -- random interval
 ------------------------------------------------------------------
--- return a random integer N such that lo <= N <= hi.
-with (lo,hi) do return escape
+-- return a random value N in the interval lo <= N <= hi.
+-- The of the random value depends on the types of the
+-- values specifying the interval.
+with (lo:%integer,hi:%integer) do return escape
 "
 import random
 from asteroid_support import assert_match
 global __retval__
 
-(TYPE, lo_val) = state.symbol_table.lookup_sym('lo')
-assert_match(TYPE, 'integer')
-(TYPE, hi_val) = state.symbol_table.lookup_sym('hi')
-assert_match(TYPE, 'integer')
+lo_val = state.symbol_table.lookup_sym('lo')
+hi_val = state.symbol_table.lookup_sym('hi')
 
-__retval__ = ('integer', random.randint(lo_val, hi_val))
+__retval__ = ('integer', random.randint(lo_val[1], hi_val[1]))
+"
+orwith (lo:%real,hi:%real) do return escape
+"
+import random
+from asteroid_support import assert_match
+global __retval__
+
+lo_val = state.symbol_table.lookup_sym('lo')
+hi_val = state.symbol_table.lookup_sym('hi')
+
+__retval__ = ('real', random.uniform(lo_val[1], hi_val[1]))
+"
+orwith (_,_) do
+  throw Error("unsupported interval specificaton in randint").
+end
+
+------------------------------------------------------------------
+function seed
+------------------------------------------------------------------
+-- return a random value N in the interval lo <= N <= hi.
+-- The of the random value depends on the types of the
+-- values specifying the interval.
+with (sd:%integer) do escape
+"
+import random
+from asteroid_support import assert_match
+global __retval__
+
+sd_val = state.symbol_table.lookup_sym('sd')
+random.seed(sd_val[1])
 "
 end

@@ -7,6 +7,25 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
+structure Error
+------------------------------------------------------------------
+-- use this structure to throw error exceptions 
+  with
+  data err_val.
+  end
+
+------------------------------------------------------------------
+function range
+------------------------------------------------------------------
+  with (start:%integer,stop:%integer) do
+    return [start to stop-1].
+  orwith (start:%integer,stop:%integer,inc:%integer) do
+    return [start to stop-1 step inc].
+  orwith stop:%integer do
+    return [0 to stop-1].
+  end
+
+------------------------------------------------------------------
 -- List member functions
 ------------------------------------------------------------------
 
