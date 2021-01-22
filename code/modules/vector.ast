@@ -1,0 +1,61 @@
+------------------------------------------------------------------
+-- vector.ast
+--
+-- this module defines functions useful for vector arithmetic
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+load "util".
+
+------------------------------------------------------------------
+function vop
+------------------------------------------------------------------
+-- worker function for actual vector arithmetic
+-- Note: it also implements vector/scalar arithmetic
+with (f,a:%list,b:%list) do
+  if a @length() =/= b @length() do
+      throw Error("vops only defined on lists of the same length").
+  end
+  let v = zip(a,b).
+  return v @map(f).
+orwith (f,a:%list,b %if isscalar(b)) do
+  -- promote b to a vector
+  let bv = [1 to a @length()] @map(lambda with _ do return b).
+  let v = zip(a,bv).
+  return v @map(f).
+orwith (f,a %if isscalar(a),b:%list) do
+  -- promote a to a vector
+  let av = [1 to b @length()] @map(lambda with _ do return a).
+  let v = zip(av,b).
+  return v @map(f).
+end
+
+------------------------------------------------------------------
+function vadd
+------------------------------------------------------------------
+with (a,b) do
+  return vop(lambda with (x,y) do return x+y,a,b).
+end
+
+------------------------------------------------------------------
+function vsub
+------------------------------------------------------------------
+with (a,b) do
+  return vop(lambda with (x,y) do return x-y,a,b).
+end
+
+------------------------------------------------------------------
+function vmult
+------------------------------------------------------------------
+with (a,b) do
+  return vop(lambda with (x,y) do return x*y,a,b).
+end
+
+------------------------------------------------------------------
+function dot
+-- computes the dot product of two lists
+------------------------------------------------------------------
+with (a:%list,b:%list) do
+  return (vmult(a,b)) @reduce(lambda with (x,y) do return x+y).
+end

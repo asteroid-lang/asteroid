@@ -9,7 +9,7 @@
 ------------------------------------------------------------------
 structure Error
 ------------------------------------------------------------------
--- use this structure to throw error exceptions 
+-- use this structure to throw error exceptions
   with
   data err_val.
   end
@@ -24,6 +24,22 @@ function range
   orwith stop:%integer do
     return [0 to stop-1].
   end
+
+------------------------------------------------------------------
+function isnone
+------------------------------------------------------------------
+with x do return escape
+"
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+
+if x_val[0] == 'none':
+  __retval__ = ('boolean', True)
+else:
+  __retval__ = ('boolean', False)
+"
+end
 
 ------------------------------------------------------------------
 -- List member functions
@@ -54,10 +70,11 @@ list_member_functions.update({
     'reverse'   : '__list_reverse__',
     'copy'      : '__list_copy__',
     'shuffle'   : '__list_shuffle__',
-    'map' : '__list_map__',
-    'reduce' : '__list_reduce__',
-    'member': '__list_member__',
-    'join'  :   '__list_join__',
+    'map'       : '__list_map__',
+    'reduce'    : '__list_reduce__',
+    'filter'    : '__list_filter__',
+    'member'    : '__list_member__',
+    'join'      : '__list_join__',
     })
 ".
 ------------------------------------------------------------------
@@ -260,7 +277,10 @@ item_val = state.symbol_table.lookup_sym('item')
 
 assert_match(self_val[0],'list')
 
-__retval__ = ('integer', self_val[1].index(item_val))
+try:
+  __retval__ = ('integer', self_val[1].index(item_val))
+except ValueError:
+  __retval__ = ('none', None)
 "
 end
 
@@ -392,6 +412,20 @@ orwith (self,f,init) do
 end
 
 ------------------------------------------------------------------
+function __list_filter__
+------------------------------------------------------------------
+-- Construct an output list from those elements of the list for which
+-- f returns true. If f is none, the identity function is assumed,
+-- that is, all elements of input list that are false are removed.
+with (self,f) do
+    let out = [].
+    for e in self do
+        let out = out+([e] if f(e) else []).
+    end
+    return out.
+end
+
+------------------------------------------------------------------
 function __list_member__
 ------------------------------------------------------------------
 with (self,item) do
@@ -426,6 +460,8 @@ __retval__ = ('string', join_val[1].join(raw_list))
 "
 
 end
+
+
 ------------------------------------------------------------------
 -- String member functions
 ------------------------------------------------------------------
@@ -442,13 +478,13 @@ global string_member_functions
 string_member_functions.update({
     'length'    : '__string_length__',
     'explode'   : '__string_explode__',
-    'trim' : '__string_trim__',
-    'replace' : '__string_replace__',
-    'split' : '__string_split__',
-    'toupper' : '__string_toupper__',
-    'tolower' : '__string_tolower__',
-    'index' : '__string_index__',
-    'flip' : '__string_flip__',
+    'trim'      : '__string_trim__',
+    'replace'   : '__string_replace__',
+    'split'     : '__string_split__',
+    'toupper'   : '__string_toupper__',
+    'tolower'   : '__string_tolower__',
+    'index'     : '__string_index__',
+    'flip'      : '__string_flip__',
     })
     "
 

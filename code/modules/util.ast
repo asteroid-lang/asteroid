@@ -1,12 +1,10 @@
 ------------------------------------------------------------------
 -- util.ast
 --
--- this module defines some standard functions, e.g., eval
+-- this module defines utility functions and structures
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
-
-load "math".
 
 ------------------------------------------------------------------
 -- TYPE CONVERSION FUNCTIONS --
@@ -15,13 +13,19 @@ load "math".
 ------------------------------------------------------------------
 function tointeger
 ------------------------------------------------------------------
-with item do return escape
+with (item:%string,base:%integer) do return escape
 "
 global __retval__
-from asteroid_state import state
+item_val = state.symbol_table.lookup_sym('item')
+base_val = state.symbol_table.lookup_sym('base')
+__retval__ = ('integer', int(item_val[1], base=base_val[1]))
+"
+orwith item do return escape
+"
+global __retval__
 
-(TYPE, item_val) = state.symbol_table.lookup_sym('item')
-__retval__ = ('integer', int(item_val))
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('integer', int(item_val[1]))
 "
 end
 
@@ -31,10 +35,9 @@ function toreal
 with item do return escape
 "
 global __retval__
-from asteroid_state import state
 
-(TYPE, item_val) = state.symbol_table.lookup_sym('item')
-__retval__ = ('real', float(item_val))
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('real', float(item_val[1]))
 "
 end
 
@@ -44,7 +47,6 @@ function toboolean
 with item do return escape
 "
 global __retval__
-from asteroid_state import state
 
 item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('boolean', bool(item_val[1]))
@@ -57,11 +59,33 @@ function tostring
 with item do return escape
 "
 global __retval__
-from asteroid_state import state
 from asteroid_support import term2string
 
 item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('string', term2string(item_val))
+"
+end
+
+------------------------------------------------------------------
+function tobase
+------------------------------------------------------------------
+-- represent the given integer x as a numeral in different bases
+with (x:%integer,base:%integer) do return escape
+"
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+base_val = state.symbol_table.lookup_sym('base')
+
+if base_val[1] == 2:
+  __retval__ = ('string', format(x_val[1],'b'))
+elif base_val[1] == 8:
+  __retval__ = ('string', format(x_val[1],'o'))
+elif base_val[1] == 16:
+  __retval__ = ('string', format(x_val[1],'X'))
+else:
+  raise ValueError('illegal base value {}'
+          .format(base_val[1]))
 "
 end
 
@@ -72,52 +96,34 @@ end
 ------------------------------------------------------------------
 function islist
 ------------------------------------------------------------------
-with item do return escape
-"
-global __retval__
-from asteroid_state import state
+with item do
+  return item is %list
+end
 
-(TYPE, item_val) = state.symbol_table.lookup_sym('item')
-__retval__ = ('boolean', (TYPE == 'list'))
-"
+------------------------------------------------------------------
+function isscalar
+------------------------------------------------------------------
+with item do
+  return (item is %integer) or (item is %real).
 end
 
 ------------------------------------------------------------------
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
--- NOTE: this moved into the interpreter as an eval expression.
-------------------------------------------------------------------
--- function eval
-------------------------------------------------------------------
--- evaluates a term in the current term interpretation environment
--- with item do return escape
---"
---global __retval__
---from asteroid_state import state
-
---item_val = state.symbol_table.lookup_sym('item')
---state.ignore_quote = True
---__retval__ = walk(item_val)
---state.ignore_quote = False
---"
---end
-
 ------------------------------------------------------------------
 function exit
 ------------------------------------------------------------------
-with msg do escape
+with none do escape
 "
 import sys
-from asteroid_state import state
-
-(MSGTYPE, msg_val) = state.symbol_table.lookup_sym('msg')
-
-if MSGTYPE != 'string':
-   raise ValueError('exit expected a string got {}'
-   	 .format(MSGTYPE))
-
-print(msg_val)
+sys.exit(1)
+"
+orwith msg:%string do escape
+"
+import sys
+msg_val = state.symbol_table.lookup_sym('msg')
+print(msg_val[1])
 sys.exit(1)
 "
 end
@@ -130,10 +136,7 @@ with obj do return escape
 "
 global __retval__
 import copy
-from asteroid_state import state
-
 obj_val = state.symbol_table.lookup_sym('obj')
-
 __retval__ = copy.deepcopy(obj_val)
 "
 end
@@ -158,17 +161,11 @@ end
 function sleep
 ------------------------------------------------------------------
 -- program sleep for secs seconds
-with secs do escape
+with secs %if isscalar(secs) do escape
 "
 import time
-
-(TYPE, val) = state.symbol_table.lookup_sym('secs')
-
-if not TYPE in ['integer','real']:
-   raise ValueError('sleep expected an integer or real value got {}'
-   	 .format(TYPE))
-
-time.sleep(val)
+secs_val = state.symbol_table.lookup_sym('secs')
+time.sleep(secs_val[1])
 "
 end
 
@@ -176,24 +173,20 @@ end
 function zip
 ------------------------------------------------------------------
 -- implements Python's zip function
-with (list1,list2) do return escape
+with (list1:%list,list2:%list) do return escape
 "
-from asteroid_support import assert_match
 global __retval__
 
-(TYPE, list1_val) = state.symbol_table.lookup_sym('list1')
-assert_match(TYPE, 'list')
-(TYPE, list2_val) = state.symbol_table.lookup_sym('list2')
-assert_match(TYPE, 'list')
+list1_val = state.symbol_table.lookup_sym('list1')
+list2_val = state.symbol_table.lookup_sym('list2')
 
 # zip it with Python's zip
-l = list(zip(list1_val,list2_val))
+l = list(zip(list1_val[1], list2_val[1]))
 
 # turn Python tuples into Asteroid tuples and
 # put them onto an output list
 out_list = []
-for p in l:
-  (i,t) = p
+for (i,t) in l:
   out_list.append(('tuple',[i,t]))
 
 __retval__ = ('list', out_list)
@@ -204,16 +197,15 @@ end
 function unzip
 ------------------------------------------------------------------
 -- unzip a list of pairs.
-with (list) do return escape
+with (list:%list) do return escape
 "
-from asteroid_support import assert_match
 global __retval__
+from asteroid_support import assert_match
 
-(TYPE, list_val) = state.symbol_table.lookup_sym('list')
-assert_match(TYPE, 'list')
+list_val = state.symbol_table.lookup_sym('list')
 
 c1list, c2list = ([],[])
-for (TUPLE, [c1,c2]) in list_val:
+for (TUPLE, [c1,c2]) in list_val[1]:
     assert_match(TUPLE, 'tuple')
     c1list.append(c1)
     c2list.append(c2)
@@ -228,7 +220,6 @@ function len
 with item do return escape
 "
 global __retval__
-from asteroid_state import state
 
 item_val = state.symbol_table.lookup_sym('item')
 
@@ -245,18 +236,10 @@ end
 function ascii
 ------------------------------------------------------------------
 -- given a char return the corresponding ASCII code.
-with item do return escape
+with item:%string do return escape
 "
 global __retval__
-from asteroid_state import state
-
 item_val = state.symbol_table.lookup_sym('item')
-
-if item_val[0] != 'string':
-   raise ValueError(
-   	 'ascii expected a string got {}'
-	 .format(item_val[0]))
-
 __retval__ = ('integer', ord(item_val[1]))
 "
 end
@@ -265,254 +248,10 @@ end
 function achar
 ------------------------------------------------------------------
 -- given a decimal ASCII code return the corresponding character symbol
-with item do return escape
+with item:%integer do return escape
 "
 global __retval__
-from asteroid_state import state
-
 item_val = state.symbol_table.lookup_sym('item')
-
-if item_val[0] != 'integer':
-   raise ValueError(
-   	 'achar expected an integer got {}'
-	 .format(item_val[0]))
-
 __retval__ = ('string', str(chr(item_val[1])))
 "
 end
-
-
-------------------------------------------------------------------
-structure HashTable
-------------------------------------------------------------------
--- Asteroid hash table implementation using Python dictionaries
-with
-
-data table.
-
-function __init__
--- constructor for HashTable initializes the underlying dictionary
-with self do
-escape
-"
-from asteroid_state import state
-
-self_val = state.symbol_table.lookup_sym('self')
-
-# destructure object
-(OBJECT,
- (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = self_val
-
-# the table is in the first slot in the object memory
-# store the dictionary as a foreign object in this slot
-memory[0] = ('foreign', dict())
-"
-return none
-end
-
-function insert
-with (self,name,value) do
-escape
-"
-from asteroid_state import state
-
-self_val = state.symbol_table.lookup_sym('self')
-name_val = state.symbol_table.lookup_sym('name')
-value_val = state.symbol_table.lookup_sym('value')
-
-# destructure object
-(OBJECT,
- (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = self_val
-
-# the table is in the first slot in the object memory
-# insert name-value pair
-(FOREIGN, dictionary) = memory[0]
-dictionary[name_val] = value_val
-"
-return none
-end
-
-function get
-with (self,name) do return escape
-"
-from asteroid_state import state
-global __retval__
-
-self_val = state.symbol_table.lookup_sym('self')
-name_val = state.symbol_table.lookup_sym('name')
-
-# destructure object
-(OBJECT,
- (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = self_val
-
-# the table is in the first slot in the object memory
-# get the value_val associated with name_val
-(FOREIGN, dictionary) = memory[0]
-if name_val not in dictionary.keys():
-    __retval__ = ('none', None)
-else:
-    __retval__ = dictionary[name_val]
-"
-end
-
-function aslist
-with (self) do return escape
-"
-from asteroid_state import state
-global __retval__
-
-self_val = state.symbol_table.lookup_sym('self')
-
-# destructure object
-(OBJECT,
- (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = self_val
-
-# the table is in the first slot in the object memory
-# get the value_val associated with name_val
-(FOREIGN, dictionary) = memory[0]
-
-# zip the keys and the values
-kl = dictionary.keys()
-vl = dictionary.values()
-l = list(zip(kl,vl))
-
-# turn Python tuples into Asteroid tuples and
-# put them onto an output list
-out_list = []
-for p in l:
-  (i,t) = p
-  out_list.append(('tuple',[i,t]))
-
-__retval__ = ('list', out_list)
-"
-end
-
-end -- HashTable
-
-------------------------------------------------------------------
-structure Stream
-------------------------------------------------------------------
--- Asteroid stream implementation based on lists
-with
-
-data stream.
-data curr_ix.
-
-function __init__
-  with (self, stream) do
-    assert islist(stream).
-    let self @stream = stream @copy(). -- shallow copy of input list
-    let self @curr_ix = 0.
-  orwith self do
-    let self @stream = [].
-    let self @curr_ix = 0.
-  end
-
-function eof
-  with self do
-    if self @curr_ix == self @stream @length() do
-      return true.
-    else do
-      return false.
-    end
-  end
-
-function peek
-  with self do
-    if self @eof() do
-      return none.
-    else do
-      if self @curr_ix + 1 == (self @stream) @length() do
-        return none
-      else do
-        return (self @stream) @(self @curr_ix + 1).
-      end
-    end
-  end
-
-function next
-  with self do
-    if self @eof() do
-      return none.
-    else do
-      let self @curr_ix = self @curr_ix + 1.
-    end
-  end
-
-function get
-  with self do
-    if self @eof() do
-      return none.
-    else do
-      return (self @stream) @(self @curr_ix).
-    end
-  end
-
-function rewind
-  with self do
-    let self @curr_ix = 0.
-  end
-
-function map
-  with (self,f) do
-    for i in 0 to (self @stream) @length()-1 do
-      let (self @stream) @i = f((self @stream) @i).
-    end
-  end
-
-function append
-  with (self,item) do
-    (self @stream) @append(item).
-  end
-
-function __string__
-with self do return
-escape
-"
-from asteroid_state import state
-global __retval__
-
-self_val = state.symbol_table.lookup_sym('self')
-
-# destructure object
-(OBJECT,
- (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = self_val
-
-__retval__ = ('string', term2string(memory[0]))
-"
-end
-
-end -- Stream
-
-
-------------------------------------------------------------------
-structure Pick
-------------------------------------------------------------------
--- A pick object holds a list of items that
--- we can randomly pick from with the 'pick'
--- member function
-
-  with
-
-  data items.
-
-  function pick with (self,n) do
-      let l = [].
-      for i in 1 to n do
-          let ix = randint(0, self @items @length()-1).
-          l @append(self @items @ix).
-      end
-      return l.
-  end
-
-  --make sure that we only pass lists into the constructor
-  function __init__ with (self,l:%list) do
-      let self @items = l.
-  end
-
-end -- Pick

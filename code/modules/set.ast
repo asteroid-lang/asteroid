@@ -1,0 +1,69 @@
+------------------------------------------------------------------
+-- set.ast
+--
+-- this module implements Asteroid sets as lists. The big
+-- between lists and sets is that sets do not have repeated
+-- members.
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function toset
+------------------------------------------------------------------
+with (lst:%list) do return escape
+"
+global __retval__
+lst_val = state.symbol_table.lookup_sym('lst')
+__retval__ = ('list', list(set(lst_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function sdiff
+------------------------------------------------------------------
+with (a:%list,b:%list) do return escape
+"
+global __retval__
+a_val = state.symbol_table.lookup_sym('a')
+b_val = state.symbol_table.lookup_sym('b')
+__retval__ = ('list', list(set(a_val[1]) - set(b_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function sunion
+------------------------------------------------------------------
+with (a:%list,b:%list) do return escape
+"
+global __retval__
+a_val = state.symbol_table.lookup_sym('a')
+b_val = state.symbol_table.lookup_sym('b')
+__retval__ = ('list', list(set(a_val[1]) | set(b_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function sintersection
+------------------------------------------------------------------
+with (a:%list,b:%list) do return escape
+"
+global __retval__
+a_val = state.symbol_table.lookup_sym('a')
+b_val = state.symbol_table.lookup_sym('b')
+__retval__ = ('list', list(set(a_val[1]) & set(b_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function sxunion
+-- elements in a or b but not both
+------------------------------------------------------------------
+with (a:%list,b:%list) do return escape
+"
+global __retval__
+a_val = state.symbol_table.lookup_sym('a')
+b_val = state.symbol_table.lookup_sym('b')
+__retval__ = ('list', list(set(a_val[1]) ^ set(b_val[1])))
+"
+end

@@ -1,0 +1,105 @@
+------------------------------------------------------------------
+-- stream.ast
+--
+-- this module implements the Stream structure
+--
+-- (c) Lutz Hamel, University of Rhode Island
+------------------------------------------------------------------
+
+load "util".
+
+------------------------------------------------------------------
+structure Stream
+------------------------------------------------------------------
+-- Asteroid stream implementation based on lists
+with
+
+data stream.
+data curr_ix.
+
+function __init__
+  with (self, stream) do
+    assert islist(stream).
+    let self @stream = stream @copy(). -- shallow copy of input list
+    let self @curr_ix = 0.
+  orwith self do
+    let self @stream = [].
+    let self @curr_ix = 0.
+  end
+
+function eof
+  with self do
+    if self @curr_ix == self @stream @length() do
+      return true.
+    else do
+      return false.
+    end
+  end
+
+function peek
+  with self do
+    if self @eof() do
+      return none.
+    else do
+      if self @curr_ix + 1 == (self @stream) @length() do
+        return none
+      else do
+        return (self @stream) @(self @curr_ix + 1).
+      end
+    end
+  end
+
+function next
+  with self do
+    if self @eof() do
+      return none.
+    else do
+      let self @curr_ix = self @curr_ix + 1.
+    end
+  end
+
+function get
+  with self do
+    if self @eof() do
+      return none.
+    else do
+      return (self @stream) @(self @curr_ix).
+    end
+  end
+
+function rewind
+  with self do
+    let self @curr_ix = 0.
+  end
+
+function map
+  with (self,f) do
+    for i in 0 to (self @stream) @length()-1 do
+      let (self @stream) @i = f((self @stream) @i).
+    end
+  end
+
+function append
+  with (self,item) do
+    (self @stream) @append(item).
+  end
+
+function __string__
+with self do return
+escape
+"
+from asteroid_state import state
+global __retval__
+
+self_val = state.symbol_table.lookup_sym('self')
+
+# destructure object
+(OBJECT,
+ (STRUCT_ID, (ID, struct_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
+
+__retval__ = ('string', term2string(memory[0]))
+"
+end
+
+end -- Stream
