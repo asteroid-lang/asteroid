@@ -4,7 +4,6 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-
 ###########################################################################################
 def dump_AST(node):
     '''
@@ -72,7 +71,7 @@ def assert_match(input, expected):
 
     if nomatch:
         raise ValueError(
-            "Pattern match failed: expected '{}' but got '{}'".
+            "Internal Error: pattern assert failed: expected '{}' but got '{}'".
             format(expected, input))
 
 ###########################################################################################

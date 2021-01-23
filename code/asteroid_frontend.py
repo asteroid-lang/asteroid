@@ -742,9 +742,8 @@ class Parser:
                 v = ('apply', v, v2)
             elif self.lexer.peek().type == '@':
                 self.lexer.match('@')
-                ix_val = self.primary()
-                index_list = [('index', ix_val)]
-                v = ('structure-ix', v, ('index-list', ('list', index_list)))
+                ix = self.primary()
+                v = ('index', v, ix)
 
         return v
 

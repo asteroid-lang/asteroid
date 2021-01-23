@@ -221,7 +221,7 @@ def unify(term, pattern, unifying = True ):
         else:
             return unify(term, pattern[1], False)
 
-    elif term[0] == 'quote' and pattern[0] not in ['id', 'structure-ix']:
+    elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
         if unifying:
@@ -252,7 +252,7 @@ def unify(term, pattern, unifying = True ):
         else:
             return unify(data_only(obj_memory), pattern_list, False)
 
-    elif pattern[0] == 'structure-ix': # list lval access
+    elif pattern[0] == 'index': # list element lval access
         unifier = (pattern, term)
         return [unifier]
 
@@ -396,10 +396,7 @@ def declare_formal_args(unifiers):
 #       a@1 =/= a@[1]
 # the value on the left of the inequality is a single value, the
 # value on the right is a singleton list.
-def read_at_ix(structure_val, index):
-
-    (INDEX, ix) = index
-    assert_match(INDEX, 'index')
+def read_at_ix(structure_val, ix):
 
     # find the actual memory we need to access
     # list: return the actual list
@@ -487,10 +484,7 @@ def read_at_ix(structure_val, index):
 #########################################################################
 # we are indexing into the memory of either a list or an object to
 # write into the memory.
-def store_at_ix(structure_val, index, value):
-
-    (INDEX, ix) = index
-    assert_match(INDEX, 'index')
+def store_at_ix(structure_val, ix, value):
 
     # find the actual memory we need to access
     # for lists it is just the python list
@@ -724,27 +718,17 @@ def declare_unifiers(unifiers):
         if lval[0] == 'id':
             state.symbol_table.enter_sym(lval[1], value)
 
-        elif lval[0] == 'structure-ix': # list/structure lval access
+        elif lval[0] == 'index': # list/structure lval access
             # Note: structures have to be declared before index access
             # can be successful!!  They have to be declared so that there
             # is memory associated with the structure.
 
-            (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = lval
-
+            (INDEX, structure, ix) = lval
             # look at the semantics of 'structure'
             structure_val = walk(structure)
-
             # indexing/slicing
-            # iterate over the indexes: ('index', index)
-            # NOTE: index operations are left assoc. each index op produces
-            # a new memory object cast as a list.  this memory object
-            # is fed to the following index op.  here is last index
-            # updates the memory of the object.
-            for ix_ix in range(0, len(index_list)-1):
-                structure_val = read_at_ix(structure_val, index_list[ix_ix])
-
-            # use the last index to update the memory
-            store_at_ix(structure_val, index_list[-1], value)
+            # update the memory of the object.
+            store_at_ix(structure_val, ix, value)
 
         else:
             raise ValueError("unknown unifier type '{}'".format(lval[0]))
@@ -1130,29 +1114,21 @@ def apply_exp(node):
     return result
 
 #########################################################################
-def structure_ix_exp(node):
+def index_exp(node):
 
-    (STRUCTURE_IX, structure, (INDEX_LIST, (LIST, index_list))) = node
-
-    assert_match(STRUCTURE_IX, 'structure-ix')
-    assert_match(INDEX_LIST, 'index-list')
-    assert_match(LIST, 'list')
+    (INDEX, structure, ix) = node
+    assert_match(INDEX, 'index')
 
     # look at the semantics of 'structure'
     structure_val = walk(structure)
 
     # indexing/slicing
-    # iterate over the indexes: ('index', index)
-    # NOTE: index operations are left assoc. each index op produces
-    # a new memory object cast as a list.  this memory object
-    # is fed to the following index op.
-    for ix_ix in range(0, len(index_list)):
-        structure_val = read_at_ix(structure_val, index_list[ix_ix])
-        #lhh
-        #from pprint import pprint
-        #pprint(structure_val)
+    result = read_at_ix(structure_val, ix)
+    #lhh
+    #from pprint import pprint
+    #pprint(structure_val)
 
-    return structure_val
+    return result
 
 #########################################################################
 def list_exp(node):
@@ -1436,7 +1412,7 @@ dispatch_dict = {
     'foreign'       : lambda node : node,
     'id'            : lambda node : state.symbol_table.lookup_sym(node[1]),
     'apply'         : apply_exp,
-    'structure-ix'  : structure_ix_exp,
+    'index'         : index_exp,
     'escape'        : escape_exp,
     'is'            : is_exp,
     'in'            : in_exp,
