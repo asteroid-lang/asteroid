@@ -30,7 +30,7 @@ stmt
   | BREAK '.'?
   | RETURN exp? '.'?
   | function_def
-  | call '.'?
+  | call_or_index '.'?
 
 function_def
   : FUNCTION ID body_defs END
@@ -102,18 +102,15 @@ arith_exp1
   : conditional (('*' | '/') conditional)*
 
 conditional
-  : call
+  : call_or_index
       (
          (CMATCH exp) |   // CMATCH == '%'IF
          (OTHERWISE exp) |
          (IF exp (ELSE exp)?)
       )?
 
-call
-  : index index*
-
-index
-  : primary ('@' primary)*
+call_or_index
+  : primary (primary | '@' primary)*
 
 primary
   : INTEGER
@@ -124,8 +121,8 @@ primary
   | NONE
   | ID (':' pattern)?  // named patterns when ': pattern' exists
   | '*' ID         // "dereference" a variable during pattern matching
-  | NOT call
-  | MINUS call
+  | NOT call_or_index
+  | MINUS call_or_index
   | ESCAPE STRING
   | EVAL primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr

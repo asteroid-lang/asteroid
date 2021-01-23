@@ -45,6 +45,8 @@ exp_lookahead = {'QUOTE'} | primary_lookahead
 
 exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 
+primary_lookahead_no_ops = exp_lookahead_no_ops
+
 stmt_lookahead = {
     '.',
     'ASSERT',
@@ -127,7 +129,7 @@ class Parser:
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
     #    | function_def
-    #    | call '.'?
+    #    | call_or_index '.'?
     def stmt(self):
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
@@ -377,7 +379,7 @@ class Parser:
             return ('throw', e)
 
         elif tt in primary_lookahead:
-            v = self.call()
+            v = self.call_or_index()
             self.lexer.match_optional('.')
             return v
 
@@ -683,14 +685,14 @@ class Parser:
         while self.lexer.peek().type in ['TIMES', 'DIVIDE']:
             op_tok = self.lexer.peek()
             self.lexer.next()
-            v2 = self.call()
+            v2 = self.conditional()
             op_sym = '__' + op_tok.type.lower() + '__'
             v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
         return v
 
     ###########################################################################################
     # conditional
-    #    : call
+    #    : call_or_index
     #        (
     #           (CMATCH exp) | // CMATCH == '%'IF
     #           (OTHERWISE exp) |
@@ -699,7 +701,7 @@ class Parser:
     def conditional(self):
         dbg_print("parsing CONDITIONAL")
 
-        v = self.call()
+        v = self.call_or_index()
 
         tt = self.lexer.peek().type
         if tt == 'CMATCH':
@@ -726,52 +728,29 @@ class Parser:
             return v
 
     ###########################################################################################
-    # function/constructor call
-    #
-    # call
-    #    : index index*
-    def call(self):
-        dbg_print("parsing CALL")
+    # call_or_index
+    #   : primary (primary | '@' primary)*
+    def call_or_index(self):
+        dbg_print("parsing CALL_OR_INDEX")
 
-        v = self.index()
-
-        if self.lexer.peek().type in exp_lookahead_no_ops:
-        #if self.lexer.peek().type in primary_lookahead:
-            apply_list = [v]
-            while self.lexer.peek().type in exp_lookahead_no_ops:
-            #while self.lexer.peek().type in primary_lookahead:
-                v2 = self.index()
-                apply_list.append(v2)
-            return ('apply-list', ('list', apply_list))
-        else:
-            return v
-
-    ###########################################################################################
-    # index
-    #    : primary ('@' primary)*
-    def index(self):
-        dbg_print("parsing INDEX")
         v = self.primary()
 
-        if self.lexer.peek().type == '@':
-            self.lexer.match('@')
-            ix_val = self.primary()
-            index_list = [('index', ix_val)]
-
-            while self.lexer.peek().type == '@':
+        call_or_index_lookahead = primary_lookahead_no_ops|set(['@'])
+        while self.lexer.peek().type in call_or_index_lookahead:
+            if self.lexer.peek().type in primary_lookahead:
+                apply_list = [v]
+                v2 = self.primary()
+                apply_list.append(v2)
+                v = ('apply-list', ('list', apply_list))
+            elif self.lexer.peek().type == '@':
                 self.lexer.match('@')
                 ix_val = self.primary()
-                index_list.append(('index', ix_val))
+                index_list = [('index', ix_val)]
+                v = ('structure-ix', v, ('index-list', ('list', index_list)))
 
-            return ('structure-ix', v, ('index-list', ('list', index_list)))
-
-        else:
-            return v
+        return v
 
     ###########################################################################################
-    # NOTE: ESCAPE allows the user to patch python code into the interpreter and therefore
-    #       is able to create custom extension to the interpreter
-    #
     # primary
     #    : INTEGER
     #    | REAL
@@ -781,8 +760,8 @@ class Parser:
     #    | NONE
     #    | ID (':' exp)?  // named patterns when ': exp' exists
     #    | '*' ID         // "dereference" a variable during pattern matching
-    #    | NOT call
-    #    | MINUS call
+    #    | NOT call_or_index
+    #    | MINUS call_or_index
     #    | ESCAPE STRING
     #    | EVAL exp
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
@@ -836,12 +815,12 @@ class Parser:
 
         elif tt == 'NOT':
             self.lexer.match('NOT')
-            v = self.call()
+            v = self.call_or_index()
             return ('apply-list', ('list', [('id', '__not__'), v]))
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
-            v = self.call()
+            v = self.call_or_index()
             # if v is a real or integer constant we apply __uminus__
             if v[0] in ['integer', 'real']:
                 return (v[0], - v[1])
