@@ -966,11 +966,9 @@ def struct_def_stmt(node):
     for member_ix in range(len(member_list)):
         member = member_list[member_ix]
         if member[0] == 'data':
-            (DATA,
-             (ID, member_id),
-             (INIT_VAL, value)) = member
+            (DATA, (ID, member_id)) = member
             state.symbol_table.enter_sym(member_id, ('integer', member_ix))
-            struct_memory.append(walk(value))
+            struct_memory.append(('none', None))
             member_names.append(member_id)
         elif member[0] == 'unify':
             (UNIFY, (ID, member_id), function_exp) = member
@@ -1204,19 +1202,6 @@ def in_exp(node):
         return ('boolean', False)
 
 #########################################################################
-def otherwise_exp(node):
-
-    (OTHERWISE, e1, e2) = node
-    assert_match(OTHERWISE, 'otherwise')
-
-    val = walk(e1)
-
-    if val[0] == 'none':
-        return walk(e2)
-    else:
-        return val
-
-#########################################################################
 def if_exp(node):
 
     (IF_EXP, cond_exp, then_exp, else_exp) = node
@@ -1416,7 +1401,6 @@ dispatch_dict = {
     'escape'        : escape_exp,
     'is'            : is_exp,
     'in'            : in_exp,
-    'otherwise'     : otherwise_exp,
     'if-exp'        : if_exp,
     'named-pattern' : named_pattern_exp,
     'member-function-val' : lambda node : node,

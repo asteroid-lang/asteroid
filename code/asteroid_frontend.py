@@ -408,22 +408,14 @@ class Parser:
 
     ###########################################################################################
     # data_stmt
-    #  : DATA ID ('=' exp)?
+    #  : DATA ID
     def data_stmt(self):
         dbg_print("parsing DATA_STMT")
 
         if self.lexer.peek().type == 'DATA':
             self.lexer.match('DATA')
             id_tok = self.lexer.match('ID')
-            if self.lexer.peek().type == '=' :
-                self.lexer.match('=')
-                val = self.exp()
-            else:
-                val = ('none', None)
-            self.lexer.match_optional('.')
-            return ('data',
-                    ('id', id_tok.value),
-                    ('init-val', val))
+            return ('data', ('id', id_tok.value))
         else:
             raise SyntaxError(
                 "syntax error at '{}'"
@@ -695,7 +687,6 @@ class Parser:
     #    : call_or_index
     #        (
     #           (CMATCH exp) | // CMATCH == '%'IF
-    #           (OTHERWISE exp) |
     #           (IF exp (ELSE exp)?) # expression level if-else
     #        )?
     def conditional(self):
@@ -708,11 +699,6 @@ class Parser:
             self.lexer.match('CMATCH')
             e = self.exp()
             return ('cmatch', v, e)
-
-        elif tt  == 'OTHERWISE':
-            self.lexer.match('OTHERWISE')
-            v2 = self.exp()
-            return ('otherwise', v, v2)
 
         elif tt == 'IF':
             self.lexer.match('IF')

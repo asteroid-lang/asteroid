@@ -37,7 +37,6 @@ reserved = {
     'not'           : 'NOT',
     'or'            : 'OR',
     'orwith'        : 'ORWITH',
-    'otherwise'     : 'OTHERWISE',
     'pattern'       : 'PATTERN',
     'repeat'        : 'REPEAT',
     'return'        : 'RETURN',

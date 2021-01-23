@@ -39,10 +39,10 @@ body_defs
   : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
 
 data_stmt
-  : DATA ID ('=' exp)? '.'?
+  : DATA ID
 
 struct_stmt
-  : data_stmt
+  : data_stmt  '.'?
   | function_def '.'?
   | '.'
 
@@ -105,7 +105,6 @@ conditional
   : call_or_index
       (
          (CMATCH exp) |   // CMATCH == '%'IF
-         (OTHERWISE exp) |
          (IF exp (ELSE exp)?)
       )?
 
