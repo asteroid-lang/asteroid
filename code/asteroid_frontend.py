@@ -637,7 +637,7 @@ class Parser:
             self.lexer.match('OR')
             v2 = self.logic_exp1()
             op_sym = '__or__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     def logic_exp1(self):
@@ -646,7 +646,7 @@ class Parser:
             self.lexer.match('AND')
             v2 = self.rel_exp0()
             op_sym = '__and__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     def rel_exp0(self):
@@ -656,7 +656,7 @@ class Parser:
             self.lexer.next()
             v2 = self.rel_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     def rel_exp1(self):
@@ -666,7 +666,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp0()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     def arith_exp0(self):
@@ -677,7 +677,7 @@ class Parser:
             self.lexer.next()
             v2 = self.arith_exp1()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     def arith_exp1(self):
@@ -687,7 +687,7 @@ class Parser:
             self.lexer.next()
             v2 = self.conditional()
             op_sym = '__' + op_tok.type.lower() + '__'
-            v = ('apply-list', ('list',[('id', op_sym), ('tuple', [v, v2])]))
+            v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
 
     ###########################################################################################
@@ -738,10 +738,8 @@ class Parser:
         call_or_index_lookahead = primary_lookahead_no_ops|set(['@'])
         while self.lexer.peek().type in call_or_index_lookahead:
             if self.lexer.peek().type in primary_lookahead:
-                apply_list = [v]
                 v2 = self.primary()
-                apply_list.append(v2)
-                v = ('apply-list', ('list', apply_list))
+                v = ('apply', v, v2)
             elif self.lexer.peek().type == '@':
                 self.lexer.match('@')
                 ix_val = self.primary()
@@ -816,7 +814,7 @@ class Parser:
         elif tt == 'NOT':
             self.lexer.match('NOT')
             v = self.call_or_index()
-            return ('apply-list', ('list', [('id', '__not__'), v]))
+            return ('apply', ('id', '__not__'), v)
 
         elif tt == 'MINUS':
             self.lexer.match('MINUS')
@@ -825,7 +823,7 @@ class Parser:
             if v[0] in ['integer', 'real']:
                 return (v[0], - v[1])
             else:
-                return ('apply-list', ('list', [('id', '__uminus__'), v]))
+                return ('apply', ('id', '__uminus__'), v)
 
         elif tt == 'ESCAPE':
             self.lexer.match('ESCAPE')

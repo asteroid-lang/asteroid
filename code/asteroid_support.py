@@ -216,15 +216,11 @@ def term2string(term):
         # TODO: decide whether it makes sense to print out functions
         return '(function ...)'
 
-    elif TYPE == 'apply-list':
-        (LIST, apply_list) = term[1]
-        term_string = term2string(apply_list[0])
-        for ix in range(1, len(apply_list)):
-            if apply_list[ix][0] not in ['tuple', 'apply_list']:
-                term_string += '('
-            term_string += term2string(apply_list[ix])
-            if apply_list[ix][0] not in ['tuple', 'apply_list']:
-                term_string += ')'
+    elif TYPE == 'apply':
+        (APPLY, f, args) = term
+        term_string = term2string(f)
+        term_string += ' '
+        term_string += term2string(args)
         return term_string
 
     elif TYPE == 'quote':
@@ -235,17 +231,52 @@ def term2string(term):
     elif TYPE == 'nil':
         return ''
 
+    elif TYPE == 'head-tail':           # Handle a head-tail pattern
+        length = head_tail_length(term)
+        term_string = "["
+        for ix in range(1,length):
+
+            #update output text with each entry in head-tail list
+            term_string += term2string(term[1])
+
+            #step down the head-tail tree
+            term = term[2]
+
+            #Insert head-tail entry delimiter
+            term_string+= "|"
+
+            #Catch the last entry
+            if (ix == (length-1)):
+                term_string += term2string(term)
+
+        #Put the head-tail list delimiter on the end and then return
+        term_string += "]"
+        return term_string
+
+    elif TYPE == 'named-pattern':       # Handle a named pattern
+
+        (NAMED_PATTERN,ID,pattern) = term
+        term_string = ID[1] + ':'
+
+        return term_string + term2string(pattern)
+
+    elif TYPE == 'typematch':           # Handle a type pattern
+        (TYPECLASS,cType) = term
+        term_string = cType
+        return term_string
+
     else:
+        #lhh print(term)
         raise ValueError(
             "unknown type '{}' in term2string"
             .format(TYPE))
 
 ##############################################################################################
-# Function head_tail_length determines the lenth of a head-tail node by walking to the end. 
+# Function head_tail_length determines the lenth of a head-tail node by walking to the end.
 # The length is then returned from this function as in integer.
 # Example Input : [h1|h2|h3|tail]
 #         Output: 3
-# The output is 3 because the input heal-tail pattern has 3 heads. 
+# The output is 3 because the input heal-tail pattern has 3 heads.
 #
 def head_tail_length( node ):
 

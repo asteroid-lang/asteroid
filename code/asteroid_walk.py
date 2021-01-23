@@ -53,7 +53,7 @@ def unify(term, pattern, unifying = True ):
             let a@[0] = 'a@[0].
           stores the term 'a@[0] into lval a@[0].
     NOTE: Default argument unifying is set to be true. If we are unifying, then we are
-          evaluating unification between a pattern and a term. If we are not 
+          evaluating unification between a pattern and a term. If we are not
           unifying, then we are evaluating subsumption between two patterns for the
           purpose of detecting redundant/useless pattern clauses in functions.
     '''
@@ -124,7 +124,7 @@ def unify(term, pattern, unifying = True ):
             ### Condtional Pattern Subsumption
             # The current behavior for Asteroid when encoutering a conditional pattern when
             # evaluating subsumption is to throw a warning.
-            
+
             print("Warning: Condtional patterns not supported for redundancy analysis.")
             print("\t Redundant or useless pattern clauses may exist in function definition(s).")
             pass
@@ -154,18 +154,18 @@ def unify(term, pattern, unifying = True ):
 
         if typematch in ['string','real','integer','list','tuple','boolean']:
 
-            if (not unifying):              
+            if (not unifying):
 
-                #walk a different path for this node 
+                #walk a different path for this node
                 if (term[0] == 'typematch'):
-                    nextIndex = 1  
+                    nextIndex = 1
 
-                #handle lists/head-tails subsuming each other                      
+                #handle lists/head-tails subsuming each other
                 elif (term[0] in ['list','head-tail']):
                     if ((typematch == 'list') and (term[0] in ['list','head-tail'])):
-                        return []                                  
+                        return []
 
-            if typematch == term[nextIndex]:         
+            if typematch == term[nextIndex]:
                 return []
             else:
                 raise PatternMatchFailed(
@@ -193,7 +193,7 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term, p ) + [(name, term )]
         else:
-            return unify(term, p, False) 
+            return unify(term, p, False)
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -229,16 +229,15 @@ def unify(term, pattern, unifying = True ):
         else:
             return unify(term, pattern[1], False)
 
-    elif term[0] == 'object' and pattern[0] == 'apply-list':
+    elif term[0] == 'object' and pattern[0] == 'apply':
         # unpack term
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
         # unpack pattern
-        (APPLY_LIST,
-         (LIST,
-          [(ID, apply_id),
-           arg])) = pattern
+        (APPLY,
+         (ID, apply_id),
+         arg) = pattern
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(apply_id, struct_id))
@@ -305,7 +304,7 @@ def unify(term, pattern, unifying = True ):
             lengthL = head_tail_length(term)    #L->lower order of predcence pattern
 
             if lengthH == 2 and lengthL != 2:
-                return unify(pattern[1],term[1],False)  
+                return unify(pattern[1],term[1],False)
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is
@@ -327,21 +326,14 @@ def unify(term, pattern, unifying = True ):
             return unify(term,p, False)
 
     # builtin operators look like apply lists with operator names
-    elif pattern[0] == 'apply-list':
-        if term[0] != pattern[0]: # make sure both are apply-lists
+    elif pattern[0] == 'apply':
+        if term[0] != pattern[0]: # make sure both are applys
             raise PatternMatchFailed(
-                "term and pattern disagree on 'apply-list' node")
-        # make sure the apply list looks ok -- see below
-        elif len(term[1]) > 2 or len(pattern[1]) > 2:
-            raise PatternMatchFailed(
-                "illegal function applications in pattern or term")
+                "term and pattern disagree on 'apply' node")
 
-        # unpack the apply-list structures
-        (APPLY_LIST,
-         (LIST, [(ID, t_id), t_arg])) = term
-
-        (APPLY_LIST,
-         (LIST, [(ID, p_id), p_arg])) = pattern
+        # unpack the apply structures
+        (APPLY, (ID, t_id), t_arg) = term
+        (APPLY, (ID, p_id), p_arg) = pattern
 
         # make sure apply id's match
         if t_id != p_id:
@@ -543,18 +535,14 @@ def store_at_ix(structure_val, index, value):
 #########################################################################
 def handle_builtins(node):
 
-    (APPLY_LIST, (LIST, apply_list)) = node
-    assert_match(APPLY_LIST, 'apply-list')
-
-    if apply_list[0][0] != 'id':
-        raise ValueError("expected an operator id")
-
-    opname = apply_list[0][1]
+    (APPLY, (ID, opname), args) = node
+    assert_match(APPLY, 'apply')
+    assert_match(ID, 'id')
 
     if opname in binary_operators:
-        (TUPLE, args)= apply_list[1]
-        val_a = walk(args[0])
-        val_b = walk(args[1])
+        (TUPLE, bin_args)= args
+        val_a = walk(bin_args[0])
+        val_b = walk(bin_args[1])
 
         if opname == '__plus__':
             type = promote(val_a[0], val_b[0])
@@ -636,8 +624,7 @@ def handle_builtins(node):
             raise ValueError('unknown builtin binary opname {}'.format(opname))
 
     elif opname in unary_operators:
-        arg = apply_list[1]
-        arg_val = walk(arg)
+        arg_val = walk(args)
 
         if opname == '__not__':
             val = map2boolean(arg_val)
@@ -1021,40 +1008,6 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
-def trait_def_stmt(node):
-
-    (TRAIT_DEF, (ID, trait_id), (MEMBER_LIST, (LIST, member_list))) = node
-    assert_match(TRAIT_DEF, 'trait-def')
-    assert_match(ID, 'id')
-    assert_match(MEMBER_LIST, 'member-list')
-    assert_match(LIST, 'list')
-
-    # construct a member-names list so we can easily check if there is
-    # an overlap of members in the structure definition using traits
-    # Note: this is strictly there for convenience sake, we can always
-    # recover the information from the member-list
-    member_names = []
-    for member_ix in range(len(member_list)):
-        member = member_list[member_ix]
-        if member[0] == 'data':
-            (DATA,
-             (ID, member_id),
-             val_exp) = member
-            member_names.append(member_id)
-        elif member[0] == 'unify':
-            (UNIFY, (ID, member_id), function_exp) = member
-            member_names.append(member_id)
-        else:
-            raise ValueError("unsupported trait member '{}'".format(member[0]))
-
-    trait_type = ('trait',
-                  ('member-names', ('list', member_names)),
-                  ('member-list', ('list', member_list)))
-
-    # declare our trait type in the symbol table
-    state.symbol_table.enter_sym(trait_id, trait_type)
-
-#########################################################################
 def eval_exp(node):
 
     (EVAL, exp) = node
@@ -1082,119 +1035,99 @@ def eval_exp(node):
     return exp_val
 
 #########################################################################
-def apply_list_exp(node):
+def apply_exp(node):
 
-    (APPLY_LIST, (LIST, apply_list)) = node
-    assert_match(APPLY_LIST, 'apply-list')
+    (APPLY, f, arg) = node
+    assert_match(APPLY, 'apply')
 
     # handle builtin operators that look like apply lists.
-    if apply_list[0][0] == 'id' \
-    and apply_list[0][1] in operator_symbols:
+    if f[0] == 'id' and f[1] in operator_symbols:
         return handle_builtins(node)
 
-    # handle a list of apply terms:
-    # e.g. inc inc 1
-    # function application happens from right to left, therefore we reverse
-    # a shallow copy of the apply-list
-    rev_list = list(apply_list)
-    rev_list.reverse()
+    # handle function application
+    f_val = walk(f)
+    arg_val = walk(arg)
 
-    #lhh
-    #print("rev-list: {}".format(rev_list))
+    # object member function
+    # NOTE: object member functions are passed an object reference.
+    if f_val[0] == 'member-function-val':
+        (MEMBER_FUNCTION_VAL, obj_ref, function_val) = f_val
+        # Note: lists and tuples are objects/mutable data structures, they
+        # have member functions defined in the Asteroid prologue.
+        if arg_val[0] == 'none':
+            result = handle_call(function_val, obj_ref)
+        elif arg_val[0] != 'tuple':
+            new_arg_val = ('tuple', [obj_ref, arg_val])
+            result = handle_call(function_val, new_arg_val)
+        elif arg_val[0] == 'tuple':
+            arg_val[1].insert(0, obj_ref)
+            result = handle_call(function_val, arg_val)
+        else:
+            raise ValueError(
+                "unknown parameter type '{}' in apply"
+                .format(arg_val[0]))
 
-    # first element must be a value to pass to a function
-    arg_val = walk(rev_list[0])
+    # regular function call
+    elif f_val[0] == 'function-val':
+        result = handle_call(f_val, arg_val)
 
-    #lhh
-    #print("arg_val: {}".format(arg_val))
+    # object constructor call
+    elif f_val[0] == 'struct':
+        (ID, struct_id) = f
+        (STRUCT,
+         (MEMBER_NAMES, (LIST, member_names)),
+         (STRUCT_MEMORY, (LIST, struct_memory)),
+         (STRUCT_SCOPE, struct_scope)) = f_val
 
-    # step thru all the apply terms each of which needs to produce a
-    # function value - the current function application
-    # will produce the input value (arg_val) for the next application
-    for apply_ix in range(1, len(rev_list)):
-        ftree = rev_list[apply_ix]
-        fval = walk(ftree)
-
-        # object member function
-        # NOTE: object member functions are passed an object reference.
-        if fval[0] == 'member-function-val':
-            (MEMBER_FUNCTION_VAL, obj_ref, function_val) = fval
-            # Note: lists are objects/mutable data structures, they
-            # have member functions defined in the Asteroid prologue.
+        # create our object memory - memory cells now have initial values
+        # TODO: why is this not shared among objects?
+        object_memory = struct_memory.copy()
+        # create our object
+        obj_ref = ('object',
+                  ('struct-id', ('id', struct_id)),
+                  ('object-memory', ('list', object_memory)))
+        # if the struct has an __init__ function call it on the object
+        # NOTE: constructor functions do not have return values.
+        if '__init__' in member_names:
+            slot_ix = member_names.index('__init__')
+            init_fval = struct_memory[slot_ix]
+            # calling a member function - push struct scope
+            state.symbol_table.push_scope(struct_scope)
             if arg_val[0] == 'none':
-                arg_val = handle_call(function_val, obj_ref)
+                handle_call(init_fval, obj_ref)
             elif arg_val[0] != 'tuple':
-                new_arg_val = ('tuple', [obj_ref, arg_val])
-                arg_val = handle_call(function_val, new_arg_val)
+                arg_val = ('tuple', [obj_ref, arg_val])
+                handle_call(init_fval, arg_val)
             elif arg_val[0] == 'tuple':
                 arg_val[1].insert(0, obj_ref)
-                arg_val = handle_call(function_val, arg_val)
+                handle_call(init_fval, arg_val)
+            state.symbol_table.pop_scope()
+        # the struct does not have an __init__ function but
+        # we have a constructor call with args, e.g. Foo(1,2)
+        # try to apply a default constructor by copying the
+        # values from the arg list to the data slots of the object
+        elif arg_val[0] != 'none':
+            if arg_val[0] != 'tuple':
+                arg_array = [arg_val]
             else:
+                arg_array = arg_val[1]
+            data_memory = data_only(object_memory)
+            if len(data_memory) != len(arg_array):
                 raise ValueError(
-                    "unknown parameter type '{}' in apply"
-                    .format(arg_val[0]))
+                    "default constructor expected {} arguments got {}"
+                    .format(len(data_memory), len(arg_array)))
+            # copy initializers into object memory
+            data_ix = data_ix_list(object_memory)
+            for (i,k) in zip(data_ix, range(0,len(data_memory))):
+                object_memory[i] = arg_array[k]
 
-        # regular function call
-        elif fval[0] == 'function-val':
-            arg_val = handle_call(fval, arg_val)
+        # return the new object
+        result = obj_ref
 
-        # object constructor call
-        elif fval[0] == 'struct':
-            (ID, struct_id) = ftree
-            (STRUCT,
-             (MEMBER_NAMES, (LIST, member_names)),
-             (STRUCT_MEMORY, (LIST, struct_memory)),
-             (STRUCT_SCOPE, struct_scope)) = fval
+    else:
+        raise ValueError("unknown apply term '{}'".format(f_val[0]))
 
-            # create our object memory - memory cells now have initial values
-            # TODO: why is this not shared among objects?
-            object_memory = struct_memory.copy()
-            # create our object
-            obj_ref = ('object',
-                      ('struct-id', ('id', struct_id)),
-                      ('object-memory', ('list', object_memory)))
-            # if the struct has an __init__ function call it on the object
-            # NOTE: constructor functions do not have return values.
-            if '__init__' in member_names:
-                slot_ix = member_names.index('__init__')
-                init_fval = struct_memory[slot_ix]
-                # calling a member function - push struct scope
-                state.symbol_table.push_scope(struct_scope)
-                if arg_val[0] == 'none':
-                    handle_call(init_fval, obj_ref)
-                elif arg_val[0] != 'tuple':
-                    arg_val = ('tuple', [obj_ref, arg_val])
-                    handle_call(init_fval, arg_val)
-                elif arg_val[0] == 'tuple':
-                    arg_val[1].insert(0, obj_ref)
-                    handle_call(init_fval, arg_val)
-                state.symbol_table.pop_scope()
-            # the struct does not have an __init__ function but
-            # we have a constructor call with args, e.g. Foo(1,2)
-            # try to apply a default constructor by copying the
-            # values from the arg list to the data slots of the object
-            elif arg_val[0] != 'none':
-                if arg_val[0] != 'tuple':
-                    arg_array = [arg_val]
-                else:
-                    arg_array = arg_val[1]
-                data_memory = data_only(object_memory)
-                if len(data_memory) != len(arg_array):
-                    raise ValueError(
-                        "default constructor expected {} arguments got {}"
-                        .format(len(data_memory), len(arg_array)))
-                # copy initializers into object memory
-                data_ix = data_ix_list(object_memory)
-                for (i,k) in zip(data_ix, range(0,len(data_memory))):
-                    object_memory[i] = arg_array[k]
-
-            # return the new object as the next arg_val
-            arg_val = obj_ref
-
-        else:
-            raise ValueError("unknown apply term '{}'".format(fval[0]))
-
-    return arg_val
+    return result
 
 #########################################################################
 def structure_ix_exp(node):
@@ -1480,7 +1413,6 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
-    'trait-def'     : trait_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'tuple'         : tuple_exp,
@@ -1503,7 +1435,7 @@ dispatch_dict = {
     # foreign objects in Asteroid data structures
     'foreign'       : lambda node : node,
     'id'            : lambda node : state.symbol_table.lookup_sym(node[1]),
-    'apply-list'    : apply_list_exp,
+    'apply'         : apply_exp,
     'structure-ix'  : structure_ix_exp,
     'escape'        : escape_exp,
     'is'            : is_exp,
