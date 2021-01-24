@@ -628,7 +628,7 @@ class Parser:
             return v
 
     ###########################################################################################
-    # NOTE: Builtin operators are mapped to apply lists so that they don't have to be
+    # NOTE: Builtin operators are mapped to 'apply' so that they don't have to be
     #       special cased during pattern matching.  See operator_symbols above.
     ###########################################################################################
     # logic/relational/arithmetic operators with their precedence
@@ -718,6 +718,8 @@ class Parser:
 
         v = self.primary()
 
+        # Note: the 'no ops' lookahead here is necessary because operators
+        # can never be arguments to a function in Asteroid
         call_or_index_lookahead = primary_lookahead_no_ops|set(['@'])
         while self.lexer.peek().type in call_or_index_lookahead:
             if self.lexer.peek().type in primary_lookahead:
@@ -738,7 +740,7 @@ class Parser:
     #    | TRUE
     #    | FALSE
     #    | NONE
-    #    | ID (':' exp)?  // named patterns when ': exp' exists
+    #    | ID (':' pattern)?  // named pattern when ': pattern' exists
     #    | '*' ID         // "dereference" a variable during pattern matching
     #    | NOT call_or_index
     #    | MINUS call_or_index
