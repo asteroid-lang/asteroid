@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Grammar for Asteroid written in EBNF/PEG format.
 // (c) Lutz Hamel, University of Rhode Island
-
 ////////////////////////////////////////////////////////////////////////////////////////
 // statements
 
@@ -118,7 +117,7 @@ primary
   | TRUE
   | FALSE
   | NONE
-  | ID (':' pattern)?  // named patterns when ': pattern' exists
+  | ID (':' pattern)?  // named pattern when ': pattern' exists
   | '*' ID         // "dereference" a variable during pattern matching
   | NOT call_or_index
   | MINUS call_or_index
