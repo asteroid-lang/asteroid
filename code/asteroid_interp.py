@@ -34,6 +34,10 @@ def interp(input_stream,
         # initialize state
         state.initialize()
 
+        #lhh
+        #print("path[0]: {}".format(sys.path[0])) 
+        #print("path[1]: {}".format(sys.path[1]))
+              
         # read in prologue
         if prologue:
             # load the prologue file
