@@ -505,11 +505,39 @@ class Parser:
 
     ###########################################################################################
     # exp
-    #    : quote_exp
+    #    : conditional
     def exp(self):
         dbg_print("parsing EXP")
-        v = self.quote_exp()
+        v = self.conditional()
         return v
+
+    ###########################################################################################
+    # conditional
+    #    : quote_exp
+    #        (
+    #           (CMATCH exp) | // CMATCH == '%'IF
+    #           (IF exp ELSE exp) # expression level if-else
+    #        )?
+    def conditional(self):
+        dbg_print("parsing CONDITIONAL")
+
+        v = self.quote_exp()
+
+        tt = self.lexer.peek().type
+        if tt == 'CMATCH':
+            self.lexer.match('CMATCH')
+            e = self.exp()
+            return ('cmatch', v, e)
+
+        elif tt == 'IF':
+            self.lexer.match('IF')
+            v2 = self.exp()
+            self.lexer.match('ELSE')
+            v3 = self.exp()
+            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+
+        else:
+            return v
 
     ###########################################################################################
     # quote_exp
@@ -620,7 +648,7 @@ class Parser:
     #   : arith_exp1 (('+' | '-') arith_exp1)*
     #
     # arith_exp1
-    #   : conditional (('*' | '/') conditional)*
+    #   : call_or_index (('*' | '/') call_or_index)*
     #
     def logic_exp0(self):
         dbg_print("parsing LOGIC/REL/ARITH EXP")
@@ -673,45 +701,14 @@ class Parser:
         return v
 
     def arith_exp1(self):
-        v = self.conditional()
+        v = self.call_or_index()
         while self.lexer.peek().type in ['TIMES', 'DIVIDE']:
             op_tok = self.lexer.peek()
             self.lexer.next()
-            v2 = self.conditional()
+            v2 = self.call_or_index()
             op_sym = '__' + op_tok.type.lower() + '__'
             v = ('apply', ('id', op_sym), ('tuple', [v, v2]))
         return v
-
-    ###########################################################################################
-    # conditional
-    #    : call_or_index
-    #        (
-    #           (CMATCH exp) | // CMATCH == '%'IF
-    #           (IF exp (ELSE exp)?) # expression level if-else
-    #        )?
-    def conditional(self):
-        dbg_print("parsing CONDITIONAL")
-
-        v = self.call_or_index()
-
-        tt = self.lexer.peek().type
-        if tt == 'CMATCH':
-            self.lexer.match('CMATCH')
-            e = self.exp()
-            return ('cmatch', v, e)
-
-        elif tt == 'IF':
-            self.lexer.match('IF')
-            v2 = self.exp()
-            if self.lexer.peek().type == 'ELSE':
-                self.lexer.match('ELSE')
-                v3 = self.exp()
-                return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
-            else:
-                return ('if-exp',v2, v, ('nil',))
-
-        else:
-            return v
 
     ###########################################################################################
     # call_or_index

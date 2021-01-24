@@ -65,7 +65,14 @@ pattern
   : exp
 
 exp
+  : conditional
+
+conditional
   : quote_exp
+      (
+         (CMATCH exp) |   // CMATCH == '%'IF
+         (IF exp ELSE exp)
+      )?
 
 quote_exp
   : QUOTE head_tail
@@ -99,14 +106,7 @@ arith_exp0
   : arith_exp1 (('+' | '-') arith_exp1)*
 
 arith_exp1
-  : conditional (('*' | '/') conditional)*
-
-conditional
-  : call_or_index
-      (
-         (CMATCH exp) |   // CMATCH == '%'IF
-         (IF exp (ELSE exp)?)
-      )?
+  : call_or_index (('*' | '/') call_or_index)*
 
 call_or_index
   : primary (primary | '@' primary)*

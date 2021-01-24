@@ -1325,7 +1325,7 @@ def typematch_exp(node):
 def cmatch_exp(node):
 
     (CMATCH, exp, cond_exp) = node
-    assert_match(CMATCH, 'cmatch_exp')
+    assert_match(CMATCH, 'cmatch')
 
     # on a walk to interpret the tree as a value we simply
     # ignore the conditional expression
