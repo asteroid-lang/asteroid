@@ -57,5 +57,5 @@ function dot
 -- computes the dot product of two lists
 ------------------------------------------------------------------
 with (a:%list,b:%list) do
-  return (vmult(a,b)) @reduce(lambda with (x,y) do return x+y).
+  return vmult(a,b) @reduce(lambda with (x,y) do return x+y).
 end

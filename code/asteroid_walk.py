@@ -644,6 +644,14 @@ def handle_call(fval, actual_val_args):
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
+    # static scoping for functions
+    # Note: we have to do this here because unifying
+    # over the body patterns can introduce variable declarations,
+    # think conditional pattern matching.
+    save_symtab = state.symbol_table.get_config()
+    state.symbol_table.set_config(closure)
+    state.symbol_table.push_scope({})
+
     #lhh
     #print('in handle_call')
     #print("calling: {}\nwith: {}\n\n".format(fval,actual_val_args))
@@ -671,14 +679,6 @@ def handle_call(fval, actual_val_args):
     if not unified:
         raise ValueError("none of the function bodies unified with actual parameters")
 
-    #lhh
-    #print("function unified with:")
-    #print(unifiers)
-
-    # static scoping for functions
-    save_symtab = state.symbol_table.get_config()
-    state.symbol_table.set_config(closure)
-    state.symbol_table.push_scope({})
     declare_formal_args(unifiers)
 
     # execute the function
