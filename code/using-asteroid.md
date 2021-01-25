@@ -3,7 +3,7 @@
 This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.
 
 
-```python
+```
 # make the Asteroid interpreter available in this notebook
 import sys
 sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
@@ -26,12 +26,9 @@ from asteroid_interp import interp
 The canonical `Hello, World!` program.  The easiest way to write this in Asteroid is,
 
 
-```python
-program = \
-'''
+```
 load "io".
 println "Hello, World!".
-'''
 interp(program,prologue=True)
 ```
 
@@ -43,13 +40,9 @@ Two other print functions exists:
 - `raw_print` - print internal term structure.
 
 
-```python
-program = \
-'''
+```
 load "io".
 raw_print "Hello, World!".
-'''
-interp(program)
 ```
 
     ('string', 'Hello, World!')
@@ -64,43 +57,28 @@ Here we can see that an Asteroid string is tuple consisting of a type field and 
 Here is our first solution using a separate function for each of the steps,   
 
 
-```python
-program = \
-'''
+```
 load "io".
 print ("Enter your name: ").
 let name = input().
 print ("Hello, "+name+"!").
-'''
-# Note: uncomment in order to run the program
-#interp(program)
 ```
 
 Letting the function `input` do the prompting,
 
 
-```python
-program = \
-'''
+```
 load "io".
 let name = input("Enter your name: ").
 print ("Hello, "+name+"!").
-'''
-# Note: uncomment in order to run the program
-#interp(program)
 ```
 
 Doing everything in one step,
 
 
-```python
-program = \
-'''
+```
 load "io".
 print ("Hello, "+input("Enter your name: ")+"!").
-'''
-# Note: uncomment in order to run the program
-#interp(program)
 ```
 
 ### 3. String length
@@ -110,14 +88,10 @@ print ("Hello, "+input("Enter your name: ")+"!").
 In order to print the length of a string we can use the function `len` available in the `util` module,
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "util".
 println (len("Hello!")).
-'''
-interp(program)
 ```
 
     6
@@ -126,13 +100,9 @@ interp(program)
 We can also use the string member function `length` in order to compute the length of the string,
 
 
-```python
-program = \
-'''
+```
 load "io".
 println ("Hello!" @length()).
-'''
-interp(program)
 ```
 
     6
@@ -146,9 +116,7 @@ In order to accomplish this we take advantage of the string `explode` function a
 Finally we use the `reduce` function to map a list with repeated digits to a list with unique digits,
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 function unique with (x,y) do
@@ -163,9 +131,8 @@ let digits = "332211" @explode()
                       @sort()
                       @reduce(unique,[]).
 println digits.
+
 assert(digits == ["1","2","3"]).
-'''
-interp(program)
 ```
 
     [1,2,3]
@@ -182,17 +149,14 @@ Probably the most noteworthy characteric about this program is the `reduce` func
 We use the `explode` function to turn a string into a list of characters, then we reverse the list and turn it back into a string using the `join` function,
 
 
-```python
-program = \
-'''
+```
 load "io".
 let str = "Hello, World!" @explode()
                           @reverse()
                           @join("").
 println str.
+
 assert(str == "!dlroW ,olleH").
-'''
-interp(program)
 ```
 
     !dlroW ,olleH
@@ -203,16 +167,13 @@ interp(program)
 > Remove leading, trailing and double spaces from a given string.
 
 
-```python
-program = \
-'''
+```
 load "io".
 let str = "   Hello  ,   World    !   " @trim()
                                         @replace("  ","").
 println str.
+
 assert(str == "Hello, World!").
-'''
-interp(program)
 ```
 
     Hello, World!
@@ -227,9 +188,7 @@ Names created in this style are built of several words; each of which starts
 with a capital letter.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 function title with w do
@@ -250,9 +209,8 @@ let camel_str = str @split()
                     @map(title)
                     @join("").
 println camel_str.
+
 assert(camel_str == "OnceUponATime").
-'''
-interp(program)
 ```
 
     OnceUponATime
@@ -263,9 +221,7 @@ interp(program)
 > Generate a list of filenames like file1.txt, file2.txt, etc.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let root = "file".
@@ -274,8 +230,6 @@ let ext = ".txt".
 for i in 1 to 5 do
     println (root+i+ext).
 end
-'''
-interp(program)
 ```
 
     file1.txt
@@ -292,9 +246,7 @@ interp(program)
 In our solution we take advantage of Asteroid's `Pick` object.  The `Pick` object maintains a list of items that we can randomly select from using the `pick` member function.  As input to the `Pick` object we compute a bunch of lists of characters that are useful for password construction.  The function `achar` converts a decimal ASCII code to a single character string.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "util".
 load "pick".
@@ -315,8 +267,6 @@ let pwd = Pick pick_list @pick(15)
 println pwd.
 
 assert (pwd == "e3zvshdbS43brt#")
-'''
-interp(program)
 ```
 
     e3zvshdbS43brt#
@@ -336,9 +286,7 @@ RNA: U G C A
 We will solve this programming problem using Asteroid's first-class patterns. We could have solved this with just testing equality on DNA characters but using first-class patterns in more general and can be applied to problems with a more structured mapping relationship.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let dna2rna_table =
@@ -365,8 +313,6 @@ let rna_seq = dna_seq @explode()
 println rna_seq.
 
 assert(rna_seq == "UGGUAGUCAG").
-'''
-interp(program)
 ```
 
     UGGUAGUCAG
@@ -384,9 +330,7 @@ etc. The alphabet is looped so that z becomes v, and letters a to d become
 w to z.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "util".
 
@@ -424,8 +368,6 @@ let decoded_msg = secret @explode()
 println decoded_msg.
 
 assert (decoded_msg == "hello, world!")
-'''
-interp(program)
 ```
 
     dahhk, sknhz!
@@ -445,16 +387,12 @@ In program outputs, it is often required to print some number followed by a noun
 If there is only one file, then the phrase should be `1 file found` instead.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 for n in 0 to 5 do
     println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
 end
-'''
-interp(program)
 ```
 
     0 files found
@@ -472,9 +410,7 @@ interp(program)
 In our solution we use a hash table to count the number of word occurances.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "util".
 load "hash".
@@ -511,8 +447,6 @@ let most_frequent_word = keys @(values @index(values_sorted @0)).
 println most_frequent_word.
 
 assert (most_frequent_word == "sed").
-'''
-interp(program)
 ```
 
     sed
@@ -529,9 +463,7 @@ string (`stra`), and they use the index method to search for the substring in th
 second string (`strb`).
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let stra = "the quick brown fox jumps over the lazy dog".
@@ -554,8 +486,6 @@ else do
 end
 
 assert (common == " fox ").
-'''
-interp(program)
 ```
 
     The longest common substring is ' fox '.
@@ -568,9 +498,7 @@ interp(program)
 An anagram is a word, phrase, or name formed by rearranging the letters of another, such as `cinema`, formed from `iceman`.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let str1 = "cinema".
@@ -589,8 +517,6 @@ else do
 end
 
 assert (normalize(str1) == normalize(str2)).
-'''
-interp(program)
 ```
 
     Anagrams
@@ -604,9 +530,7 @@ A palindrome is a string that can be read from both ends: left to right or right
 to left.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let str = "Was it a rat I saw?".
@@ -627,8 +551,6 @@ else do
 end
 
 assert (clean_str == clean_str @flip()).
-'''
-interp(program)
 ```
 
     Palindromic
@@ -647,9 +569,7 @@ without taking into account the non-letter characters but saving the result as
 part of the original string.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let str = "Hello, World!".
@@ -683,8 +603,6 @@ end
 
 println longest_palindrome.
 
-'''
-interp(program)
 ```
 
     o, Wo
@@ -697,9 +615,7 @@ interp(program)
 We do this by finding and hashing N-grams after the appropriate preprocessing.  We will use `N=3`.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "hash".
 
@@ -746,8 +662,6 @@ end
 for ((n_gram,cnt) %if cnt > 1) in ht @aslist() do
     println (n_gram+": "+cnt).
 end
-'''
-interp(program)
 ```
 
     lorem ipsum dolor: 2
@@ -775,15 +689,11 @@ interp(program)
 
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math". -- definition of pi
 
 println pi.
-'''
-interp(program)
 ```
 
     3.141592653589793
@@ -792,16 +702,12 @@ interp(program)
 Other constants are also available.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
 println e.
 println tau. -- tau=2*pi
-'''
-interp(program)
 ```
 
     2.718281828459045
@@ -815,17 +721,13 @@ interp(program)
 By definition, the factorial of a positive integer number N is a product of all the integers numbering from 1 to N, including N. Our first solution is based on the direct implementation of the definition above using the list `reduce` function.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let n = 3.
 let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
 println fact.
 assert (fact == 6).
-'''
-interp(program)
 ```
 
     6
@@ -847,9 +749,7 @@ Here, each case specifies what value the function should return if
 the predicate applied to the input is true.  The last case is of some interest because it states that the function is undefined for negative integers.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let POS_INT = pattern with (x:%integer) %if x > 0.
@@ -866,8 +766,6 @@ function fact
 
 println ("The factorial of 3 is: " + fact (3)).
 assert (fact(3) == 6).
-'''
-interp(program)
 ```
 
     The factorial of 3 is: 6
@@ -889,9 +787,7 @@ Here we give an iterative solutions.  It is clear that there exists a trival rec
 
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let n = 10. -- compute the 10th Fib number
@@ -903,8 +799,6 @@ end
 
 println f_1.
 assert (f_1 == 55)
-'''
-interp(program)
 ```
 
     55
@@ -917,9 +811,7 @@ interp(program)
 Of course this is straight forward with a for-loop over a list.  Here we show another solution using the list `map` function.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 let sq = [1 to 10] @map(lambda with x do return x*x).
@@ -927,8 +819,6 @@ let sq = [1 to 10] @map(lambda with x do return x*x).
 println sq.
 
 assert (sq == [1,4,9,16,25,36,49,64,81,100])
-'''
-interp(program)
 ```
 
     [1,4,9,16,25,36,49,64,81,100]
@@ -941,9 +831,7 @@ interp(program)
 Just as in the previous challenge we skip the naive loop solution and give a solution using the `map` function.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -952,8 +840,6 @@ let p2 = [0 to 9] @map(lambda with x do return pow(2,x)).
 println p2.
 
 assert (p2 == [1,2,4,8,16,32,64,128,256,512])
-'''
-interp(program)
 ```
 
     [1,2,4,8,16,32,64,128,256,512]
@@ -966,9 +852,7 @@ interp(program)
 We start with printing the first ten odd numbers.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -979,8 +863,6 @@ end
 
 println odd.
 assert(odd == [1,3,5,7,9])
-'''
-interp(program)
 ```
 
     [1,3,5,7,9]
@@ -989,9 +871,7 @@ interp(program)
 Now the even numbers.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1002,8 +882,6 @@ end
 
 println even.
 assert(even == [2,4,6,8,10])
-'''
-interp(program)
 ```
 
     [2,4,6,8,10]
@@ -1018,9 +896,7 @@ Comparing non-integer numbers, which are represented as floating-point numbers i
 
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1029,8 +905,6 @@ assert (not isclose(2.0,2.00001)).
 
 -- equal under the user defined tolerance of 0.0001
 assert (isclose(2.0,2.00001,0.0001)).
-'''
-interp(program)
 ```
 
 ### 26. Multiplying big numbers
@@ -1046,9 +920,7 @@ interp(program)
 Prime numbers are those that can be divided only by 1, and by themselves.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1070,8 +942,6 @@ println (isprime 15).
 
 assert (isprime(17)).
 assert (not isprime(15)).
-'''
-interp(program)
 ```
 
     true
@@ -1085,9 +955,7 @@ interp(program)
 
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1113,8 +981,6 @@ for (n %if isprime(n)) in 1 to 1000000 do
     end
 end
 
-'''
-interp(program)
 ```
 
     2
@@ -1137,9 +1003,7 @@ Prime factors are the prime numbers that divide the given integer number exactly
 
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1181,8 +1045,6 @@ end
 println factors.
 
 assert (factors == [3,5,11])
-'''
-interp(program)
 ```
 
     [3,5,11]
@@ -1195,9 +1057,7 @@ interp(program)
 5/15 and 16/280 are examples of fractions that can be reduced. The final results of this task are 1/3 and 2/35. Generally, the algorithm of reducing a fraction requires searching for the greatest common divisor, and then dividing both numerator and denominator by that number.  For our solution we use the function `gcd` available in the `math` module.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1214,8 +1074,6 @@ println denominator.
 
 -- show that original and reduced fraction are the same value
 assert (a/b == numerator/denominator).
-'''
-interp(program)
 ```
 
     2
@@ -1229,9 +1087,7 @@ interp(program)
 Asteroid is an eager language, that is, expressions are evaluated as early as possible.  We can trap division-by-zero errors using a try-catch block.
 
 
-```python
-program = \
-'''
+```
 load "io".
 
 try
@@ -1240,8 +1096,6 @@ catch (type,m) do
     println m.
 end
 println "We are still alive...".
-'''
-interp(program)
 ```
 
     integer division or modulo by zero
@@ -1257,9 +1111,7 @@ interp(program)
 Asteroid has two random number generation functions: `random()` generates a random real value in the interval $[0.0,1.0)$ and `randint(a,b)` that generates a random value in the interval $[a,b]$.  The type of the random value generated depends on the type of the values a and b specifying the interval.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "random".
 load "util".
@@ -1275,8 +1127,6 @@ let n = 10.
 println (randint(0.0,toreal(n))).
 println (randint(0,n)).
 
-'''
-interp(program)
 ```
 
     0.6394267984578837
@@ -1301,9 +1151,7 @@ This algorithm is a simple method of generating short sequences of four-digit ra
 To illustrate it with an example, let’s take the number 1234 as the seed. On step 2, it becomes 1522756; after step 3, 01522756. Finally, step 4 extracts the number 5227.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -1320,8 +1168,6 @@ let rval = tointeger(rstr).
 println rval.
 
 assert (rval == 5227)
-'''
-interp(program)
 ```
 
     5227
@@ -1336,9 +1182,7 @@ The quality of the built-in generator of random numbers fully depends on the alg
 In our solution we generate 10 random integers between 0 and 9 and count how many times each of the integers have been generated.  If it is a decent random number generators all numbers should have been generated roughly an equal number of times.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "random".
 
@@ -1351,8 +1195,6 @@ end
 
 println hist.
 
-'''
-interp(program)
 ```
 
     [944,1032,1015,968,981,986,1014,1058,989,1013]
@@ -1370,9 +1212,7 @@ There are two points on a surface, each with their own coordinates, x and y. The
 A straightforward solution would be to use the Pythagorean theorem:
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -1382,8 +1222,6 @@ let d = (sqrt(pow(x@0-y@0,2) + pow(x@1-y@1,2))).
 println d.
 
 assert (d == 2.23606797749979)
-'''
-interp(program)
 ```
 
     2.23606797749979
@@ -1398,9 +1236,7 @@ $
 where in our case $a$ would be the distance vector between points $x$ and $y$,
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 load "vector".
@@ -1412,8 +1248,6 @@ let d = sqrt(dot(a,a)).
 println d.
 
 assert (d == 2.23606797749979)
-'''
-interp(program)
 ```
 
     2.23606797749979
@@ -1435,9 +1269,7 @@ where $N$ is the number of elements in the array $x$; $\bar{x}$ is the average v
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -1451,8 +1283,6 @@ let sigma = sqrt(numerator/denominator).
 println sigma.
 
 assert (sigma == 420.96248961952256)
-'''
-interp(program)
 ```
 
     420.96248961952256
@@ -1475,9 +1305,7 @@ $
 These expressions can be implemented as-is in the code:
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -1499,8 +1327,6 @@ println (x,y).
 -- show that the recovered coordinates are the same
 -- we started with
 assert (isclose(1,x,0.0001) and isclose(2,y,0.0001)).
-'''
-interp(program)
 ```
 
     (1.0000000000000002,2.0)
@@ -1511,9 +1337,7 @@ or smaller by $\pi$. When $x$ is zero, it is either $-\frac{\pi}{2}$ or $\frac{\
 All these variants can be implemented by using with/orwith clauses and conditional matching, as demonstrated below:
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 load "util".
@@ -1550,8 +1374,6 @@ println (x,y).
 -- show that the recovered coordinates are the same
 -- we started with
 assert (isclose(-3,x,0.0001) and isclose(5,y,0.0001)).
-'''
-interp(program)
 ```
 
     (-2.999999999999999,5.000000000000001)
@@ -1566,9 +1388,7 @@ The Monte Carlo method is a statistical method of calculating data whose formula
 To calculate the area of a circle of the radius 1, pairs of random numbers between −1 and 1 are generated. These pairs represent the points in the square in the center of coordinates with sides of length 2. The area of the square is thus 4. If the distance between the random point and the center of the square is less than 1, then this point is located inside the circle of that radius. Counting the number of points that landed inside the circle and the number of points outside the circle gives the approximate value of the area of the circle, as soon as the area of the square is known. Here is the program.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 load "random".
@@ -1587,8 +1407,6 @@ let area = 4.0 * inside / n.
 println area.
 
 assert (area == 3.1392).
-'''
-interp(program)
 ```
 
     3.1392
@@ -1608,9 +1426,7 @@ First, a random number needs to be generated and then
 ask for the initial guess and enter the loop, which compares the guess with the generated number.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "random".
 load "util".
@@ -1626,10 +1442,8 @@ while guess =/= n do
     let guess = tointeger(input("Try again: ")).
 end
 println "Yes, this is it!".
-'''
 # Note: uncomment in order to run the program
-#interp(program)
-```
+#```
 
 ### 41. Binary to integer
 
@@ -1638,9 +1452,7 @@ println "Yes, this is it!".
 In Asteroid this is straight forward using the built-in `tointeger` function passing it a string representation of the binary number and the base.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -1649,8 +1461,6 @@ let int = tointeger(bin,2).
 println int.
 
 assert (int == 45).
-'''
-interp(program)
 ```
 
     45
@@ -1663,9 +1473,7 @@ interp(program)
 In Asteroid this is easily done with the `tobase` function.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -1679,8 +1487,6 @@ println (tobase(val,16)). -- hex
 assert (tointeger(tobase(val,2),2) == val).
 assert (tointeger(tobase(val,8),8) == val).  
 assert (tointeger(tobase(val,16),16) == val).
-'''
-interp(program)
 ```
 
     101010
@@ -1695,9 +1501,7 @@ interp(program)
 Pretty straight forward using string and list manipulation.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -1710,8 +1514,6 @@ let s = tostring number @explode()
 println s.
 
 assert (s == 49).
-'''
-interp(program)
 ```
 
     49
@@ -1724,9 +1526,7 @@ interp(program)
 If we remove all the zeros from a binary number then we left with only 1 characters which we can then count.
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let bits = "1010101" @replace("0","")
@@ -1734,8 +1534,6 @@ let bits = "1010101" @replace("0","")
 println bits.
 
 assert (bits == 4).
-'''
-interp(program)
 ```
 
     4
@@ -1748,9 +1546,7 @@ interp(program)
 The easiest way to achieve that is to treat numbers as strings, sort them alphabetically in descending order, concatenate the pieces to a single string, and get the resulting integer.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -1759,8 +1555,6 @@ println a.
 
 assert (a == 8675451).
 
-'''
-interp(program)
 ```
 
     8675451
@@ -1778,9 +1572,7 @@ In the program below, there are four such sequences: for thousands, hundreds, te
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 load "util".
@@ -1806,8 +1598,6 @@ end
 println roman.
 
 assert (roman == "MMXVIII")
-'''
-interp(program)
 ```
 
     [(2,1000),(0,100),(1,10),(8,1)]
@@ -1833,9 +1623,7 @@ For the larger numbers (21 to 99), there are two cases. If the number is dividab
 The zero name appears only in the case when the given number is zero.
 
 
-```python
-program = \
-'''
+```
 load "io".
 load "math".
 
@@ -1867,8 +1655,6 @@ println (spell_number 15).
 println (spell_number 75).
 println (spell_number 987654).
 println (spell_number 1001).
-'''
-interp(program)
 ```
 
     fifteen
@@ -1892,9 +1678,7 @@ let (b,a) = (a,b).
 Consider the complete program:
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let (a,b) = (10,20).
@@ -1902,8 +1686,6 @@ let (b,a) = (a,b).
 println ("a = "+a,"b = "+b).
 
 assert ((a,b) is (20,10)).
-'''
-interp(program)
 ```
 
     (a = 20,b = 10)
@@ -1916,9 +1698,7 @@ This program prints the swapped values:
 This approach also works with elements of an array:
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let a = [3,5,7,4].
@@ -1926,8 +1706,6 @@ let (a@2,a@3) = (a@3,a@2).
 println a.
 
 assert (a is [3,5,4,7]).
-'''
-interp(program)
 ```
 
     [3,5,4,7]
@@ -1939,17 +1717,13 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let a = [10, 20, 30, 40, 50].
 println (a @reverse()).
 
 assert(a == [50,40,30,20,10]).
-'''
-interp(program)
 ```
 
     [50,40,30,20,10]
@@ -1962,9 +1736,7 @@ interp(program)
 Asteroid does not have a built-in rotate function but such a function is easily constructed using the fact that we can slice lists (see `vix` below).
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -1983,8 +1755,6 @@ println b.
 println c.
 
 assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).
-'''
-interp(program)
 ```
 
     [1,3,5,7,9,11,13,15]
@@ -1999,9 +1769,7 @@ interp(program)
 This is easily accomplished with the built-in `shuffle`.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "random".
 
@@ -2010,8 +1778,6 @@ let b = [1 to 20] @shuffle().
 println b.
 
 assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).
-'''
-interp(program)
 ```
 
     [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]
@@ -2024,9 +1790,7 @@ interp(program)
 For this we use Asteroid's `vector` module which can handle incrementing a vector with a scalar.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "vector".
 
@@ -2035,8 +1799,6 @@ let b = vadd(a,1).
 println b.
 
 assert(b == [2,3,4,5,6,7,8,9,10,11]).
-'''
-interp(program)
 ```
 
     [2,3,4,5,6,7,8,9,10,11]
@@ -2049,9 +1811,7 @@ interp(program)
 Again, here we take advantage of Asteroid's vector module.  Note that the two vectors have to be of the same length in order to add them together.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "vector".
 
@@ -2061,8 +1821,6 @@ let c = vadd(a,b).
 println c.
 
 assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
-'''
-interp(program)
 ```
 
     [40,42,44,46,48,50,52,54,56,58,60]
@@ -2071,9 +1829,7 @@ interp(program)
 The vector module defines a function called `vop` that allows you to combine two vectors using any arbitrary binary function.  Rewriting the above program using `vop`,
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "vector".
 
@@ -2083,8 +1839,6 @@ let c = vop((lambda with (x,y) do return x+y),a,b).
 println c.
 
 assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
-'''
-interp(program)
 ```
 
     [40,42,44,46,48,50,52,54,56,58,60]
@@ -2093,9 +1847,7 @@ interp(program)
 As I said above, any arbitrary binary function. Consider the relational operator `<` expressed as a lambda function,
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "vector".
 load "random".
@@ -2108,8 +1860,6 @@ let c = vop((lambda with (x,y) do return x<y),a,b).
 println c.
 
 assert(c == [false,true,false,false,false,true,false,false,true,true]).
-'''
-interp(program)
 ```
 
     [false,true,false,false,false,true,false,false,true,true]
@@ -2123,9 +1873,7 @@ appear in the second one.
 Here we use Asteroid's `set` module.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "set".
 
@@ -2135,8 +1883,6 @@ let c = sdiff(a,b).
 println c.
 
 assert(c @sort() == [1,2,3,4]).
-'''
-interp(program)
 ```
 
     [2,3,1,4]
@@ -2150,9 +1896,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
@@ -2160,8 +1904,6 @@ let s = a @reduce(lambda with (x,y) do return x+y).
 println s.
 
 assert (s == 125).
-'''
-interp(program)
 ```
 
     125
@@ -2170,9 +1912,7 @@ interp(program)
 Summing up elements that are greater than 10.
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
@@ -2181,8 +1921,6 @@ let s = a @reduce(f,0).
 println s.
 
 assert (s == 92).
-'''
-interp(program)
 ```
 
     92
@@ -2194,9 +1932,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let a = [7, 11, 34, 50, 200].
@@ -2204,8 +1940,6 @@ let avg = a @reduce(lambda with (x,y) do return x+y)/a @length().
 println avg.
 
 assert (avg == 60).
-'''
-interp(program)
 ```
 
     60
@@ -2218,9 +1952,7 @@ interp(program)
 Compute the moving average over 100 random values using a window of size 7 (3 values below, 3 values above, and the current values).
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "random".
 
@@ -2284,8 +2016,6 @@ let dt = [1 to 100] @map(lambda with _ do return random()).
 let mavg = [3 to 96] @map(lambda with i do return sum(window(dt,i))/7).
 
 plot(dt @[3 to 96],mavg).
-'''
-interp(program)
 ```
 
 
@@ -2297,16 +2027,12 @@ interp(program)
 > Tell if the given value is in the list.
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let array = [10, 14, 0, 15, 17, 20, 30, 35].
 let x = 17.
 println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).
-'''
-interp(program)
 ```
 
     17 is in the list
@@ -2315,9 +2041,7 @@ interp(program)
 We can also use a reduction function to solve this,
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 let array = [10, 14, 0, 15, 17, 20, 30, 35].
@@ -2328,8 +2052,6 @@ if array @reduce(lambda with (acc,i) do return true if i==x else acc,false) do
 else
     println (x+" is not in the list").
 end
-'''
-interp(program)
 ```
 
     17 is in the list
@@ -2342,17 +2064,13 @@ interp(program)
 The easiest way to do this is with a reduction.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
 let array = [2, 4, 18, 9, 16, 7, 10].
 let odd = array @reduce(lambda with (acc,i) do return i if isnone(acc) and mod(i,2) else acc,none).
 println odd.
-'''
-interp(program)
 ```
 
     9
@@ -2365,9 +2083,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -2375,8 +2091,6 @@ let array = [20 to 30] @filter(lambda with x do return mod(x,2)).
 println array.
 
 assert (array == [21,23,25,27,29]).
-'''
-interp(program)
 ```
 
     [21,23,25,27,29]
@@ -2385,9 +2099,7 @@ interp(program)
 We can use an index vector to accomplish  the same thing,
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -2396,8 +2108,6 @@ let array = a @[1 to a @length()-1 step 2] .
 println array.
 
 assert (array == [21,23,25,27,29]).
-'''
-interp(program)
 ```
 
     [21,23,25,27,29]
@@ -2409,9 +2119,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "math".
 
@@ -2420,8 +2128,6 @@ let cnt = dt @count("grape").
 println cnt.
 
 assert (cnt == 2).
-'''
-interp(program)
 ```
 
     2
@@ -2434,9 +2140,7 @@ interp(program)
 Converting a list to a set will remove all duplicate elements in the list.
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "set".
 
@@ -2449,8 +2153,6 @@ let a = unique([2, 3, 7, 4, 5, 5, 6, 2, 10, 7]).
 println a.
 
 assert (a == [2,3,4,5,6,7,10])
-'''
-interp(program)
 ```
 
     [2,3,4,5,6,7,10]
@@ -2463,9 +2165,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 
 function max with lst:%list do
@@ -2484,8 +2184,6 @@ println a.
 println b.
 
 assert (a == 15 and b == 2).
-'''
-interp(program)
 ```
 
     15
@@ -2499,9 +2197,7 @@ interp(program)
 
 
 
-```python
-program =\
-'''
+```
 load "io".
 load "util".
 
@@ -2511,14 +2207,12 @@ let b = toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
 println b.
 
 assert (b).
-'''
-interp(program)
 ```
 
     true
 
 
 
-```python
+```
 
 ```
