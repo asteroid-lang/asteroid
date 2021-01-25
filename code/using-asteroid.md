@@ -38,9 +38,9 @@ interp(program,prologue=True)
     Hello, World!
 
 
-Two other print functions exists: 
+Two other print functions exists:
 - `print` - print without appending a new line character.
-- `raw_print` - print internal term structure. 
+- `raw_print` - print internal term structure.
 
 
 ```python
@@ -158,9 +158,9 @@ function unique with (x,y) do
         return x.
     end
 end
-        
-let digits = "332211" @explode() 
-                      @sort() 
+
+let digits = "332211" @explode()
+                      @sort()
                       @reduce(unique,[]).
 println digits.
 assert(digits == ["1","2","3"]).
@@ -186,8 +186,8 @@ We use the `explode` function to turn a string into a list of characters, then w
 program = \
 '''
 load "io".
-let str = "Hello, World!" @explode() 
-                          @reverse() 
+let str = "Hello, World!" @explode()
+                          @reverse()
                           @join("").
 println str.
 assert(str == "!dlroW ,olleH").
@@ -207,7 +207,7 @@ interp(program)
 program = \
 '''
 load "io".
-let str = "   Hello  ,   World    !   " @trim() 
+let str = "   Hello  ,   World    !   " @trim()
                                         @replace("  ","").
 println str.
 assert(str == "Hello, World!").
@@ -233,9 +233,9 @@ program = \
 load "io".
 
 function title with w do
-    let letter_list = w @tolower() 
+    let letter_list = w @tolower()
                         @explode().
-    let first_letter = letter_list @0 
+    let first_letter = letter_list @0
                                    @toupper().
     if letter_list @length() > 1 do
         let title_case = ([first_letter] + letter_list @[1 to letter_list@length()-1]) @join("").
@@ -246,8 +246,8 @@ function title with w do
 end
 
 let str = "once upon a time".
-let camel_str = str @split() 
-                    @map(title) 
+let camel_str = str @split()
+                    @map(title)
                     @join("").
 println camel_str.
 assert(camel_str == "OnceUponATime").
@@ -341,7 +341,7 @@ program = \
 '''
 load "io".
 
-let dna2rna_table = 
+let dna2rna_table =
     [
     ("A","U"),
     ("C","G"),
@@ -359,8 +359,8 @@ function dna2rna with x do
 end
 
 let dna_seq = "ACCATCAGTC".
-let rna_seq = dna_seq @explode() 
-                      @map(dna2rna) 
+let rna_seq = dna_seq @explode()
+                      @map(dna2rna)
                       @join("").
 println rna_seq.
 
@@ -396,7 +396,7 @@ function encode with (v:%string) %if len(v) == 1 do
     -- only lowercase letters are encoded
     if not (ascii(v) in [97 to 122]) do
         return v.
-    else 
+    else
         return encode_table @(ascii(v)-ascii("a")).
     end
 end
@@ -405,14 +405,14 @@ function decode with (v:%string) %if len(v) == 1 do
     -- only lowercase letters are decoded
     if not (ascii(v) in [97 to 122]) do
         return v.
-    else 
+    else
         return encode_table @(ascii(v)-ascii("w")+4).
     end
 end
 
 let message = "hello, world!"
-let secret = message @explode() 
-                     @map(encode) 
+let secret = message @explode()
+                     @map(encode)
                      @join("").
 println secret.
 
@@ -578,7 +578,7 @@ let str2 = "iceman".
 
 function normalize with str do
     return str @explode()
-               @sort() 
+               @sort()
                @join("").
 end
 
@@ -640,11 +640,11 @@ interp(program)
 
 The main idea behind the solution is to scan the string with a window of
 varying width. In other words, starting from a given character, test all the
-substrings of any length possible at that position. 
+substrings of any length possible at that position.
 Now, extract the substring and do the check similar to the solution of Task
 16, Palindrome test. Here, we have to be careful to check the palindrome
 without taking into account the non-letter characters but saving the result as
-part of the original string. 
+part of the original string.
 
 
 ```python
@@ -674,8 +674,8 @@ let longest_palindrome = "".
 for i in 0 to str @length()-2 do
     for j in i+1 to str @length()-1 do
         let str1 = str @[i to j].
-        if palindrome_test(str1) and 
-           str1 @length() > longest_palindrome @length() do 
+        if palindrome_test(str1) and
+           str1 @length() > longest_palindrome @length() do
             let longest_palindrome = str1.
         end
     end
@@ -796,7 +796,7 @@ Other constants are also available.
 program = \
 '''
 load "io".
-load "math". 
+load "math".
 
 println e.
 println tau. -- tau=2*pi
@@ -812,7 +812,7 @@ interp(program)
 
 > Print the factorial of a given number.
 
-By definition, the factorial of a positive integer number N is a product of all the integers numbering from 1 to N, including N. Our first solution is based on the direct implementation of the definition above using the list `reduce` function. 
+By definition, the factorial of a positive integer number N is a product of all the integers numbering from 1 to N, including N. Our first solution is based on the direct implementation of the definition above using the list `reduce` function.
 
 
 ```python
@@ -856,7 +856,7 @@ let POS_INT = pattern with (x:%integer) %if x > 0.
 let NEG_INT = pattern with (x:%integer) %if x < 0.
 
 function fact
-    with 0 do 
+    with 0 do
         return 1
     orwith n:*POS_INT do
         return n * fact (n-1).
@@ -1112,7 +1112,7 @@ for (n %if isprime(n)) in 1 to 1000000 do
         break.
     end
 end
-    
+
 '''
 interp(program)
 ```
@@ -1298,7 +1298,7 @@ This algorithm is a simple method of generating short sequences of four-digit ra
 4. Take the middle four digits.
 5. Repeat from step 2.
 
-To illustrate it with an example, let’s take the number 1234 as the seed. On step 2, it becomes 1522756; after step 3, 01522756. Finally, step 4 extracts the number 5227. 
+To illustrate it with an example, let’s take the number 1234 as the seed. On step 2, it becomes 1522756; after step 3, 01522756. Finally, step 4 extracts the number 5227.
 
 
 ```python
@@ -1311,7 +1311,7 @@ let n = 1234.
 let sq = n*n.
 let sq_str = tostring(sq).
 if sq_str @length() < 8 do
-    let prefix = [1 to 8-sq_str@length()] @map(lambda with _ do return "0") 
+    let prefix = [1 to 8-sq_str@length()] @map(lambda with _ do return "0")
                                           @join("").
     let sq_str = prefix + sq_str.
 end
@@ -1527,7 +1527,7 @@ function cartesian_to_polar with (x,y) do
     return (sqrt(pow(x,2)+pow(y,2)),cartesian_to_psi(x,y)).
 end
 
-function cartesian_to_psi 
+function cartesian_to_psi
     with (x,y) %if x > 0  do
         return atan(toreal(y)/x).
     orwith (x,y) %if x < 0 and y >= 0 do
@@ -1541,7 +1541,7 @@ function cartesian_to_psi
     orwith (x,y) %if x == 0 and y == 0 do
         return none.
     end
-    
+
 let (r,psi) = cartesian_to_polar(-3,5).
 let (x,y) = polar_to_cartesian(r,psi).
 
@@ -1575,9 +1575,9 @@ load "random".
 
 seed(42).
 
-let inside = 0. 
+let inside = 0.
 let n = 10000.
-for _ in 1 to n do 
+for _ in 1 to n do
     let point = (randint(-1.0,1.0),randint(-1.0,1.0)).
     if sqrt(pow(point@0,2)+pow(point@1,2)) <= 1.0 do
         let inside = inside+1.
@@ -1604,7 +1604,7 @@ interp(program)
 
 > Write a program that generates a random integer number 0 through 10 and asks the user to guess it, saying if the entered value is too small or too big.
 
-First, a random number needs to be generated and then 
+First, a random number needs to be generated and then
 ask for the initial guess and enter the loop, which compares the guess with the generated number.
 
 
@@ -1676,9 +1676,9 @@ println (tobase(val,8)).  -- oct
 println (tobase(val,16)). -- hex
 
 -- make sure that conversions are correct in both directions
-assert (tointeger(tobase(val,2),2) == val). 
+assert (tointeger(tobase(val,2),2) == val).
 assert (tointeger(tobase(val,8),8) == val).  
-assert (tointeger(tobase(val,16),16) == val). 
+assert (tointeger(tobase(val,16),16) == val).
 '''
 interp(program)
 ```
@@ -1844,20 +1844,20 @@ let names = ["zero","one","two","three","four","five","six","seven","eight","nin
              "sixteen","seventeen","eighteen","nineteen","twenty","thirty",
              "forty","fifty","sixty","seventy","eighty","ninety"].
 
-function spell_number 
+function spell_number
     with (n:%integer) %if n < 20 do
         return names @n.
-    orwith (n:%integer) %if n < 100 do 
+    orwith (n:%integer) %if n < 100 do
         let r = names @(n / 10 + 18).
         let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
         return r.
     orwith (n:%integer) %if n < 1000 do  
         return spell_part(n,100,"hundred").
-    orwith (n:%integer) %if n < 1000000 do 
+    orwith (n:%integer) %if n < 1000000 do
         return spell_part(n,1000,"thousand").
     end
 
-function spell_part 
+function spell_part
     with (n:%integer,base:%integer,name:%string) do
         let r = spell_number(n/base) + " " + name.
         return r + " " + spell_number(mod(n,base)) if mod(n,base) else r.
@@ -1897,7 +1897,7 @@ program =\
 '''
 load "io".
 
-let (a,b) = (10,20). 
+let (a,b) = (10,20).
 let (b,a) = (a,b).
 println ("a = "+a,"b = "+b).
 
@@ -1923,7 +1923,7 @@ load "io".
 
 let a = [3,5,7,4].
 let (a@2,a@3) = (a@3,a@2).
-println a. 
+println a.
 
 assert (a is [3,5,4,7]).
 '''
@@ -1945,7 +1945,7 @@ program =\
 load "io".
 
 let a = [10, 20, 30, 40, 50].
-println (a @reverse()). 
+println (a @reverse()).
 
 assert(a == [50,40,30,20,10]).
 '''
@@ -1968,7 +1968,7 @@ program =\
 load "io".
 load "math".
 
-function rotate with (l:%list,i:%integer) do 
+function rotate with (l:%list,i:%integer) do
     let n = l @length().
     let vix = range n @map(lambda with x do return mod(x+i,n)).
     return l @vix.
@@ -2226,7 +2226,7 @@ load "random".
 
 seed(42).
 
--- Asteroid allows the user to escape to the Python 
+-- Asteroid allows the user to escape to the Python
 -- ecosystem.  Here we use this to construct a
 -- plot of the moving average
 function plot with (dt,avg) do escape
@@ -2289,7 +2289,7 @@ interp(program)
 ```
 
 
-![png](Using%20Asteroid_files/Using%20Asteroid_148_0.png)
+![png](https://github.com/lutzhamel/asteroid/raw/master/code/moving-avg.png)
 
 
 ### 58. Is an element in a list?
@@ -2324,8 +2324,8 @@ let array = [10, 14, 0, 15, 17, 20, 30, 35].
 let x = 17.
 
 if array @reduce(lambda with (acc,i) do return true if i==x else acc,false) do
-    println (x+" is in the list"). 
-else 
+    println (x+" is in the list").
+else
     println (x+" is not in the list").
 end
 '''
@@ -2349,7 +2349,7 @@ load "io".
 load "math".
 
 let array = [2, 4, 18, 9, 16, 7, 10].
-let odd = array @reduce(lambda with (acc,i) do return i if isnone(acc) and mod(i,2) else acc,none). 
+let odd = array @reduce(lambda with (acc,i) do return i if isnone(acc) and mod(i,2) else acc,none).
 println odd.
 '''
 interp(program)
