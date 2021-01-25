@@ -3,7 +3,6 @@
 This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.
 
 
-# Part I
 # Chapter: Strings
 ## Section: Using Strings
 
