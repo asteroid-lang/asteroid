@@ -16,8 +16,8 @@ The canonical `Hello, World!` program.  The easiest way to write this in Asteroi
 
 ```
 load "io".
+
 println "Hello, World!".
-interp(program,prologue=True)
 ```
 
     Hello, World!
@@ -30,6 +30,7 @@ Two other print functions exists:
 
 ```
 load "io".
+
 raw_print "Hello, World!".
 ```
 
@@ -47,6 +48,7 @@ Here is our first solution using a separate function for each of the steps,
 
 ```
 load "io".
+
 print ("Enter your name: ").
 let name = input().
 print ("Hello, "+name+"!").
@@ -57,6 +59,7 @@ Letting the function `input` do the prompting,
 
 ```
 load "io".
+
 let name = input("Enter your name: ").
 print ("Hello, "+name+"!").
 ```
@@ -66,6 +69,7 @@ Doing everything in one step,
 
 ```
 load "io".
+
 print ("Hello, "+input("Enter your name: ")+"!").
 ```
 
@@ -79,6 +83,7 @@ In order to print the length of a string we can use the function `len` available
 ```
 load "io".
 load "util".
+
 println (len("Hello!")).
 ```
 
@@ -90,6 +95,7 @@ We can also use the string member function `length` in order to compute the leng
 
 ```
 load "io".
+
 println ("Hello!" @length()).
 ```
 
@@ -139,6 +145,7 @@ We use the `explode` function to turn a string into a list of characters, then w
 
 ```
 load "io".
+
 let str = "Hello, World!" @explode()
                           @reverse()
                           @join("").
@@ -157,6 +164,7 @@ assert(str == "!dlroW ,olleH").
 
 ```
 load "io".
+
 let str = "   Hello  ,   World    !   " @trim()
                                         @replace("  ","").
 println str.
