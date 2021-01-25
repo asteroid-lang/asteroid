@@ -3,23 +3,12 @@
 This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.
 
 
-```
-# make the Asteroid interpreter available in this notebook
-import sys
-sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
-from asteroid_interp import interp
-```
-
-**Note**: We use program as strings in this notebook so that we can run them right here in this notebook.
-
-**Note**: There is a bug in the parser that does not allow for successive applications of member functions.  Those expressions need to be explicitly parenthesized.
-
 # Part I
-# Chapter 1: Strings
-## 1.1 Using Strings
+# Chapter: Strings
+## Section: Using Strings
 
 
-### 1. Hello, World!
+### Challenge: Hello, World!
 
 > Print ‘Hello, World!’
 
@@ -50,7 +39,7 @@ raw_print "Hello, World!".
 
 Here we can see that an Asteroid string is tuple consisting of a type field and a value field.
 
-### 2. Greet a person
+### Challenge: Greet a person
 
 > Ask a user for their name and greet them by printing ‘Hello, <Name\>!’
 
@@ -81,7 +70,7 @@ load "io".
 print ("Hello, "+input("Enter your name: ")+"!").
 ```
 
-### 3. String length
+### Challenge: String length
 
 > Print the length of a string.
 
@@ -108,7 +97,7 @@ println ("Hello!" @length()).
     6
 
 
-### 4. Unique digits
+### Challenge: Unique digits
 
 > Print unique digits from a given integer number.
 
@@ -140,9 +129,9 @@ assert(digits == ["1","2","3"]).
 
 Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator and the second argument get instantiated with the elements of the list to be processed.  In our function `unique` the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is on the list.  If it is not then it adds it to the list otherwise it just returns the accumulator unchanged.
 
-## 1.2 Modifying string data
+## Section: Modifying string data
 
-### 5. Reverse a string
+### Challenge: Reverse a string
 
 > Print a string in the reversed order from right to left.
 
@@ -162,7 +151,7 @@ assert(str == "!dlroW ,olleH").
     !dlroW ,olleH
 
 
-### 6. Removing blanks from a string
+### Challenge: Removing blanks from a string
 
 > Remove leading, trailing and double spaces from a given string.
 
@@ -179,7 +168,7 @@ assert(str == "Hello, World!").
     Hello, World!
 
 
-### 7. Camel case
+### Challenge: Camel case
 
 > Create a camel-case identifier from a given phrase.
 
@@ -216,7 +205,7 @@ assert(camel_str == "OnceUponATime").
     OnceUponATime
 
 
-### 8. Incrementing filenames
+### Challenge: Incrementing filenames
 
 > Generate a list of filenames like file1.txt, file2.txt, etc.
 
@@ -239,7 +228,7 @@ end
     file5.txt
 
 
-### 9. Random passwords
+### Challenge: Random passwords
 
 > Generate a random string that can be used as a password.
 
@@ -272,7 +261,7 @@ assert (pwd == "e3zvshdbS43brt#")
     e3zvshdbS43brt#
 
 
-### 10. DNA-to-RNA transcription
+### Challenge: DNA-to-RNA transcription
 
 > Convert the given DNA sequence to a compliment RNA.
 
@@ -318,7 +307,7 @@ assert(rna_seq == "UGGUAGUCAG").
     UGGUAGUCAG
 
 
-### 11. Caesar cipher
+### Challenge: Caesar cipher
 
 > Encode a message using the Caesar cipher technique.
 
@@ -374,9 +363,9 @@ assert (decoded_msg == "hello, world!")
     hello, world!
 
 
-## 1.3 Text Analysis
+## Section: Text Analysis
 
-### 12. Plural Endings
+### Challenge: Plural Endings
 
 > Put a noun in the correct form — singular or plural — depending on the number next to it.
 
@@ -403,7 +392,7 @@ end
     5 files found
 
 
-### 13. The most frequent word
+### Challenge: The most frequent word
 
 > Find the most frequent word in the given text.
 
@@ -452,7 +441,7 @@ assert (most_frequent_word == "sed").
     sed
 
 
-### 14. The longest common substring
+### Challenge: The longest common substring
 
 > Find the longest common substring in the given two strings.
 
@@ -491,7 +480,7 @@ assert (common == " fox ").
     The longest common substring is ' fox '.
 
 
-### 15. Anagram test
+### Challenge: Anagram test
 
 > Tell if the two words are anagrams of each other.
 
@@ -522,7 +511,7 @@ assert (normalize(str1) == normalize(str2)).
     Anagrams
 
 
-### 16. Palindrome test
+### Challenge: Palindrome test
 
 > Check if the entered string is palindromic.
 
@@ -556,7 +545,7 @@ assert (clean_str == clean_str @flip()).
     Palindromic
 
 
-### 17. The longest palindrome
+### Challenge: The longest palindrome
 
 > Find the longest palindromic substring in the given string.
 
@@ -608,7 +597,7 @@ println longest_palindrome.
     o, Wo
 
 
-### 18. Finding duplicate texts
+### Challenge: Finding duplicate texts
 
 > Find duplicate fragments in the same text.
 
@@ -678,14 +667,14 @@ end
     sit amet condimentum: 2
 
 
-# Chapter 2: Numbers
-## 1.1 Using numbers
+# Chapter: Numbers
+## Section: Using numbers
 
 
 
-### 19. $\pi$
+### Challenge: Pi
 
-> Print the value of $\pi$.
+> Print the value of pi.
 
 
 
@@ -714,7 +703,7 @@ println tau. -- tau=2*pi
     6.283185307179586
 
 
-### 20. Factorial!
+### Challenge: Factorial!
 
 > Print the factorial of a given number.
 
@@ -733,18 +722,15 @@ assert (fact == 6).
     6
 
 
-Our second solutions uses the recursive definition of factorial,
+Our second solution uses the recursive definition of factorial,
 
-$
-    x!=
-\begin{cases}
-    1 &\text{if } x = 0,\\
-    x(x-1)! &\text{if } x > 0,\\
-    \perp &\text{if } x < 0,
-\end{cases}
-$
+```
+         | 1       if  x = 0,
+    x! = | x(x-1)! if  x > 0,
+         | undef   if  x < 0,
+```
 
-where $x \in \text{Int}$.
+where `x in Int`.
 Here, each case specifies what value the function should return if
 the predicate applied to the input is true.  The last case is of some interest because it states that the function is undefined for negative integers.
 
@@ -771,19 +757,19 @@ assert (fact(3) == 6).
     The factorial of 3 is: 6
 
 
-### 21. Fibonacci numbers
+### Challenge: Fibonacci numbers
 
-> Print the $N^{th}$ Fibonacci number.
+> Print the Nth Fibonacci number.
 
 Fibonacci numbers are defined by the recurring formula:
 
-$
+```
 f_n = f_{n-1} + f_{n-2}
-$
+```
 
-You can assign two values at a time (see Task 48, Swap two values). You can use that technique for calculating the next Fibonacci number from the pre- vious two. To bootstrap the algorithm, the two first values are needed. In one of the definitions of the Fibonacci row, the first two values are both 1.
+You can assign two values at a time (Challenge: Swap two values). You can use that technique for calculating the next Fibonacci number from the pre- vious two. To bootstrap the algorithm, the two first values are needed. In one of the definitions of the Fibonacci row, the first two values are both 1.
 
-Here we give an iterative solutions.  It is clear that there exists a trival recursive solution by implementing the above formula.
+Here we give an iterative solutions.  It is clear that there exists a trivial recursive solution by implementing the above formula.
 
 
 
@@ -804,7 +790,7 @@ assert (f_1 == 55)
     55
 
 
-### 22. Print squares
+### Challenge: Print squares
 
 > Print the squares of the numbers from 1 to 10.
 
@@ -824,7 +810,7 @@ assert (sq == [1,4,9,16,25,36,49,64,81,100])
     [1,4,9,16,25,36,49,64,81,100]
 
 
-### 23. Powers of two
+### Challenge: Powers of two
 
 > Print the first ten powers of two.
 
@@ -845,7 +831,7 @@ assert (p2 == [1,2,4,8,16,32,64,128,256,512])
     [1,2,4,8,16,32,64,128,256,512]
 
 
-### 24. Odd and even numbers
+### Challenge: Odd and even numbers
 
 > Print the first ten odd numbers. Print the first ten even numbers.
 
@@ -881,13 +867,14 @@ for (n %if mod(n,2) == 0) in 1 to 10 do
 end
 
 println even.
+
 assert(even == [2,4,6,8,10])
 ```
 
     [2,4,6,8,10]
 
 
-### 25. Compare numbers approximately
+### Challenge: Compare numbers approximately
 
 > Compare the two non-integer values approximately.
 
@@ -907,13 +894,7 @@ assert (not isclose(2.0,2.00001)).
 assert (isclose(2.0,2.00001,0.0001)).
 ```
 
-### 26. Multiplying big numbers
-
-> Create a program to multiply very big integer numbers.
-
-**Note**: Asteroid does not support big integer arithmetic.
-
-### 27. Prime numbers
+### Challenge: Prime numbers
 
 > Decide if the given number is a prime number.
 
@@ -948,7 +929,7 @@ assert (not isprime(15)).
     false
 
 
-### 28. List of prime numbers
+### Challenge: List of prime numbers
 
 > Print the list of the first ten prime numbers.
 
@@ -995,7 +976,7 @@ end
     29
 
 
-### 29. Prime factors
+### Challenge: Prime factors
 
 > Find the prime factors of a given number.
 
@@ -1050,7 +1031,7 @@ assert (factors == [3,5,11])
     [3,5,11]
 
 
-### 30. Reducing a fraction
+### Challenge: Reducing a fraction
 
 > Compose a fraction from the two given integers — numerator and denominator — and reduce it to lowest terms.
 
@@ -1080,7 +1061,7 @@ assert (a/b == numerator/denominator).
     35
 
 
-### 31. Divide by zero
+### Challenge: Divide by zero
 
 > Do something with the division by zero.
 
@@ -1102,9 +1083,9 @@ println "We are still alive...".
     We are still alive...
 
 
-## 2.1 Random numbers
+## Section: Random numbers
 
-### 32. Generating random numbers
+### Challenge: Generating random numbers
 
 > Generate a random number between 0 and N.
 
@@ -1136,7 +1117,7 @@ println (randint(0,n)).
     2
 
 
-### 33. Neumann’s random generator
+### Challenge: Neumann’s random generator
 
 > Implement the von Neumann’s random number generator (also known as Middle-square method).
 
@@ -1173,7 +1154,7 @@ assert (rval == 5227)
     5227
 
 
-### 34. Histogram of random numbers
+### Challenge: Histogram of random numbers
 
 > Test the quality of the random generator by using a histogram to visualise the distribution.
 
@@ -1200,11 +1181,11 @@ println hist.
     [944,1032,1015,968,981,986,1014,1058,989,1013]
 
 
-## 2.3 Mathematical problems
+## Section: Mathematical problems
 
 
 
-### 35. Distance between two points
+### Challenge: Distance between two points
 
 > Calculate the distance between the two points on a surface.
 
@@ -1229,11 +1210,11 @@ assert (d == 2.23606797749979)
 
 Another approach is using the math identity,
 
-$
-||a|| = \sqrt{a\bullet a}
-$
+```
+||a|| = sqrt(a . a)
+```
 
-where in our case $a$ would be the distance vector between points $x$ and $y$,
+where `.` represents the dot product. In our case `a` would be the distance vector between points `x` and `y`,
 
 
 ```
@@ -1255,17 +1236,17 @@ assert (d == 2.23606797749979)
 
 The interesting  part about the second approach is that it is completely dimension independent.  Note that except for the definition of the vectors $x$ and $y$ dimension never play a part of the definition of the program.
 
-### 36. Standard deviation
+### Challenge: Standard deviation
 
 > For the given data, calculate the standard deviation value (sigma).
 
 Standard deviation is a statistical term that shows how compact data distribution is. The formula is the following:
 
-$
-\sigma = \sqrt{\frac{\Sigma (x_i - \bar{x})^2}{N - 1}}
-$
+```
+sigma = sqrt(Sum(x_i - avg_x)^2/(N - 1))
+```
 
-where $N$ is the number of elements in the array $x$; $\bar{x}$ is the average value (see Task 56, Average on an array).
+where `N` is the number of elements in the array `x`; `avg_x` is the average value (Challenge: Average on an array).
 
 
 
@@ -1288,19 +1269,19 @@ assert (sigma == 420.96248961952256)
     420.96248961952256
 
 
-### 37. Polar coordinates
+### Challenge: Polar coordinates
 
 > Convert the Cartesian coordinates to polar and backward.
 
 Polar coordinates are a convenient way of representing points on a surface with the two values: distance from the centre of coordinates and the angle between the vector and the pole axis.
-The conversion formulae between the Cartesian and polar systems, which is valid for **positive** x and y, are the following:
+The conversion formulae between the Cartesian and polar systems, which is valid for **positive** `x` and `y`, are the following:
 
-$
-x = r \cos \psi\\
-y = r \sin \psi\\
-r = \sqrt{x^2 + y^2}\\
-\psi = \arctan \frac{y}{x}
-$
+```
+x = r cos(psi)
+y = r sin(psi)
+r = sqrt(x^2 + y^2)
+psi = arctan(x/y)
+```
 
 These expressions can be implemented as-is in the code:
 
@@ -1332,8 +1313,8 @@ assert (isclose(1,x,0.0001) and isclose(2,y,0.0001)).
     (1.0000000000000002,2.0)
 
 
-For the **negative** $x$ and $y$, the Cartesian-to-polar conversion is a bit more complicated. Depending on the quadrant of the point, the $\psi$ value is bigger
-or smaller by $\pi$. When $x$ is zero, it is either $-\frac{\pi}{2}$ or $\frac{\pi}{2}$.
+For the **negative** `x` and `y`, the Cartesian-to-polar conversion is a bit more complicated. Depending on the quadrant of the point, the `psi` value is bigger
+or smaller by `pi`. When `x` is zero, it is either `-pi/2` or `pi/2`.
 All these variants can be implemented by using with/orwith clauses and conditional matching, as demonstrated below:
 
 
@@ -1379,11 +1360,11 @@ assert (isclose(-3,x,0.0001) and isclose(5,y,0.0001)).
     (-2.999999999999999,5.000000000000001)
 
 
-### 38. Monte Carlo method
+### Challenge: Monte Carlo method
 
 > Calculate the area of a circle of radius 1 using the Monte Carlo method.
 
-The Monte Carlo method is a statistical method of calculating data whose formula is not known. The idea is to generate a big number of random num- bers and see how many of them satisfy the condition.
+The Monte Carlo method is a statistical method of calculating data whose formula is not known. The idea is to generate a big number of random numbers and see how many of them satisfy the condition.
 
 To calculate the area of a circle of the radius 1, pairs of random numbers between −1 and 1 are generated. These pairs represent the points in the square in the center of coordinates with sides of length 2. The area of the square is thus 4. If the distance between the random point and the center of the square is less than 1, then this point is located inside the circle of that radius. Counting the number of points that landed inside the circle and the number of points outside the circle gives the approximate value of the area of the circle, as soon as the area of the square is known. Here is the program.
 
@@ -1412,13 +1393,7 @@ assert (area == 3.1392).
     3.1392
 
 
-### 39. Unicode digits
-
-> Print all Unicode digits.
-
-**Note**: Asteroid currently does not support Unicode.
-
-### 40. Guess the number
+### Challenge: Guess the number
 
 > Write a program that generates a random integer number 0 through 10 and asks the user to guess it, saying if the entered value is too small or too big.
 
@@ -1442,10 +1417,9 @@ while guess =/= n do
     let guess = tointeger(input("Try again: ")).
 end
 println "Yes, this is it!".
-# Note: uncomment in order to run the program
-#```
+```
 
-### 41. Binary to integer
+### Challenge: Binary to integer
 
 > Convert a binary number to a decimal integer.
 
@@ -1466,7 +1440,7 @@ assert (int == 45).
     45
 
 
-### 42. Integer as binary, octal, and hex
+### Challenge: Integer as binary, octal, and hex
 
 > Print a given integer number in the binary, octal, and hexadecimal representations.
 
@@ -1494,7 +1468,7 @@ assert (tointeger(tobase(val,16),16) == val).
     2A
 
 
-### 43. Sum of digits
+### Challenge: Sum of digits
 
 > Calculate the sum of digits of a given number.
 
@@ -1519,7 +1493,7 @@ assert (s == 49).
     49
 
 
-### 44. Bit counter
+### Challenge: Bit counter
 
 > Count the number of bits set to 1 in a binary representation of a positive integer number.
 
@@ -1560,7 +1534,7 @@ assert (a == 8675451).
     8675451
 
 
-### 46. Convert to Roman numerals
+### Challenge: Convert to Roman numerals
 
 > Convert an integer number to a Roman numerals string.
 
@@ -1604,7 +1578,7 @@ assert (roman == "MMXVIII")
     MMXVIII
 
 
-### 47. Spelling numbers
+### Challenge: Spelling numbers
 
 > Write an integer number below one million in words.
 
@@ -1663,11 +1637,11 @@ println (spell_number 1001).
     one thousand one
 
 
-# Chapter 3: Aggregate Data Types
+# Chapter: Aggregate Data Types
 
-## 3.1 Manipulating lists and arrays
+## Section: Manipulating lists and arrays
 
-### 48. Swap two values
+### Challenge: Swap two values
 
 > Swap the values of two variables.
 
@@ -1711,7 +1685,7 @@ assert (a is [3,5,4,7]).
     [3,5,4,7]
 
 
-### 49. Reverse a list
+### Challenge: Reverse a list
 
 > Print the given list in reverse order.
 
@@ -1729,7 +1703,7 @@ assert(a == [50,40,30,20,10]).
     [50,40,30,20,10]
 
 
-### 50. Rotate a list
+### Challenge: Rotate a list
 
 > Move all elements of an array N positions to the left or to the right.
 
@@ -1762,7 +1736,7 @@ assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).
     [11,13,15,1,3,5,7,9]
 
 
-### 51. Randomise an array
+### Challenge: Randomise an array
 
 > Shuffle the elements of an array in random order.
 
@@ -1783,7 +1757,7 @@ assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).
     [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]
 
 
-### 52. Incrementing array elements
+### Challenge: Incrementing array elements
 
 > Increment each element in an array.
 
@@ -1804,7 +1778,7 @@ assert(b == [2,3,4,5,6,7,8,9,10,11]).
     [2,3,4,5,6,7,8,9,10,11]
 
 
-### 53. Adding up two arrays
+### Challenge: Adding up two arrays
 
 > Take two arrays and create a new one whose elements are the sums of the corresponding items of the initial arrays.
 
@@ -1865,7 +1839,7 @@ assert(c == [false,true,false,false,false,true,false,false,true,true]).
     [false,true,false,false,false,true,false,false,true,true]
 
 
-### 54. Exclusion of two arrays
+### Challenge: Exclusion of two arrays
 
 > From the given two arrays, find the elements of the first array which do not
 appear in the second one.
@@ -1888,9 +1862,9 @@ assert(c @sort() == [1,2,3,4]).
     [2,3,1,4]
 
 
-## 3.2 Information retrieval
+## Section: Information retrieval
 
-### 55. Sum of the elements of an array
+### Challenge: Sum of the elements of an array
 
 > Find the sum of the elements of an array of integers.
 
@@ -1926,7 +1900,7 @@ assert (s == 92).
     92
 
 
-### 56. Average of an array
+### Challenge: Average of an array
 
 > Find the average value of the given array of numbers.
 
@@ -1945,7 +1919,7 @@ assert (avg == 60).
     60
 
 
-### 57. Moving average
+### Challenge: Moving average
 
 > Calculate the moving average for the given array of numbers.
 
@@ -2019,10 +1993,10 @@ plot(dt @[3 to 96],mavg).
 ```
 
 
-![png](https://github.com/lutzhamel/asteroid/raw/master/code/moving-avg.png)
+![Moving Average](moving-avg.png)
 
 
-### 58. Is an element in a list?
+### Challenge: Is an element in a list?
 
 > Tell if the given value is in the list.
 
@@ -2057,7 +2031,7 @@ end
     17 is in the list
 
 
-### 59. First odd number
+### Challenge: First odd number
 
 > Find the first odd number in a list of integers.
 
@@ -2076,7 +2050,7 @@ println odd.
     9
 
 
-### 60. Take every second element
+### Challenge: Take every second element
 
 > Form a new array by picking every second element from the original array.
 
@@ -2113,7 +2087,7 @@ assert (array == [21,23,25,27,29]).
     [21,23,25,27,29]
 
 
-### 61. Number of occurrences in array
+### Challenge: Number of occurrences in array
 
 > Count how many times a particular element appears in the array.
 
@@ -2133,7 +2107,7 @@ assert (cnt == 2).
     2
 
 
-### 62. Finding unique elements
+### Challenge: Finding unique elements
 
 > Print all unique elements of the given array.
 
@@ -2158,7 +2132,7 @@ assert (a == [2,3,4,5,6,7,10])
     [2,3,4,5,6,7,10]
 
 
-### 63. Minimum and maximum
+### Challenge: Minimum and maximum
 
 > Find the minimum and the maximum numbers in the given list of integers.
 
@@ -2190,7 +2164,7 @@ assert (a == 15 and b == 2).
     2
 
 
-### 64. Increasing sequences
+### Challenge: Increasing sequences
 
 > Check if the given array contains increasing (or decreasing) numbers.
 
@@ -2210,9 +2184,3 @@ assert (b).
 ```
 
     true
-
-
-
-```
-
-```
