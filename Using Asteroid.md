@@ -37,7 +37,7 @@ raw_print "Hello, World!".
     ('string', 'Hello, World!')
 
 
-Here we can see that an Asteroid string is tuple consisting of a type field and a value field.
+Here we can see that an Asteroid string is a tuple consisting of a type field and a value field.
 
 ### Challenge: Greet a person
 
