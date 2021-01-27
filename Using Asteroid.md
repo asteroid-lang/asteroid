@@ -2191,3 +2191,320 @@ assert (b).
 ```
 
     true
+
+## Section: Multi-dimensional data
+
+### Challenge Transpose a matrix
+
+> Take a matrix and print its transposed version.
+
+In Asteroid a matrix can be represented by nested lists like so,
+```
+let m = [[1,2],
+         [3,4]].
+```
+The transpose of this matrix is,
+```
+let m = [[1,3],
+         [2,4]].
+```
+In a square matrix computing the transpose is just a matter of swapping around the elements.  However, here we will solve the more general problem for non-square matrices,
+```
+let m = [[1,2],
+         [3,4],
+         [5,6]].
+```
+with its transpose,
+```
+let m = [[1,3,5],
+         [2,4,6]].
+```
+
+
+```
+load "io".
+
+function transpose with m do
+    -- figure out the dimensions
+    let xdim = m @0 @length().
+    let ydim = m @length().
+
+    -- reserve space for the transpose
+    -- first we do the ydim of new matrix
+    let mt = range(xdim).
+    for y in mt do
+        let mt @y = range(ydim).
+    end
+
+    -- swap the elements
+    for x in range(xdim) do
+        for y in range(ydim) do
+            let mt @x @y = m @y @x.
+        end
+    end
+
+    return mt.
+end
+
+function print_matrix with m do
+    println "".
+    for r in m do
+        for e in r do
+            print (e + " ").
+        end
+        println ("").
+    end
+    println "".
+end
+
+let m = [[1,2],
+         [3,4]].
+
+let mt = transpose(m).
+
+println ("The transpose of:").
+print_matrix m.
+println ("is:").
+print_matrix mt.
+println ("").
+
+let m = [[1,2],
+         [3,4],
+         [5,6]].
+
+let mt = transpose(m).
+
+println ("The transpose of:").
+print_matrix m.
+println ("is:").
+print_matrix mt.
+println ("").
+
+assert(mt == [[1,3,5],[2,4,6]]).
+```
+
+    The transpose of:
+
+    1 2
+    3 4
+
+    is:
+
+    1 3
+    2 4
+
+
+    The transpose of:
+
+    1 2
+    3 4
+    5 6
+
+    is:
+
+    1 3 5
+    2 4 6
+
+
+
+
+### Challenge: Sort hashes by parameter
+
+> Sort a list of hashes using data in their values.
+
+This task is commonly performed to sort items where the sortable parameter is one of the values in the hash, for example, sorting a list of people by age.
+
+
+
+```
+load "io".
+load "hash".
+load "sort".
+load "random".
+
+seed(42).
+
+-- hash of names with ages
+let ht = HashTable().
+ht @insert("Billie",randint(20,50)).
+ht @insert("Joe",randint(20,50)).
+ht @insert("Pete",randint(20,50)).
+ht @insert("Brandi",randint(20,50)).
+
+-- export the hash as a list of pairs
+let lst = ht @aslist().
+
+-- define our order predicate on a
+-- list of pairs where the second
+-- component holds the order info
+function pairs with ((_,x),(_,y)) do
+    return true if x < y else false.
+end
+
+-- print out the sorted list
+println (sort(pairs,lst)).
+
+assert (sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
+```
+
+    [(Pete,20),(Joe,23),(Billie,40),(Brandi,43)]
+
+
+### Challenge: Count hash values
+
+> Having a hash, count the number of occurrences of each of its values.
+
+For example, a hash is a collection mapping a car’s license plate to the colour of the car or a passport number to the name of the street where the person lives. In the first example, the task is to count how many cars of each colour there are. In the second example, we have to say how many people live on each street. But let’s simply count the colours of fruit.
+
+
+```
+load "io".
+load "hash".
+load "sort".
+
+let fruit_hash = HashTable().
+fruit_hash @insert("apple","red").
+fruit_hash @insert("avocado","green").
+fruit_hash @insert("banana","yellow").
+fruit_hash @insert("grapefruit","orange").
+fruit_hash @insert("grapes","green").
+fruit_hash @insert("kiwi","green").
+fruit_hash @insert("lemon","yellow").
+fruit_hash @insert("orange","orange").
+fruit_hash @insert("pear","green").
+fruit_hash @insert("plum","purple").
+
+let fruit_lst = fruit_hash @aslist().
+
+let color_hash = HashTable().
+for (_,color) in fruit_lst do
+    if not color_hash @get(color) do
+        color_hash @insert(color,1).
+    else
+        color_hash @insert(color, color_hash @get(color) +1).
+    end
+end
+let color_lst = color_hash @aslist().
+
+function pairs with ((_,x),(_,y)) do
+    return true if x < y else false.
+end
+
+println (sort(pairs,color_lst)).
+```
+
+    [(red,1),(purple,1),(yellow,2),(orange,2),(green,4)]
+
+
+### Challenge: Product table
+
+> Generate and print the product table for the values from 1 to 10.
+
+We will do this with an outer loop  and a `map` function.
+
+
+```
+load "io".
+load "util".
+
+function format with v do
+    let maxlen = 3.
+    let vstr = tostring v.
+    return [1 to maxlen-len(vstr)] @map(lambda with _ do return " ") @join("") + vstr.
+end
+
+for i in 1 to 10 do
+    println ([1 to 10] @map(lambda with x do return format(i*x)) @join(" ")).
+end
+```
+
+      1   2   3   4   5   6   7   8   9  10
+      2   4   6   8  10  12  14  16  18  20
+      3   6   9  12  15  18  21  24  27  30
+      4   8  12  16  20  24  28  32  36  40
+      5  10  15  20  25  30  35  40  45  50
+      6  12  18  24  30  36  42  48  54  60
+      7  14  21  28  35  42  49  56  63  70
+      8  16  24  32  40  48  56  64  72  80
+      9  18  27  36  45  54  63  72  81  90
+     10  20  30  40  50  60  70  80  90 100
+
+
+### Challenge: Pascal triangle
+
+> Generate the numbers of the Pascal triangle and print them.
+
+The Pascal triangle is a sequence of rows of integers. It starts with a single 1 on the top row, and each following row has one number more, starting and ending with 1, while all of the other items are the sums of the two elements above it in the previous row. It is quite obvious from the illustration:
+```
+      1
+     1 1
+    1 2 1
+   1 3 3 1
+  1 4 6 4 1
+ 1 5 10 10 5 1
+1 6 15 20 15 6 1
+```
+To calculate the values of the next row, you may want to iterate over the values of the current row and make the sums with the numbers next to it. Let us use the functional style that the language offers.
+Consider the fourth row, for example: 1 3 3 1. To make the fifth row, you can shift all the values by one position to the right and add them up to the current row:
+```
+  13310
++ 01331
+-------
+  14641
+```
+We can easily accomplish this with our `vector` module. Given the vector of the fourth row,
+```
+[1,3,3,1]
+```
+we create two new vectors,
+```
+[1,3,3,1,0]
+```
+and
+```
+[0,1,3,3,1]
+```
+We then add them  together,
+```
+vadd([1,3,3,1,0],[0,1,3,3,1]) = [1,4,6,4,1]
+```
+The only thing that is left to do is to iterate appropiately and format the output.
+
+
+```python
+program =\
+'''
+load "io".
+load "vector".
+load "util".
+
+let triangle = [[1]].
+let ix = 0.
+
+for i in 1 to 6 do
+    let v = triangle @ix.
+    let v1 = [0] + v.
+    let v2 = v + [0].
+    let new_v = vadd(v1,v2).
+    let triangle = triangle + [new_v].
+    let ix = ix + 1.
+end
+
+for r in triangle do
+    println (r @map(lambda with v do return tostring v) @join(" ")).
+end
+'''
+interp(program)
+```
+
+    1
+    1 1
+    1 2 1
+    1 3 3 1
+    1 4 6 4 1
+    1 5 10 10 5 1
+    1 6 15 20 15 6 1
+
+
+The program prints the first seven rows of the Pascal triangle. The rows are not centred and are aligned to the left side.
+As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
