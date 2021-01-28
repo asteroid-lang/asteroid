@@ -401,7 +401,7 @@ class Parser:
         # check if any useless patterns exist within the function
         #lhh check_redundancy( body_list, id_tok )
 
-        # functions are values bound to names
+        # functions are function expressions bound to names
         return ('unify',
                 ('id',id_tok.value),
                 ('function-exp', body_list))
@@ -422,8 +422,29 @@ class Parser:
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
+    # abstract_function
+    #  : ABSTRACT FUNCTION ID
+    def abstract_function(self):
+        dbg_print("parsing ABSTRACT_FUNCTION")
+
+        if self.lexer.peek().type == 'ABSTRACT':
+            self.lexer.match('ABSTRACT')
+            self.lexer.match('FUNCTION')
+            id_tok = self.lexer.match('ID')
+            # abstract functions are function expressions
+            # bound to names with a 'none' body-list
+            return ('unify',
+                    ('id',id_tok.value),
+                    ('function-exp', ('none', None)))
+        else:
+            raise SyntaxError(
+                "syntax error at '{}'"
+                .format(self.lexer.peek().value))
+
+    ###########################################################################################
     # struct_stmt
     #   : data_stmt '.'?
+    #   | abstract_function '.'?
     #   | function_def '.'?
     #   | '.'
     def struct_stmt(self):
@@ -433,12 +454,16 @@ class Parser:
             s = self.data_stmt()
             self.lexer.match_optional('.')
             return s
+        elif self.lexer.peek().type == 'ABSTRACT':
+            s = self.abstract_function()
+            self.lexer.match_optional('.')
+            return s
         elif self.lexer.peek().type == 'FUNCTION':
             s = self.function_def()
             self.lexer.match_optional('.')
             return s
         elif self.lexer.peek().type == '.':
-            self.lexer.match_optional('.')
+            self.lexer.match('.')
             return ('noop',)
         else:
             raise SyntaxError(
@@ -451,7 +476,7 @@ class Parser:
         dbg_print("parsing STRUCT_STMTS")
 
         sl = []
-        while self.lexer.peek().type in ['DATA', 'FUNCTION', '.']:
+        while self.lexer.peek().type in ['DATA', 'ABSTRACT', 'FUNCTION', '.']:
             sl += [self.struct_stmt()]
         return ('list', sl)
 

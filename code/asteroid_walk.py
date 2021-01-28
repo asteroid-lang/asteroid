@@ -644,6 +644,9 @@ def handle_call(fval, actual_val_args):
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
+    if body_list[0] == 'none':
+        raise ValueError("cannot call an abstract function")
+
     # static scoping for functions
     # Note: we have to do this here because unifying
     # over the body patterns can introduce variable declarations,
