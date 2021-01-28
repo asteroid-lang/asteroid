@@ -40,12 +40,8 @@ body_defs
 data_stmt
   : DATA ID
 
-abstract_function
-  : ABSTRACT FUNCTION ID
-
 struct_stmt
   : data_stmt  '.'?
-  | abstract_function '.'?
   | function_def '.'?
   | '.'
 

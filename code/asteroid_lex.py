@@ -11,7 +11,6 @@ from lex import LexToken
 from asteroid_state import state
 
 reserved = {
-    'abstract'       : 'ABSTRACT',
     'and'           : 'AND',
     'assert'        : 'ASSERT',
     'break'         : 'BREAK',

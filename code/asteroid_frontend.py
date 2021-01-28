@@ -422,29 +422,8 @@ class Parser:
                 .format(self.lexer.peek().value))
 
     ###########################################################################################
-    # abstract_function
-    #  : ABSTRACT FUNCTION ID
-    def abstract_function(self):
-        dbg_print("parsing ABSTRACT_FUNCTION")
-
-        if self.lexer.peek().type == 'ABSTRACT':
-            self.lexer.match('ABSTRACT')
-            self.lexer.match('FUNCTION')
-            id_tok = self.lexer.match('ID')
-            # abstract functions are function expressions
-            # bound to names with a 'none' body-list
-            return ('unify',
-                    ('id',id_tok.value),
-                    ('function-exp', ('none', None)))
-        else:
-            raise SyntaxError(
-                "syntax error at '{}'"
-                .format(self.lexer.peek().value))
-
-    ###########################################################################################
     # struct_stmt
     #   : data_stmt '.'?
-    #   | abstract_function '.'?
     #   | function_def '.'?
     #   | '.'
     def struct_stmt(self):
@@ -452,10 +431,6 @@ class Parser:
 
         if self.lexer.peek().type == 'DATA':
             s = self.data_stmt()
-            self.lexer.match_optional('.')
-            return s
-        elif self.lexer.peek().type == 'ABSTRACT':
-            s = self.abstract_function()
             self.lexer.match_optional('.')
             return s
         elif self.lexer.peek().type == 'FUNCTION':
@@ -476,7 +451,7 @@ class Parser:
         dbg_print("parsing STRUCT_STMTS")
 
         sl = []
-        while self.lexer.peek().type in ['DATA', 'ABSTRACT', 'FUNCTION', '.']:
+        while self.lexer.peek().type in ['DATA', 'FUNCTION', '.']:
             sl += [self.struct_stmt()]
         return ('list', sl)
 
