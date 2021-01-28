@@ -28,6 +28,8 @@ function range
 ------------------------------------------------------------------
 function isnone
 ------------------------------------------------------------------
+-- Note: is this the more asteroidal approach:
+--    return x is none.
 with x do return escape
 "
 global __retval__
