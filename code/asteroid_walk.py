@@ -445,7 +445,7 @@ def read_at_ix(structure_val, ix):
         state.symbol_table.pop_scope()
 
     else:
-        raise ValueError("'{}' is not a structure".format(structure_val[0]))
+        raise ValueError("'{}' is not indexable".format(structure_val[0]))
 
     # index into memory and get value(s)
     if ix_val[0] == 'integer':
@@ -977,6 +977,8 @@ def struct_def_stmt(node):
             function_val = walk(function_exp)
             struct_memory.append(function_val)
             member_names.append(member_id)
+        elif member[0] == 'noop':
+            pass
         else:
             raise ValueError("unsupported struct member '{}'".format(member[0]))
 
