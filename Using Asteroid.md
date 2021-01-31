@@ -1,6 +1,6 @@
 # Using Asteroid
 
-This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.
+This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are due to the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
 
 # Chapter: Strings
@@ -2508,3 +2508,86 @@ interp(program)
 
 The program prints the first seven rows of the Pascal triangle. The rows are not centred and are aligned to the left side.
 As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
+
+# Chapter: Object-Oriented programming
+
+## Section: Simple OO challenges
+
+### Inheritance I
+
+> Using inheritance, one class can acquire the properties of others.
+
+Here we use a simple class hierarchy of traits and animals that have those traits.
+
+
+```
+load "io".
+
+structure Walk with
+    function walk with self do println "I'm walking" end
+    end
+
+structure Fly with
+    function fly with self do println "I'm flying" end
+    end
+
+structure Sing with
+    function sing with self do println "I'm singing" end
+    end
+
+
+structure Bird with
+    -- constructor
+    function __init__ with self do println "The bird says:" end
+    end
+
+inherit(Bird,Fly).
+inherit(Bird,Walk).
+inherit(Bird,Sing).
+
+let bird = Bird().
+bird @fly().
+bird @walk().
+bird @sing().
+```
+
+    The bird says:
+    I'm flying
+    I'm walking
+    I'm singing
+
+
+### Inheritance II
+
+> Using behavior from base classes.
+
+Write a class named `Arithmetic` with a method named `add` that takes 2  integers as parameters and returns an integer denoting their sum. Write a class named `Adder` that inherits from a superclass named `Arithmetic`. The `Adder` performs arithmetic by calling `add`.
+
+
+
+```
+load "io".
+
+structure Arithmetic with
+    function add with (self,a:%integer,b:%integer) do return a+b end
+    function subtract with (self,a:%integer,b:%integer) do return a-b end
+    end
+
+structure Adder with
+    ...
+    end
+
+-- Asteroid allows selective inheritance
+inherit(Adder,Arithmetic,"add").
+
+let adder = Adder().
+
+let x = 1.
+let y = 2.
+
+println (adder @add(x,y)).
+
+assert(adder @add(x,y) == 3).
+```
+
+    3

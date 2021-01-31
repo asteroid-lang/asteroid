@@ -3,20 +3,18 @@
 
 # # Using Asteroid
 # 
-# This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.
+# This notebook was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges.  The OO challenges are due to the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
 # In[1]:
 
 
 # make the Asteroid interpreter available in this notebook
 import sys
-sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
+#sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
 from asteroid_interp import interp
 
 
-# **Note**: We use program as strings in this notebook so that we can run them right here in this notebook.
-# 
-# **Note**: There is a bug in the parser that does not allow for successive applications of member functions.  Those expressions need to be explicitly parenthesized.
+# **Note**: We use programs as strings in this notebook so that we can run them right here in this notebook.
 
 # # Part I
 # # Chapter 1: Strings
@@ -36,7 +34,7 @@ program = '''
 load "io".
 println "Hello, World!".
 '''
-interp(program,prologue=True)
+interp(program)
 
 
 # Two other print functions exists: 
@@ -2254,6 +2252,368 @@ let b = toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
 println b.
 
 assert (b).
+'''
+interp(program)
+
+
+# ## 3.4 Multi-dimensional data
+# 
+# ### 67. Transpose a matrix
+# 
+# > Take a matrix and print its transposed version.
+# 
+# In Asteroid a matrix can be represented by nested lists like so,
+# ```
+# let m = [[1,2],
+#          [3,4]].
+# ```
+# The transpose of this matrix is,
+# ```
+# let m = [[1,3],
+#          [2,4]].
+# ```
+# In a square matrix computing the transpose is just a matter of swapping around the elements.  However, here we will solve the more general problem for non-square matrices,
+# ```
+# let m = [[1,2],
+#          [3,4],
+#          [5,6]].
+# ```
+# with its transpose,
+# ```
+# let m = [[1,3,5],
+#          [2,4,6]].
+# ```
+
+# In[79]:
+
+
+program ='''
+load "io".
+
+function transpose with m do
+    -- figure out the dimensions
+    let xdim = m @0 @length().
+    let ydim = m @length().
+    
+    -- reserve space for the transpose
+    -- first we do the ydim of new matrix
+    let mt = range(xdim).
+    for y in mt do
+        let mt @y = range(ydim).
+    end
+    
+    -- swap the elements
+    for x in range(xdim) do
+        for y in range(ydim) do
+            let mt @x @y = m @y @x.
+        end
+    end
+    
+    return mt.
+end
+
+function print_matrix with m do
+    println "".
+    for r in m do
+        for e in r do
+            print (e + " ").
+        end
+        println ("").
+    end
+    println "".
+end
+
+let m = [[1,2],
+         [3,4]].
+
+let mt = transpose(m).
+
+println ("The transpose of:").
+print_matrix m.
+println ("is:").
+print_matrix mt.
+println ("").
+
+let m = [[1,2],
+         [3,4],
+         [5,6]].
+         
+let mt = transpose(m).
+
+println ("The transpose of:").
+print_matrix m.
+println ("is:").
+print_matrix mt.
+println ("").
+
+assert(mt == [[1,3,5],[2,4,6]]).
+'''
+interp(program)
+
+
+# ### 68. Sort hashes by parameter
+# 
+# > Sort a list of hashes using data in their values.
+# 
+# This task is commonly performed to sort items where the sortable parameter is one of the values in the hash, for example, sorting a list of people by age.
+# 
+
+# In[80]:
+
+
+program ='''
+load "io".
+load "hash".
+load "sort".
+load "random".
+
+seed(42).
+
+-- hash of names with ages
+let ht = HashTable().
+ht @insert("Billie",randint(20,50)).
+ht @insert("Joe",randint(20,50)).
+ht @insert("Pete",randint(20,50)).
+ht @insert("Brandi",randint(20,50)).
+
+-- export the hash as a list of pairs
+let lst = ht @aslist().
+
+-- define our order predicate on a 
+-- list of pairs where the second 
+-- component holds the order info
+function pairs with ((_,x),(_,y)) do
+    return true if x < y else false.
+end
+
+-- print out the sorted list
+println (sort(pairs,lst)).
+
+assert (sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
+'''
+interp(program)
+
+
+# ### 69. Count hash values
+# 
+# > Having a hash, count the number of occurrences of each of its values.
+# 
+# For example, a hash is a collection mapping a car’s license plate to the colour of the car or a passport number to the name of the street where the person lives. In the first example, the task is to count how many cars of each colour there are. In the second example, we have to say how many people live on each street. But let’s simply count the colours of fruit.
+
+# In[81]:
+
+
+program ='''
+load "io".
+load "hash".
+load "sort".
+
+let fruit_hash = HashTable().
+fruit_hash @insert("apple","red").
+fruit_hash @insert("avocado","green").
+fruit_hash @insert("banana","yellow").
+fruit_hash @insert("grapefruit","orange").
+fruit_hash @insert("grapes","green").
+fruit_hash @insert("kiwi","green").
+fruit_hash @insert("lemon","yellow").
+fruit_hash @insert("orange","orange").
+fruit_hash @insert("pear","green").
+fruit_hash @insert("plum","purple").
+
+let fruit_lst = fruit_hash @aslist().
+
+let color_hash = HashTable().
+for (_,color) in fruit_lst do
+    if not color_hash @get(color) do
+        color_hash @insert(color,1).
+    else
+        color_hash @insert(color, color_hash @get(color) +1).
+    end
+end
+let color_lst = color_hash @aslist().
+
+function pairs with ((_,x),(_,y)) do
+    return true if x < y else false.
+end
+
+println (sort(pairs,color_lst)).
+'''
+interp(program)
+
+
+# ### 70. Product table
+# 
+# > Generate and print the product table for the values from 1 to 10.
+# 
+# We will do this with an outer loop  and a `map` function.
+
+# In[82]:
+
+
+program ='''
+load "io".
+load "util".
+
+function format with v do
+    let maxlen = 3.
+    let vstr = tostring v.
+    return [1 to maxlen-len(vstr)] @map(lambda with _ do return " ") @join("") + vstr.
+end
+
+for i in 1 to 10 do
+    println ([1 to 10] @map(lambda with x do return format(i*x)) @join(" ")).
+end
+'''
+interp(program)
+
+
+# ### 71. Pascal triangle
+# 
+# > Generate the numbers of the Pascal triangle and print them.
+# 
+# The Pascal triangle is a sequence of rows of integers. It starts with a single 1 on the top row, and each following row has one number more, starting and ending with 1, while all of the other items are the sums of the two elements above it in the previous row. It is quite obvious from the illustration:
+# ```
+#       1
+#      1 1
+#     1 2 1
+#    1 3 3 1
+#   1 4 6 4 1
+#  1 5 10 10 5 1
+# 1 6 15 20 15 6 1
+# ```
+# To calculate the values of the next row, you may want to iterate over the values of the current row and make the sums with the numbers next to it. Let us use the functional style that the language offers.
+# Consider the fourth row, for example: 1 3 3 1. To make the fifth row, you can shift all the values by one position to the right and add them up to the current row:
+# ```
+#   13310
+# + 01331 
+# -------
+#   14641
+# ```
+# We can easily accomplish this with our `vector` module. Given the vector of the fourth row,
+# ```
+# [1,3,3,1]
+# ```
+# we create two new vectors,
+# ```
+# [1,3,3,1,0]
+# ```
+# and
+# ```
+# [0,1,3,3,1]
+# ```
+# We then add them  together,
+# ```
+# vadd([1,3,3,1,0],[0,1,3,3,1]) = [1,4,6,4,1]
+# ```
+# The only thing that is left to do is to iterate appropiately and format the output.
+
+# In[83]:
+
+
+program ='''
+load "io".
+load "vector".
+load "util".
+
+let triangle = [[1]].
+let ix = 0.
+
+for i in 1 to 6 do
+    let v = triangle @ix.
+    let v1 = [0] + v.
+    let v2 = v + [0].
+    let new_v = vadd(v1,v2).
+    let triangle = triangle + [new_v].
+    let ix = ix + 1.
+end
+
+for r in triangle do
+    println (r @map(lambda with v do return tostring v) @join(" ")).
+end
+'''
+interp(program)
+
+
+# The program prints the first seven rows of the Pascal triangle. The rows are not centred and are aligned to the left side.
+# As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the long- est string, add some spaces in front of the rows before printing them.
+
+# ## OO Challenges
+# 
+# ### Inheritance I
+# 
+# > Using inheritance, one class can acquire the properties of others. 
+# 
+# Here we use a simple class hierarchy of traits and animals that have those traits.
+
+# In[84]:
+
+
+program ='''
+load "io".
+
+structure Walk with
+    function walk with self do println "I'm walking" end
+    end
+    
+structure Fly with
+    function fly with self do println "I'm flying" end
+    end
+    
+structure Sing with
+    function sing with self do println "I'm singing" end
+    end
+    
+
+structure Bird with
+    -- constructor
+    function __init__ with self do println "The bird says:" end
+    end
+
+inherit(Bird,Fly).
+inherit(Bird,Walk).
+inherit(Bird,Sing).
+
+let bird = Bird().
+bird @fly().
+bird @walk().
+bird @sing().
+'''
+interp(program)
+
+
+# ### Inheritance II
+# 
+# > Using behavior from base classes.
+# 
+# Write a class named `Arithmetic` with a method named `add` that takes 2  integers as parameters and returns an integer denoting their sum. Write a class named `Adder` that inherits from a superclass named `Arithmetic`. The `Adder` performs arithmetic by calling `add`.
+# 
+
+# In[85]:
+
+
+program ='''
+load "io".
+
+structure Arithmetic with
+    function add with (self,a:%integer,b:%integer) do return a+b end
+    function subtract with (self,a:%integer,b:%integer) do return a-b end
+    end
+    
+structure Adder with
+    ...
+    end
+
+-- Asteroid allows selective inheritance
+inherit(Adder,Arithmetic,"add").
+
+let adder = Adder().
+
+let x = 1.
+let y = 2.
+
+println (adder @add(x,y)).
+    
+assert(adder @add(x,y) == 3).
 '''
 interp(program)
 
