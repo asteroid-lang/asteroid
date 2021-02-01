@@ -26,7 +26,12 @@ from asteroid_support import assert_match
 from copy import deepcopy
 
 target_val = state.symbol_table.lookup_sym('target')
+if target_val[0] == 'string':
+  target_val = state.symbol_table.lookup_sym(target_val[1])
+
 source_val = state.symbol_table.lookup_sym('source')
+if source_val[0] == 'string':
+  source_val = state.symbol_table.lookup_sym(source_val[1])
 
 # unpack target_val
 (STRUCT,
@@ -64,7 +69,13 @@ from asteroid_support import assert_match
 from copy import deepcopy
 
 target_val = state.symbol_table.lookup_sym('target')
+if target_val[0] == 'string':
+  target_val = state.symbol_table.lookup_sym(target_val[1])
+
 source_val = state.symbol_table.lookup_sym('source')
+if source_val[0] == 'string':
+  source_val = state.symbol_table.lookup_sym(source_val[1])
+
 slot_val = state.symbol_table.lookup_sym('slot')
 
 # unpack target_val
@@ -101,6 +112,60 @@ state.symbol_table.enter_sym(slot_val[1], ('integer', ix+target_len))
 state.symbol_table.pop_scope()
 t_member_names.append(slot_val[1])
 t_struct_memory.append(deepcopy(s_struct_memory[ix]))
+"
+orwith (target,source,slots:%list) do escape
+-- target inherits slots from source
+"
+from asteroid_support import assert_match
+from copy import deepcopy
+
+target_val = state.symbol_table.lookup_sym('target')
+if target_val[0] == 'string':
+  target_val = state.symbol_table.lookup_sym(target_val[1])
+
+source_val = state.symbol_table.lookup_sym('source')
+if source_val[0] == 'string':
+  source_val = state.symbol_table.lookup_sym(source_val[1])
+
+slots_val = state.symbol_table.lookup_sym('slots')
+
+# unpack target_val
+(STRUCT,
+    (MEMBER_NAMES, (LIST, t_member_names)),
+    (STRUCT_MEMORY, (LIST, t_struct_memory)),
+    (STRUCT_SCOPE, t_struct_scope)) = target_val
+
+assert_match(STRUCT, 'struct')
+target_len = len(t_member_names)
+
+# unpack source_val
+(STRUCT,
+    (MEMBER_NAMES, (LIST, s_member_names)),
+    (STRUCT_MEMORY, (LIST, s_struct_memory)),
+    (STRUCT_SCOPE, s_struct_scope)) = source_val
+
+assert_match(STRUCT, 'struct')
+
+# construct the target structure
+state.symbol_table.push_scope(t_struct_scope)
+
+for slot_val in slots_val[1]:
+  # make sure the slot name is actually there
+  if slot_val[1] in s_member_names:
+    ix = s_member_names.index(slot_val[1])
+  else:
+    raise ValueError('inherit: member {} not found in source structure'
+                     .format(slot_val[1]))
+
+  if s_member_names[ix] in t_member_names:
+    raise ValueError('inherit: clash in structure on {}'
+                     .format(s_member_names[ix]))
+
+  state.symbol_table.enter_sym(slot_val[1], ('integer', ix+target_len))
+  t_member_names.append(slot_val[1])
+  t_struct_memory.append(deepcopy(s_struct_memory[ix]))
+
+state.symbol_table.pop_scope()
 "
 end
 
