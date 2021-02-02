@@ -3,14 +3,14 @@
 This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are due to the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
 # Table of Contents
-[Chapter: Strings](#chapterstrings)
-  [Section: Using Strings](#usingstrings)
-  [Section: Modifying string data](#modifyingstrings)
-  [Section: Text Analysis](#textanalysis)
+[Chapter: Strings](#chapterstrings)<br>
+  [Section: Using Strings](#usingstrings)<br>
+  [Section: Modifying string data](#modifyingstrings)<br>
+  [Section: Text Analysis](#textanalysis)<br>
 
-[Chapter: Numbers](#numbers)
-  [Section: Using numbers](#sectionusingnumbers)
-  
+[Chapter: Numbers](#numbers)<br>
+  [Section: Using numbers](#sectionusingnumbers)<br>
+
 [Chapter: Aggregate Data Types](#datatypes)
 
 [Chapter: Object-Oriented programming](#oop)
