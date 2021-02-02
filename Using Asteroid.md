@@ -10,10 +10,16 @@ This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Pr
 
 [Chapter: Numbers](#numbers)<br>
   [Section: Using numbers](#sectionusingnumbers)<br>
+  [Section: Random numbers](#randomnumbers)<br>
+  [Section: Mathematical problems](#mathproblems)<br>
 
-[Chapter: Aggregate Data Types](#datatypes)
+[Chapter: Aggregate Data Types](#datatypes)<br>
+  [Section: Manipulating lists and arrays](#listsandarrays)<br>
+  [Section: Information retrieval](#informationretrieval)<br>
+  [Section: Multi-dimensional data](#multidimensionaldata)<br>
 
-[Chapter: Object-Oriented programming](#oop)
+[Chapter: Object-Oriented programming](#oop)<br>
+  [Section: Simple OO challenges](#simpleoochallenges)<br>
 
 # Chapter: Strings <a name="chapterstrings"></a>
 ## Section: Using Strings <a name="usingstrings"></a>
@@ -687,7 +693,7 @@ end
 
 
 # Chapter: Numbers <a name="numbers"></a>
-## Section: Using numbers
+## Section: Using numbers <a name="sectionusingnumbers"></a>
 
 
 
@@ -1102,7 +1108,7 @@ println "We are still alive...".
     We are still alive...
 
 
-## Section: Random numbers
+## Section: Random numbers <a name="randomnumbers"></a>
 
 ### Challenge: Generating random numbers
 
@@ -1200,7 +1206,7 @@ println hist.
     [944,1032,1015,968,981,986,1014,1058,989,1013]
 
 
-## Section: Mathematical problems
+## Section: Mathematical problems <a name="mathproblems"></a>
 
 
 
@@ -1658,7 +1664,7 @@ println (spell_number 1001).
 
 # Chapter: Aggregate Data Types <a name="datatypes"></a>
 
-## Section: Manipulating lists and arrays
+## Section: Manipulating lists and arrays <a name="listsandarrays"></a>
 
 ### Challenge: Swap two values
 
@@ -1881,7 +1887,7 @@ assert(c @sort() == [1,2,3,4]).
     [2,3,1,4]
 
 
-## Section: Information retrieval
+## Section: Information retrieval <a name="informationretrieval"></a>
 
 ### Challenge: Sum of the elements of an array
 
@@ -2204,7 +2210,7 @@ assert (b).
 
     true
 
-## Section: Multi-dimensional data
+## Section: Multi-dimensional data <a name="multidimensionaldata"></a>
 
 ### Challenge Transpose a matrix
 
@@ -2523,7 +2529,7 @@ As an extra exercise, modify the program so that it prints the triangle as it is
 
 # Chapter: Object-Oriented programming <a name="oop"></a>
 
-## Section: Simple OO challenges
+## Section: Simple OO challenges <a name="simpleoochallenges"></a>
 
 ### Inheritance I
 
