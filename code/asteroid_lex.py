@@ -61,7 +61,7 @@ token_specs = [
     (r'\"[^\"]*\"',                 'STRING'),
     (r'(--.*)|(\#.*)',              'COMMENT'),
     (r'[a-zA-Z_][a-zA-Z_0-9]*',     'ID'),
-    (r'\n+',                        'NEWLINE'),
+    (r'\n',                         'NEWLINE'),
     (r'[ \t]+',                     'WHITESPACE'),
     (r'\%[a-zA-Z_][a-zA-Z_0-9]*',   'TYPEMATCH'),
     (r'\+',                         'PLUS'),
@@ -112,8 +112,8 @@ class Token:
 def tokenize(code):
     # output token list
     tokens = []
-    # state info
-    (module,line_num) = state.lineinfo
+    # state/line info
+    (module, line_num) = state.lineinfo
     # here we create a list of named patterns from the token_specs table
     # the name of the pattern is the token type
     named_re_list = ['(?P<{}>{})'.format(type,re) for (re,type) in token_specs]
@@ -195,6 +195,7 @@ class Lexer:
         # at least the EOF token on the tokens list.
         self.curr_token_ix = 0
         self.curr_token = self.tokens[self.curr_token_ix]
+        state.lineinfo = (self.curr_token.module, self.curr_token.lineno)
 
     def peek(self):
         return self.curr_token
@@ -204,6 +205,8 @@ class Lexer:
         if self.curr_token.type != 'EOF':
             self.curr_token_ix += 1
             self.curr_token = self.tokens[self.curr_token_ix]
+            state.lineinfo = (self.curr_token.module, self.curr_token.lineno)
+
 
     def EOF(self):
         if self.curr_token.type == 'EOF':
