@@ -15,6 +15,6 @@ class State:
         self.modules = [] # loaded modules
         self.AST = None
         self.ignore_quote = False # used to evaluate quoted expressions
-        self.lineinfo = ("", 0) # tuple: module, lineno
+        self.lineinfo = ("<input>", 1) # tuple: module, lineno
 
 state = State()

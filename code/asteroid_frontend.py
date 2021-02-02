@@ -36,8 +36,8 @@ primary_lookahead = {
     'FALSE',
     'NONE',
     'ID',
-    '[',
-    '(',
+    'LBRACKET',
+    'LPAREN',
     'TYPEMATCH',
     } | ops
 
@@ -48,7 +48,7 @@ exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 primary_lookahead_no_ops = exp_lookahead_no_ops
 
 stmt_lookahead = {
-    '.',
+    'DOT',
     'ASSERT',
     'BREAK',
     'FOR',
@@ -134,8 +134,8 @@ class Parser:
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
 
-        if tt == '.':
-            self.lexer.match('.')
+        if tt == 'DOT':
+            self.lexer.match('DOT')
             return ('noop',)
 
         elif tt == 'LOAD':
@@ -143,7 +143,7 @@ class Parser:
             # using a nested parser object
             self.lexer.match('LOAD')
             str_tok = self.lexer.match('STRING')
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
 
             raw_pp = PurePath(str_tok.value)
             module_name = raw_pp.stem
@@ -205,21 +205,21 @@ class Parser:
             dbg_print("parsing GLOBAL")
             self.lexer.match('GLOBAL')
             id_list = self.id_list()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('global', id_list)
 
         elif tt == 'NONLOCAL':
             dbg_print("parsing NONLOCAL")
             self.lexer.match('NONLOCAL')
             id_list = self.id_list()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('nonlocal', id_list)
 
         elif tt == 'ASSERT':
             dbg_print("parsing ASSERT")
             self.lexer.match('ASSERT')
             exp = self.exp()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('assert', exp)
 
         elif tt == 'FUNCTION':
@@ -240,9 +240,9 @@ class Parser:
             dbg_print("parsing LET")
             self.lexer.match('LET')
             p = self.pattern()
-            self.lexer.match('=')
+            self.lexer.match('ASSIGN')
             v = self.exp()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('unify', p, v)
 
         elif tt == 'LOOP':
@@ -288,7 +288,7 @@ class Parser:
             sl = self.stmt_list()
             self.lexer.match('UNTIL')
             e = self.exp()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('repeat',
                     ('stmt-list', sl),
                     ('until-exp', e))
@@ -335,10 +335,10 @@ class Parser:
             self.lexer.match('RETURN')
             if self.lexer.peek().type in exp_lookahead:
                 e = self.exp()
-                self.lexer.match_optional('.')
+                self.lexer.match_optional('DOT')
                 return ('return', e)
             else:
-                self.lexer.match_optional('.')
+                self.lexer.match_optional('DOT')
                 return ('return', ('none', None))
 
         elif tt == 'TRY':
@@ -375,12 +375,12 @@ class Parser:
             dbg_print("parsing THROW")
             self.lexer.match('THROW')
             e = self.exp()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return ('throw', e)
 
         elif tt in primary_lookahead:
             v = self.call_or_index()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return v
 
         else:
@@ -431,14 +431,14 @@ class Parser:
 
         if self.lexer.peek().type == 'DATA':
             s = self.data_stmt()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return s
         elif self.lexer.peek().type == 'FUNCTION':
             s = self.function_def()
-            self.lexer.match_optional('.')
+            self.lexer.match_optional('DOT')
             return s
-        elif self.lexer.peek().type == '.':
-            self.lexer.match('.')
+        elif self.lexer.peek().type == 'DOT':
+            self.lexer.match('DOT')
             return ('noop',)
         else:
             raise SyntaxError(
@@ -451,7 +451,7 @@ class Parser:
         dbg_print("parsing STRUCT_STMTS")
 
         sl = []
-        while self.lexer.peek().type in ['DATA', 'FUNCTION', '.']:
+        while self.lexer.peek().type in ['DATA', 'FUNCTION', 'DOT']:
             sl += [self.struct_stmt()]
         return ('list', sl)
 
@@ -465,8 +465,8 @@ class Parser:
 
         id_tok = self.lexer.match('ID')
         id_list.append(('id', id_tok.value))
-        while self.lexer.peek().type == ',':
-            self.lexer.match(',')
+        while self.lexer.peek().type == 'COMMA':
+            self.lexer.match('COMMA')
             id_tok = self.lexer.match('ID')
             id_list.append(('id', id_tok.value))
         return ('list', id_list)
@@ -576,8 +576,8 @@ class Parser:
 
         v = self.compound()
 
-        if self.lexer.peek().type == '|':
-            self.lexer.match('|')
+        if self.lexer.peek().type == 'BAR':
+            self.lexer.match('BAR')
             head = v
             tail = self.exp()
             v = ('raw-head-tail', head, tail)
@@ -720,13 +720,13 @@ class Parser:
 
         # Note: the 'no ops' lookahead here is necessary because operators
         # can never be arguments to a function in Asteroid
-        call_or_index_lookahead = primary_lookahead_no_ops|set(['@'])
+        call_or_index_lookahead = primary_lookahead_no_ops|set(['AT'])
         while self.lexer.peek().type in call_or_index_lookahead:
             if self.lexer.peek().type in primary_lookahead:
                 v2 = self.primary()
                 v = ('apply', v, v2)
-            elif self.lexer.peek().type == '@':
-                self.lexer.match('@')
+            elif self.lexer.peek().type == 'AT':
+                self.lexer.match('AT')
                 ix = self.primary()
                 v = ('index', v, ix)
 
@@ -781,8 +781,8 @@ class Parser:
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
-            if self.lexer.peek().type == ':': # if ':' exists - named pattern
-                self.lexer.match(':')
+            if self.lexer.peek().type == 'COLON': # if ':' exists - named pattern
+                self.lexer.match('COLON')
                 v = self.exp()
                 return ('named-pattern',
                         ('id', tok.value),
@@ -819,21 +819,21 @@ class Parser:
             exp = self.primary()
             return ('eval', exp)
 
-        elif tt == '(':
+        elif tt == 'LPAREN':
             # Parenthesized expressions have the following meaning:
             #       (A)    means a parenthesized value A
             #       (A,)   means a tuple with a single value A
             #       (A, B) means a tuple with values A and B
             #       ()     shorthand for 'none'
-            self.lexer.match('(')
+            self.lexer.match('LPAREN')
             v = self.tuple_stuff()
-            self.lexer.match(')')
+            self.lexer.match('RPAREN')
             return v
 
-        elif tt == '[':
-            self.lexer.match('[')
+        elif tt == 'LBRACKET':
+            self.lexer.match('LBRACKET')
             v = self.list_stuff()
-            self.lexer.match(']')
+            self.lexer.match('RBRACKET')
             return v
 
         elif tt == 'LAMBDA':
@@ -856,10 +856,10 @@ class Parser:
         dbg_print("parsing TUPLE_STUFF")
         if self.lexer.peek().type in exp_lookahead:
             v = self.exp()
-            if self.lexer.peek().type == ',': # if ',' exists - tuple!
+            if self.lexer.peek().type == 'COMMA': # if ',' exists - tuple!
                 tuple_list = [v]
-                while self.lexer.peek().type == ',':
-                    self.lexer.match(',')
+                while self.lexer.peek().type == 'COMMA':
+                    self.lexer.match('COMMA')
                     if self.lexer.peek().type in exp_lookahead:
                         e = self.exp()
                         tuple_list.append(e)
@@ -883,10 +883,10 @@ class Parser:
                 return ('to-list', v[1], v[2], v[3])
             elif v[0] == 'raw-head-tail':
                 return ('head-tail', v[1], v[2])
-            elif self.lexer.peek().type == ',': # if ',' exists - list!
+            elif self.lexer.peek().type == 'COMMA': # if ',' exists - list!
                 list_list = [v]
-                while self.lexer.peek().type == ',':
-                    self.lexer.match(',')
+                while self.lexer.peek().type == 'COMMA':
+                    self.lexer.match('COMMA')
                     e = self.exp()
                     list_list.append(e)
                 return ('list', list_list)

@@ -1,9 +1,9 @@
 -- guess that number game from http://inventwithpython.com/invent4thed/
 -- written by Lutz Hamel, (c) University of Rhode Island
 
-
-load "util".
 load "io".
+load "util".
+load "random".
 
 println "".
 println "     \||||||||||||||||||/".
@@ -19,7 +19,7 @@ let number = randint(1, 20).
 println (name + ", I am thinking of a number between 1 and 20, can you guess it?").
 
 while guesses_made < 6 do
-    let guess = integer(input("Take a guess: ")).
+    let guess = tointeger(input("Take a guess: ")).
     let guesses_made = guesses_made + 1.
 
     if guess < number do

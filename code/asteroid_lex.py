@@ -4,13 +4,12 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-# NOTE: we copied the lexer from ply (version 3.11) so that
-# we have no installation dependencies other than python 3.x
-import lex
-from lex import LexToken
+import re
 from asteroid_state import state
 
-reserved = {
+# table that specifies the token value and type for keywords
+keywords = {
+#   value:          type:
     'and'           : 'AND',
     'assert'        : 'ASSERT',
     'break'         : 'BREAK',
@@ -54,125 +53,157 @@ reserved = {
     'false'         : 'FALSE',
     }
 
-literals = [':','.',',','=','(',')','[',']','|','@']
+# this table defines tokens whose value is defined by a
+# regular expression.
+token_specs = [
+#   value:                          type:
+    (r'([0-9]*[.])?[0-9]+',         'NUMBER'),
+    (r'\"[^\"]*\"',                 'STRING'),
+    (r'(--.*)|(\#.*)',              'COMMENT'),
+    (r'[a-zA-Z_][a-zA-Z_0-9]*',     'ID'),
+    (r'\n+',                        'NEWLINE'),
+    (r'[ \t]+',                     'WHITESPACE'),
+    (r'\%[a-zA-Z_][a-zA-Z_0-9]*',   'TYPEMATCH'),
+    (r'\+',                         'PLUS'),
+    (r'-',                          'MINUS'),
+    (r'\*',                         'TIMES'),
+    (r'/',                          'DIVIDE'),
+    (r'==',                         'EQ'),
+    (r'=/=',                        'NE'),
+    (r'<=',                         'LE'),
+    (r'<',                          'LT'),
+    (r'>=',                         'GE'),
+    (r'>',                          'GT'),
+    (r'@',                          'AT'),
+    (r'\(',                         'LPAREN'),
+    (r'\)',                         'RPAREN'),
+    (r'\[',                         'LBRACKET'),
+    (r'\]',                         'RBRACKET'),
+    (r':',                          'COLON'),
+    (r'\|',                         'BAR'),
+    (r'\.',                         'DOT'),
+    (r',',                          'COMMA'),
+    (r'=',                          'ASSIGN'),
+    (r'\'',                         'QUOTE'),
+    # this is the catch-all pattern, it has to be
+    # here do that we can report illegal characters
+    # in the input.
+    (r'.',                          'MISMATCH'),
+]
 
-tokens = [
-          'PLUS',
-          'MINUS',
-          'TIMES',
-          'DIVIDE',
-          'EQ',
-          'NE',
-          'LE',
-          'LT',
-          'GE',
-          'GT',
-          'INTEGER',
-          'REAL',
-          'STRING',
-          'ID',
-          'QUOTE',
-          'TYPEMATCH',
-          'CMATCH',
-          ] + list(reserved.values())
+# this table specifies token types that are used in the tokenizer
+# but are not defined in the above tables.
+implicit_token_types = [
+    'INTEGER',
+    'REAL',
+    'CMATCH',
+]
 
-t_PLUS    = r'\+'
-t_MINUS   = r'-'
-t_TIMES   = r'\*'
-t_DIVIDE  = r'/'
-t_EQ      = r'=='
-t_NE      = r'=/='
-t_LE      = r'<='
-t_LT      = r'<'
-t_GE      = r'>='
-t_GT      = r'>'
+class Token:
+    def __init__(self,type,value,module,lineno):
+        self.type = type
+        self.value = value
+        self.module = module
+        self.lineno = lineno
 
-t_QUOTE   = r'\''
+    def __str__(self):
+        return '({},{},{},{})'.format(self.type,self.value,self.module,self.lineno)
 
-t_ignore = ' \t'
-
-def t_TYPEMATCH(t):
-    r'\%[a-zA-Z_][a-zA-Z_0-9]*'
-    # check for typematch keywords
-    # for the values get rid of the preceeding '%'
-    if t.value[1:] == 'if':
-        t.type = 'CMATCH'
-        t.value = t.value[1:]
-        return t
-    else:
-        t.type = 'TYPEMATCH'
-        t.value = t.value[1:]
-        return t
-
-def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z_0-9]*'
-    # Check for reserved words
-    t.type = reserved.get(t.value,'ID')
-    return t
-
-# TODO: scientific notation for real numbers
-def t_NUMBER(t):
-    r'([0-9]*[.])?[0-9]+'
-    if '.' in t.value:
-        t.type = 'REAL'
-        t.value = float(t.value)
-    else:
-        t.type = 'INTEGER'
-        t.value = int(t.value)
-    return t
-
-def t_STRING(t):
-    r'\"[^\"]*\"'
-    lines = t.value.count('\n')
-    (module, lineno) = state.lineinfo
-    state.lineinfo = (module, lineno + lines)
-    t.value = t.value[1:-1] # strip the quotes
-    from pprint import pprint
-    return t
-
-def t_COMMENT(t):
-    # hash comment is only here to support the shebang for linux
-    # so that Asteroid scripts can run as "executables"
-    r'--.* | \#.*'
-    pass
-
-def t_NEWLINE(t):
-    r'\n+'
-    (module, lineno) = state.lineinfo
-    state.lineinfo = (module, lineno + len(t.value))
-
-def t_error(t):
-    raise ValueError("illegal character {}".format(t.value[0]))
+def tokenize(code):
+    # output token list
+    tokens = []
+    # state info
+    (module,line_num) = state.lineinfo
+    # here we create a list of named patterns from the token_specs table
+    # the name of the pattern is the token type
+    named_re_list = ['(?P<{}>{})'.format(type,re) for (re,type) in token_specs]
+    # create one giant re that describes the token structure of the whole
+    # language. we 'or' together all the re's on the named_re_list
+    combined_re = '|'.join(named_re_list)
+    # generate a list of match objects. the group name of a match
+    # is the token type.
+    match_object_list = list(re.finditer(combined_re, code))
+    for mo in match_object_list:
+        # get the token type and value from
+        # the match object
+        type = mo.lastgroup
+        value = mo.group()
+        # some special processing of tokens
+        if type == 'NUMBER':
+            if '.' in value:
+                type = 'REAL'
+                value = float(value)
+            else:
+                type = 'INTEGER'
+                value = int(value)
+        elif type == 'ID':
+            # IDs and keywords share the same
+            # here we replace the ID type with
+            # the appropriate token type given
+            # keyword value, if not a keyword the
+            # code defaults to the ID token type
+            type = keywords.get(value,'ID')
+        elif type == 'TYPEMATCH':
+            if value[1:] == 'if':
+                type = 'CMATCH'
+                value = value[1:]
+            else:
+                type = 'TYPEMATCH'
+                value = value[1:]
+        elif type == 'STRING':
+            lines = value.count('\n')
+            (module, lineno) = state.lineinfo
+            line_num += lines
+            state.lineinfo = (module, line_num)
+            value = value[1:-1] # strip the quotes
+        elif type == 'NEWLINE':
+            line_num += 1
+            state.lineinfo = (module,line_num)
+            continue
+        elif type == 'COMMENT':
+            continue
+        elif type == 'WHITESPACE':
+            continue
+        elif type == 'MISMATCH':
+            raise ValueError("unexpected character '{}'".format(value))
+        # put the token onto the tokens list
+        tokens.append(Token(type, value, module, line_num))
+    # always append an EOF token so we never run out of tokens
+    # in the lexer.
+    tokens.append(Token('EOF', '', module, line_num))
+    return tokens
 
 def dbg_print(string):
     #print(string)
     pass
 
 class Lexer:
-
     def __init__(self):
-        self.plylexer = lex.lex(debug=0)
+        self.tokens = None
+        self.curr_token_ix = None
         self.curr_token = None
-
-    def make_eof_token(self):
-        if not self.curr_token:
-            t = LexToken()
-            t.type = 'EOF'
-            t.value = ''
-            self.curr_token = t
+        # keep a set of all possible token types in our lexer
+        # this let's us weed out bad match calls very easily
+        self.token_types = \
+            set(type for (_,type) in token_specs) | \
+            set(list(keywords.values())) | \
+            set(implicit_token_types)
 
     def input(self, input_string):
-        self.plylexer.input(input_string)
-        self.curr_token = self.plylexer.token()
-        self.make_eof_token()
+        self.tokens = tokenize(input_string)
+        # the following is always valid because we will always have
+        # at least the EOF token on the tokens list.
+        self.curr_token_ix = 0
+        self.curr_token = self.tokens[self.curr_token_ix]
 
     def peek(self):
         return self.curr_token
 
     def next(self):
         dbg_print('skipping {}'.format(self.curr_token.type))
-        self.curr_token = self.plylexer.token()
-        self.make_eof_token()
+        if self.curr_token.type != 'EOF':
+            self.curr_token_ix += 1
+            self.curr_token = self.tokens[self.curr_token_ix]
 
     def EOF(self):
         if self.curr_token.type == 'EOF':
@@ -181,16 +212,15 @@ class Lexer:
             return False
 
     def match(self, token_type):
-        if token_type not in tokens+literals:
-            raise ValueError("unknown token type: '{}'.".format(token_type))
+        if token_type not in self.token_types:
+            raise ValueError("unknown token type '{}'".format(token_type))
         elif token_type != self.curr_token.type:
             raise ValueError("expected '{}' found '{}'."
                              .format(token_type, self.curr_token.type))
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token
-            self.curr_token = self.plylexer.token()
-            self.make_eof_token()
+            self.next()
             return ct
 
     def match_optional(self, token_type):
@@ -204,8 +234,13 @@ if __name__ == "__main__":
 
     lexer = Lexer()
 
-    data = 'let x = y@{"foo"}.'
-    lexer.input(data)
+    prgm = \
+    '''
+    -- this is a test program
+    let y = 1.
+    let x = y - -1.
+    '''
+    lexer.input(prgm)
 
     while not lexer.EOF():
         tok = lexer.peek()

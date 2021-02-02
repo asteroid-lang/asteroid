@@ -1,10 +1,11 @@
-load "util".
 load "io".
+load "util".
+load "stream".
 
 let s = Stream([1,2,3,4]).
 
 while not s @eof() do
-  println s @get().
+  println(s @get()).
   s @next().
 end
 
@@ -12,8 +13,8 @@ s @map(lambda with x do return 2*x).
 
 s @rewind().
 while not s @eof() do
-  println s @get().
+  println(s @get()).
   s @next().
 end
 
-println s @__string__().
+println(s @__string__()).

@@ -1,20 +1,21 @@
 -- conway's game of life written in Asteroid
 -- written by Lutz Hamel, (c) University of Rhode Island
 
-load "util".
 load "io".
+load "util".
+load "random".
 
 --------------------------------------------------------------------------
 function display_array
     -- display the contents of an array, wait for .5sec
     with ar do
 
-        let nrows = length ar.    -- grab the rows
+        let nrows = len(ar).    -- grab the rows
         if nrows is 0 do
             throw Error "Array contains no data".
         end
 
-        let ncols = length ar@0. -- grab the cols
+        let ncols = len(ar@0). -- grab the cols
 
         for i in 0 to (nrows-1) do
             let row_str = "".
@@ -28,8 +29,8 @@ function display_array
 --------------------------------------------------------------------------
 function array_shape
     with arr do
-        let xdim = length arr.
-        let ydim = length arr@0.
+        let xdim = len(arr).
+        let ydim = len(arr@0).
         return (xdim, ydim)
     end
 

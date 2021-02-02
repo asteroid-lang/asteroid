@@ -4,8 +4,9 @@
 -- how regular expression can be used during pattern matching.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load "util".
 load "io".
+load "util".
+load "stream".
 
 structure Token with
   data type.
