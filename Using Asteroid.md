@@ -2,9 +2,21 @@
 
 This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are due to the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
+# Table of Contents
+[Chapter: Strings](#chapterstrings)
+  [Section: Using Strings](#usingstrings)
+  [Section: Modifying string data](#modifyingstrings)
+  [Section: Text Analysis](#textanalysis)
 
-# Chapter: Strings
-## Section: Using Strings
+[Chapter: Numbers](#numbers)
+  [Section: Using numbers](#sectionusingnumbers)
+  
+[Chapter: Aggregate Data Types](#datatypes)
+
+[Chapter: Object-Oriented programming](#oop)
+
+# Chapter: Strings <a name="chapterstrings"></a>
+## Section: Using Strings <a name="usingstrings"></a>
 
 
 ### Challenge: Hello, World!
@@ -134,7 +146,7 @@ assert(digits == ["1","2","3"]).
 
 Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator and the second argument get instantiated with the elements of the list to be processed.  In our function `unique` the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is on the list.  If it is not then it adds it to the list otherwise it just returns the accumulator unchanged.
 
-## Section: Modifying string data
+## Section: Modifying string data <a name="modifyingstrings"></a>
 
 ### Challenge: Reverse a string
 
@@ -370,7 +382,7 @@ assert (decoded_msg == "hello, world!")
     hello, world!
 
 
-## Section: Text Analysis
+## Section: Text Analysis <a name="textanalysis"></a>
 
 ### Challenge: Plural Endings
 
@@ -674,7 +686,7 @@ end
     sit amet condimentum: 2
 
 
-# Chapter: Numbers
+# Chapter: Numbers <a name="numbers"></a>
 ## Section: Using numbers
 
 
@@ -1644,7 +1656,7 @@ println (spell_number 1001).
     one thousand one
 
 
-# Chapter: Aggregate Data Types
+# Chapter: Aggregate Data Types <a name="datatypes"></a>
 
 ## Section: Manipulating lists and arrays
 
@@ -2509,7 +2521,7 @@ interp(program)
 The program prints the first seven rows of the Pascal triangle. The rows are not centred and are aligned to the left side.
 As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
 
-# Chapter: Object-Oriented programming
+# Chapter: Object-Oriented programming <a name="oop"></a>
 
 ## Section: Simple OO challenges
 
