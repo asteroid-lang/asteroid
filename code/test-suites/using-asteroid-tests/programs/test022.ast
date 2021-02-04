@@ -1,0 +1,47 @@
+
+load "io".
+load "hash".
+
+-- text from "www.lipsum.com"
+
+let str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed malesuada sapien nec neque suscipit, non rutrum arcu scelerisque. Nam feugiat sapien porta ipsum accumsan, eget maximus diam volutpat. Pellentesque elementum in orci quis pretium. Donec dignissim nunc lectus, id ornare urna varius ut. Praesent semper faucibus vehicula. Aliquam luctus sapien at lorem malesuada, eget suscipit felis facilisis. Suspendisse velit lectus, mollis sit amet tempor eget, faucibus ut nulla. Vestibulum et elementum dolor, a vehicula ipsum. Morbi ut fringilla nisi. Fusce congue rutrum orci nec porta. Ut laoreet justo vel turpis sodales vehicula. Nulla porttitor nisl id odio eleifend sodales.
+
+Suspendisse blandit tristique enim id laoreet. Etiam vel aliquet dui, quis tempus magna. Donec blandit volutpat felis egestas tincidunt. Integer placerat luctus mi non pharetra. Donec aliquet nisl orci, egestas elementum nunc bibendum a. Morbi nec risus aliquet, viverra nunc in, molestie odio. Curabitur pellentesque, ante eget dictum aliquam, felis leo bibendum libero, vel bibendum lorem velit eget ex. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum pretium tellus quis ante vulputate, pretium tincidunt ipsum dapibus. Praesent congue, ipsum ut sagittis tempus, lacus nisi dapibus dui, aliquam porta metus odio ut neque. Aliquam vitae faucibus dolor. Nulla iaculis lorem non mauris viverra, ut malesuada nibh aliquam. Nam bibendum sit amet massa in dignissim. Nam posuere nunc ante, at viverra diam rhoncus vel.
+
+Aliquam mollis sagittis nulla. Maecenas faucibus eu dui eget accumsan. Suspendisse sit amet fermentum sapien. Nunc vitae mi nibh. Mauris condimentum vestibulum imperdiet. Quisque at vehicula dui. Integer sit amet volutpat arcu. Maecenas efficitur leo tortor, non ullamcorper magna tempor non. Sed efficitur quis metus ut pulvinar. Proin nunc felis, congue sit amet nibh placerat, tincidunt mattis nunc. Duis efficitur lacus a orci porttitor, sed molestie risus tempor.
+
+Sed tincidunt ipsum at urna sollicitudin feugiat. Ut mollis orci quis massa dictum facilisis. Maecenas non elementum mauris. Sed rutrum orci faucibus, tristique nunc nec, mattis ante. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In hac habitasse platea dictumst. Morbi pellentesque dolor sit amet nunc tincidunt, ut rutrum ante vulputate. Nullam pretium, mi sed condimentum luctus, ipsum nunc dictum lorem, vel ultricies nibh mi ut sem. Nam volutpat id libero eget mollis.
+
+Vestibulum eget velit eros. Phasellus sit amet vestibulum odio, vel malesuada quam. Mauris dictum erat eu ligula mollis laoreet. Phasellus ut ante auctor, hendrerit ipsum et, fermentum magna. Etiam nec eros elementum, consectetur nibh ac, ullamcorper ligula. Aliquam sed porttitor sapien. Nulla tincidunt, turpis vitae venenatis aliquet, quam purus elementum diam, in tincidunt orci diam sed nulla. Cras pellentesque non diam quis sollicitudin. Duis suscipit lectus dui, eu varius metus pretium sit amet.
+
+Nulla eu ex velit. Ut non justo semper, gravida erat quis, vehicula est. Suspendisse nunc dui, iaculis id purus sit amet, rutrum commodo lacus. Aenean consequat turpis a est vestibulum, ac accumsan nibh dapibus. Nam blandit scelerisque lectus, eu pellentesque arcu ornare non. Fusce ac gravida diam. Ut in fringilla eros. Sed metus augue, porta quis vehicula at, pellentesque et mauris. Duis sodales lacus sit amet condimentum placerat. In blandit tristique nulla eget malesuada. Sed congue finibus neque at semper. Etiam pellentesque egestas urna, ut lobortis odio euismod et. Phasellus aliquet quam purus, quis ullamcorper sem mollis eu.
+
+Mauris quis ullamcorper nisi. Aenean quam nulla, sodales eu faucibus in, mattis a nulla. Nullam pulvinar pretium justo eu mattis. Aliquam rutrum ipsum vitae leo maximus ultrices. Donec ut pulvinar nisi. Sed pharetra, turpis dictum lobortis egestas, quam massa venenatis enim, dapibus efficitur dolor mauris eu felis. Donec vulputate ultrices justo sit amet condimentum. Donec id posuere nulla. In vestibulum mi in lectus commodo dignissim. Quisque vestibulum egestas arcu sit amet finibus. Proin commodo aliquet neque quis maximus.
+
+Nulla facilisi. Sed gravida aliquet diam in congue. Mauris vehicula justo ac sollicitudin laoreet. Mauris enim mi, auctor id magna eget, feugiat sollicitudin leo. Vivamus ornare ornare commodo. Suspendisse ut dui quis enim porta pretium. Praesent vitae lacus fermentum, posuere orci ac, imperdiet massa. Nulla hendrerit id nisl sed maximus. Vivamus commodo lacus eu condimentum bibendum. Suspendisse porttitor sem eget dolor aliquet congue. Pellentesque tristique augue at quam hendrerit dignissim. Aenean a congue dui. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Integer ante lacus, commodo et enim sed, auctor egestas metus.
+
+Aliquam a urna id risus tincidunt rutrum. Nunc facilisis, tortor ac suscipit aliquam, ante neque tincidunt mi, nec ullamcorper lectus ligula vel urna. Suspendisse lobortis at felis sit amet facilisis. Pellentesque velit lacus, porttitor vitae eros rutrum, convallis blandit erat. Pellentesque nec mi viverra, volutpat dui in, rutrum lacus. Ut non venenatis leo. Praesent sollicitudin magna porttitor lorem elementum molestie non a turpis. Suspendisse potenti.
+
+Donec malesuada iaculis laoreet. Nunc ut volutpat ante, ut consequat tortor. Phasellus posuere, ipsum quis dignissim iaculis, nisl felis ullamcorper ligula, quis placerat sem sapien nec ante. Cras suscipit ut magna nec lacinia. Donec ipsum nibh, imperdiet non aliquam eu, maximus id ante. Pellentesque vitae felis felis. Aliquam et diam sed nulla volutpat vestibulum molestie non lacus. Praesent porta et lacus auctor fermentum. In hac habitasse platea dictumst. Aliquam erat volutpat. Etiam at ligula orci. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos."
+
+
+let word_list = str @tolower()
+                    @replace("[^a-z0-9_]"," ")
+                    @split().
+let ht = HashTable().
+
+-- create N-grams
+for i in 0 to word_list @length()-3 do
+    -- Note: make this code more general
+    let n_gram = [word_list@i, word_list@(i+1), word_list @(i+2)] @join(" ").
+    -- put the N-gram into a hash table, the value is the count of the N-gram in the text.
+    if not ht @get(n_gram) do
+        ht @insert(n_gram,1).
+    else do
+        ht @insert(n_gram,ht @get(n_gram)+1).
+    end
+end
+
+for ((n_gram,cnt) %if cnt > 1) in ht @aslist() do
+    println (n_gram+": "+cnt).
+end

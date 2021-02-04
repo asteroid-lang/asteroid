@@ -1,0 +1,40 @@
+
+--------------------------------------
+-- patterns_test25.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+load "util".
+
+structure Person with
+    data name.
+    data age.
+    data gender.
+    end
+
+-- define a list of persons
+let people = [
+    Person("George", 32, "M"),
+    Person("Sophie", 46, "F"),
+    Person("Oliver", 21, "X")
+    ].
+
+-- print names that contain 'p'
+for Person(name:".*p.*",_,_) in people do
+  println name.
+  end
+  
+function testFunction
+    with Person("George", 32, "M") do    -- *** will Subsume Person("George", 32, "M")
+        return 1.
+    orwith Person("Sophie", 46, "F") do
+        return 2.
+    orwith Person("George", 32, "M") do  --duplicate structure/object
+        return 3.
+    end.
+    
+let x = testFunction( Person("George", 32, "M") ).
+println ( x ).
+

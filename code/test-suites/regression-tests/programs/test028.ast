@@ -1,0 +1,11 @@
+
+load "io".
+    
+structure B with
+    data b.
+    function get with self do return self @b end
+    end
+    
+let q = B([1,2,3]).
+
+println (q @get() @length()). 

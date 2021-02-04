@@ -24,13 +24,9 @@ while guesses_made < 6 do
 
     if guess < number do
         println "Your guess is too low."
-    end
-
-    if guess > number do
+    elif guess > number do
         println "Your guess is too high."
-    end
-
-    if guess == number do
+    elif guess == number do
         break.
     end
 end

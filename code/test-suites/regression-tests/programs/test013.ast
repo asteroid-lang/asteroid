@@ -1,0 +1,4 @@
+
+load "io".
+let i:%integer = 1.
+print i.

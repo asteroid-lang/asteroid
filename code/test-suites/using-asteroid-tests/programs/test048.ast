@@ -1,0 +1,9 @@
+
+load "io".
+load "util".
+
+let bin = "101101".
+let int = tointeger(bin,2).
+println int.
+
+assert (int == 45).

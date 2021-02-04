@@ -1,0 +1,26 @@
+
+--------------------------------------
+-- patterns_test15.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+-- A testing function with multiple patterns
+function testFunction
+    with [ 1 | 2 | 3 | 4 | tail ] do  -- *** will SUBSUME [1, 2, 3, 4 ] ***
+        return 1.
+    orwith [ 1, 2, 3, 4 ] do
+        return 2. 
+    orwith [ h1 | tail ] do 
+        return 3. 
+    orwith [] do
+        return 4.
+    end.
+    
+-- Evaluate the function with a test input.
+let x = testFunction[ 3 , 4 ].
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ).

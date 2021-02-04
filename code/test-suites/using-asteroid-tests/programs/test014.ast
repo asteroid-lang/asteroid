@@ -1,0 +1,27 @@
+
+load "io".
+
+let dna2rna_table = 
+    [
+    ("A","U"),
+    ("C","G"),
+    ("G","C"),
+    ("T","A")
+    ].
+
+function dna2rna with x do
+    for (dna,rna) in dna2rna_table do
+        if x is *dna do
+            return rna.
+        end
+    end
+    throw Error("unknown dna char "+x).
+end
+
+let dna_seq = "ACCATCAGTC".
+let rna_seq = dna_seq @explode() 
+                      @map(dna2rna) 
+                      @join("").
+println rna_seq.
+
+assert(rna_seq == "UGGUAGUCAG").

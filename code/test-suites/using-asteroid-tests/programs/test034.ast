@@ -1,0 +1,26 @@
+
+load "io".
+load "math".
+
+function isprime with x do
+    if x >= 2 do
+        for y in range(2,x) do
+            if not mod(x,y) do
+                return false.
+            end
+        end
+    else do
+        return false.
+    end
+    return true.
+end
+
+let cnt = 0.
+for (n %if isprime(n)) in 1 to 1000000 do
+    println n.
+    let cnt = cnt+1.
+    if cnt == 10 do
+        break.
+    end
+end
+    

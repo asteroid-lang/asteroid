@@ -177,6 +177,7 @@ def dbg_print(string):
     #print(string)
     pass
 
+# convenient interface to the token stream
 class Lexer:
     def __init__(self):
         self.tokens = None

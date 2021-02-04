@@ -1,0 +1,14 @@
+
+load "io".
+load "util".
+
+let val = 42.
+
+println (tobase(val,2)).  -- bin
+println (tobase(val,8)).  -- oct
+println (tobase(val,16)). -- hex
+
+-- make sure that conversions are correct in both directions
+assert (tointeger(tobase(val,2),2) == val). 
+assert (tointeger(tobase(val,8),8) == val).  
+assert (tointeger(tobase(val,16),16) == val). 

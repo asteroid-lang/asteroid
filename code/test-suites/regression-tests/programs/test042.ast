@@ -1,0 +1,27 @@
+
+load "io".
+load "util".
+
+structure A with
+
+    data x.
+    data y.
+
+    function __init__
+      with (self, a, b) do
+        let self @x = a.
+        let self @y = b.
+      orwith self do
+        let self @x = 1.
+        let self @y = 2.
+      end 
+    end 
+
+let obj1 = A("hello","world").
+println obj1.
+let obj2 = A().
+println obj2.
+
+assert((obj1 @x is "hello") and (obj1 @y is "world")).
+assert((obj2 @x is 1) and (obj2 @y is 2)).
+

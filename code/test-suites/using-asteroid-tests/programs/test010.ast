@@ -1,0 +1,6 @@
+
+load "io".
+let str = "   Hello  ,   World    !   " @trim() 
+                                        @replace("  ","").
+println str.
+assert(str == "Hello, World!").

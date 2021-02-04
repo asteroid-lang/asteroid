@@ -1,0 +1,11 @@
+
+load "io".
+
+function ident with i do return i end
+
+try
+    let p = - ident(1).
+    println p.
+catch e do
+    println e.
+end

@@ -1,0 +1,7 @@
+
+load "io".
+let a = [1,2].
+
+if a is [b|c|d|rest] do
+    println "yes".
+end

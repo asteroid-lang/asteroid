@@ -1,0 +1,16 @@
+
+load "io".
+load "random".
+load "util".
+
+let n = randint(0,10).
+let guess = tointeger(input("Guess my number between 0 and 10: ")).
+while guess =/= n do
+    if guess < n do
+        println "Too small.".
+    elif guess > n  do
+         println "Too big.".
+    end
+    let guess = tointeger(input("Try again: ")).
+end
+println "Yes, this is it!".

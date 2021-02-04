@@ -1,0 +1,5 @@
+
+load "io".
+
+let digits = "332211" @explode() @sort().
+println digits.

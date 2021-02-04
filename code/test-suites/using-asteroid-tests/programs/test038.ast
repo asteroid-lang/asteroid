@@ -1,0 +1,16 @@
+
+load "io".
+load "random".
+load "util".
+
+seed(42).
+
+println (random()).          -- random value in [0.0,1.0)
+println (randint(0.0,1.0)).  -- random value in [0.0,1.0]
+println (randint(0,1)).      -- always 0 or 1
+
+-- generating a random number in the appropriate interval
+let n = 10.
+println (randint(0.0,toreal(n))).
+println (randint(0,n)).
+

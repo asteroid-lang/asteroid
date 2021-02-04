@@ -1,0 +1,8 @@
+
+load "io".
+load "util".
+
+let a = [[1,2],[3,4],[5,6]].
+let l = (a @0).
+println l.
+assert(l is [1,2]).

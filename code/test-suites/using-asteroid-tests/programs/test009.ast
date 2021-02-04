@@ -1,0 +1,7 @@
+
+load "io".
+let str = "Hello, World!" @explode() 
+                          @reverse() 
+                          @join("").
+println str.
+assert(str == "!dlroW ,olleH").

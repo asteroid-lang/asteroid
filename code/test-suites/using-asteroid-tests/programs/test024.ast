@@ -1,0 +1,6 @@
+
+load "io".
+load "math". 
+
+println e.
+println tau. -- tau=2*pi

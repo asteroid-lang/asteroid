@@ -1,0 +1,16 @@
+
+load "io".
+
+structure A with
+    data x.
+    function dump with self do println (self@x) end .
+    end 
+
+let obj = A(2).
+obj @dump().
+
+let A(x) = obj.
+println x.
+
+assert(x is 2).
+

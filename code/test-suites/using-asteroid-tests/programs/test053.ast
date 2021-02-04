@@ -1,0 +1,26 @@
+
+load "io".
+load "math".
+load "util".
+load "hash".
+
+let roman_hash = HashTable().
+roman_hash @insert(1000,["","M","MM","MMM"]).
+roman_hash @insert(100,["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"]).
+roman_hash @insert(10,["","X","XX","XXX","XL","L","LX","LXX","LXXX","XC"]).
+roman_hash @insert(1,["","I","II","III","IV","V","VI","VII","VIII","IX"]).
+
+let n = 2018.
+let p10 = range(tostring n @length()) @map(lambda with x do return pow(10,x))
+                                      @reverse().
+let digits = tostring n @explode()
+                        @map(tointeger).
+let z = zip(digits, p10).
+println z.
+let roman = "".
+for (d,p) in z do
+    let roman = roman + roman_hash @get(p) @d.
+end
+println roman.
+
+assert (roman == "MMXVIII")

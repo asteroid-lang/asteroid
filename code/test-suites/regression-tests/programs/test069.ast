@@ -1,0 +1,16 @@
+
+load "util".
+load "io".
+
+structure S with
+    data x.
+    end 
+    
+let x = 'S(S(0)).
+let y = 'S(S(x)).
+let z = y.
+
+println y.
+println z.
+println (eval (z)).
+assert ((eval (z)) is S(S(S(S(0))))).

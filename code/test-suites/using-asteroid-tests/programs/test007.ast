@@ -1,0 +1,3 @@
+
+load "io".
+println ("Hello!" @length()).

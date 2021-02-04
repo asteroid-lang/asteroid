@@ -1,0 +1,19 @@
+
+load "io".
+
+let str1 = "cinema".
+let str2 = "iceman".
+
+function normalize with str do
+    return str @explode()
+               @sort() 
+               @join("").
+end
+
+if normalize(str1) == normalize(str2) do
+    println "Anagrams".
+else do
+    println "Not anagrams".
+end
+
+assert (normalize(str1) == normalize(str2)).

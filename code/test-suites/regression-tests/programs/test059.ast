@@ -1,0 +1,9 @@
+
+load "io".
+
+try
+    let i = 10/0.
+    println i.
+catch ("Exception", v) do
+    println v.
+end 

@@ -1,0 +1,5 @@
+
+load "io".
+
+let q:%integer = 3.
+println q.

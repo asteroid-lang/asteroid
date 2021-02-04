@@ -1,0 +1,6 @@
+
+load "io".
+
+-- TODO: this is NOT correct see issue #27
+let (x,x) = (1,2).
+println x.

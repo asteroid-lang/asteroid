@@ -1,0 +1,64 @@
+
+load "io".
+load "random".
+
+seed(42).
+
+-- Asteroid allows the user to escape to the Python 
+-- ecosystem.  Here we use this to construct a
+-- plot of the moving average
+function plot with (dt,avg) do escape
+"
+import pandas as pd
+import matplotlib.pyplot as plt
+plt.style.use('seaborn')
+
+# import parameters from Asteroid into Python
+dt_val = state.symbol_table.lookup_sym('dt')
+avg_val = state.symbol_table.lookup_sym('avg')
+
+# convert from Asteroid lists to Python lists
+dt_plot = []
+for (_,v) in dt_val[1]:
+    dt_plot.append(v)
+
+avg_plot = []
+for (_,v) in avg_val[1]:
+    avg_plot.append(v)
+
+# construct a dataframe to plot
+df = pd.DataFrame(data={'Data':dt_plot,'Average':avg_plot})
+
+# colors for the line plot
+colors = ['steelblue', 'red']
+
+# line plot
+df.plot(color=colors, linewidth=3, figsize=(12,6))
+
+# modify ticks size
+plt.xticks(fontsize=14)
+plt.yticks(fontsize=14)
+plt.legend(labels =['Data', 'Moving Average'], fontsize=14)
+
+# title and labels
+plt.title('Moving Average', fontsize=20)
+plt.xlabel('Instance', fontsize=16)
+plt.ylabel('Value', fontsize=16)
+plt.show()
+"
+end
+
+-- compute the window on lst
+function window with (lst:%list,i:%integer) %if i >= 3 and i <= lst @length()-4 do
+    return lst @[i-3,i-2,i-1,i,i+1,i+2,i+3].
+end
+
+-- sum the values of lst
+function sum with lst:%list do
+    return lst @reduce(lambda with (x,y) do return x+y).
+end
+
+let dt = [1 to 100] @map(lambda with _ do return random()).
+let mavg = [3 to 96] @map(lambda with i do return sum(window(dt,i))/7).
+
+plot(dt @[3 to 96],mavg).

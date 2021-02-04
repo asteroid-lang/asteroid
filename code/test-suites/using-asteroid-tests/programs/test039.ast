@@ -1,0 +1,17 @@
+
+load "io".
+load "util".
+
+let n = 1234.
+let sq = n*n.
+let sq_str = tostring(sq).
+if sq_str @length() < 8 do
+    let prefix = [1 to 8-sq_str@length()] @map(lambda with _ do return "0") 
+                                          @join("").
+    let sq_str = prefix + sq_str.
+end
+let rstr = sq_str @[2 to 5].
+let rval = tointeger(rstr).
+println rval.
+
+assert (rval == 5227)

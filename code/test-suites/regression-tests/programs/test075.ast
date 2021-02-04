@@ -1,0 +1,7 @@
+
+load "io".
+load "util".
+
+let [h|t] = [1,2,3].
+println ("head: " + h + " tail: " + t).
+assert(h == 1 and t == [2,3]).

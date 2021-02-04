@@ -1,0 +1,7 @@
+
+load "io".
+load "util".
+let x = 1. 
+function ident with n do return n end.
+println (ident( ident (x))) .
+assert (ident( ident (x)) is 1) .

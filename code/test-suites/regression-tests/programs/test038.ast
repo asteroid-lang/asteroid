@@ -1,0 +1,4 @@
+
+load "io".
+let t = (1,2).
+println ("tuple = " + t).

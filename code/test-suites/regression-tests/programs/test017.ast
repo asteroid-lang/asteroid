@@ -1,0 +1,5 @@
+
+load "io".
+load "util".
+
+let (l:%list) %if l is "\[.*2.*\]" = [1,2,3].

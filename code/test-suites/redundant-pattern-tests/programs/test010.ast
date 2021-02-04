@@ -1,0 +1,26 @@
+
+--------------------------------------
+-- patterns_test9.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+-- A testing function with multiple patterns
+function testFunction
+    with true do       
+        return 1. 
+    orwith false do -- *** will subsume false
+        return 2.    
+    orwith false do -- *** duplicate pattern
+        return 2.  
+    end.
+    
+
+-- Evaluate the function with a test input.
+let x = true.
+let y = testFunction( x ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + y ).

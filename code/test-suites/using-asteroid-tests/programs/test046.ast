@@ -1,0 +1,19 @@
+
+load "io".
+load "math".
+load "random".
+
+seed(42).
+
+let inside = 0. 
+let n = 10000.
+for _ in 1 to n do 
+    let point = (randint(-1.0,1.0),randint(-1.0,1.0)).
+    if sqrt(pow(point@0,2)+pow(point@1,2)) <= 1.0 do
+        let inside = inside+1.
+    end
+end
+let area = 4.0 * inside / n.
+println area.
+
+assert (area == 3.1392).

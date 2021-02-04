@@ -1,0 +1,5 @@
+
+load "io".
+
+let name = input("Please enter your name: ").
+println("Hello " + name + "!").

@@ -1,0 +1,10 @@
+
+load "io".
+structure A with
+    data a.
+    data b.
+    end
+
+let a = A(1,2).
+let v:%A = a.
+println v.

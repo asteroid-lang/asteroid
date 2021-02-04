@@ -1,0 +1,40 @@
+
+load "io".
+load "util".
+
+structure Dog with
+
+  data name.
+  data tricks.
+
+  function add_trick
+    with (self, new_trick) do
+      let self @tricks = self @tricks + [new_trick].
+    end 
+    
+  function __init__
+    with (self, name) do 
+      let self @name = name.
+      let self @tricks = [].
+    end 
+    
+  end 
+
+-- Fido the dog
+let fido = Dog("Fido").
+
+fido @add_trick("roll over").
+fido @add_trick("play dead").
+
+-- Buddy the dog
+let buddy = Dog("Buddy").
+
+buddy @add_trick("roll over").
+buddy @add_trick("sit stay").
+
+-- println out the tricks
+println ("Fido: " + fido @tricks).
+println ("Buddy: " + buddy @tricks).
+
+assert(fido @tricks is ["roll over", "play dead"]).
+assert(buddy @tricks is ["roll over", "sit stay"]).

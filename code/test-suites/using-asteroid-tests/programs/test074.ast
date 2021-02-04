@@ -1,0 +1,9 @@
+
+load "io".
+load "math".
+
+let dt = ["apple","pear","grape","lemon","peach","apple","banana","grape","pineapple","avocado"].
+let cnt = dt @count("grape").
+println cnt.
+
+assert (cnt == 2).

@@ -1,0 +1,9 @@
+
+load "io".
+load "util".
+
+let a = tointeger([67, 8, 1, 5, 45] @map(tostring) @sort(true) @join("")).
+println a.
+
+assert (a == 8675451).
+

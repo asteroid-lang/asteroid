@@ -1,0 +1,32 @@
+
+--------------------------------------
+-- patterns_test26.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+-- implements Peano addition on terms
+load "io".
+load "util".
+
+structure S with
+    data x.
+    end 
+    
+structure add with
+    data left.
+    data right.
+    end
+
+function reduce
+    with add(x,y) do              -- Will subsume all matches for add(x,S(y))
+        return 1.
+    orwith add(x,0) do      
+        return reduce(x).
+    orwith add(x,S(y)) do         -- The redundant pattern
+        return S(reduce(add(x,y))).
+    orwith term do     
+        return term.
+    end 
+    
+println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).

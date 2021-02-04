@@ -1,0 +1,25 @@
+
+--------------------------------------
+-- patterns_test23.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+function testFunction
+    with x:%tuple do                   -- Will render all following patterns redundant
+        return 1.
+    orwith (x:%integer, y:%integer ) do
+        return 2.
+    orwith (n:%real, m:%real) do
+        return 3.
+    orwith ( x, y, z) do
+        return 4.
+    end.
+    
+-- Evaluate the function with a test input.
+let x = testFunction( (5,1) ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x  ). 

@@ -1,0 +1,3 @@
+
+load "io".
+raw_print "Hello, World!".

@@ -1,0 +1,29 @@
+
+load "io".
+
+structure Walk with
+    function walk with self do println "I'm walking" end
+    end
+    
+structure Fly with
+    function fly with self do println "I'm flying" end
+    end
+    
+structure Sing with
+    function sing with self do println "I'm singing" end
+    end
+    
+
+structure Bird with
+    -- constructor
+    function __init__ with self do println "The bird says:" end
+    end
+
+inherit(Bird,Fly).
+inherit(Bird,Walk).
+inherit(Bird,Sing).
+
+let bird = Bird().
+bird @fly().
+bird @walk().
+bird @sing().

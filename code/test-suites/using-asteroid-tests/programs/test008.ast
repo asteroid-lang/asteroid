@@ -1,0 +1,16 @@
+
+load "io".
+
+function unique with (x,y) do
+    if not (x @member(y)) do
+        return x @append(y).
+    else do
+        return x.
+    end
+end
+        
+let digits = "332211" @explode() 
+                      @sort() 
+                      @reduce(unique,[]).
+println digits.
+assert(digits == ["1","2","3"]).

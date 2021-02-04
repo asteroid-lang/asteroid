@@ -1,0 +1,10 @@
+
+load "io".
+load "util".
+
+let cl = 1 + 2.
+let cr = 3.
+let p = cl + cr.
+
+println (1+2+3 is *p).
+assert ((1+2+3 is *p) is true).

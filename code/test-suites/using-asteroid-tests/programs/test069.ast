@@ -1,0 +1,6 @@
+
+load "io".
+
+let array = [10, 14, 0, 15, 17, 20, 30, 35].
+let x = 17.
+println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).

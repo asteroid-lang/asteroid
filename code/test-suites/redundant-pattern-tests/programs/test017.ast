@@ -1,0 +1,26 @@
+
+--------------------------------------
+-- patterns_test16.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+-- A testing function with multiple patterns
+function testFunction
+    with person1:( fname, lname) do  -- *** will SUBSUME location:( long, lat ) ***
+        return 1.
+    orwith person2:( fname, lname1, lname2) do
+        return 2.
+    orwith location:( long, lat ) do 
+        return 3. 
+    orwith () do
+        return 4.
+    end.
+    
+-- Evaluate the function with a test input.
+let x = testFunction( 3 , 4 ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ).

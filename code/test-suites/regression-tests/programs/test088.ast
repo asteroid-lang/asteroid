@@ -1,0 +1,12 @@
+
+-- TODO: should this work similar to Rust?
+load "io".
+load "util".
+try 
+    let [1 to 3] = [1,2,3].
+catch (_, v) do
+    println v.
+    assert (v is "pattern match failed: pattern of type 'to-list' not allowed in pattern matching").
+end 
+
+let [1,2,3] = [1 to 3].

@@ -23,21 +23,15 @@ def interp(input_stream,
            do_walk=True,
            symtab_dump=False,
            exceptions=False,
-           version=False,
            prologue=True):
-
-    if version:
-        print("** Asteroid Version {} **".format(VERSION))
-        sys.exit(0)
-
     try:
         # initialize state
         state.initialize()
 
         #lhh
-        #print("path[0]: {}".format(sys.path[0])) 
+        #print("path[0]: {}".format(sys.path[0]))
         #print("path[1]: {}".format(sys.path[1]))
-              
+
         # read in prologue
         if prologue:
             # load the prologue file

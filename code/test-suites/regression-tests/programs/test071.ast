@@ -1,0 +1,14 @@
+
+load "io".
+load "util".
+
+function ident 
+    with n do 
+        return n 
+    end  
+
+let y = ident(ident (0)).
+let x = ident ident 0.
+
+println (x,y).
+assert ((x,y) is (0,0)).

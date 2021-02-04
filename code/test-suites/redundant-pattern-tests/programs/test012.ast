@@ -1,0 +1,23 @@
+
+--------------------------------------
+-- patterns_test11.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+load "util".
+
+function test_function 
+  with ".*q.*" do               
+    return "Found a p.".
+  orwith ".*http.*" do          -- RE ".*http.*" will match to all ".*https.*" patterns
+    return "Found a url.".
+  orwith ".*https.*" do         --Redundant
+    return "Found a secure url.".
+  orwith ".*z.*" do
+    return "Found a z.".
+  end.
+
+let var = test_function( "test string z" ).
+println ( var ).

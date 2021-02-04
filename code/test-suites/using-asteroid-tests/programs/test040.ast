@@ -1,0 +1,13 @@
+
+load "io".
+load "random".
+
+let hist = [0 to 9] @map(lambda with _ do return 0).
+
+for _ in range(10000) do
+    let ix = randint(0,9).
+    let hist @ix = hist @ix +1
+end
+
+println hist.
+

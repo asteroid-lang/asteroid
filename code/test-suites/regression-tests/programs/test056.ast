@@ -1,0 +1,11 @@
+
+load "io".
+load "util".
+
+function match
+    with (subject, p) do
+        return subject is *p.
+    end 
+    
+println (match('1+1, '_+_)).
+assert (match('1+1, '_+_) is true).

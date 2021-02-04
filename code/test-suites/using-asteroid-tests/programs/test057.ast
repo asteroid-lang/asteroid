@@ -1,0 +1,7 @@
+
+load "io".
+
+let a = [10, 20, 30, 40, 50].
+println (a @reverse()). 
+
+assert(a == [50,40,30,20,10]).
