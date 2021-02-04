@@ -4,6 +4,8 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
+import re
+
 ###########################################################################################
 def dump_AST(node):
     '''
@@ -174,11 +176,45 @@ def data_ix_list(memory):
     return ix_list
 
 ###########################################################################################
-def term2string(term):
+# the following two tables are used in format processing of strings
+# in term2string to support "\\", "\n", "\t", and "\"" characters.
+named_re_list = [
+    r'(?P<BS2>\\\\)',
+    r'(?P<NL>\\n)',
+    r'(?P<TAB>\\t)',
+    r'(?P<DQ>\\")',
+    r'(?P<ANYTHING>.)',
+]
+combined_re = '|'.join(named_re_list)
 
+def term2string(term):
     TYPE = term[0]
 
-    if TYPE in ['id', 'integer', 'real', 'string']:
+    if TYPE == 'string':
+        val = term[1]
+        output_str = ""
+        match_object_list = list(re.finditer(combined_re, val))
+        for mo in match_object_list:
+            type = mo.lastgroup
+            value = mo.group()
+            #lhh
+            #print(type)
+            if type == 'BS2':
+                output_str += "\\"
+            elif type == 'NL':
+                output_str += chr(10)
+            elif type == 'TAB':
+                output_str += chr(9)
+            elif type == 'DQ':
+                output_str += '"'
+            elif type == 'ANYTHING':
+                output_str += value
+            else:
+                raise ValueError("internal error: unknown match group {} in term2string"
+                                 .format(type))
+        return output_str
+
+    elif TYPE in ['id', 'integer', 'real']:
         val = term[1]
         return str(val)
 

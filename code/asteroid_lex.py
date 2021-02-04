@@ -58,7 +58,7 @@ keywords = {
 token_specs = [
 #   value:                          type:
     (r'([0-9]*[.])?[0-9]+',         'NUMBER'),
-    (r'\"[^\"]*\"',                 'STRING'),
+    (r'"([^"\\]|\\"|\\)*"',          'STRING'),
     (r'(--.*)|(\#.*)',              'COMMENT'),
     (r'[a-zA-Z_][a-zA-Z_0-9]*',     'ID'),
     (r'\n',                         'NEWLINE'),
@@ -151,6 +151,8 @@ def tokenize(code):
                 type = 'TYPEMATCH'
                 value = value[1:]
         elif type == 'STRING':
+            #lhh
+            #print(value)
             lines = value.count('\n')
             (module, lineno) = state.lineinfo
             line_num += lines

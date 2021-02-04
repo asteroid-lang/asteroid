@@ -11,7 +11,6 @@ function raw_print
 with item do
 escape
 "
-from asteroid_state import state
 from pprint import pprint
 item_val = state.symbol_table.lookup_sym('item')
 pprint(item_val)
@@ -25,7 +24,6 @@ function println
 with item do
 escape
 "
-from asteroid_state import state
 from asteroid_support import term2string
 item_val = state.symbol_table.lookup_sym('item')
 print(term2string(item_val))
@@ -39,7 +37,6 @@ function print
 with item do
 escape
 "
-from asteroid_state import state
 from asteroid_support import term2string
 item_val = state.symbol_table.lookup_sym('item')
 print(term2string(item_val),end='')
@@ -70,13 +67,13 @@ escape
 "
 global __retval__
 from asteroid_support import term2string
-from asteroid_state import state
 prompt_val = state.symbol_table.lookup_sym('prompt')
 if prompt_val[0] == 'none':
   __retval__ = ('string', input())
 elif prompt_val[0] != 'string':
   raise ValueError('input function requires a string prompt')
 else:
-  __retval__ = ('string', input(prompt_val[1]))
+  # term2string is necessary here in order to process formatting specs
+  __retval__ = ('string', input(term2string(prompt_val)))
 "
 end

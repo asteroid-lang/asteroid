@@ -18,8 +18,7 @@ data stream.
 data curr_ix.
 
 function __init__
-  with (self, stream) do
-    assert islist(stream).
+  with (self, stream:%list) do
     let self @stream = stream @copy(). -- shallow copy of input list
     let self @curr_ix = 0.
   orwith self do
