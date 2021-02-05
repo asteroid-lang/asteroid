@@ -24,13 +24,15 @@ def display_help():
     print(" -h    display help flag")
 
 
+# defaults for the flags - when the flag is set on the command line
+# it simply toggles the default value in this table.
 flags = {
     '-s' : False, # symbol table dump flag
     '-t' : False, # AST dump flag
     '-v' : False, # version flag
-    '-w' : True, # disable tree walk flag, -w sets this to false
+    '-w' : True,  # tree walk flag
     '-p' : False, # generate pstats flag
-    '-l' : True, # disable prologue flag., -l sets this to false
+    '-l' : True,  # prologue flag
     '-h' : False, # display help flag
 }
 
