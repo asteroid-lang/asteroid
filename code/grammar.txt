@@ -12,7 +12,7 @@ stmt_list
 
 stmt
   : '.' // NOOP
-  | LOAD STRING '.'?
+  | LOAD SYSTEM? STRING '.'?
   | GLOBAL id_list '.'?
   | NONLOCAL id_list '.'?
   | ASSERT exp '.'?

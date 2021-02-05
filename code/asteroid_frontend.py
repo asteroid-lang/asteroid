@@ -142,6 +142,7 @@ class Parser:
             # expand the AST from the file into our current AST
             # using a nested parser object
             self.lexer.match('LOAD')
+            sys_flag = bool(self.lexer.match_optional('SYSTEM'))
             str_tok = self.lexer.match('STRING')
             self.lexer.match_optional('DOT')
 
@@ -163,8 +164,9 @@ class Parser:
             # TODO: does this work on all OS's?
             # TODO: should have an env variable to set search path
             search_list = []
-            search_list.append(str_tok.value)
-            search_list.append(str_tok.value + asteroid_file_suffix)
+            if not sys_flag:
+                search_list.append(str_tok.value)
+                search_list.append(str_tok.value + asteroid_file_suffix)
             search_list.append(sys.path[1] + '/' + module_name + asteroid_file_suffix)
             search_list.append(sys.path[1] + '/modules/' + module_name + asteroid_file_suffix)
             search_list.append(sys.path[0] + '/' + module_name + asteroid_file_suffix)

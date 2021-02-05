@@ -41,6 +41,7 @@ keywords = {
     'return'        : 'RETURN',
     'step'          : 'STEP',
     'structure'     : 'STRUCTURE',
+    'system'        : 'SYSTEM',
     'throw'         : 'THROW',
     'to'            : 'TO',
     'try'           : 'TRY',
