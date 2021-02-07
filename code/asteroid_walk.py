@@ -152,7 +152,7 @@ def unify(term, pattern, unifying = True ):
         typematch = pattern[1]
         nextIndex = 0 #indicates index of where we will 'look' next
 
-        if typematch in ['string','real','integer','list','tuple','boolean']:
+        if typematch in ['string','real','integer','list','tuple','boolean','none']:
 
             if (not unifying):
 
@@ -171,6 +171,15 @@ def unify(term, pattern, unifying = True ):
                 raise PatternMatchFailed(
                     "expected typematch {} got a term of type {}"
                     .format(typematch, term[nextIndex]))
+
+        elif typematch == 'function':
+            # matching function and member function values
+            if term[0] in ['function-val','member-function-val']:
+                return []
+            else:
+                raise PatternMatchFailed(
+                    "expected typematch {} got a term of type {}"
+                    .format(typematch, term[0]))
 
         elif term[0] == 'object':
             (OBJECT,
@@ -905,7 +914,17 @@ def for_stmt(node):
     (IN, pattern, list_term) = in_exp
 
     # expand the list_term
-    (LIST, list_val) = walk(list_term)
+    (LIST_TYPE, list_val) = walk(list_term)
+    if LIST_TYPE not in ['list','string']:
+        raise ValueError("only iteration over strings and lists is supported")
+
+    # we allow iteration over two types of structures: (1) lists (2) strings
+    # if it is a string turn the list_val into a list of Asteroid characters.
+    if LIST_TYPE == 'string':
+        new_list = []
+        for c in list_val:
+            new_list.append(('string',c))
+        list_val = new_list
 
     # for each term on the list unfiy with pattern, declare the bound variables,
     # and execute the loop body in that context

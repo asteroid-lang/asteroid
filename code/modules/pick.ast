@@ -6,7 +6,7 @@
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
 
-load "random".
+load system "random".
 
 ------------------------------------------------------------------
 structure Pick

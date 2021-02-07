@@ -8,8 +8,7 @@
 function raw_print
 ------------------------------------------------------------------
 -- dumps the AST to screen
-with item do
-escape
+with item do escape
 "
 from pprint import pprint
 item_val = state.symbol_table.lookup_sym('item')
@@ -21,8 +20,7 @@ end
 ------------------------------------------------------------------
 function println
 ------------------------------------------------------------------
-with item do
-escape
+with item do escape
 "
 from asteroid_support import term2string
 item_val = state.symbol_table.lookup_sym('item')
@@ -34,8 +32,7 @@ end
 ------------------------------------------------------------------
 function print
 ------------------------------------------------------------------
-with item do
-escape
+with item do escape
 "
 from asteroid_support import term2string
 item_val = state.symbol_table.lookup_sym('item')
@@ -48,8 +45,7 @@ end
 function read
 ------------------------------------------------------------------
 -- read string from stdin
-with none do return
-escape
+with none do return escape
 "
 global __retval__
 from sys import stdin
@@ -62,8 +58,7 @@ function input
 ------------------------------------------------------------------
 -- mapping the Asteroid input function onto the
 -- Python input function
-with prompt do return
-escape
+with prompt do return escape
 "
 global __retval__
 from asteroid_support import term2string

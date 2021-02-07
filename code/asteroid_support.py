@@ -247,8 +247,7 @@ def term2string(term):
         term_string += ')'
         return term_string
 
-    elif TYPE == 'function-val':
-        # TODO: decide whether it makes sense to print out functions
+    elif TYPE in ['function-val', 'member-function-val']:
         return '(function ...)'
 
     elif TYPE == 'apply':

@@ -16,8 +16,7 @@ data table.
 
 function __init__
 -- constructor for HashTable initializes the underlying dictionary
-with self do
-escape
+with self do escape
 "
 self_val = state.symbol_table.lookup_sym('self')
 
@@ -34,8 +33,7 @@ return none
 end
 
 function insert
-with (self,name,value) do
-escape
+with (self,name,value) do escape
 "
 self_val = state.symbol_table.lookup_sym('self')
 name_val = state.symbol_table.lookup_sym('name')
