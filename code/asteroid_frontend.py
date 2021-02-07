@@ -544,7 +544,7 @@ class Parser:
     ###########################################################################################
     # quote_exp
     #    : QUOTE head_tail
-    #    | PATTERN WITH head_tail
+    #    | PATTERN WITH? head_tail
     #    | head_tail
     def quote_exp(self):
         dbg_print("parsing QUOTE_EXP")
@@ -556,7 +556,7 @@ class Parser:
         # 'pattern with' is just the long version of the quote char
         elif self.lexer.peek().type == 'PATTERN':
             self.lexer.match('PATTERN')
-            self.lexer.match('WITH')
+            self.lexer.match_optional('WITH')
             v = self.head_tail()
             return ('quote', v)
         else:

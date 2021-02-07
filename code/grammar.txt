@@ -75,7 +75,7 @@ conditional
 
 quote_exp
   : QUOTE head_tail
-  | PATTERN WITH head_tail
+  | PATTERN WITH? head_tail
   | head_tail
 
 head_tail
