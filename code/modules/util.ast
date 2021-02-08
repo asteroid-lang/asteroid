@@ -90,44 +90,6 @@ else:
 end
 
 ------------------------------------------------------------------
--- TYPE FUNCTIONS --
-------------------------------------------------------------------
-
-------------------------------------------------------------------
-function islist
-------------------------------------------------------------------
-with item do
-  return item is %list
-end
-
-------------------------------------------------------------------
-function isscalar
-------------------------------------------------------------------
-with item do
-  return (item is %integer) or (item is %real).
-end
-
-------------------------------------------------------------------
-function isnone
-------------------------------------------------------------------
-with x do
-  return x is %none.
-end
-
-------------------------------------------------------------------
-function gettype
-------------------------------------------------------------------
-# get the type of 'x' as an Asteroid string
-with x do return escape
-"
-global __retval__
-
-(x_type, _) = state.symbol_table.lookup_sym('x')
-__retval__ = ('string', x_type)
-"
-end
-
-------------------------------------------------------------------
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
@@ -231,24 +193,6 @@ for (TUPLE, [c1,c2]) in list_val[1]:
     c2list.append(c2)
 
 __retval__ = ('tuple', [('list', c1list), ('list',c2list)])
-"
-end
-
-------------------------------------------------------------------
-function len
-------------------------------------------------------------------
-with item do return escape
-"
-global __retval__
-
-item_val = state.symbol_table.lookup_sym('item')
-
-if item_val[0] not in ['list','tuple','string']:
-   raise ValueError(
-   	 'len expected a list, tuple, or string got {}'
-	 .format(item_val[0]))
-
-__retval__ = ('integer', len(item_val[1]))
 "
 end
 
