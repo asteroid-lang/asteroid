@@ -1,0 +1,31 @@
+--------------------------------------
+-- patterns_test3a.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+load "util".
+
+structure Person with
+    data name.
+    data age.
+    data gender.
+    end.
+
+-- define a list of persons
+let people = [
+    Person("George", 32, "M"),
+    Person("Steve", 49, "M"),
+    Person("Jeff", 21, "M")
+    ].
+
+function f
+    with Person(name,age,gender) %if age >= 18 do
+        return 1.
+    orwith Person(name,age,gender) %if age >= 21 do
+        return 2.
+    end.
+
+let x = f( people @1 ).
+println( "The output of function f() is: " + x ).

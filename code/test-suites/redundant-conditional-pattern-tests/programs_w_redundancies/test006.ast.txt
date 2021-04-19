@@ -1,0 +1,21 @@
+--------------------------------------
+-- patterns_test3a.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+-- A testing function with multiple patterns
+function testFunction
+    with (x,y) %if x < 10 do         
+        return 0.
+    orwith (x,y) %if x < 0 do
+        return 1.
+    end.
+
+-- Evaluate the function with a test input.
+let x = testFunction( (1,2) ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ).
