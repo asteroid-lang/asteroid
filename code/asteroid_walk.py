@@ -23,6 +23,14 @@ list_member_functions = dict()
 string_member_functions = dict()
 
 #########################################################################
+# this list records the current ranges/intervals for integers and real
+# numbers that have been covered by patterns in a function with 
+# conditional clauses. This information is used to evaluate useless 
+# pattern clauses.
+conditional_intervals = [False,[]]
+warning = [False]
+
+#########################################################################
 __retval__ = None  # return value register for escaped code
 
 ###########################################################################################
@@ -68,6 +76,8 @@ def unify(term, pattern, unifying = True ):
     # 1. We don't care what the pattern is called if evaluating subsumption.
     # 2. A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
     # check allows us to unpack it normally as opposed to checking each time we unpack.
+    # most nodes: (1,2)
+    # named-patterns: (1,2,3)
     try:
         if ((not unifying) and (term[0] == 'named-pattern')):
             term = term[2]
@@ -118,16 +128,55 @@ def unify(term, pattern, unifying = True ):
         return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'cmatch':
+        global tag_number
+        tag_number = 0
 
+        # If we are evaluating subsumtion
         if not unifying:
+            # Unpack the pattern-side argument
+            (CMATCH, pexp, cond_exp) = pattern
+            (APPLY,(ID,function_name),apply_list)= cond_exp
+            (TUPLE,term_list) = apply_list
 
-            ### Condtional Pattern Subsumption
-            # The current behavior for Asteroid when encoutering a conditional pattern when
-            # evaluating subsumption is to throw a warning.
+            if function_name[0] == '_': #if we are looking at a relational operation
 
-            print("Warning: Condtional patterns not supported for redundancy analysis.")
-            print("\t Redundant or useless pattern clauses may exist in function definition(s).")
-            pass
+                if not conditional_intervals[0]:#if this is the first time looking
+                                                #at this relational operation
+                    update_numberline(pexp,function_name,apply_list)
+
+            if term[0] == 'cmatch':
+
+                # Unpack the term-side argument
+                (CMATCH, pexp, cond_exp) = term
+                (APPLY,(ID,function_name),apply_list)= cond_exp
+
+                # Reset the global id tag index which is used in evaluating 
+                # subsumption between condtional pattern clauses with relational operations.
+                tag_number = 0
+
+                if function_name[0] == '_': #If we are evaluating two relational condtional
+                                            #patterns against each other
+                    if check_numberline(pexp,function_name,apply_list):
+                        return [] # Throws a subsumption error
+                elif (term == pattern): # Identical user function conditional pattern
+                    return [] # Throws a subsumption error
+                else:
+                    # Function warning should only print once per program execution
+                    global warning
+                    if not warning[0]: 
+                        print("Redundant pattern detection is not supported for conditional pattern expressions with function calls.")
+                        print("Only relational operations/functions are supported.")
+                        print("All conditional pattern clauses which reference functions will be ignored.")
+                        warning[0] = True
+
+            elif term[0] == 'typematch':
+                if term[1] in ['integer','real']:
+                    var_name = (apply_list[1])[0]
+                    if is_completely_covered(pexp,var_name):
+                        return [] # It will be subsumed completely
+
+            raise PatternMatchFailed(
+                "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
         (CMATCH, pexp, cond_exp) = pattern
 
@@ -142,11 +191,21 @@ def unify(term, pattern, unifying = True ):
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
         #state.symbol_table.pop_scope()
+
         if bool_val[1]:
             return unifiers
         else:
             raise PatternMatchFailed(
                 "conditional pattern match failed")
+
+    elif term[0] == 'cmatch':
+        # We will only get here when evaluating subsumption
+
+        # Regardless if the patterns will subsume of not, if the conditional
+        # is before the non-conditional pattern, the patterns are correctly
+        # ordered in the function.
+        (CMATCH, pexp, cond_exp) = term
+        return unify(pexp,pattern,False) 
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
@@ -190,10 +249,7 @@ def unify(term, pattern, unifying = True ):
             else:
                 raise PatternMatchFailed(
                     "expected typematch {} got an object of type {}"
-                    .format(typematch, struct_id))
-
-        # ttc
-        # Should we have an else here?
+                    .format(typematch, struct_id))   
 
     elif pattern[0] == 'named-pattern':
         # unpack pattern
@@ -689,6 +745,9 @@ def handle_call(fval, actual_val_args):
         raise ValueError("none of the function bodies unified with actual parameters")
 
     declare_formal_args(unifiers)
+
+    # Check for useless patterns
+    check_redundancy(body_list, actual_val_args)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
@@ -1429,3 +1488,950 @@ dispatch_dict = {
     'cmatch'        : cmatch_exp,
     'deref'         : deref_exp,
 }
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This exception is used when a pattern has been identified as being 'useless',
+# or reundant. This exception is formatted to pack both offending patterns
+# information into a single formatted message to the user informing them of
+# where and what caused this error.
+##############################################################################################
+class RedundantPatternFound(Exception):
+    """Exception raised for detection of redundant pattern in function declaration.
+    Attributes:
+        pattern1 -- The pattern with the higher order of precedence (comparer).
+        line1    -- The line number location of pattern 1 in its file.
+        pattern2 -- The pattern with the lower order of precedence  (comparee).
+        line2    -- The line number location of pattern 2 in its file.
+        function -- The name of the function where the redundancy was found.
+        file     -- The name of the file where the function is from.
+    """
+    def __init__(self, pattern1, pattern2,function_name,location1,location2):
+
+        self.pattern1 = pattern1
+        self.line1 = str(location1[1] - 1) #patterns dont have line #, so we
+                                            #compensate here by using the first line
+                                            # of the patterns body, then moving back
+                                            # 1 line(minus 1)
+        self.pattern2 = pattern2
+        if (location2 != None):
+            self.line2 = str(location2[1] - 1)
+        if (location1 != None):
+            self.file = location1[0]
+        self.function = function_name
+        self.message = "Redundant Pattern Detected\n"
+        self.message += "\tFunction: " + self.function + " from file " + self.file
+        self.message += "\n\tPattern: " + term2string(self.pattern1) + " on line " + self.line1
+        self.message += "\n\twill consume all matches for"
+        self.message += "\n\tPattern: " + term2string(self.pattern2) + " on line " + self.line2
+        super().__init__(self.message)
+
+###########################################################################################
+# *** The Redundant Pattern Detector ***
+#
+# Evaluates the presence of redundant, or 'useless', pattern clauses in an Asteroid function:
+#
+# A redundant, or 'useless', pattern is defined as a pattern which can never be matched
+# due to a preceeding pattern consuming all intended pattern matches.
+#
+# Consider the following Asteroid function:
+#
+# function testFunction
+#   with (x,y) do
+#       return 1.
+#   orwith (x,1) do
+#      return 2.
+#   end function.
+#
+# In the above function, the pattern (x,1) can never be reached as the preceeding pattern (x,y)
+# will consume all intended matches. Therefore, it is redundant.
+#
+# Function check_redundancy takes in a functions body list during parsing.
+# This body list contains a functions patterns along with the associated bodies for each
+# pattern. This function then evaluates if patterns exist within the passed in function that
+# are redundant. If so, a warning is printed to the console identifing the offending
+# pattern(s)
+#
+################################################################################################
+def check_redundancy( body_list, actual_val_args ):
+
+    #Node type assertions
+    #or "Make sure we are walking down the right part of the tree"
+    (BODY_LIST, function_bodies ) = body_list
+    assert_match(BODY_LIST,'body-list')
+    (LIST, bodies) = function_bodies
+    assert_match(LIST,'list')
+
+    # Reset the covered intervals for all data types
+    global conditional_intervals
+    conditional_intervals = [False,[]]
+
+    # Reset the global id tag index which is used in evaluating 
+    # subsumption between condtional pattern clauses with relational operations.
+    global tag_number
+    tag_number = 0
+
+    #compare every pattern with the patterns that follow it
+    for i in range(len(bodies)):
+
+        #get the pattern with the higher level of precedence
+        (BODY_H,(PTRN,_ptrn_h),stmts_h) = bodies[i]
+        assert_match(BODY_H,'body')
+        assert_match(PTRN,'pattern')
+
+        for j in range(i + 1, len(bodies)):
+
+
+            #get the pattern with the lower level of precedence
+            (BODY_L,(PTRN,_ptrn_l),stmts_l) = bodies[j]
+            assert_match(BODY_L,'body')
+            assert_match(PTRN,'pattern')
+
+            # If we end up coming across a conditional pattern in this evaluation
+            # we will need to generalize the pattern, this happens in place.
+            # By Making a copy here we will not tamper with the pattern representations
+            # in the AST representation.
+            ptrn_h = deepcopy(_ptrn_h)
+            ptrn_l = deepcopy(_ptrn_l)
+
+            #DEBUGGING
+            ###(pattern,code) = body
+            # print("COMPARE: ")
+            # print(ptrn_l)
+            # print("TO: ")
+            # print(ptrn_h)
+
+            #Here we get line numbers in case we throw an error
+            # we have to do a little 'tree walking' to get to the
+            # line #, hence all the unpacking.
+            (STMT_LIST,(LIST,LINE_LIST)) = stmts_l
+            first_line_l = LINE_LIST[0]
+            (LINE_INFO,location_l) = first_line_l
+
+            (STMT_LIST,(LIST,LINE_LIST)) = stmts_h
+            first_line_h = LINE_LIST[0]
+            (LINE_INFO,location_h) = first_line_h
+
+            tag_number = 0 #Reset global index used to evaluate conditonal patterns 
+
+            # Compare the patterns to determine if the pattern with the
+            # higher level of precedence will render the pattern with
+            # the lower level of precedence useless/redundant by calling
+            # on the unify function to evaluate the subsumption relationship
+            # between the two patterns.
+            try:
+                unify( ptrn_l, ptrn_h , False )
+            except PatternMatchFailed:
+                pass
+            else:
+
+                raise RedundantPatternFound( _ptrn_h , _ptrn_l ,location_h[0], location_h, location_l )
+
+        # Update the tag at the begining of the global conditional intervals list to indicate
+        # that the next time we compare a relational pattern against another, it will be 
+        # our first time evaluating that relational pattern, so we should record its interval
+        conditional_intervals[0] = False
+
+#######################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# Updates the global conditional-expression relational-sumbsumtion numberline with a 
+# single relational expression.
+#
+# The first time a condtional pattern is evaluated by the redundant pattern detector, it
+# will have its pattern, along with its condtional expression(s) added to a global data
+# structure, the conditional-expression relational-sumbsumtion numberline. This allow us
+# to 'look back' at this stucture to see if a previous condtional pattern with a relational
+# function has covered, or will subsume, all matches intended for the current pattern. 
+# The idea is to catch redundant patterns like this:
+# 
+# function test_func
+#    with (x) %if x > 0 do         
+#        return 0.
+#    orwith (x) %if x == 10 do         
+#        return 1.
+#    end.
+# 
+#  Which is an example of of a redundant conditional pattern with a relational function.
+#  
+# Should a single possible value exist in which a pattern match could be made to a clause,
+# it is the intended behavior that the retundant pattern detector should not throw an error. 
+def update_numberline( pattern_expression, function_name, apply_list ):
+
+    #Access global flags
+    global conditional_intervals
+    conditional_intervals[0] = True
+    global tag_number
+    tag_number = 0
+
+    # Unpack some of our nodes to see what we are looking at
+    operation = function_name[2:-2]
+    value = (apply_list[1])[1]
+    var_name = (apply_list[1])[0]
+
+    # If we are evaluating a compound relational expression( AND/OR statment)
+    if (len((apply_list[1])[1]) == 3 ): 
+        #We handle this with a different body of code
+        eval_compound_relation_exp(pattern_expression, function_name, apply_list)
+        return
+
+    #Else we are just evaluating a single relational expression
+
+    #Generalize the pattern variable names so user-names do not effect subsumption
+    #evaluation.
+    generalized_pattern = generalize_variable_names(pattern_expression,var_name)
+
+    interval = ''
+    index = 0     #Still used???
+
+    # Get access to the correct interval from the global interval list
+    for pattern in conditional_intervals[1]:
+        try:
+            if(pattern[-1] == generalized_pattern):
+                interval = pattern
+            break
+        except:
+            pass
+        index = index + 1
+
+    # Check to see if the interval variable was populated; If it wasn't, this is the
+    # first time we have seen this pattern-varaible id; we need to add it to the global
+    # subsumed intervals list.
+    if interval == '':
+        interval = [(generalized_pattern)]
+        conditional_intervals[1].append(interval)
+
+    # Reset the generalize pattern global tag counter
+    tag_number = 0
+
+    # Update the interval with the newly covered range
+    if (operation == 'ge'):                             #Greater than or equal
+        interval.insert( 0, ( value[1], 'inf', '[' ) )
+    elif (operation == 'gt'):                           #Greater than
+        interval.insert( 0, ( value[1], 'inf', '(' ) )
+    elif (operation == 'lt'):                           #Less than
+        interval.insert( 0, ( 'inf',value[1], '(' ) )
+    elif (operation == 'le'):                           #Less than or equal
+        interval.insert( 0, ( 'inf',value[1], '[' ) )
+    elif (operation == 'eq'):                           #equal
+        if (value[0] in ['integer','real']):
+            interval.insert( 0, ( value[1],value[1], '[' ) )
+        else:
+            interval.insert( 0, ( 'seq' ,value[1] ) )
+    elif (operation == 'ne'):                           #not equal
+        if (value[0] in ['integer','real']):
+            interval.insert( 0,  (value[1],'inf'), '(' )
+            interval.insert( 0,  ('inf',value[1]), '(' )
+        else:
+            interval.insert( 0,  ('neq',value[1]) )
+
+    # Grab the next relational statement from the interva list to check next
+    (conditional_intervals[1])[index] = interval
+
+###############################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# A driver function for evaluating the expressions found within a compound relational
+# condtional pattern clause. Once evaluated, the values that are covered/ or will
+# be subsumed for following condtional pattern will be added to the global 
+# subsumed/covered intervals list, conditional intervals.
+def eval_compound_relation_exp(pattern_expression, function_name, apply_list):
+
+    # Check if we are evaluating an or statement(s); or statements are essentially
+    # two different potential pattern matches and as such can cover two different 
+    # ranges/intervals. Therefore they are completely treted as a seperate 
+    if function_name == '__or__':
+        walk_compound_relation_ors(pattern_expression, function_name, apply_list)
+    else:
+        walk_compound_relation_ands(pattern_expression, function_name, apply_list)
+
+    return
+
+#######################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# Updates the global conditional-expression relational-sumbsumtion numberline.
+# Used to evaluate and add compound relational expressions to the numberline. Responsible
+# for all 'cmpd' nodes found in the global subsumbed interval numberline. 
+def update_numberline_compound(pattern_expression, expression_list, var_list):
+
+    var = var_list[0]     #As we are only doing single variables currently TODO: update for multi-var
+    not_equal_vals = []   #Holds all inverse equality vals found in the relationals
+    equal_vals = []       #Holds all equality vals found in the relationals
+    number_line_vals = [False,False,False,False] #holds the number line values 
+    #[greatest 'less than',lowest 'greater than',greatest 'less than or eq' ,lowest  'greater than or eq']
+    
+    for expr in expression_list:
+
+        #Get the function name
+        relational_operation = (((expr[1])[1])[2:-2])
+
+        # If we find we have the wrong function type in hand, we punt
+        if relational_operation not in ['eq','ne','lt','le','gt','ge']:
+            # Function warning should only print once per program execution
+            global warning
+            if not warning[0]: 
+                print("Redundant pattern detection is not supported for conditional pattern expressions with function calls.")
+                print("Only relational operations/functions are supported.")
+                print("All conditional pattern clauses which reference functions will be ignored.")
+                warning[0] = True
+                return
+
+        elif relational_operation == 'eq':              #EQUAL
+            value = get_compare_value(expr,var)
+            equal_vals.append(value)
+        elif relational_operation == 'ne':              #NOT EQUAL
+            value = get_compare_value(expr,var)
+            not_equal_vals.append(value)
+        elif relational_operation == 'lt':              #LESS THAN
+            value = get_compare_value(expr,var)
+            if number_line_vals[0]:#If this is not the first lt
+                if number_line_vals[0] < value:#If if is the lowest seen
+                    number_line_vals[0] = value
+            else:
+                number_line_vals[0] = value
+        elif relational_operation == 'le':              #LESS THEN OR EQUAL       
+            value = get_compare_value(expr,var)
+            if number_line_vals[2]:#If this is not the first lt
+                if number_line_vals[2] < value:#If if is the lowest seen
+                    number_line_vals[2] = value
+            else:
+                number_line_vals[2] = value
+        elif relational_operation == 'gt':              #GREATER THAN       
+            value = get_compare_value(expr,var)
+            if number_line_vals[1]:#If this is not the first lt
+                if number_line_vals[1] < value:#If if is the lowest seen
+                    number_line_vals[1] = value
+            else:
+                number_line_vals[1] = value
+        elif relational_operation == 'ge':              #GREATER THAN OR EQUAL    
+            value = get_compare_value(expr,var)
+            if number_line_vals[3]:#If this is not the first lt
+                if number_line_vals[3] < value:#If if is the lowest seen
+                    number_line_vals[3] = value
+            else:
+                number_line_vals[3] = value
+    
+    less = False
+    less_edge = False
+    greater = False
+    greater_edge = False
+
+    # Parse the accumulated expression information to determine the actual covered/subsumed
+    #intervals 
+
+    # If we have a less then val
+    if (number_line_vals[0]):
+        less = number_line_vals[0]
+        less_edge = '(' # non-inclusive interval border
+    
+    # If we have a less then val
+    if (number_line_vals[1]):
+        greater = number_line_vals[1]
+        greater_edge = '(' # non-inclusive interval border
+
+    # If we have a less then or equal val
+    if (number_line_vals[2]):
+        if less:
+            if (number_line_vals[2] > less):
+                less = number_line_vals[2]
+                less_edge = '[' # inclusive interval border
+        else:
+            less = number_line_vals[2]
+            less_edge = '[' # inclusive interval border
+    
+    # If we have a less then or equal val
+    if (number_line_vals[3]):
+        if greater:
+            if (number_line_vals[3] < greater):
+                greater = number_line_vals[3]
+                greater_edge = '[' # inclusive interval border
+        else:
+            greater = number_line_vals[3]
+            greater_edge = '[' # inclusive interval border
+
+    # Check to see if we have seen this pattern/variable combination before(or one the subsumes)
+    global conditional_intervals
+    global tag_number
+    tag_number = 0
+    var_name = ('id',var)
+    general_pattern = generalize_variable_names(pattern_expression,var_name)
+    interval_list = ''
+    interval_list = get_interval_list( general_pattern )
+
+    # Check to see if the interval variable was populated; If it wasn't, this is the
+    # first time we have seen this pattern-varaible id; we need to add it to the global
+    # subsumed intervals list.
+    if interval_list == '':
+        interval_list = [(general_pattern)]
+        conditional_intervals[1].append(interval_list)
+
+    interval_list.insert(0, ('cmpd',(greater_edge,greater,less,less_edge),not_equal_vals,equal_vals))
+    
+###############################################################################
+# Part of the Redundant Pattern Detector
+#
+# Small helper function/getter for the reundant pattern detector. Finds a literal
+# value in a argument list and then returns that value. 
+#
+# ttc : TODO update for multi-variable detection
+def get_compare_value(expr,var_name):
+
+    # unpack the node
+    if (len(expr) == 3):
+        (APPLY,OP,(TUPLE,var_list))= expr
+    else:
+        (TUPLE,var_list) = expr
+    # Iterate through the list looking for a value that is not a 'id'
+    # and then return that value
+    for var in var_list:
+        if (var[1] != var_name):
+            if (var[0] != 'id'):
+                return var[1]
+            else:
+                return state.symbol_table.lookup_sym(var[1])
+    
+    print("ERROR: Redundant Pattern Detector: get_compare_value\nNo Value found for expression:\n",expr)
+    #dump_AST(expr)
+    return
+
+###############################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function is a treewalker which helps up break up compound relational 
+# condtional patterns found in a conditional pattern clause. Specifically, this
+# function takes in a compound relational expression and then breaks that
+# expression up at other 'and/or' keywords, passing each piece into the 
+# appropriate function.
+def walk_compound_relation_ors(pattern_expression, function_name, apply_list): 
+
+    # Unpack the apply list/list of relational expressions
+    (TUPLE,expression_list) = apply_list
+
+    # For each expression in the or statement(2 as it is a binary statement)
+    for expr in expression_list:
+
+        #3 possible function destinations:
+        #its a or
+        #its a and
+        #its a single expr
+
+        # If we are looking at a nested or, we should recurse to continue to break up
+        # the the different or blocks
+        if ((expr[1])[1] == '__or__'):
+            walk_compound_relation_ors(pattern_expression,(expr[1])[1], (expr[2]) )
+        elif ((expr[1])[1] == '__and__'):
+            #Else we can move on the evaluate all of the and statements contained
+            # within the current block
+            walk_compound_relation_ands(pattern_expression,(expr[1])[1], expr)
+        else:
+            update_numberline( pattern_expression, (expr[1])[1], expr[-1] )
+
+###############################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function walks down compound relational expressions linked together in a single
+# 'and' statement block that are found in compound condtional patterns. As this function
+#  walks, it also constucts a list of all of the expressions that are linked together,
+# along with all of the variables that are found within the expresssions.
+# 
+# The list of expressions is then passed into the update_numberline_compound function
+# to allow its covered/subsumed range to be recorded in the global data structure.
+def walk_compound_relation_ands(pattern_expression, function_name, apply_list):
+
+    # Unpack the apply list/list of relational expressions
+    expression_list = []
+    expression_list.append(apply_list)
+
+    # Will hold the number of variables seen in all of the relational exps 
+    vars_seen = [] #All of the different varaible names/labels seen
+    expressions_seen = [] # all the expressions in the compound expression
+    function_list = []
+
+    # Process through every statement within this block of expressions
+    while (((expression_list[0])[1])[1] == '__and__'):
+
+        expression=expression_list[-1]
+
+        expression_list = ((expression_list[0])[2])[1]
+        expressions_seen.append(expression_list[-1])
+        function_list.append((expression[1])[1])
+    
+    function_list.append(((expression_list[-1])[1])[1])
+    function_list.append(((expression_list[-2])[1])[1])
+    expressions_seen.append(expression_list[-2])
+
+    if (len(vars_seen) > 1):
+        print("Error, multi-variable compound relational subsumption detection is under construction.")
+        return
+
+    #print("Expressions seen: ")
+    for e in expressions_seen:
+        # print(e)
+
+        # If we have never seen the varaible used in this relation before, add it to the list
+        value_list = ((e[2])[1])
+
+        #Check the values/literals
+        for node in value_list:
+            if node[0] == 'id': # Is it a derefence/variable?
+                if node[1] not in vars_seen: # Have we never seen this before?
+                    vars_seen.append(node[1])# Record it if not
+    
+    #  multi-variable compound relational subsumption detection is under construction
+    if (len(vars_seen) > 1):
+        print("Error, multi-variable compound-relational redundant pattern detection is not yet implemented.")
+        return
+
+    update_numberline_compound( pattern_expression, expressions_seen, vars_seen )
+    return
+
+############################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This functions job is to take in a pattern, along with the name of a relational
+# function operation and an arguments list and then determine if the passed in
+# relational and pattern, which represent a conditional function clause, is
+# a redundant/useless pattern because all of its matchs will be consumed by
+# preceeding patterns. 
+# This is accomplised by checking the intented relational operation and its values
+# againt the global condtional pattern covered intervals data structure, conditional_intervals
+def check_numberline(pattern_expression, function_name ,apply_list ):
+
+    operation = function_name[2:-2]     #The relational operation
+    value = (apply_list[1])[1]          # The literal value
+    var_name = (apply_list[1])[0]
+
+    # Generalize the pattern and get a copy of its interval
+    # we need a copy so we dont .pop off of the original
+    generalized_pattern = generalize_variable_names(pattern_expression,var_name)
+ 
+    interval = get_interval_list_copy( generalized_pattern )
+
+    #If the patterns dont match or its a differnt variable
+    if interval == '':
+        return False
+
+    #Ensure the entire numberline is not already covered
+    if generalized_pattern[0] != 'named-pattern':
+        if is_completely_covered( generalized_pattern[0] ,var_name):
+            return True
+    else:
+        if is_completely_covered( generalized_pattern ,var_name):
+            return True
+
+    current_range = interval.pop(0)
+    
+    while (len(interval) > 0):
+
+        if value[0] in ['integer','real']:#If we are evaluating equality between numerical values
+            if operation in ['ge','gt']:                            #GREATER THAN
+                if current_range[1] == 'inf':#If we are looking at another greater than
+                    if (operation == 'ge' and current_range[2] == '('):
+                        if current_range[0] < value[1]:
+                            return True
+                    else:
+                        if current_range[0] <= value[1]:
+                            return True
+                if current_range[0] == 'cmpd':#We less then against a compount relational 
+                    if check_cmpd_expr_range_gt(current_range,value,operation):
+                        return True
+            elif operation in ['le','lt']:                            #LESS THAN
+                if current_range[0] == 'inf':#If we are looking at another less than
+                    if (operation == 'le' and current_range[2] == '('):
+                        if current_range[1] > value[1]:
+                            return True 
+                    else:
+                        if current_range[1] >= value[1]:
+                            return True
+                if current_range[0] == 'cmpd':#We less then against a compount relational 
+                    if check_cmpd_expr_range_lt(current_range,value,operation):
+                        return True
+            elif (operation == 'eq'):                                  #EQUAL
+                if current_range[1] == 'inf':   # handle > for eq
+                    if current_range[2] == '(':
+                        if current_range[0] < value[1]:
+                            return True
+                    else: 
+                        if current_range[0] <= value[1]:
+                            return True
+                elif current_range[0] == 'inf': # handle < for eq
+                    if current_range[2] == '(':
+                        if current_range[1] > (value[1]):
+                            return True
+                    else:
+                        if current_range[1] >= (value[1]):
+                            return True
+                elif (current_range[0] == 'cmpd'):#Handle compound for eq
+                    if check_cmpd_expr_range_eq(current_range,value):
+                        return True
+                elif (current_range[1] == (value[1]) and (current_range[1] == current_range[0])): #Handle == for equal
+                    return True
+                elif (check_finite_range(current_range,value)):#handle finite range for eq
+                    return True
+            elif (operation == 'ne'):               # Not Equal
+                pass
+        else:       #Else we are evaluating equality between non-numerical values
+            if (operation == 'eq'):                 # Equal
+                if current_range[0] == 'neq': #Evaluating against a not equal node
+                    if (current_range[1] != value[1]):
+                        return True
+                elif current_range[0] == 'seq':#Evaluating against an equality node
+                    if (current_range[1] == value[1]):
+                        return True
+            elif (operation == 'ne'):               # Not Equal
+                if current_range[0] == 'neq': #Evaluating against a not equal node
+                    if (current_range[1] == value[1]):
+                        return True
+                elif current_range[0] == 'seq':#Evaluating against an equality node
+                    if (current_range[1] != value[1]):
+                        return True
+        
+        current_range = interval.pop(0)
+
+    return False
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function checks a compound relational expression range to see if an less than expression
+# is rundundant.
+#
+# This function returns a boolean value indicating if a redundancy has been detected.
+def check_cmpd_expr_range_lt(current_range,value,operation):
+    (CMPD,(greater_edge,greater,less,less_edge),not_equal_vals,equal_vals) = current_range
+
+    # If there is a lower bound no upper
+    if (less and not greater):
+        if less > value[1]:
+            if (len(equal_vals) == 0):
+                for entry in not_equal_vals:
+                    if (less_edge == '('):
+                        if entry > less:
+                            return True
+                    else:
+                        if entry >= less:
+                            return True
+    return False
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function checks a compound relational expression range to see if a greater than expression
+# is rundundant.
+#
+# This function returns a boolean value indicating if a redundancy has been detected.
+def check_cmpd_expr_range_gt(current_range,value,operation):
+    (CMPD,(greater_edge,greater,less,less_edge),not_equal_vals,equal_vals) = current_range
+
+    # If there is a upper bound but no lower
+    if (greater and not less):
+        if greater < value[1]:
+            if (len(equal_vals) == 0):
+                for entry in not_equal_vals:
+                    if (greater_edge == '('):
+                        if entry < greater:
+                            return True
+                    else:
+                        if entry <= greater:
+                            return True
+    return False
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function checks a compound relational expression range to see if an equality expression
+# is rundundant.
+#
+# This function returns a boolean value indicating if a redundancy has been detected.
+
+def check_cmpd_expr_range_eq(current_range,value):
+
+    (CMPD,(greater_edge,greater,less,less_edge),not_equal_vals,equal_vals) = current_range
+
+
+    if (greater and less):#If the range has a top and bottom end
+        if (check_finite_range((greater,less,greater_edge,less_edge),value)):
+            return True #Redundancy detected
+    elif( less ): # If a less than value exists
+        if less_edge == '(':
+            if less > value[1]:
+                if check_equality_lists(equal_vals,not_equal_vals,value):
+                    return True #Redundancy detected
+        else:
+            if less >= value[1]:
+                if check_equality_lists(equal_vals,not_equal_vals,value):
+                    return True #Redundancy detected
+    elif( greater): # if a greater than value exists
+        if greater_edge == '(':
+            if greater < value[1]:
+                if check_equality_lists(equal_vals,not_equal_vals,value):
+                    return True #Redundancy detected
+        else:
+            if greater <= value[1]:
+                if check_equality_lists(equal_vals,not_equal_vals,value):
+                    return True #Redundancy detected
+
+    return False #It will NOT be subsumed by this interval
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# Small helper function for the check_cmpd_expr_range_eq function, this function check both the
+# equality and the inequality lists for conflictions that would indicate a redundant pattern
+# vlause.
+#
+# This function returns a boolean values indicating if any conflictions were found.
+def check_equality_lists(equal_vals,not_equal_vals,value):
+
+    for eq_val in equal_vals:
+        if eq_val == value[1]:
+            return True #Redundancy detected
+    for ne_val in not_equal_vals:
+        if ne_val != value[1]:
+            return True #Redundancy detected
+    
+    return False #It will NOT be subsumed by this
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function is used to check if a given value falls within a finte range on a numberline.
+#
+# current_range comes in the format: (lower bound, upper bound, lower bound edge, upper bound edge)
+# if an edge = '(', it is a non-inclusive bound, else if it is '[' it is an inclusive bound.
+#
+# This function returns a boolean value.
+def check_finite_range(current_range,value):
+
+    if (current_range[2] == '('):
+        if (value[1] > current_range[0]):
+            if (current_range[3] == '('):
+                if (value[1] < current_range[1]):
+                    return True #Redundancy detected
+            else: 
+                if (value[1] <= current_range[1]):
+                    return True #Redundancy detected
+    else:
+        if (value[1] >= current_range[0]):
+            if (current_range[3] == '('):
+                if (value[1] < current_range[1]):
+                    return True #Redundancy detected
+            else: 
+                if (value[1] <= current_range[1]):
+                    return True #Redundancy detected
+    
+    return False #It will NOT be subsumed by this interval
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function acts as an accessor for the global data structure which contains all of the 
+# information about the subsumed/covered intervals for pattern/varaibles pairs found in
+# conditional pattern clauses.
+#
+# This function returns a copy of the data structure.
+def get_interval_list_copy( pattern_expression ):
+
+    interval_list = ''
+
+    for pattern in conditional_intervals[1]:
+        if(pattern[-1] == pattern_expression): #If the patterns match
+            interval_list = pattern.copy()
+            break
+        else:                                   #Else see if they subsume
+            try:
+                unify( pattern_expression[0], (pattern[-1])[0] , False )
+            except PatternMatchFailed:
+                pass
+            else:
+                # If they subsume and access the same variable, we want to
+                # grab its associated "number line"
+                if ( pattern_expression[1] == (pattern[-1])[1] ):  
+                    interval_list = pattern.copy()
+                    break
+    
+    return interval_list
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+#
+# This function acts as an accessor for the global data structure which contains all of the 
+# information about the subsumed/covered intervals for pattern/varaibles pairs found in
+# conditional pattern clauses.
+#
+# This function returns the actual object.
+def get_interval_list( pattern_expression ):
+    global conditional_intervals
+    interval_list = ''
+
+    for pattern in conditional_intervals[1]:
+        if(pattern[-1] == pattern_expression): #If the patterns match
+            interval_list = pattern
+            break
+        else:                                   #Else see if they subsume
+            try:
+                unify( pattern_expression[0], (pattern[-1])[0] , False )
+            except PatternMatchFailed:
+                pass
+            else:
+                # If they subsume and access the same variable, we want to
+                # grab its associated "number line"
+                if ( pattern_expression[1] == (pattern[-1])[1] ):  
+                    interval_list = pattern
+                    break
+    
+    return interval_list
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+# 
+# The purpose of this function is to determine if a 'number-line' for a pattern/variable pair
+# has been fully subsumed or not. A numberline may become completely subsumed through multiple
+# condtional pattern clauses with relational expressions.
+#
+# example:
+# -- A testing function with multiple patterns
+# function g
+#    with (x) %if x < 0 do         
+#        return 2.
+#    orwith (x) %if x > -10 do         
+#        return 3.
+#    orwith (x:%integer) do         
+#        return 3.
+#    end.
+#
+# The 3rd clause, the type-match, is unreachable as any interger would have to have one of the 
+# previous properties found in the preceeding conditional clauses.
+#
+# This function determines if the above situation exists, and returns a boolean value.
+def is_completely_covered( pattern_expression , variable ):
+
+    global tag_number
+    tag_number = 0
+    
+
+    generalized_pattern = generalize_variable_names(pattern_expression,variable)
+    greatest_lt = False #Greatest value in a less than statement( i.e. x < 10 )
+    lowest_gt = False #Greatest value in a greater than statement( i.e. x > 10 )
+    interval = get_interval_list_copy( generalized_pattern )
+    equalities = [] # A list containing all of the unique values seen in 
+                    # exact equality conditional expressions. (i.e. x == 10)
+    #If the patterns dont match or its a differnt variable
+    if interval == '':
+        return False
+
+    # Get the first interval, or range, from the front of the list
+    current_range = interval.pop(0)
+
+    # Iterate through all of the relational expressions that have already been
+    # covered for the pattern-variable identity to determine both the greatest
+    # 'less than' value and the greatest 'greater then' calue
+    while (len(interval) > 0):
+
+        if (current_range[0] == 'inf'):             # LESS THAN
+            if (greatest_lt): #If a greatest less than value exists
+                if (current_range[1] < greatest_lt[0]):# If the current value
+                                                    # is greater than the lowest 
+                    greatest_lt = (current_range[1],current_range[2])
+
+            else: # Else we create an initial greatest_lt record
+                greatest_lt = (current_range[1],current_range[2])
+
+        elif (current_range[1] == 'inf'):           # GREATER THAN
+            if (lowest_gt): #If a lowest greater than value exists 
+                if (current_range[0] > lowest_gt[0]):# If the current value
+                                                  # is less than the highest 
+                    lowest_gt = (current_range[0],current_range[2])
+            else: # Else we create an initial lowest_gt record
+                lowest_gt = (current_range[0],current_range[2])
+
+        elif (current_range[0] == current_range[1]): # EQUALITY
+            equalities.append(current_range[1])
+
+        current_range = interval.pop(0)
+
+    # If the greatest 'less than' value and the lowest 'greater than' value 
+    # overlap, then the entire range for real and integer values has already
+    # been covered.
+    if ((greatest_lt and lowest_gt)):
+
+        if ((greatest_lt[1] == '[') or (lowest_gt[1] == ['['] )): #If one of the ranges is inclusive
+
+            if (greatest_lt[0] >= lowest_gt[0]):
+                return True 
+
+        else:
+            if (greatest_lt[0] > lowest_gt[0]):
+                return True 
+
+            elif (greatest_lt[0] == lowest_gt[0]): 
+
+                for value in equalities:
+                    if (value == greatest_lt[0]):
+                        return True
+    return False
+
+##############################################################################################
+# *** Part of the Redundant Pattern Detector ***
+# 
+# Function generalize_variable_names takes in a pattern and variable ID from a relational
+# conditional pattern clause in a function and then returns the same pattern with the all of
+# the variable ID tags inside the pattern generalized into a "var_1", var_2 format. The ID from
+# the pattern that was also passed in is generalized into the tag assosiated with that ID's
+# postion within the pattern. 
+#
+# form: ( pattern , selected variable from pattern )
+#       ( (x,y) , x )
+# Example Input : (('tuple', [('id', 'x'), ('id', 'y')]), ('id', 'x'))
+#         Output: (('tuple', [('id', 'var_0'), ('id', 'var_1')]), ('id', 'var_0'))
+tag_number = 0
+
+def generalize_variable_names( pattern, variable ):
+
+    pattern_type = pattern[0] #Peek into the head
+    return_variable = ('id',"var") #Dummy value will be copied over
+    global tag_number 
+
+    if pattern_type in ['tuple','list']:               # Walk through tuples and lists
+        tuple_contents = pattern[1].copy()
+    elif pattern_type == 'apply':                      # Structures/Objects
+        tuple_contents = (pattern[2])[1]
+    elif pattern_type == 'id':                         # Single variable  
+        tuple_contents = ('id', "var_"  + str(tag_number))
+        return_variable = ('id', "var_"  + str(tag_number))
+        tag_number = (tag_number + 1)           # Update global tag index
+        return (  tuple_contents , return_variable  )
+    elif ((pattern_type == 'head-tail') or (pattern_type == 'raw-head-tail')):#Head/Tail structure
+        next_node = generalize_variable_names( pattern[1], variable)
+        nodes = generalize_variable_names( pattern[2], variable)
+        return ( (pattern[0], next_node[0], nodes[0]), variable)
+    elif (pattern_type == 'named-pattern'):
+        (NAME_PTRN,ID,ARGS) = pattern
+        tuple_contents = generalize_variable_names(ID,variable)
+        return (NAME_PTRN, tuple_contents[0] ,ARGS) # ttc TODO fix named patterns
+    else:
+        print("ERROR: redundant pattern detection - generalize_variable_names\nUnknown pattern type: ",pattern)
+        return
+
+    # Process through the contents of a tuple/list/structure contents
+    for index in range(len(tuple_contents)):
+
+        #If we have found an id, we should generalize it
+        if ((tuple_contents[index])[0] == 'id'):
+            if ((tuple_contents[index])[1] == variable[1]):
+                return_variable = ('id', "var_"  + str(tag_number))
+            tuple_contents[index] = ('id', "var_" + str(tag_number))
+            tag_number = (tag_number + 1) # Update globabl tag index
+        
+        #If we have found a tuple/list, we should process its contents
+        elif (tuple_contents[index])[0] in ['tuple','list']:
+            structure_contents = generalize_variable_names( (tuple_contents[index]) , variable )
+            tuple_contents[index] = ((tuple_contents[index])[0], structure_contents[0])
+    
+    # Reconstruct the node with the generalized pattern
+    if pattern_type in ['tuple','list']: 
+        return ( (pattern[0], tuple_contents ) , return_variable )
+    elif pattern_type == 'apply':
+        return ( ( pattern[0],pattern[1],tuple_contents ), return_variable )
+        
