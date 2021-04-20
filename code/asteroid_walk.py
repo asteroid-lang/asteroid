@@ -284,7 +284,10 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term, pattern[1])
         else:
-            return unify(term, pattern[1], False)
+            if term[0] == 'quote':
+                return unify(term[1], pattern[1], False)
+            else:
+                return unify(term, pattern[1], False)
 
     elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
@@ -388,7 +391,12 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term,p)
         else:
-            return unify(term,p, False)
+            if (term[0] == 'deref'):
+                (ID, sym) = term[1]
+                t = state.symbol_table.lookup_sym(sym)
+                return unify(t,p, False)
+            return unify(term,p,False)
+
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply':
