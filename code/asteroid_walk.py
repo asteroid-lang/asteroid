@@ -284,10 +284,8 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term, pattern[1])
         else:
-            if term[0] == 'quote':
-                return unify(term[1], pattern[1], False)
-            else:
-                return unify(term, pattern[1], False)
+            return unify(term, pattern[1], False)
+
     elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
@@ -385,17 +383,11 @@ def unify(term, pattern, unifying = True ):
                 return unify(patternL_head,patternH_head,False) + unify(patternL_tail,patternH_tail,False)
 
     elif pattern[0] == 'deref':  # ('deref', ('id', sym))
-
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
         if unifying:
             return unify(term,p)
         else:
-            if (term[0] == 'deref'):
-                (ID, sym) = term[1]
-                t = state.symbol_table.lookup_sym(sym)
-                return unify(t,p, False)
-
             return unify(term,p, False)
 
     # builtin operators look like apply lists with operator names
