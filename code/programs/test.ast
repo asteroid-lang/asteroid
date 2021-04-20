@@ -1,0 +1,22 @@
+-- Factorial
+-- An implementation of factorial with properly
+-- constrained inputs using pattern matching
+-- with type classes and conditional matching
+
+load "io".
+load "util".
+
+let POS_INT = pattern with (x).
+let NEG_INT = pattern with (x,y).
+
+function fact
+    with 0 do
+        return 1
+    orwith n:*POS_INT do
+        return n * fact (n-1).
+    orwith n:*NEG_INT do
+        throw Error("factorial is not defined for "+n).
+    end
+
+println ("The factorial of 3 is: " + fact (3,6)).
+

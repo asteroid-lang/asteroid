@@ -7,17 +7,13 @@ load "io".
 load "util".
 
 function fact
-    with 0 do
-        return 1
-    orwith (n:%integer) %if n > 0 do
-        return n * fact (n-1).
+
+    with (n:%integer) %if n > 0 do
+        return 1.
     orwith (n:%integer) %if n < 0 do
-        throw Error("factorial is not defined for "+n).
+        return 2.
     end
 
-try
-  let i = tointeger(input("Enter an integer value: ")).
-  println ("The factorial of "+i+" is: " + fact (i)).
-catch e do
-  println e.
-end
+
+println ("The output is: " + fact (4)).
+
