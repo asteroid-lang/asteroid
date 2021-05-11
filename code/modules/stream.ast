@@ -40,11 +40,7 @@ function peek
     if self @eof() do
       return none.
     else do
-      if self @curr_ix + 1 == self @stream @length() do
-        return none
-      else do
-        return self @stream @(self @curr_ix + 1).
-      end
+      return self @stream @(self @curr_ix).
     end
   end
 
@@ -59,11 +55,7 @@ function next
 
 function get
   with self do
-    if self @eof() do
-      return none.
-    else do
-      return self @stream @(self @curr_ix).
-    end
+    return self @peek().
   end
 
 function rewind
