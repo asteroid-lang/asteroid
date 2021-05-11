@@ -212,4 +212,4 @@ Take a look at the [Asteroid User Guide](https://github.com/lutzhamel/asteroid/b
 
 Check out the [Using Asteroid](https://github.com/lutzhamel/asteroid/blob/master/Using%20Asteroid.md) document which is based on Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).
 
-Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/Asteroid#README.md)
+Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md)
