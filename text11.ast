@@ -1,0 +1,29 @@
+load "io".
+load "util".
+
+function selectUserPattern
+    with (x) %if x >= 0 do
+        let USER_PATTERN = pattern with [head|tail].
+    with (x) %if x < 0 do
+        let USER_PATTERN = pattern with [h1|h2|h3|h4|tail].
+    end.
+
+function f
+    with [] do         
+        return 0.
+    orwith [ h1 | h2 | tail] do
+        return 1.
+    orwith (x:*USER_PATTERN) %if x == 10 do
+        return 2.
+    orwith [h1|h2|h3|h4|h5|h6|tail] do -- Useless
+        return 3.
+    end.
+
+-- Evaluate the function with a test input.
+let i = tointeger(input("Enter an integer value: ")).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + i ).
+
+
+

@@ -5,6 +5,7 @@
 ###########################################################################################
 
 import re
+from asteroid_state import state
 
 ###########################################################################################
 def dump_AST(node):
@@ -300,9 +301,12 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
+        print("got here")
         (DEREF, (ID, pName)) = term
         term_string = pName
-        return pName
+        term_string += ":"
+        term_string += term2string(state.symbol_table.lookup_sym(pName))
+        return term_string
 
     elif TYPE == 'cmatch':              # Handle a conditional pattern
 
