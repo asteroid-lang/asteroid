@@ -301,10 +301,11 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
-        print("got here")
         (DEREF, (ID, pName)) = term
         term_string = pName
         term_string += ":"
+
+        #Get the actual pattern from the symbol table
         term_string += term2string(state.symbol_table.lookup_sym(pName))
         return term_string
 
