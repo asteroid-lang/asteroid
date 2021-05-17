@@ -1,0 +1,27 @@
+
+--------------------------------------
+-- patterns_test20.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+let ptrn1 = pattern with 0.
+let ptrn2 = pattern with (n:%integer).
+let ptrn3 = pattern with (n:%integer).
+
+function fact
+    with *ptrn1 do
+        return 1
+    orwith *ptrn2 do   -- Will subsume pattern (n:%integer)
+        return n * fact (n-1).
+    orwith *ptrn3 do
+        throw Error("factorial is not defined for "+n).
+    end.
+    
+-- Evaluate the function with a test input.
+let x = fact( 5 ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ). 

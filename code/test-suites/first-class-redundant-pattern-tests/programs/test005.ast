@@ -1,0 +1,25 @@
+
+--------------------------------------
+-- patterns_test4.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load "io".
+
+-- let ptrn1 = pattern with ( x, y, z).
+let ptrn2 = pattern with ( (x1,y1), (x2,y2), (x3,y3) ).
+
+-- A testing function with multiple patterns
+function testFunction
+    with ( x, y, z) do  -- *** will SUBSUME ( (x,y), (x,y), (x,y) ) ***
+        return 1.
+    orwith *ptrn2 do 
+        return 2.
+    end.
+    
+-- Evaluate the function with a test input.
+let x = testFunction( 1 , 2 , 3 ).
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ).
