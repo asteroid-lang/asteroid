@@ -13,7 +13,7 @@ asteroid_file_suffix = ".ast"
 # clause detector. Element/flag discriptions are listed below.
 # [0] = Indicates if the Redundant Pattern dectector has been turned on.
 # [1] = Indicates if the Redundant Conditional Pattern Warning has been displayed.
-redundanct_clause_detector_flags = [False,False]
+redundant_clause_detector_flags = [False,False]
 
 ###########################################################################################
 # symbols for builtin operators.

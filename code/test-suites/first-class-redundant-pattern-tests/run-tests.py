@@ -14,6 +14,9 @@ sys.path[0] ='/Users/Timothy/Documents/GitHub/asteroid/code'
 #sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
 #sys.path[0] = '/Users/lutz/Dropbox/URI/Projects/Asteroid/asteroid-git/code'
 from asteroid_interp import interp
+from asteroid_globals import redundant_clause_detector_flags
+
+redundant_clause_detector_flags[0] = True
 
 programs = os.listdir("programs")
 programs.sort()
