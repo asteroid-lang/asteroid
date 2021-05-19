@@ -23,13 +23,6 @@ list_member_functions = dict()
 string_member_functions = dict()
 
 #########################################################################
-# This vector lets us know which warnings have already been printed to
-# the console. This allows us to print warnings messages only a 
-# single time.
-# [0] = Redundant Conditional Pattern Warning
-warning = [False]
-
-#########################################################################
 __retval__ = None  # return value register for escaped code
 
 ###########################################################################################
@@ -146,9 +139,9 @@ def unify(term, pattern, unifying = True ):
             # we want to 'punt' and print a warning message.
             if term[0] == 'cmatch':
                 global warning
-                if not warning[0]: 
+                if not redundanct_clause_detector_flags[1]: 
                     print("Redundant pattern detection is not supported for conditional pattern expressions.")
-                    warning[0] = True
+                    redundanct_clause_detector_flags[1] = True
 
             # Otherwise if the term is not another cmatch the clauses are correctly ordered.
             raise PatternMatchFailed(
@@ -730,7 +723,8 @@ def handle_call(fval, actual_val_args, fname):
     declare_formal_args(unifiers)
 
     # Check for useless patterns
-    check_redundancy(body_list, fname)
+    if redundanct_clause_detector_flags[0]:
+        check_redundancy(body_list, fname)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
@@ -817,6 +811,7 @@ def unify_stmt(node):
     assert_match(UNIFY, 'unify')
 
     term = walk(exp)
+
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
 
