@@ -601,25 +601,25 @@ def handle_builtins(node):
                 raise ValueError('unsupported type in =/=')
         elif opname == '__le__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'boolean']:
+            if type in ['integer', 'real']:
                 return ('boolean', val_a[1] <= val_b[1])
             else:
                 raise ValueError('unsupported type in <=')
         elif opname == '__lt__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'boolean']:
+            if type in ['integer', 'real']:
                 return ('boolean', val_a[1] < val_b[1])
             else:
                 raise ValueError('unsupported type in <')
         elif opname == '__ge__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'boolean']:
+            if type in ['integer', 'real']:
                 return ('boolean', val_a[1] >= val_b[1])
             else:
                 raise ValueError('unsupported type in >=')
         elif opname == '__gt__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'boolean']:
+            if type in ['integer', 'real']:
                 return ('boolean', val_a[1] > val_b[1])
             else:
                 raise ValueError('unsupported type in >')
