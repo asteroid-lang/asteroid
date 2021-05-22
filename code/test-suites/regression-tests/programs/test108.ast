@@ -1,0 +1,32 @@
+-- Testing relational operators on booleans
+-- ==
+assert(true == true).
+assert(false == false).
+
+-- =/=
+assert(true =/= false).
+assert(false =/= true).
+
+-- <
+assert(not (true < true)).
+assert(not (false < false)).
+
+assert(false < true).
+
+-- <=
+assert(true <= true).
+assert(false <= false).
+
+assert(false <= true).
+
+-- >
+assert(not (true > true)).
+assert(not (false > false)).
+
+assert(true > false).
+
+-- >=
+assert(true >= true).
+assert(false >= false).
+
+assert(true >= false).
