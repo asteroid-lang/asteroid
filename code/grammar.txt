@@ -64,14 +64,7 @@ pattern
   : exp
 
 exp
-  : conditional
-
-conditional
   : quote_exp
-      (
-         (CMATCH exp) |   // CMATCH == '%'IF
-         (IF exp ELSE exp)
-      )?
 
 quote_exp
   : QUOTE head_tail
@@ -79,7 +72,14 @@ quote_exp
   | head_tail
 
 head_tail
-  : compound ('|' exp)?
+  : conditional ('|' exp)?
+
+conditional
+  : compound
+      (
+         (CMATCH exp) |   // CMATCH == '%'IF
+         (IF exp ELSE exp)
+      )?
 
 compound
   : logic_exp0
