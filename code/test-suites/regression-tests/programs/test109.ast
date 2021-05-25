@@ -1,0 +1,80 @@
+-- Testing list member functions
+
+let arr = [].
+
+-- length
+assert([1,2,3] @length() == 3).
+
+-- append
+arr @append(1).
+assert(arr == [1]).
+
+-- extend
+arr @extend([2,3,4]).
+assert(arr == [1,2,3,4]).
+
+-- insert
+arr @insert(0,0).
+assert(arr == [0,1,2,3,4]).
+
+-- remove
+arr @remove(4).
+assert(arr == [0,1,2,3]).
+
+-- pop
+arr @pop().
+assert(arr == [0,1,2]).
+
+-- clear
+arr @clear().
+assert(arr == []).
+
+-- index
+arr @extend([10,9,8,7,6]).
+assert(arr @index(6) == 4).
+
+-- count
+arr @extend([0,0,0,0,0]).
+assert(arr @count(0) == 5).
+
+-- sort
+arr @clear().
+arr @extend([5,3,2,1,4,0]).
+assert(arr @sort() == [0,1,2,3,4,5]).
+
+-- reverse
+assert(arr @reverse() == [5,4,3,2,1,0]).
+
+-- copy
+assert(arr @copy() == arr).
+
+-- shuffle
+assert(arr @shuffle() @sort() == arr @sort()).
+
+-- map
+let twotimes = arr @map(lambda with x do return 2*x).
+assert(twotimes == [0,2,4,6,8,10]).
+
+-- reduce
+let sum = 0+1+2+3+4+5.
+let map_sum = arr @reduce(lambda with (x,y) do return x+y).
+assert(sum == map_sum).
+
+-- filter
+let arr = [0 to 10].
+function gtfive
+    with (x:%integer) %if x > 5 do
+        return true.
+
+    orwith _ do
+        return false.
+        end
+
+assert(arr @filter(gtfive) == [6,7,8,9,10]).
+
+-- member
+assert(arr @member(10)).
+
+-- join
+let arr = ["a", "b", "c", "d", "efg"].
+assert(arr @join("") == "abcdefg").
