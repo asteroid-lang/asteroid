@@ -36,7 +36,7 @@ flags = {
     '-p' : False, # generate pstats flag
     '-l' : True,  # prologue flag
     '-h' : False, # display help flag
-    '-r' : False, # redundant pattern dectector
+    '-r' : True, # redundant pattern dectector
 }
 
 flag_names = list(flags.keys())
