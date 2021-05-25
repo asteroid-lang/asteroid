@@ -297,7 +297,8 @@ def term2string(term):
 
     elif TYPE == 'typematch':           # Handle a type pattern
         (TYPECLASS,cType) = term
-        term_string = cType
+        term_string = '%'
+        term_string += cType
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
@@ -331,7 +332,7 @@ def term2string(term):
 
                 term_string = term2string(ID) + ':'
                 term_string += term2string(pattern)
-                term_string += " if "
+                term_string += " %" + "if "
                 term_string += term2string(expression_lhs)
 
                 if expression_type[1] == '__gt__':
