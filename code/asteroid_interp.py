@@ -89,6 +89,10 @@ def interp(input_stream,
               .format(module, lineno))
         sys.exit(1)
 
+    except RedundantPatternFound as e:
+        print("Error:  {}".format(e))
+        sys.exit(1)
+
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
             if symtab_dump:

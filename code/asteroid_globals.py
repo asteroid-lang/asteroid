@@ -117,6 +117,9 @@ class RedundantPatternFound(Exception):
         self.message += "\n\tPattern: " + term2string(self.pattern2) + " on line " + self.line2
         super().__init__(self.message)
 
+    def __str__(self):
+        return(self.message)
+
 ###########################################################################################
 # expression nodes not allowed in terms or patterns for unification. these are all nodes
 # that express some sort of computation
