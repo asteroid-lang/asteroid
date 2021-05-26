@@ -138,7 +138,7 @@ def unify(term, pattern, unifying = True ):
             # If we are evaluating subsumption between two different conditional patterns
             # we want to 'punt' and print a warning message.
             if term[0] == 'cmatch':
-                global warning
+
                 if not redundant_clause_detector_flags[1]: 
                     print("Redundant pattern detection is not supported for conditional pattern expressions.")
                     redundant_clause_detector_flags[1] = True
@@ -222,6 +222,9 @@ def unify(term, pattern, unifying = True ):
                 raise PatternMatchFailed(
                     "expected typematch {} got an object of type {}"
                     .format(typematch, struct_id))   
+
+        # ttc
+        # Should we have an else here?
 
     elif pattern[0] == 'named-pattern':
         # unpack pattern
