@@ -170,9 +170,6 @@ def unify(term, pattern, unifying = True ):
     elif term[0] == 'cmatch':
         # We will only get here when evaluating subsumption
 
-        # Regardless if the patterns will subsume of not, if the conditional
-        # is before the non-conditional pattern, the patterns are correctly
-        # ordered in the function.
         # If we get here, a conditional pattern clause is placed after a non-conditonal
         # pattern clause. Therefore, we need to check if the subsume because if they do
         # the conditonal clause is redundant.
