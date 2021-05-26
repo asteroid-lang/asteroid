@@ -19,12 +19,10 @@ function testFunction
         return 4.
     end.
     
-try
-  -- Evaluate the function with a test input.
-  let x = testFunction[ ("test","name") ].
 
-  -- If the function test worked, print the output we got.
-  println( "The value returned is: " + x ).
-catch e do
-  println e.
-end
+-- Evaluate the function with a test input.
+let x = testFunction[ ("test","name") ].
+
+-- If the function test worked, print the output we got.
+println( "The value returned is: " + x ).
+
