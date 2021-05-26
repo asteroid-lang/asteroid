@@ -65,12 +65,25 @@ def unify(term, pattern, unifying = True ):
     # else:
     #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
-    # 1. We don't care what the pattern is called if evaluating subsumption.
-    # 2. A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
+    # 1.) We don't care what the pattern is called if evaluating subsumption.
+    # 2.) A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
     # check allows us to unpack it normally as opposed to checking each time we unpack.
+    # most nodes: (1,2)
+    # named-patterns: (1,2,3)
     try:
         if ((not unifying) and (term[0] == 'named-pattern')):
             term = term[2]
+    except:
+        pass
+
+    # 1.) We want to derefence a first-class pattern found on the term side(lower order of prescedence) before
+    # evaluating the pattern side(higher order of prescedence) when checking for redundant pattern clauses
+    # 2.) We can't do this at the same time as the above check as term[0] can fail(it can be a primative)
+    try:
+        if ((not unifying) and (term[0] == 'deref')): 
+            (ID, sym) = term[1]
+            term = state.symbol_table.lookup_sym(sym)
+            term = term[1] # Discard the leading 'quote' node for redundancy evaluation
     except:
         pass
 
@@ -119,15 +132,20 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'cmatch':
 
+        # If we are evaluating subsumtion
         if not unifying:
 
-            ### Condtional Pattern Subsumption
-            # The current behavior for Asteroid when encoutering a conditional pattern when
-            # evaluating subsumption is to throw a warning.
+            # If we are evaluating subsumption between two different conditional patterns
+            # we want to 'punt' and print a warning message.
+            if term[0] == 'cmatch':
 
-            print("Warning: Condtional patterns not supported for redundancy analysis.")
-            print("\t Redundant or useless pattern clauses may exist in function definition(s).")
-            pass
+                if not redundant_clause_detector_flags[1]: 
+                    print("Redundant pattern detection is not supported for conditional pattern expressions.")
+                    redundant_clause_detector_flags[1] = True
+
+            # Otherwise if the term is not another cmatch the clauses are correctly ordered.
+            raise PatternMatchFailed(
+                "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
         (CMATCH, pexp, cond_exp) = pattern
 
@@ -142,11 +160,21 @@ def unify(term, pattern, unifying = True ):
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
         #state.symbol_table.pop_scope()
+
         if bool_val[1]:
             return unifiers
         else:
             raise PatternMatchFailed(
                 "conditional pattern match failed")
+
+    elif term[0] == 'cmatch':
+        # We will only get here when evaluating subsumption
+
+        # If we get here, a conditional pattern clause is placed after a non-conditonal
+        # pattern clause. Therefore, we need to check if the subsume because if they do
+        # the conditonal clause is redundant.
+        (CMATCH, pexp, cond_exp) = term
+        return unify(pexp,pattern,False) 
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
@@ -161,8 +189,8 @@ def unify(term, pattern, unifying = True ):
                     nextIndex = 1
 
                 #handle lists/head-tails subsuming each other
-                elif (term[0] in ['list','head-tail']):
-                    if ((typematch == 'list') and (term[0] in ['list','head-tail'])):
+                if (term[0] in ["list","head-tail"]):
+                    if ((typematch == 'list')):
                         return []
 
             if typematch == term[nextIndex]:
@@ -190,7 +218,7 @@ def unify(term, pattern, unifying = True ):
             else:
                 raise PatternMatchFailed(
                     "expected typematch {} got an object of type {}"
-                    .format(typematch, struct_id))
+                    .format(typematch, struct_id))   
 
         # ttc
         # Should we have an else here?
@@ -228,7 +256,10 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term, pattern[1])
         else:
-            return unify(term, pattern[1], False)
+            if term[0] == 'quote':
+                return unify(term[1], pattern[1], False)
+            else:
+                return unify(term, pattern[1], False)
 
     elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
@@ -236,7 +267,7 @@ def unify(term, pattern, unifying = True ):
         if unifying:
             return unify(term[1], pattern)
         else:
-            return unify(term, pattern[1], False)
+            return unify(term[1], pattern, False)
 
     elif term[0] == 'object' and pattern[0] == 'apply':
         # unpack term
@@ -329,10 +360,11 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'deref':  # ('deref', ('id', sym))
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
+
         if unifying:
             return unify(term,p)
         else:
-            return unify(term,p, False)
+            return unify(term,p,False)
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply':
@@ -648,7 +680,7 @@ def handle_builtins(node):
             raise ValueError('unknown builtin unary opname {}'.format(opname))
 
 #########################################################################
-def handle_call(fval, actual_val_args):
+def handle_call(fval, actual_val_args, fname):
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -689,6 +721,10 @@ def handle_call(fval, actual_val_args):
         raise ValueError("none of the function bodies unified with actual parameters")
 
     declare_formal_args(unifiers)
+
+    # Check for useless patterns
+    if redundant_clause_detector_flags[0]:
+        check_redundancy(body_list, fname)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
@@ -775,6 +811,7 @@ def unify_stmt(node):
     assert_match(UNIFY, 'unify')
 
     term = walk(exp)
+
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
 
@@ -1049,6 +1086,7 @@ def apply_exp(node):
 
     # handle function application
     f_val = walk(f)
+    f_name = f[1]
     arg_val = walk(arg)
 
     # object member function
@@ -1058,13 +1096,13 @@ def apply_exp(node):
         # Note: lists and tuples are objects/mutable data structures, they
         # have member functions defined in the Asteroid prologue.
         if arg_val[0] == 'none':
-            result = handle_call(function_val, obj_ref)
+            result = handle_call(function_val, obj_ref, f_name)
         elif arg_val[0] != 'tuple':
             new_arg_val = ('tuple', [obj_ref, arg_val])
-            result = handle_call(function_val, new_arg_val)
+            result = handle_call(function_val, new_arg_val, f_name)
         elif arg_val[0] == 'tuple':
             arg_val[1].insert(0, obj_ref)
-            result = handle_call(function_val, arg_val)
+            result = handle_call(function_val, arg_val, f_name)
         else:
             raise ValueError(
                 "unknown parameter type '{}' in apply"
@@ -1072,7 +1110,7 @@ def apply_exp(node):
 
     # regular function call
     elif f_val[0] == 'function-val':
-        result = handle_call(f_val, arg_val)
+        result = handle_call(f_val, arg_val, f_name)
 
     # object constructor call
     elif f_val[0] == 'struct':
@@ -1097,13 +1135,13 @@ def apply_exp(node):
             # calling a member function - push struct scope
             state.symbol_table.push_scope(struct_scope)
             if arg_val[0] == 'none':
-                handle_call(init_fval, obj_ref)
+                handle_call(init_fval, obj_ref, f_name)
             elif arg_val[0] != 'tuple':
                 arg_val = ('tuple', [obj_ref, arg_val])
-                handle_call(init_fval, arg_val)
+                handle_call(init_fval, arg_val, f_name)
             elif arg_val[0] == 'tuple':
                 arg_val[1].insert(0, obj_ref)
-                handle_call(init_fval, arg_val)
+                handle_call(init_fval, arg_val, f_name)
             state.symbol_table.pop_scope()
         # the struct does not have an __init__ function but
         # we have a constructor call with args, e.g. Foo(1,2)
@@ -1429,3 +1467,78 @@ dispatch_dict = {
     'cmatch'        : cmatch_exp,
     'deref'         : deref_exp,
 }
+
+##############################################################################################
+# *** The Redundant Pattern Detector ***
+#
+# Evaluates the presence of redundant, or 'useless', pattern clauses in an Asteroid function:
+#
+# A redundant, or 'useless', pattern is defined as a pattern which can never be matched
+# due to a preceeding pattern consuming all intended pattern matches.
+#
+# Consider the following Asteroid function:
+#
+# function testFunction
+#   with (x,y) do
+#       return 1.
+#   orwith (x,1) do
+#      return 2.
+#   end function.
+#
+# In the above function, the pattern (x,1) can never be reached as the preceeding pattern (x,y)
+# will consume all intended matches. Therefore, it is redundant.
+#
+# Function check_redundancy takes in a functions body list during parsing.
+# This body list contains a functions patterns along with the associated bodies for each
+# pattern. This function then evaluates if patterns exist within the passed in function that
+# are redundant. If so, a warning is printed to the console identifing the offending
+# pattern(s)
+#
+################################################################################################
+def check_redundancy( body_list, f_name ):
+
+    #Node type assertions
+    #or "Make sure we are walking down the right part of the tree"
+    (BODY_LIST, function_bodies ) = body_list
+    assert_match(BODY_LIST,'body-list')
+    (LIST, bodies) = function_bodies
+    assert_match(LIST,'list')
+
+    #compare every pattern with the patterns that follow it
+    for i in range(len(bodies)):
+
+        #get the pattern with the higher level of precedence
+        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i]
+        assert_match(BODY_H,'body')
+        assert_match(PTRN,'pattern')
+
+        for j in range(i + 1, len(bodies)):
+
+            #get the pattern with the lower level of precedence
+            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j]
+            assert_match(BODY_L,'body')
+            assert_match(PTRN,'pattern')
+
+            #Here we get line numbers in case we throw an error
+            # we have to do a little 'tree walking' to get to the
+            # line #, hence all the unpacking.
+            (STMT_LIST,(LIST,LINE_LIST)) = stmts_l
+            first_line_l = LINE_LIST[0]
+            (LINE_INFO,location_l) = first_line_l
+
+            (STMT_LIST,(LIST,LINE_LIST)) = stmts_h
+            first_line_h = LINE_LIST[0]
+            (LINE_INFO,location_h) = first_line_h
+
+            # Compare the patterns to determine if the pattern with the
+            # higher level of precedence will render the pattern with
+            # the lower level of precedence useless/redundant by calling
+            # on the unify function to evaluate the subsumption relationship
+            # between the two patterns.
+            try:                                #CHECK FOR CONFLICTION
+                unify( ptrn_l, ptrn_h , False ) 
+            except PatternMatchFailed:          #NO CONFLICTION
+                pass                            
+            else:                               #CONFLICTION
+                raise RedundantPatternFound( ptrn_h , ptrn_l , f_name, location_h, location_l )
+#######################################################################################

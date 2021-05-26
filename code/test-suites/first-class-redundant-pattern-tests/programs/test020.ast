@@ -1,4 +1,3 @@
-
 --------------------------------------
 -- patterns_test19.ast
 -- a simple program to test for
@@ -7,22 +6,24 @@
 --------------------------------------
 load "io".
 
+let ptrn1 = pattern with person:[( fname, lname)| tail].
+let ptrn2 = pattern with person:( fname, lname1, lname2).
+let ptrn3 = pattern with person:[( fname1, lname1)|( fname2, lname2)| tail].
+
 -- A testing function with multiple patterns
 function testFunction
-    with person:[( fname, lname)| tail] do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
+    with *ptrn1 do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
         return 1.
-    orwith person:( fname, lname1, lname2) do
+    orwith *ptrn2 do
         return 2.
-    orwith person:[( fname1, lname1)|( fname2, lname2)| tail] do 
+    orwith *ptrn3 do 
         return 3. 
     orwith () do
         return 4.
     end.
     
-
 -- Evaluate the function with a test input.
 let x = testFunction[ ("test","name") ].
 
 -- If the function test worked, print the output we got.
 println( "The value returned is: " + x ).
-

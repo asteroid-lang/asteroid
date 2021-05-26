@@ -9,7 +9,6 @@ from asteroid_globals import asteroid_file_suffix
 from pathlib import Path, PurePath
 from asteroid_lex import Lexer
 from asteroid_state import state
-from asteroid_support_prototype import check_redundancy
 
 ###########################################################################################
 def dbg_print(string):

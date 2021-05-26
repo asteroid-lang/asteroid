@@ -1,28 +1,30 @@
 
 --------------------------------------
--- patterns_test19.ast
+-- patterns_test3.ast
 -- a simple program to test for
 -- subsumption detection in Asteroid.
 --------------------------------------
 --------------------------------------
 load "io".
 
+let ptrn1 = pattern with ( 1, 2, 3).
+let ptrn2 = pattern with ( 1, 2, ( x1, "test_string" ) ).
+let ptrn3 = pattern with ( 1, 2, ( var, "test_string" ) ).
+
 -- A testing function with multiple patterns
 function testFunction
-    with person:[( fname, lname)| tail] do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
+    with *ptrn1 do 
         return 1.
-    orwith person:( fname, lname1, lname2) do
+    orwith *ptrn2 do --will SUBSUME ( 1, 2, ( var,"test_string"))
         return 2.
-    orwith person:[( fname1, lname1)|( fname2, lname2)| tail] do 
-        return 3. 
-    orwith () do
-        return 4.
+    orwith ( x, y, z) do
+        return 3.
+    orwith *ptrn3 do
+        return 3
     end.
     
-
 -- Evaluate the function with a test input.
-let x = testFunction[ ("test","name") ].
+let x = testFunction( 1 , 2 , 3 ).
 
 -- If the function test worked, print the output we got.
 println( "The value returned is: " + x ).
-

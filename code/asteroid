@@ -10,6 +10,7 @@ import sys
 import os
 from asteroid_interp import interp
 from asteroid_version import VERSION
+from asteroid_globals import redundant_clause_detector_flags
 
 def display_help():
     print("usage: asteroid [-s][-t][-v][-w][-p][-l] <input file>")
@@ -22,6 +23,7 @@ def display_help():
     print(" -p    generate pstats flag")
     print(" -l    disable prologue flag")
     print(" -h    display help flag")
+    print(" -r    redundant pattern dectector")
 
 
 # defaults for the flags - when the flag is set on the command line
@@ -34,6 +36,7 @@ flags = {
     '-p' : False, # generate pstats flag
     '-l' : True,  # prologue flag
     '-h' : False, # display help flag
+    '-r' : True, # redundant pattern dectector
 }
 
 flag_names = list(flags.keys())
@@ -53,6 +56,9 @@ if flags['-h'] or len(sys.argv) == 1:
 if flags['-v']:
     print("** Asteroid Version {} **".format(VERSION))
     sys.exit(0)
+
+if flags['-r']:
+    redundant_clause_detector_flags[0] = True
 
 input_file = sys.argv[-1]
 

@@ -7,7 +7,6 @@
 import sys
 import os
 
-
 # uncomment if tim
 sys.path[0] ='/Users/Timothy/Documents/GitHub/asteroid/code'
 
@@ -25,12 +24,13 @@ programs.sort()
 for pname in programs:
     f = open("programs/"+pname,"r")
     p = f.read()
-    print("**********"+pname+"************")
+    print("********************"+pname+"**********************")
     print(p)
-    print("**********output***********")
+    print("********************output*********************")
     try:
         interp(p)
     except:
+        print("Pass")
         pass
     else:
         print("***********************************************")
