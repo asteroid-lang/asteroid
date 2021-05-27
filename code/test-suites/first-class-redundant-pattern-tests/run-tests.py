@@ -38,7 +38,7 @@ for pname in programs:
     #print(p)
     #print("********************output*********************")
     try:
-        interp(p)
+        interp(p,exceptions=True)
     except:
         pass
     else:

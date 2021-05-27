@@ -621,13 +621,13 @@ def handle_builtins(node):
                return ('boolean', False)
         elif opname == '__eq__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'string']:
+            if type in ['integer', 'real', 'list', 'string', 'boolean']:
                 return ('boolean', val_a[1] == val_b[1])
             else:
                 raise ValueError('unsupported type in ==')
         elif opname  == '__ne__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'string']:
+            if type in ['integer', 'real', 'list', 'string', 'boolean']:
                 return ('boolean', val_a[1] != val_b[1])
             else:
                 raise ValueError('unsupported type in =/=')

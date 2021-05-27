@@ -509,7 +509,7 @@ class Parser:
     #    : conditional
     def exp(self):
         dbg_print("parsing EXP")
-        v = self.conditional()
+        v = self.quote_exp()
         return v
 
     ###########################################################################################
@@ -522,7 +522,7 @@ class Parser:
     def conditional(self):
         dbg_print("parsing CONDITIONAL")
 
-        v = self.quote_exp()
+        v = self.compound()
 
         tt = self.lexer.peek().type
         if tt == 'CMATCH':
@@ -575,7 +575,7 @@ class Parser:
     def head_tail(self):
         dbg_print("parsing HEAD_TAIL")
 
-        v = self.compound()
+        v = self.conditional()
 
         if self.lexer.peek().type == 'BAR':
             self.lexer.match('BAR')
