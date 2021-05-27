@@ -6,6 +6,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 function testFunction
     with 0 do
@@ -17,9 +18,18 @@ function testFunction
     orwith (value1:%integer, value2:%real) do
         return 4.
     end.
-    
--- Evaluate the function with a test input.
-let x = testFunction( 5,1 ).
 
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x  ). 
+try
+    -- Evaluate the function with a test input.
+    let x = testFunction( 5,1 ).
+
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x  ). 
+
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "PASS.".
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.

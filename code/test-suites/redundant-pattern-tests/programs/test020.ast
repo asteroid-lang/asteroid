@@ -6,6 +6,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 -- A testing function with multiple patterns
 function testFunction
@@ -18,11 +19,18 @@ function testFunction
     orwith () do
         return 4.
     end.
+
     
+try
+    -- Evaluate the function with a test input.
+    let x = testFunction[ ("test","name") ].
 
--- Evaluate the function with a test input.
-let x = testFunction[ ("test","name") ].
-
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x ).
-
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "PASS.".
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.

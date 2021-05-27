@@ -29,4 +29,12 @@ function reduce
         return term.
     end 
     
-println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
+try    
+    println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "PASS.".
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.

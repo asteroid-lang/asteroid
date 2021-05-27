@@ -31,5 +31,14 @@ structure Dog
       end
   end
 
--- Fido the dog
-let fido = Dog("Fido").
+try    
+    
+  -- Fido the dog
+  let fido = Dog("Fido").
+catch ("Exception", s) do
+  if not isnone(s @index("Redundant")) do
+    exit "PASS.".
+  else
+    throw Error("FAIL: unexpected error "+s).
+  end.
+end.
