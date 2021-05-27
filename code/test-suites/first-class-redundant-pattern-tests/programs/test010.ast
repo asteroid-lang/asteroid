@@ -29,9 +29,9 @@ try
     -- If the function test worked, print the output we got.
     println( "The value returned is: " + y ).
 catch ("Exception", s) do
-  if not isnone(s @index("Redundant")) do
-     exit "Got expected redundant pattern error.".
-  else
-    throw Error("unexpected error: "+s).
-  end.
+    if not isnone(s @index("Redundant")) do
+       exit "PASS.".
+    else
+       throw Error("FAIL: unexpected error "+s).
+    end.
 end.

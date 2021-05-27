@@ -44,12 +44,12 @@ for Person(_,_,_) in people do
   try
     println (test_function( people @loopCounter )).
   catch ("Exception", s) do
-    if not isnone(s @index("Redundant")) do
-       exit "Got expected redundant pattern error.".
-    else
-       throw Error("unexpected error: "+s).
-    end
-  end
+      if not isnone(s @index("Redundant")) do
+        exit "PASS.".
+      else
+        throw Error("FAIL: unexpected error "+s).
+      end.
+  end.
   let loopCounter = loopCounter + 1.
 end.
 

@@ -25,8 +25,8 @@ try
   println ( var ).
 catch ("Exception", s) do
   if not isnone(s @index("Redundant")) do
-    exit "Got expected redundant pattern error.".
+    exit "PASS.".
   else
-    throw Error("unexpected error: "+s).
+    throw Error("FAIL: unexpected error "+s).
   end.
 end.
