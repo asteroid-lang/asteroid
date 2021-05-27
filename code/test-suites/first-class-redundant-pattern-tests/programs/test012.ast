@@ -24,5 +24,14 @@ function test_function
     return "Found a z.".
   end.
 
-let var = test_function( "test string z" ).
-println ( var ).
+try
+
+  let var = test_function( "test string z" ).
+  println ( var ).
+catch ("Exception", s) do
+  if not isnone(s @index("Redundant")) do
+     exit "Got expected redundant pattern error.".
+  else
+    throw Error("unexpected error: "+s).
+  end.
+end.

@@ -7,6 +7,7 @@
 -- By Timothy Colaneri
 --------------------------------------
 load "io".
+load "util".
 
 let ptrn1 = pattern with [ x , y].
 let ptrn2 = pattern with [ head | tail ].
@@ -22,8 +23,16 @@ function testFunction
         return 3.    
     end.
     
--- Evaluate the function with a test input.
-let x = testFunction[ 3 , 4 ].
+try 
+    -- Evaluate the function with a test input.
+    let x = testFunction[ 3 , 4 ].
 
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x ).
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "Got expected redundant pattern error.".
+    else
+        throw Error("unexpected error: "+s).
+    end.
+end.

@@ -6,6 +6,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 function testFunction
     with x:%tuple do                   -- Will render all following patterns redundant
@@ -18,8 +19,18 @@ function testFunction
         return 4.
     end.
     
--- Evaluate the function with a test input.
-let x = testFunction( (5,1) ).
 
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x  ). 
+try
+    -- Evaluate the function with a test input.
+    let x = testFunction( (5,1) ).
+
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x  ). 
+
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "Got expected redundant pattern error.".
+    else
+        throw Error("unexpected error: "+s).
+    end.
+end.

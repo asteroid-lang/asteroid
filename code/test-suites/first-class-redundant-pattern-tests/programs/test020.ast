@@ -5,6 +5,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 let ptrn1 = pattern with person:[( fname, lname)| tail].
 let ptrn2 = pattern with person:( fname, lname1, lname2).
@@ -22,8 +23,16 @@ function testFunction
         return 4.
     end.
     
--- Evaluate the function with a test input.
-let x = testFunction[ ("test","name") ].
+try 
+    -- Evaluate the function with a test input.
+    let x = testFunction[ ("test","name") ].
 
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x ).
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+        exit "Got expected redundant pattern error.".
+    else
+        throw Error("unexpected error: "+s).
+    end.
+end.

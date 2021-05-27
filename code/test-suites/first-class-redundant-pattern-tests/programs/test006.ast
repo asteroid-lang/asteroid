@@ -6,6 +6,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 let ptrn1 = pattern with "name1".
 let ptrn2 = pattern with "name2".
@@ -23,9 +24,17 @@ function testFunction
     orwith *ptrn4 do 
         return 2.
     end.
-    
--- Evaluate the function with a test input.
-let x = testFunction( "name4" ).
+        
+try
+    -- Evaluate the function with a test input.
+    let x = testFunction( "name4" ).
 
--- If the function test worked, print the output we got.
-println( "The value returned is: " + x ).
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + x ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+       exit "Got expected redundant pattern error.".
+    else
+       throw Error("unexpected error: "+s).
+    end.
+end.
