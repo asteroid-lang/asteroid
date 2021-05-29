@@ -222,6 +222,11 @@ def unify(term, pattern, unifying = True ):
 
         # ttc
         # Should we have an else here?
+        else:
+            raise PatternMatchFailed(
+                "expected typematch {} got an object of type {}"
+                .format(typematch, term[0]))  
+
 
     elif pattern[0] == 'named-pattern':
         # unpack pattern
