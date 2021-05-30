@@ -6,9 +6,9 @@ structure Family with
   data parent1.
   
   function members
-    with self do
-        let Parent(name1) = self @parent1.
-        let Parent(name1:%string) = self @parent1.
+    with none do
+        let Parent(name1) = this @parent1.
+        let Parent(name1:%string) = this @parent1.
         return name1.
     end
   end -- structure
