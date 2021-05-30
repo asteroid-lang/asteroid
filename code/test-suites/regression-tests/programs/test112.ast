@@ -1,0 +1,7 @@
+load "io".
+
+let array = [1,2,3].
+
+array @extend((4,5,6)). 
+println(array).
+

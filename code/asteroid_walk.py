@@ -430,6 +430,8 @@ def declare_formal_args(unifiers):
         (ID, sym) = pattern
         if ID != 'id':
             raise ValueError("no pattern match possible in function call")
+        if sym == 'this':
+            raise ValueError("'this' is a reserved word")
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
@@ -727,7 +729,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     declare_formal_args(unifiers)
 
-    # if we have an obj reference bind it to the 
+    # if we have an obj reference bind it to the
     # variable 'this'
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
@@ -771,6 +773,8 @@ def declare_unifiers(unifiers):
         (lval, value) = unifier
 
         if lval[0] == 'id':
+            if lval[1] == 'this':
+                raise ValueError("'this' is a reserved word")
             state.symbol_table.enter_sym(lval[1], value)
 
         elif lval[0] == 'index': # list/structure lval access
