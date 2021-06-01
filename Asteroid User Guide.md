@@ -61,7 +61,7 @@ $ asteroid simple.ast
 $
 ```
 
-In addition, there is a cloud based virtual machine that is completely set up with an Asteroid environment and can be accessed: Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md)
+In addition, there is a cloud based virtual machine that is completely set up with an Asteroid environment and can be accessed: Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md).
 
 
 ## The Basics
