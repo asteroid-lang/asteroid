@@ -60,9 +60,12 @@ $ asteroid simple.ast
 2
 $
 ```
+> lhh:  We have a cloud based virtual machine that is completely set up with an Asteroid environment and can be accessed: Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md)
 
 
 ## The Basics
+
+> lhh some of this content seems out of sequence: first we talk about types and hierarchies, then we talk about more types and more hierarchies....Is this confusing? Should that need to be cleaned up?  Are there other basics that need to be added?
 
 As with most languages we are familiar with Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
 
@@ -225,6 +228,9 @@ The fact that none of the terms is being evaluated and their actual structure is
 ## Flow of Control Statements
 
 Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter.  Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
+
+> lhh this grammar snippet seems out of place...perhaps we should focus only on one or two flow of control statement like the for-loop and the if-statement and leave the rest to the reference guide
+
 ```
 stmt := FOR pattern IN exp DO stmt_list END
       | WHILE exp DO stmt_list END
