@@ -38,7 +38,7 @@ Once you have Asteroid installed on your system you can execute a program by typ
 ```
   asteroid [flags] <input file>
 ```
-For more details please see the documentation below on running and installing Asteroid.
+For more details please see the documentation below.
 
 ## Installation
 
