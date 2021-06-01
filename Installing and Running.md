@@ -1,4 +1,4 @@
-# Installation
+# Installation (?????? testing ?????)
 
 Installation on Unix-like systems is nothing more than to either download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid) or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then add the `code` folder of the repository/release to your `PATH` environment variable. Be sure that you have Python 3.x installed. Make sure that the file `asteroid` in the `code` folder has execution privileges on your machine.
 
