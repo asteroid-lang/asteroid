@@ -228,7 +228,7 @@ The fact that none of the terms is being evaluated and their actual structure is
 
 ## Flow of Control Statements
 
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.<sup>1</sup>
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide of endnotes.<sup>1</sup>
 
 Looking at the list of supported flow of control statements there are really not a lot of surprises.  For example, here is a short program with a `for` loop that prints out the first ten even positive integers,
 ```
@@ -261,7 +261,25 @@ The output is,
     duck
     chicken
 ```
-Even though Asteroid's flow of control statements look so familiar they support pattern matching to a degree not found in other programming languages and which we will take a look at below.
+
+And here is a short program with an `if` statement that outlines what text to print as an output when certain inputs are (not) given,
+
+```
+x = int(input("Please enter an integer: "))
+
+if x < 0:
+    x = 0
+    print('Negative changed to zero')
+elif x == 0:
+    print('Zero')
+elif x == 1:
+    print('Single')
+else:
+    print('More')
+```
+
+
+Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below.
 
 ## Functions
 
