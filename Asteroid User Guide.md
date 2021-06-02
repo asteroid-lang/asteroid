@@ -262,7 +262,7 @@ The output is,
     chicken
 ```
 
-And here is a short program with an `if` statement that outlines what text to print as an output when certain inputs are (not) given,
+Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below. Here is a short program with an `if` statement that outlines what text to print as an output when certain inputs are (not) given,
 
 ```
 x = int(input("Please enter an integer: "))
@@ -278,8 +278,6 @@ else:
     print('More')
 ```
 
-
-Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below.
 
 ## Functions
 
