@@ -228,19 +228,8 @@ The fact that none of the terms is being evaluated and their actual structure is
 
 ## Flow of Control Statements
 
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter.  Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.<sup>1</sup>
 
-> lhh this grammar snippet seems out of place...perhaps we should focus only on one or two flow of control statement like the for-loop and the if-statement and leave the rest to the reference guide
-
-```
-stmt := FOR pattern IN exp DO stmt_list END
-      | WHILE exp DO stmt_list END
-      | REPEAT DO? stmt_list UNTIL exp '.'?
-      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-      | TRY stmt_list (CATCH pattern DO stmt_list)+ END
-      | THROW exp '.'?
-      | BREAK '.'?
-```
 Looking at the list of supported flow of control statements there are really not a lot of surprises.  For example, here is a short program with a `for` loop that prints out the first ten even positive integers,
 ```
 load "io".
@@ -862,3 +851,19 @@ The search strategy for a module to be loaded is as follows,
 1. search in current directory (path[1])
 1. search in directory where Asteroid is installed (path[0])
 1. search in subdirectory where Asteroid was started
+
+
+## Reference Guide (Endnotes)
+
+
+  <sup>1</sup> Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
+
+```
+stmt := FOR pattern IN exp DO stmt_list END
+      | WHILE exp DO stmt_list END
+      | REPEAT DO? stmt_list UNTIL exp '.'?
+      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
+      | TRY stmt_list (CATCH pattern DO stmt_list)+ END
+      | THROW exp '.'?
+      | BREAK '.'?
+```
