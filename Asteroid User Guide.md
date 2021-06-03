@@ -2,13 +2,13 @@
 
 Asteroid is a multi-paradigm programming language that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
 
-In this document we describe the major features of Asteroid and give plenty of examples.  For the most part Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages.  Here are just two:
+In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages.  Here are just two:
 
-1. All statements that look like assignments are actually pattern-match statements.  For example if I state,
+1. All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ```
 let [x,2,y] = [1,2,3].
 ```
-that means the subject term `[1,2,3]` is matched to the pattern `[x,2,y]` and `x` and `y` are bound to the values 1 and 3, respectively.  By the way, there is nothing wrong with this statement,
+that means the subject term `[1,2,3]` is matched to the pattern `[x,2,y]` and `x` and `y` are bound to the values 1 and 3, respectively.  By the way, there is nothing wrong with the following statement,
 ```
 let [1,2,3] = [1,2,3].
 ```
@@ -20,7 +20,7 @@ let a = [1,2,3].
 let b = a @1. -- access element 1
 println b.
 ```
-The result of executing this program would be that the value `2` is printed to the screen.  On the other hand the program,
+The result of executing this program would be that the value `2` is printed to the screen (list indexes start at `0`).  On the other hand the program,
 ```
 let a = [1,2,3].
 let b = a @[1]. -- access element 1 and return it in a list
@@ -33,12 +33,9 @@ let b = a @[2,1,0]. -- reverse list a
 println b.
 ```
 
+These are just two simple examples where Asteroid differs drastically from other programming languages.  We highlight
+some features of Asteroid in this document.
 
-Once you have Asteroid installed on your system you can execute a program by typing
-```
-  asteroid [flags] <input file>
-```
-For more details please see the documentation in "Running and Installing" available in this folder.
 
 ## The Basics
 
