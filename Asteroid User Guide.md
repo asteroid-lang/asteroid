@@ -2,9 +2,10 @@
 
 Asteroid is a multi-paradigm programming language that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
 
-In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages.  Here are just two:
+In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
+paradigm.  Here are just two examples:
 
-1. All statements that look like assignments are actually pattern-match statements.  For example if we state,
+I) All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ```
 let [x,2,y] = [1,2,3].
 ```
@@ -12,63 +13,83 @@ that means the subject term `[1,2,3]` is matched to the pattern `[x,2,y]` and `x
 ```
 let [1,2,3] = [1,2,3].
 ```
-which is just another pattern match without any variable instantiation.
+which is just another pattern match without any variable instantiations.
 
-2. Asteroid allows for list slicing.  Consider the example,
+II) Patterns in Asteroid are first-class citizens of the language.
+This is best demonstrated with a program.  Here is a program
+that recursively computes the factorial and uses first-class patterns
+in order to ensure that the domain of the function is not violated,
 ```
-let a = [1,2,3].
-let b = a @1. -- access element 1
-println b.
-```
-The result of executing this program would be that the value `2` is printed to the screen (list indexes start at `0`).  On the other hand the program,
-```
-let a = [1,2,3].
-let b = a @[1]. -- access element 1 and return it in a list
-println b.
-```
-would print the value `[2]`.  We can take advantage of this capability to reverse the list `a` with a simple indexing operation using a list of indexes,
-```
-let a = [1,2,3].
-let b = a @[2,1,0]. -- reverse list a
-println b.
-```
+-- define first-class patterns
+let POS_INT = pattern with (x:%integer) %if x > 0.
+let NEG_INT = pattern with (x:%integer) %if x < 0.
 
-These are just two simple examples where Asteroid differs drastically from other programming languages.  We highlight
-some features of Asteroid in this document.
+function fact
+    with 0 do
+        return 1
+    orwith n:*POS_INT do            -- use first pattern
+        return n * fact (n-1).
+    orwith n:*NEG_INT do            -- use second pattern
+        throw Error("undefined for "+n).
+    end
+```
+As you can see, the program first creates patterns and stores them in the variables
+`POS_INT` and `NEG_INT` and it uses those patterns later in the code by
+dereferencing those variables with the '*' operator.  First-class patterns have
+profound implications for software development in that pattern definition and usage
+points are now separate and patterns can be reused in different contexts.
+
+These are just two examples where Asteroid differs drastically from other programming languages.  
+This document is an overview of Asteroid and is intended to get you started quickly
+with programming in Asteroid.
 
 Once you have Asteroid installed on your system you can execute a program by typing
 ```
   asteroid [flags] <input file>
 ```
-For more details please see the documentation below.
+For more details please see the next section.
 
 ## Installation
 
-Installation on Unix-like systems is nothing more than to either download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid) or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then add the `code` folder of the repository/release to your `PATH` environment variable. Be sure that you have Python 3.x installed. Make sure that the file `asteroid` in the `code` folder has execution privileges on your machine.
+Installation on **Unix-like** systems is nothing more than to either download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid) or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then add the `code` folder of the repository/release to your `PATH` environment variable. Be sure that you have Python 3.x installed. Make sure that the file `asteroid` in the `code` folder has execution privileges on your machine.
 
-On Windows 10 you will need to set the environment variable `ASTEROID_ROOT` to point to the folder where you cloned the repo or unzipped the downloaded file. Then you will need to add the following to the path environment variable: `%ASTEROID_ROOT%\code`. That's it, now you can use the `asteroid.bat` file in the `code` folder to start the asteroid interpreter.
+On **Windows 10**, after downloading the asteroid files, you will need to set the environment variable `ASTEROID_ROOT` to point to the folder where you cloned the repo or unzipped the downloaded file. Then you will need to add the following to the path environment variable: `%ASTEROID_ROOT%\code`. That's it, now you can use the `asteroid.bat` file in the `code` folder to start the asteroid interpreter.
+
+In addition, there is a Linux-based **cloud based virtual machine** that is completely set up with an Asteroid environment and can be accessed at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md).
 
 ## Running the Asteroid Interpreter
 
-You can now run the interpreter from the command line by simply typing asteroid. This will work on both Windows and Unix-like systems as long as you followed the instructions above,
-
+You can now run the interpreter from the command line by simply typing `asteroid`. This will work on both Windows and Unix-like systems as long as you followed the instructions above.
+To run asteroid on Unix-like systems and on our virtual machine,
 ```
-$ cat simple.ast
--- a simple program using lambda functions
-load "io".
-println ((lambda with n do return n+1) 1).
-$
-$ asteroid simple.ast
-2
+$ cat hello.ast
+-- the obligatory hello world program
+
+load system "io".
+
+println "Hello, World!".
+
+$ asteroid hello.ast
+Hello, World!
 $
 ```
+On Windows 10 the same thing looks like this,
+```
+C:\> type hello.ast
+-- the obligatory hello world program
 
-In addition, there is a cloud based virtual machine that is completely set up with an Asteroid environment and can be accessed: Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md).
+load system "io".
+
+println "Hello, World!".
+
+C:\> asteroid hello.ast
+Hello, World!
+C:\>
+```
+
 
 
 ## The Basics
-
-> lhh some of this content seems out of sequence: first we talk about types and hierarchies, then we talk about more types and more hierarchies....Is this confusing? Should that need to be cleaned up?  Are there other basics that need to be added?
 
 As with most languages we are familiar with Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
 
@@ -86,7 +107,7 @@ Asteroid supports two more data types:
 * `list`
 * `tuple`
 
-These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squence of comma separated values enclosed by square brackets for lists and enclosed by parentheses for tuples. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.`(<something>,)`. Furthermore, the null-tuple `()` actually belongs to a different data type as we will see below.
+These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists and enclosed by parentheses for tuples. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.`(<something>,)`. Furthermore, the null-tuple `()` actually belongs to a different data type as we will see below.
 Here are some examples,
 ```
 let a = [1,2,3].  -- this is a list
@@ -103,7 +124,12 @@ Lists and tuples themselves are also embedded in type hierarchies, although very
 
 That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples.
 
-Finally, Asteroid supports one more type, namely the `none` type.  The `none` type has a constant named conveniently `none`.  As mentioned above, the null-tuple is of this type and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  The `none` data type does not belong to any type hierarchy.
+Finally, Asteroid supports one more type, namely the `none` type.  The `none` type has
+only one member: A constant named conveniently `none`.  As mentioned above, the null-tuple is of this type and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  That is, the following `let` statement will succeed,
+```
+let none = ().
+```
+The `none` data type does not belong to any type hierarchy.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a `--` symbol and continue till the end of the line.  You probably also figured out that the `let` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different.
 
