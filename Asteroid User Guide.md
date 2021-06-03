@@ -36,8 +36,39 @@ println b.
 These are just two simple examples where Asteroid differs drastically from other programming languages.  We highlight
 some features of Asteroid in this document.
 
+Once you have Asteroid installed on your system you can execute a program by typing
+```
+  asteroid [flags] <input file>
+```
+For more details please see the documentation below.
+
+## Installation
+
+Installation on Unix-like systems is nothing more than to either download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid) or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then add the `code` folder of the repository/release to your `PATH` environment variable. Be sure that you have Python 3.x installed. Make sure that the file `asteroid` in the `code` folder has execution privileges on your machine.
+
+On Windows 10 you will need to set the environment variable `ASTEROID_ROOT` to point to the folder where you cloned the repo or unzipped the downloaded file. Then you will need to add the following to the path environment variable: `%ASTEROID_ROOT%\code`. That's it, now you can use the `asteroid.bat` file in the `code` folder to start the asteroid interpreter.
+
+## Running the Asteroid Interpreter
+
+You can now run the interpreter from the command line by simply typing asteroid. This will work on both Windows and Unix-like systems as long as you followed the instructions above,
+
+```
+$ cat simple.ast
+-- a simple program using lambda functions
+load "io".
+println ((lambda with n do return n+1) 1).
+$
+$ asteroid simple.ast
+2
+$
+```
+
+In addition, there is a cloud based virtual machine that is completely set up with an Asteroid environment and can be accessed: Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md).
+
 
 ## The Basics
+
+> lhh some of this content seems out of sequence: first we talk about types and hierarchies, then we talk about more types and more hierarchies....Is this confusing? Should that need to be cleaned up?  Are there other basics that need to be added?
 
 As with most languages we are familiar with Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
 
@@ -199,16 +230,8 @@ The fact that none of the terms is being evaluated and their actual structure is
 
 ## Flow of Control Statements
 
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter.  Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
-```
-stmt := FOR pattern IN exp DO stmt_list END
-      | WHILE exp DO stmt_list END
-      | REPEAT DO? stmt_list UNTIL exp '.'?
-      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-      | TRY stmt_list (CATCH pattern DO stmt_list)+ END
-      | THROW exp '.'?
-      | BREAK '.'?
-```
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide of endnotes.<sup>1</sup>
+
 Looking at the list of supported flow of control statements there are really not a lot of surprises.  For example, here is a short program with a `for` loop that prints out the first ten even positive integers,
 ```
 load "io".
@@ -240,7 +263,23 @@ The output is,
     duck
     chicken
 ```
-Even though Asteroid's flow of control statements look so familiar they support pattern matching to a degree not found in other programming languages and which we will take a look at below.
+
+Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below. Here is a short program with an `if` statement that outlines what text to print as an output when certain inputs are (not) given,
+
+```
+x = int(input("Please enter an integer: "))
+
+if x < 0:
+    x = 0
+    print('Negative changed to zero')
+elif x == 0:
+    print('Zero')
+elif x == 1:
+    print('Single')
+else:
+    print('More')
+```
+
 
 ## Functions
 
@@ -830,3 +869,19 @@ The search strategy for a module to be loaded is as follows,
 1. search in current directory (path[1])
 1. search in directory where Asteroid is installed (path[0])
 1. search in subdirectory where Asteroid was started
+
+
+## Reference Guide (Endnotes)
+
+
+  <sup>1</sup> Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
+
+```
+stmt := FOR pattern IN exp DO stmt_list END
+      | WHILE exp DO stmt_list END
+      | REPEAT DO? stmt_list UNTIL exp '.'?
+      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
+      | TRY stmt_list (CATCH pattern DO stmt_list)+ END
+      | THROW exp '.'?
+      | BREAK '.'?
+```
