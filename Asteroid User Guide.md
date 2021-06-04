@@ -125,11 +125,13 @@ Lists and tuples themselves are also embedded in type hierarchies, although very
 That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples.
 
 Finally, Asteroid supports one more type, namely the `none` type.  The `none` type has
-only one member: A constant named conveniently `none`.  As mentioned above, the null-tuple is of this type and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  That is, the following `let` statement will succeed,
+only one member: A constant named conveniently `none`.  As mentioned above, the null-tuple is of this type and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  That is, the following `let` statements will succeed,
 ```
 let none = ().
+let () = none.
 ```
-The `none` data type does not belong to any type hierarchy.
+meaning that the constants `()` and `none` are equivalent and pattern-match each other.
+The `none` data type itselft does not belong to any type hierarchy.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a `--` symbol and continue till the end of the line.  You probably also figured out that the `let` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different.
 
