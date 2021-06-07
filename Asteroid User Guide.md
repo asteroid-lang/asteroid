@@ -185,7 +185,7 @@ The output is: `[[1,2,3],[4,0,6],[7,8,9]]`
 
 ### Custom Data Structures using 'structure'
 
-You can introduce custom data structures using the **structure** keyword.  These custom data structures differ from lists in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are introducing a new type into your program.  We should mention that Asteroid creates
+You can introduce custom data structures using the `structure` keyword.  These custom data structures differ from lists in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are introducing a new type into your program.  We should mention that Asteroid creates
 a *default constructor* for a structure.  That constructor copies the arguments given to it into the
 data member fields of the structure in the order that the data members appear in the
 structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
@@ -825,7 +825,7 @@ circle(.5, .5, .2)
 
 ## Asteroid I/O
 
-**Println** is a function that prints its argument in a readable form to the terminal.  Remember that under the standard model the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
+`Println` is a function that prints its argument in a readable form to the terminal.  Remember that under the standard model the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
 ```
 load "io".
 
@@ -838,7 +838,7 @@ The output is
     a + b = 3
 ```
 
-**Input** is a function that given a prompt string will prompt the user at the terminal and return the input value as a string.  Here is a small example,
+`Input` is a function that given a prompt string will prompt the user at the terminal and return the input value as a string.  Here is a small example,
 ```
 load "io".
 
@@ -851,7 +851,7 @@ The output is,
     Hello Leo!
 ```
 
-We can use the type casting functions such as **tointeger** or **toreal** to convert the string returned from **input** into a numeric value,
+We can use the type casting functions such as `tointeger` or `toreal` to convert the string returned from `input` into a numeric value,
 ```
 load "io".
 load "util".
@@ -874,7 +874,7 @@ The output is,
     3
 ```
 
-**Raw_print** is a function similar to **println** except that it outputs Asteroid's internal term structure for the given argument,
+`Raw_print` is a function similar to `println` except that it outputs Asteroid's internal term structure for the given argument,
 ```
 load "io".
 
