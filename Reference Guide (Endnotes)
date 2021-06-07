@@ -1,7 +1,7 @@
-## Reference Guide (Endnotes)
+# Reference Guide (Endnotes)
 
 
-<sup> 1 </sup> Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
+<sup>1</sup> Here is a snippet from the Asteroid EBNF grammar that shows the control statements,
 
 stmt := FOR pattern IN exp DO stmt_list END
       | WHILE exp DO stmt_list END
