@@ -851,7 +851,7 @@ The output is,
     Hello Leo!
 ```
 
-We can use the type casting functions such as `tointeger` or `toreal` to convert the string returned from `input` into a numeric value,
+We can use the type casting functions such as **tointeger** or **toreal** to convert the string returned from **input** into a numeric value,
 ```
 load "io".
 load "util".
