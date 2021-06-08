@@ -896,7 +896,7 @@ Note that here we get the output value represented as a `(<type>,<value>)` tuple
 
 ## The Module System
 
-A module in Asteroid is a file with a set of valid Asteroid statements.  You can include this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space, symbols from a module are entered into Asteroid's global name space.
+A module in Asteroid is a file with a set of valid Asteroid statements.  You can include this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space; symbols from a module are entered into Asteroid's global name space.
 
 The search strategy for a module to be loaded is as follows,
 1. raw module name - could be an absolute path
@@ -904,18 +904,12 @@ The search strategy for a module to be loaded is as follows,
 1. search in directory where Asteroid is installed (path[0])
 1. search in subdirectory where Asteroid was started
 
-Say that you wanted to load the `math` module so you could execute a certain trigonometric function (here, this will be the function `degrees`). You could either search for it with any of the strategies listed above, or execute the statement `load "<math.ast>".` In order to execute `degrees`, you would type the following:
-
+Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program imports the `math` module as well as the `io` (input/output) module. Only after importing them would you be able to complete the sine function below:
 ```
--- Convert angle x from radians to degrees.
-with (x) do return escape
-"
-import math
-global __retval__
+load "io".
+load "math".
 
-x_val = state.symbol_table.lookup_sym('x')
-
-__retval__ = ('real', math.degrees(x_val[1]))
-"
-end
+let x = sin( pi / 2 ).
+println("The sine of pi / 2 is " + x + ".").
 ```
+Both the function `sin()` and the constant value `pi` are defined in the `math` module. In addition, the `io` module is where all input/output functions in Asteroid (such as `println`) come from.
