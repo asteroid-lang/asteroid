@@ -1,5 +1,7 @@
 # Asteroid User Guide
 
+## Introduction
+
 Asteroid is a multi-paradigm programming language that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
@@ -183,7 +185,7 @@ The output is: `[[1,2,3],[4,0,6],[7,8,9]]`
 
 **NOTE**: At this point slicing is not supported on the left side of a `let` statement.
 
-### Custom Data Structures using 'structure'
+### Custom Data Structures using `structure`
 
 You can introduce custom data structures using the `structure` keyword.  These custom data structures differ from lists in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are introducing a new type into your program.  We should mention that Asteroid creates
 a *default constructor* for a structure.  That constructor copies the arguments given to it into the
@@ -220,7 +222,7 @@ The `structure` statement introduces a new typed data structure. In this case it
 
 It turns out that data structures defined with the `structure` command also support prototype based OO programming.  More of that below.
 
-## The Let Statement
+## The `let` Statement
 
 The `let` statement is Asteroid's version of the assignment statement.  Here is a snippet of Asteroid's grammar detailing the statement,
 ```
@@ -256,7 +258,7 @@ The output is `(__plus__(1,0),__plus__(1,2))`
 
 The fact that none of the terms is being evaluated and their actual structure is being preserved becomes clear what we print what has been bound to the variables `x` and `y`.  Here the symbol `__plus__` is the internal notation of the `+` operator.
 
-## Flow of Control Statements
+## Loops and `if` Statements
 
 Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide of endnotes.
 
@@ -794,7 +796,11 @@ function reduce
 
 println (reduce('add(S(S(0)),S(S(S(0)))))).
 ```
-As before, the output is `S(S(S(S(S(0)))))`.`
+As before, the output is `S(S(S(S(S(0)))))`.
+
+## More on Exceptions
+
+This section will give further information on how to solve **exceptions,** or unexpected conditions that break the regular flow of execution.
 
 ## Escaping Asteroid
 
@@ -823,7 +829,7 @@ end
 circle(.5, .5, .2)
 ```
 
-## Asteroid I/O
+## Basic Asteroid I/O
 
 `Println` is a function that prints its argument in a readable form to the terminal.  Remember that under the standard model the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
 ```
