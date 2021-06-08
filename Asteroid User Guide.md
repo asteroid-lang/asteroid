@@ -904,4 +904,18 @@ The search strategy for a module to be loaded is as follows,
 1. search in directory where Asteroid is installed (path[0])
 1. search in subdirectory where Asteroid was started
 
+Say that you wanted to load the `math` module so you could execute a certain trigonometric function (here, this will be the function `degrees`). You could either search for it with any of the strategies listed above, or execute the statement `load "<math.ast>".` In order to execute `degrees`, you would type the following:
 
+```
+-- Convert angle x from radians to degrees.
+with (x) do return escape
+"
+import math
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('real', math.degrees(x_val[1]))
+"
+end
+```
