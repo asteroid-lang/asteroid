@@ -90,13 +90,13 @@ C:\>
 As you can see, once you have Asteroid installed on your system you can execute an
 Asteroid program by typing,
 ```
-asteroid [flags] <input file>
+asteroid [flags] <program file>
 ```
 at the command prompt.
 
 ## The Basics
 
-As with most languages we are familiar with Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
+As with most languages we are familiar with, Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
 
 * `integer`
 * `real`
