@@ -143,7 +143,7 @@ By now you probably figured out that statements are terminated with a period and
 
 In Asteroid the `list` is the fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
 ```
-load "io".          -- load the io module so we can print
+load system "io".          -- load the io module so we can print
 
 let a = [1,2,3].    -- construct list a
 let b = a @[2,1,0].  -- reverse list a
@@ -152,7 +152,7 @@ println b.
 The output is: `[3,2,1]`.
 As we have seen the `@` operator allows you to access either individual elements or slices of a list.  We can also use **list comprehensions** to construct lists,
 ```
-load "io".          
+load system "io".          
 
 -- build a list of odd values
 let a = [1 to 10 step 2].
@@ -170,7 +170,7 @@ The output is,
 ```
 Higher dimensional arrays can easily be simulated with lists of lists,
 ```
-load "io".
+load system "io".
 
 -- build a 2-D array
 let b = [[1,2,3],
@@ -194,7 +194,7 @@ structure definition and as they appear in the parameter list of the constructor
 
 
 ```
-load "io".
+load system "io".
 
 structure Person with
     data name.
@@ -236,7 +236,7 @@ As we said before, the `let` statement is a pattern matching statement which we 
 
 Here is an example where we do some computations on the right side of a `let` statement and then match against a pattern on the left,
 ```
-load "io".
+load system "io".
 
 -- note 1+1 evaluates to 2 and is then matched
 -- the variables x and y are bound to 1 and 3, respectively
@@ -247,7 +247,7 @@ The output is: `(1,3)`
 
 Here is a similar program but all terms have been quoted and therefore are not evaluated and the actual structure of the terms is matched,
 ```
-load "io".
+load system "io".
 
 -- note 1+1 does NOT evaluate to 2 and 1+1 is matched
 -- the variables x and y are bound to term expressions
@@ -264,7 +264,7 @@ Control structure implementation in Asteroid is along the lines of any of the mo
 
 Looking at the list of supported flow of control statements there are really not a lot of surprises.  For example, here is a short program with a `for` loop that prints out the first ten even positive integers,
 ```
-load "io".
+load system "io".
 for i in 0 to 10 step 2 do
     println i
 end
@@ -281,7 +281,7 @@ The output is,
 Here is another example that iterates over lists,
 
 ```
-load "io".
+load system "io".
 
 for bird in ["turkey","duck","chicken"] do
     println bird.
@@ -322,8 +322,8 @@ A closer look reveals that a function can have multiple bodies each associated w
 
 However, considering that a variable represents the simplest pattern we can write functions that look very familiar to the programmer coming from the Python or Java traditions.  Here is a function that reverses a list,
 ```
-load "util".
-load "io".
+load system "util".
+load system "io".
 
 function reverse with list do
     let len = length(list).
@@ -343,7 +343,7 @@ primary := LAMBDA body_defs
 ```
 where the `body_defs` are the same as for the functions defined above.  This implies that `lambda` functions can also have multiple bodies each associated with a different formal argument pattern.  Here is a simple example using a `lambda` function,
 ```
-load "io".
+load system "io".
 
 println ((lambda with n do return n+1) 1).
 ```
@@ -354,7 +354,7 @@ The output is `2`.
 Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern match ability when we discussed the `let` statement.  Below is another program that highlights a few other aspects of pattern matching.
 In particular, quoted expressions allow the programmer to treat expressions as structure and pattern match against that structure.  Quoted expressions can be interpreted as normal expressions using the `eval` function as shown in the following.  In the case that a statement is expected to fail, like the `let` statement `let '1 + 1 = 1 + 1.` we put it into a try-catch block.
 ```
-load "io".
+load system "io".
 
 let '1 + 1 = '1 + 1. -- quoted expression
 let 2 = eval('1 + 1).
@@ -373,7 +373,7 @@ Asteroid supports pattern matching on function arguments in the style of ML and 
 
 Below is the quick sort implemented in Asteroid as an example of this classic style pattern matching.  What is perhaps new is the `head-tail` operator being used in the last `orwith` clause.  Here the variable `pivot` matches the first element of the list and the variable `rest` matches the remaining list which is the original list with its first element removed.  We can  also see that the `+` operator symbols are overloaded operators in the standard model to act as a list concatenation operators in addition to arithmetic operators. What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is also expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
 ```
-load "io".
+load system "io".
 
 function qsort
     with [] do
@@ -411,8 +411,8 @@ Here `x` and `y` are variables, `0` represents the natural number with value zer
 `add` symbol,
 ```
 -- implements Peano addition on terms
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 structure S with
     data x.
@@ -473,7 +473,7 @@ Pattern matching in `while` loops follows a similar approach to pattern matching
 
 The example below shows a program that employs pattern matching using the head-tail operator in the `repeat-until` loop expression in order to iterate over a list and print the list elements.  Note the use of the `is` predicate to test whether the list is empty or not.  
 ```
-load "io".
+load system "io".
 
 let list = [1,2,3].
 
@@ -494,7 +494,7 @@ The output is,
 
 For completeness sake we have repeated here an example of a simple `for` from above,
 ```
-load "io".
+load system "io".
 
 for bird in ["turkey","duck","chicken"] do
     println bird.
@@ -503,7 +503,7 @@ end
 Turns out that in simple `for` loops such as the one above the loop variable is actually a pattern that gets matched to the elements of the list the loop iterates over.
 We can expand this simple pattern into a much more complicated pattern and do pattern matching while we are iterating.  This allows us to access substructures of the items being iterated over in a direct and succinct way.  The example below shows such a program.  The program constructs a list of `Person` structures that consist of a name and an age.  The `for` loop iterates over this list while pattern matching the `Person` constructor at each iteration binding the age variable to the appropriate value in the structure.  In the loop body it carries a running sum of the age values which it then uses to compute the average age of the persons on the list.  
 ```
-load "io".
+load system "io".
 
 structure Person with
     data name.
@@ -531,7 +531,7 @@ The output is,
 ```
 We can also use pattern matching in a `for` loop to select certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
 ```
-load "io".
+load system "io".
 
 structure Person with
     data name.
@@ -558,8 +558,8 @@ Here we pattern match the `Person` object in the `for` loop and then use a regul
 
 Exception handling in Asteroid is very similar to exception handling in many of the other modern programming languages available today.  The example below shows an Asteroid program shows that throws one of two exceptions depending on the randomly generated value `i`,
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 structure Head with
     data val.
@@ -593,7 +593,7 @@ Asteroid would provide a default constructor to initialize the data members of t
 `a` would be copied to the data member `name` and the value `b` would be copied to the `tricks` data member.
 Asteroid generates an implicit object reference as the first argument to the called function.  Notice that at the call site  we only provide a single argument whereas the function definition has two arguments; the first one capturing the object reference.
 ```
-load "io".
+load system "io".
 
 structure Dog with
 
@@ -634,7 +634,7 @@ The output is,
 ```
 In order to demonstrate pattern matching with objects we add a third dog and add a list of dogs to our program. The resulting program below shows this and we also added code that iterates over the list of the dogs and prints out the names of the dogs whose first trick is `roll over`.  The filtering of the objects on the list is done via pattern matching in the `for` loop.
 ```
-load "io".
+load system "io".
 
 structure Dog with
 
@@ -684,7 +684,7 @@ The output is,
 
 There is an elegant way of rewriting the last part of the code of the above example using the fact that in Asteroid patterns are first-class citizens.  In the program below we associate our pattern with the variable `dog`. The quote at the beginning of the pattern is necessary otherwise Asteroid will try to dereference the variable `name` as well as the anonymous variables `_`. We use the pattern associated with `dog` in the `for` loop in order to filter the objects on the list. The `*` operator is necessary in order to tell Asteroid to use the pattern associated with the variable `dog` rather than using the variable itself as a pattern.
 ```
-load "io".
+load system "io".
 
 structure Dog with
 
@@ -741,7 +741,7 @@ The output again is,
 
 We have shown in the above program that patterns can be associated with and dereferenced from variables.  The program below illustrates that we can also pass patterns to functions where they can be used for pattern matching.  Here we define a function `match` that expects a subject term and a pattern.  It proceeds to pattern match the subject term to the pattern using the `is` predicate and returns whatever the predicate returns.  Observe the `*` operator in front of the `pattern` variable stating that we want to use the pattern associated with that variable.  In the program we call the function `match` with subject term `1+1` and pattern `_+_`.  
 ```
-load "io".
+load system "io".
 
 function match with (subject,pattern) do
     return subject is *pattern.
@@ -753,7 +753,7 @@ The output is `true`.
 
 We can also construct patterns on-the-fly as shown below.  Here we construct two subpatterns `cl` and `cr`.  These two subpatterns are used to construct the full pattern `p` when the pattern is evaluated during a pattern match. Finally, we check whether our pattern is assembled correctly on last line.  The output of the program is `true` meaning our pattern has the same structure as the subject term `1+2+3`.
 ```
-load "io".
+load system "io".
 
 let cl = '_ + _.
 let cr = '3.
@@ -767,7 +767,7 @@ With Asteroid's ability to manipulate patterns we can rewrite the Peano addition
 
 The function `reduce` searches through the rule table for a match to the current subject term `term`.  If a match is found the corresponding right side of the rule is evaluated.  If no match is found then the term is returned unmodified.  The output of the program is of course the Peano term `S(S(S(S(S(0)))))`.
 ```
-load "io".
+load system "io".
 
 structure S with
     data x.
@@ -833,7 +833,7 @@ circle(.5, .5, .2)
 
 `Println` is a function that prints its argument in a readable form to the terminal.  Remember that under the standard model the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
 ```
-load "io".
+load system "io".
 
 let a = 1.
 let b = 2.
@@ -846,7 +846,7 @@ The output is
 
 `Input` is a function that given a prompt string will prompt the user at the terminal and return the input value as a string.  Here is a small example,
 ```
-load "io".
+load system "io".
 
 let name = input("What is your name? ").
 println ("Hello " + name + "!").
@@ -859,8 +859,8 @@ The output is,
 
 We can use the type casting functions such as `tointeger` or `toreal` to convert the string returned from `input` into a numeric value,
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let i = tointeger(input("Please enter a positive integer value: ")).
 
@@ -882,7 +882,7 @@ The output is,
 
 `Raw_print` is a function similar to `println` except that it outputs Asteroid's internal term structure for the given argument,
 ```
-load "io".
+load system "io".
 
 let a = 1.
 let b = 2.
@@ -906,8 +906,8 @@ The search strategy for a module to be loaded is as follows,
 
 Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program imports the `math` module as well as the `io` (input/output) module. Only after importing them would you be able to complete the sine function below:
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let x = sin( pi / 2 ).
 println("The sine of pi / 2 is " + x + ".").
