@@ -2,12 +2,13 @@
 
 ## Introduction
 
-Asteroid is a multi-paradigm programming language that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
+Asteroid is a
+multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Rust](https://www.rust-lang.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org), that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
 paradigm.  Here are just two examples:
 
-I) All statements that look like assignments are actually pattern-match statements.  For example if we state,
+**Example 1:** All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ```
 let [x,2,y] = [1,2,3].
 ```
@@ -17,15 +18,16 @@ let [1,2,3] = [1,2,3].
 ```
 which is just another pattern match without any variable instantiations.
 
-II) Patterns in Asteroid are first-class citizens of the language.
+**Example 2:** Patterns in Asteroid are first-class citizens of the language.
 This is best demonstrated with a program.  Here is a program
-that recursively computes the factorial and uses first-class patterns
+that recursively computes the factorial of a positive integer and uses first-class patterns
 in order to ensure that the domain of the function is not violated,
 ```
 -- define first-class patterns
 let POS_INT = pattern with (x:%integer) %if x > 0.
 let NEG_INT = pattern with (x:%integer) %if x < 0.
 
+-- define our factorial function
 function fact
     with 0 do
         return 1
@@ -37,7 +39,7 @@ function fact
 ```
 As you can see, the program first creates patterns and stores them in the variables
 `POS_INT` and `NEG_INT` and it uses those patterns later in the code by
-dereferencing those variables with the '*' operator.  First-class patterns have
+dereferencing those variables with the `*` operator.  First-class patterns have
 profound implications for software development in that pattern definition and usage
 points are now separate and patterns can be reused in different contexts.
 
@@ -45,11 +47,7 @@ These are just two examples where Asteroid differs drastically from other progra
 This document is an overview of Asteroid and is intended to get you started quickly
 with programming in Asteroid.
 
-Once you have Asteroid installed on your system you can execute a program by typing
-```
-  asteroid [flags] <input file>
-```
-For more details please see the next section.
+
 
 ## Installation
 
@@ -89,7 +87,12 @@ Hello, World!
 C:\>
 ```
 
-
+As you can see, once you have Asteroid installed on your system you can execute an
+Asteroid program by typing,
+```
+asteroid [flags] <input file>
+```
+at the command prompt.
 
 ## The Basics
 
