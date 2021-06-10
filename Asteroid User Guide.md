@@ -448,7 +448,7 @@ which represents the value 5.
 
 Before we begin the discussion we need to introduce the `is` predicate  which is a built-in operator that takes the pattern on the right side and applies it to the subject term on the left side.  If there is a match the predicate will return `true` if not then it will return `false`.  Here is a snippet that illustrates the predicate,
 ```
-let true = '1 + 2 is 'x + y.
+let true = (1,2) %is (x,y).
 ```
 The subject term `1 + 2` is matched to the pattern `x + y` which of course will succeed with the variable bindings `x`  &#x21A6; `1` and `y` &#x21A6; `2`.
 
@@ -459,9 +459,9 @@ In Asteroid an `if` statement consists of an `if` clause followed by zero or mor
 In order to enable pattern matching in `if` statements we use the `is` predicate.  We can rewrite the `reduce` function from the above Peano arithmetic example using pattern matching in `if` statements as an illustration,
 ```
 function reduce with term do
-    if term is add(x,0) do
+   if term %is add(x,0) do
         return reduce(x).
-    elif term is add(x,S(y))  do
+    elif term %is add(x,S(y))  do
         return S(reduce(add(x,y))).
     else do
         return term.
@@ -484,7 +484,7 @@ repeat do
     let [head|tail] = list.
     println head.
     let list = tail.
-until list is [].
+until list %is [].
 ```
 The output is,
 ```
@@ -747,7 +747,7 @@ We have shown in the above program that patterns can be associated with and dere
 load system "io".
 
 function match with (subject,pattern) do
-    return subject is *pattern.
+    return subject %is *pattern.
     end
 
 println (match('1+1, '_+_)).
@@ -790,7 +790,7 @@ function reduce
     with term do
         for i in 0 to rule_table@length() - 1 do
             let (lhs, rhs) = rule_table@i.
-            if term is *lhs do
+            if term %is *lhs do
                 return eval rhs.
             end
         end
