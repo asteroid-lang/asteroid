@@ -3,7 +3,7 @@ load "io".
 
 structure Foo with
     data name.
-    function get with self do return (self @name) end
+    function get with none do return (this @name) end
     end
 
 structure Goo with

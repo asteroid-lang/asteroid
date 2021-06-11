@@ -3,7 +3,7 @@ load "io".
 
 structure A with
     data x.
-    function dump with self do println (self@x) end .
+    function dump with none do println (this@x) end .
     end 
 
 let obj = A(2).

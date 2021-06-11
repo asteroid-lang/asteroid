@@ -535,14 +535,14 @@ structure Dog with
   data tricks.
 
   function add_trick
-    with (self, new_trick) do
-      let self @tricks = self @tricks + [new_trick].
+    with new_trick do
+      let this @tricks = this @tricks + [new_trick].
     end
 
   function __init__
-    with (self, name) do
-      let self @name = name.
-      let self @tricks = [].
+    with name do
+      let this @name = name.
+      let this @tricks = [].
     end
 
   end
@@ -576,14 +576,14 @@ structure Dog with
   data tricks.
 
   function add_trick
-    with (self, new_trick) do
-      let self @tricks = self @tricks + [new_trick].
+    with new_trick do
+      let this @tricks = this @tricks + [new_trick].
     end
 
   function __init__
-    with (self, name) do
-      let self @name = name.
-      let self @tricks = [].
+    with name do
+      let this @name = name.
+      let this @tricks = [].
     end
 
   end -- structure
@@ -626,14 +626,14 @@ structure Dog with
   data tricks.
 
   function add_trick
-    with (self, new_trick) do
-      let self @tricks = self @tricks + [new_trick].
+    with new_trick do
+      let this @tricks = this @tricks + [new_trick].
     end
 
   function __init__
-    with (self, name) do
-      let self @name = name.
-      let self @tricks = [].
+    with name do
+      let this @name = name.
+      let this @tricks = [].
     end
 
 end -- structure

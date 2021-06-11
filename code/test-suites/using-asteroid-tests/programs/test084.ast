@@ -2,8 +2,8 @@
 load "io".
 
 structure Arithmetic with
-    function add with (self,a:%integer,b:%integer) do return a+b end
-    function subtract with (self,a:%integer,b:%integer) do return a-b end
+    function add with (a:%integer,b:%integer) do return a+b end
+    function subtract with (a:%integer,b:%integer) do return a-b end
     end
     
 structure Adder with
