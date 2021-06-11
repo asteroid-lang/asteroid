@@ -93,15 +93,3 @@ x_val = state.symbol_table.lookup_sym('x')
 __retval__ = ('integer', ~x_val)
 "
 end
-
-------------------------------------------------------------------
-function bcomplement
-------------------------------------------------------------------
-with(x:%integer) do return escape
-"
-global __retval__
-x_val = state.symbol_table.lookup_sym('x')
-
-__retval__ = ('integer', ~x_val)
-"
-end

@@ -1,0 +1,9 @@
+-- Bitwise operations regression test
+load "bitwise".
+
+assert(bitwise_and(2,4) == 0).
+assert(bitwise_or(2,4)  == 6).
+assert(bitwise_not(2)   == -3).
+assert(bitwise_right_shift(32,2) == 8).
+assert(bitwise_left_shift(2,4)   == 32).
+assert(bcomplement(16) == -17).
