@@ -6,7 +6,7 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function bitwise_and
+function band
 ------------------------------------------------------------------
 with(x:%integer, y:%integer) do return escape
 "
@@ -19,7 +19,7 @@ __retval__ = ('integer', x_val[1] & y_val[1])
 end
 
 ------------------------------------------------------------------
-function bitwise_or
+function bor
 ------------------------------------------------------------------
 with(x:%integer, y:%integer) do return escape
 "
@@ -32,7 +32,7 @@ __retval__ = ('integer', x_val[1] | y_val[1])
 end
 
 ------------------------------------------------------------------
-function bitwise_not
+function bnot
 ------------------------------------------------------------------
 with(x:%integer) do return escape
 "
@@ -44,7 +44,7 @@ __retval__ = ('integer', ~x_val[1])
 end
 
 ------------------------------------------------------------------
-function bitwise_xor
+function bxor
 ------------------------------------------------------------------
 with(x:%integer, y:%integer) do return escape
 "
@@ -57,7 +57,7 @@ __retval__ = ('integer', x_val[1] ^ y_val[1])
 end
 
 ------------------------------------------------------------------
-function bitwise_left_shift
+function bleft_shift
 ------------------------------------------------------------------
 with(x:%integer, y:%integer) do return escape
 "
@@ -70,7 +70,7 @@ __retval__ = ('integer', x_val[1] << y_val[1])
 end
 
 ------------------------------------------------------------------
-function bitwise_right_shift
+function bright_shift
 ------------------------------------------------------------------
 with(x:%integer, y:%integer) do return escape
 "
@@ -79,5 +79,29 @@ x_val = state.symbol_table.lookup_sym('x')
 y_val = state.symbol_table.lookup_sym('y')
 
 __retval__ = ('integer', x_val[1] >> y_val[1])
+"
+end
+
+------------------------------------------------------------------
+function bcomplement
+------------------------------------------------------------------
+with(x:%integer) do return escape
+"
+global __retval__
+x_val = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('integer', ~x_val)
+"
+end
+
+------------------------------------------------------------------
+function bcomplement
+------------------------------------------------------------------
+with(x:%integer) do return escape
+"
+global __retval__
+x_val = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('integer', ~x_val)
 "
 end
