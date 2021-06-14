@@ -1,14 +1,176 @@
-# Reference Guide (Endnotes)
+# Reference Guide
+
+## User Guide Language Features 
+(insert text here)
+
+## Asteroid Modules
+(insert text about **Hash, IO, Math, Pick, Random, Set, Sort, Stream, Util, & Vector** here)
+
+## Asteroid Built-ins
+
+(insert text about **lists, strings, etc** here. See Dataframe Module for more info)
+
+## Asteroid Grammar (written in EBNF/PEG Format)
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+// (c) Lutz Hamel, University of Rhode Island  //
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+### Statements
 
 
-Here is a snippet from the Asteroid EBNF grammar that shows the control statements in terms of the non-terminal `stmt`,
-```
-stmt := FOR pattern IN exp DO stmt_list END
+      prog
+        : stmt_list
+
+      stmt_list
+        : stmt*
+
+
+    stmt
+      : '.' // NOOP
+      | LOAD SYSTEM? STRING '.'?
+      | GLOBAL id_list '.'?
+      | NONLOCAL id_list '.'?
+      | ASSERT exp '.'?
+      | STRUCTURE ID WITH struct_stmts END
+      | LET pattern '=' exp '.'?
+      | LOOP DO? stmt_list END
+      | FOR pattern IN exp DO stmt_list END
+      | WHILE exp DO stmt_list END
+      | REPEAT DO? stmt_list UNTIL exp '.'?
+      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
+      | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
+      | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
+      | THROW exp '.'?
+      | BREAK '.'?
+      | RETURN exp? '.'?
+      | function_def
+      | call_or_index '.'?  
+  
+### Grammar Snippet of Control Statements in terms of the Non-Terminal `stmt`
+
+
+     stmt := FOR pattern IN exp DO stmt_list END
      | WHILE exp DO stmt_list END
      | REPEAT DO? stmt_list UNTIL exp '.'?
      | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
      | TRY stmt_list (CATCH pattern DO stmt_list)+ END
      | THROW exp '.'?
      | BREAK '.'?
-```
 
+### More General Statements
+
+
+     function_def
+       : FUNCTION ID body_defs END
+
+     body_defs
+       : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+
+     data_stmt
+       : DATA ID
+
+     struct_stmt
+       : data_stmt  '.'?
+       | function_def '.'?
+       | '.'
+
+     struct_stmts
+       : struct_stmt*
+
+     id_list
+       : ID (',' ID)*
+
+### Expressions/Patterns
+
+////////////////////////////////////////////////////////////////////////////////////////
+
+// NOTE: There is no syntactic difference between a pattern                           //
+
+// and an expression. We introduce the 'pattern' nonterminal                          //
+
+// to highlight the SEMANTIC difference between patterns and                          //
+
+// expressions. ////////////////////////////////////////////////////////////////////////
+
+
+     pattern
+       : exp
+
+     exp
+       : quote_exp
+
+     quote_exp
+       : QUOTE head_tail
+       | PATTERN WITH? head_tail
+       | head_tail
+
+     head_tail
+       : conditional ('|' exp)?
+
+     conditional
+       : compound
+           (
+              (CMATCH exp) |   // CMATCH == '%'IF
+              (IF exp ELSE exp)
+           )?
+
+     compound
+        : logic_exp0
+            (
+               (IS pattern) |
+               (IN exp) |               // exp has to be a list
+               (TO exp (STEP exp)?) |   // list comprehension
+            )?
+
+     logic_exp0
+       : logic_exp1 (OR logic_exp1)*
+
+     logic_exp1
+        : rel_exp0 (AND rel_exp0)*
+
+     rel_exp0
+       : rel_exp1 (('==' | '=/=' ) rel_exp1)*
+
+     rel_exp1
+       : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
+
+     arith_exp0
+       : arith_exp1 (('+' | '-') arith_exp1)*
+
+     arith_exp1
+       : call_or_index (('*' | '/') call_or_index)*
+
+     call_or_index
+       : primary (primary | '@' primary)*
+
+     primary
+       : INTEGER
+       | REAL
+       | STRING
+       | TRUE
+       | FALSE
+       | NONE
+       | ID (':' pattern)?  // named pattern when ': pattern' exists
+       | '*' ID         // "dereference" a variable during pattern matching
+       | NOT call_or_index
+       | MINUS call_or_index
+       | ESCAPE STRING
+       | EVAL primary
+       | '(' tuple_stuff ')' // tuple/parenthesized expr
+       | '[' list_stuff ']'  // list or list access
+       | function_const
+       | TYPEMATCH           // TYPEMATCH == '%'<typename>
+
+     tuple_stuff
+       : exp (',' exp?)*
+       | empty
+
+     list_stuff
+       : exp (',' exp)*
+       | empty
+
+     function_const
+       : LAMBDA body_defs
