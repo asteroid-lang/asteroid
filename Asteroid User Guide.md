@@ -96,23 +96,30 @@ at the command prompt.
 
 ## The Basics
 
-As with most languages we are familiar with, Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**:
+As with most languages we are familiar with, Asteroid has **variables** (alpha-numeric symbols starting with an alpha character) and **constants**.  Constants are available for all the **primitive data types**,
 
-* `integer`
-* `real`
-* `string`
-* `boolean`
+* `integer`, e.g. `1024`
+* `real`, e.g. `1.75`
+* `string`, e.g. `"Hello, World!"`
+* `boolean`, e.g. `true`
 
-Asteroid arranges these data types in a **type hierarchy** in order to facilitate automatic type promotion:
+Asteroid arranges these data types in a **type hierarchy**,
 
 `boolean` < `integer` < `real` < `string`
+
+Type hierarchies facilitate automatic type promotion.  Here is an example
+where automatic type promotion is used to put together a string from different data types,
+```
+let x:%string = "value: " + 1.
+```
+Here we associate the string `"value: 1"` with the variable `x` by first promoting the integer value `1` to the string `"1"` using the fact that `integer` < `string`  according to our type hierarchy  and then interpreting the `+` operator as a string concatenation operator.
 
 Asteroid supports two more data types:
 
 * `list`
 * `tuple`
 
-These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists and enclosed by parentheses for tuples. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.`(<something>,)`. Furthermore, the null-tuple `()` actually belongs to a different data type as we will see below.
+These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists, e.g. `[1,2,3]`, and enclosed by parentheses for tuples, e.g. `(x,y)`. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.`(3,)`.
 Here are some examples,
 ```
 let a = [1,2,3].  -- this is a list
@@ -127,16 +134,20 @@ Lists and tuples themselves are also embedded in type hierarchies, although very
 * `list` < `string`
 * `tuple` < `string`
 
-That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples.
+That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples,
+```
+load system "io".
+println ("this is my list: " + [1,2,3]).
+```
 
 Finally, Asteroid supports one more type, namely the `none` type.  The `none` type has
-only one member: A constant named conveniently `none`.  As mentioned above, the null-tuple is of this type and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  That is, the following `let` statements will succeed,
+only one member: A constant named conveniently `none`.  The null-tuple belongs to this type (rather than the tuple type discussed earlier) and therefore the constant `()` can often be used as a convenient short hand for the constant `none`.  That is, the following `let` statements will succeed,
 ```
 let none = ().
 let () = none.
 ```
 meaning that the constants `()` and `none` are equivalent and pattern-match each other.
-The `none` data type itselft does not belong to any type hierarchy.
+The `none` data type itself does not belong to any type hierarchy.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a `--` symbol and continue till the end of the line.  You probably also figured out that the `let` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different.
 
