@@ -5,7 +5,13 @@
 
 ## Asteroid Built-ins
 
-(insert text about **lists, strings, etc** here. See Dataframe Module for more info)
+A **built-in function,** also called an **intrinsic function,** can complete a given task directly within a language. Asteroid includes built-ins such as lists and strings. 
+
+As mentioned in [this section of the User Guide](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/Asteroid%20User%20Guide.md#the-basics), a **list** is a structured data type that consists of square brackets enclosing comma-separated values. Lists can be modified after their creation.
+
+A **string** is a sequence of characters that can be used as a variable or a literal constant.
+
+More information about the functions that lists and strings contribute to can be found in the [Prologue.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast).
 
 ## Asteroid Modules
 
