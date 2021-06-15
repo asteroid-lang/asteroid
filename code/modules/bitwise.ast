@@ -160,3 +160,16 @@ final = (x_val & (~(1 << i_val - 1)))
 __retval__ = ('integer' , final)
 "
 end
+
+------------------------------------------------------------------
+-- Get the bit size 
+function bsize
+------------------------------------------------------------------
+with(x:%integer) do return escape
+"
+global __retval__
+x_val = state.symbol_table.lookup_sym('x')[1]
+
+__retval__ = ('integer', x_val.bit_length())
+"
+end

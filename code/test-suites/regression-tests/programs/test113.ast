@@ -11,3 +11,4 @@ assert(blrotate(242, 1) == 229).
 assert(brrotate(242, 1) == 121).
 assert(bsetbit(10,2) == 14).
 assert(bclearbit(5,1) == 4).
+assert(bsize(8) == 4).
