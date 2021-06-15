@@ -4,6 +4,10 @@ load "bitwise".
 assert(band(2,4) == 0).
 assert(bor(2,4)  == 6).
 assert(bnot(2)   == -3).
-assert(bright_shift(32,2) == 8).
-assert(bleft_shift(2,4)   == 32).
-assert(bcomplement(16) == -17).
+assert(bxor(15,3) == 12).
+assert(brshift(32,2) == 8).
+assert(blshift(2,4)   == 32).
+assert(blrotate(242, 1) == 229).
+assert(brrotate(242, 1) == 121).
+assert(bsetbit(10,2) == 14).
+assert(bclearbit(5,1) == 4).
