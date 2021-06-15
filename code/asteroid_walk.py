@@ -912,12 +912,12 @@ def try_stmt(node):
         inst_val = inst
 
     except Exception as inst:
-        # mapping general Python exceptions into Asteroid's SystemException
+        # mapping general Python exceptions into Asteroid's SystemError
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
                          ('object-memory',
                           ('list',
-                           [('string', 'SystemException'),
+                           [('string', 'SystemError'),
                             ('string', str(inst))])))
         inst_val = inst
 
