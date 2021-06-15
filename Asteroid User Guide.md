@@ -816,6 +816,77 @@ As before, the output is `S(S(S(S(S(0)))))`.
 
 This section will give further information on how to solve **exceptions,** or unexpected conditions that break the regular flow of execution.
 
+System exceptions are now visible to the user at the Asteroid level as Exception objects with the following structure,
+
+
+    structure Exception with
+       data kind.
+       data value.
+       end
+
+
+The kind field will be populated with one of the following strings,
+* `PatternMatchFailed`
+* `RedundantPatternFound`
+* `ArithmeticError` -- e.g. division by zero
+* `FileNotFound` -- encodes the Python `FileNotFoundError` exception
+* `SystemError` -- everything else raised by Python
+
+The `value` field holds a string with some exception details. The exceptions can be caught as follows, e.g.
+
+    load system "io".
+
+    try
+      let x = 1/0.
+    catch Exception("ArithmeticError", s) do
+      println s.
+    end
+
+
+The user is still allowed to construct user level exceptions with any kind of object including tuples and lists,
+
+    load system "io".
+
+    try
+      throw ("funny exception", 42).
+    catch ("funny exception", v) do
+      println v.
+    end
+
+Asteroid provides a predefined `Error` object for user level exceptions,
+
+    load system "io".
+
+    try
+      throw Error("something worth throwing").
+    catch Error(s) do
+      println s.
+    end
+
+
+If you don't care what kind of exception you catch, you need to use a `wildcard` or a variable.  Here is an example using a `wildcard`,
+
+
+    load system "io".
+
+    try
+      let (x,y) = (1,2,3).
+    catch _ do
+      println "something happened".
+    end
+
+Here is an example using a variable,
+
+    load system "io".
+    load system "util".
+
+    try
+      let (x,y) = (1,2,3).
+    catch e do
+      println ("something happened: "+tostring(e)).
+    end
+
+
 ## Escaping Asteroid
 
 The Asteroid interpreter is written in Python and the `escape` expression gives the user full access to the Python ecosystem from within Asteroid code.  In particular it gives the user access to the interpreter internals making it easy to write interpreter extensions.  The following example shows one way to incorporate graphics into Asteroid programs,
