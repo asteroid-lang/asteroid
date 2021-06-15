@@ -9,9 +9,28 @@
 ------------------------------------------------------------------
 structure Error
 ------------------------------------------------------------------
--- use this structure to throw error exceptions
-  with
+-- convenient user level exceptions
+with
   data err_val.
+  function __init__
+    with val do
+      let this @err_val = val.
+    end
+  end
+
+------------------------------------------------------------------
+structure Exception
+------------------------------------------------------------------
+-- asteroid's standard exception structure.
+-- note: both the kind and the val fields have to be given
+with
+  data kind.
+  data val.
+  function __init__
+    with (kind:%string,val) do
+      let this @kind = kind.
+      let this @val = val.
+    end
   end
 
 ------------------------------------------------------------------

@@ -864,6 +864,9 @@ def try_stmt(node):
         walk(try_stmts)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
+    # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
+    #       by constructing Exception objects - see prologue.ast
+
     except ThrowValue as inst:
         except_val = inst.value
         inst_val = inst
@@ -873,15 +876,49 @@ def try_stmt(node):
         raise inst
 
     except PatternMatchFailed as inst:
-        # convert a Python string to an Asteroid string
-        except_val = ('tuple',
-                      [('string', 'PatternMatchFailed'), ('string', inst.value)])
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'PatternMatchFailed'),
+                            ('string', inst.value)])))
+        inst_val = inst
+
+    except RedundantPatternFound as inst:
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'RedundantPatternFound'),
+                            ('string', str(inst))])))
+        inst_val = inst
+
+    except ArithmeticError as inst:
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'ArithmeticError'),
+                            ('string', str(inst))])))
+        inst_val = inst
+
+    except FileNotFoundError as inst:
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'FileNotFound'),
+                            ('string', str(inst))])))
         inst_val = inst
 
     except Exception as inst:
-        # convert exception args to an Asteroid string
-        except_val = ('tuple',
-                      [('string', 'Exception'), ('string', str(inst))])
+        # mapping general Python exceptions into Asteroid's SystemError
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'SystemError'),
+                            ('string', str(inst))])))
         inst_val = inst
 
     else:
