@@ -199,6 +199,14 @@ The output is: `[[1,2,3],[4,0,6],[7,8,9]]`
 
 **NOTE**: At this point slicing is not supported on the left side of a `let` statement.
 
+### Tuples
+
+The `tuple` is another important data structure that can be found in Asteroid.
+
+`Tuples` as well as `lists` are considered objects with member functions, e.g. `[1,2,3] @ reverse()`.
+
+It is also important to note that `structures` can have member functions giving rise to object-oriented programming.
+
 ### Custom Data Structures using `structure`
 
 You can introduce custom data structures using the `structure` keyword.  These custom data structures differ from lists in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are introducing a new type into your program.  We should mention that Asteroid creates
