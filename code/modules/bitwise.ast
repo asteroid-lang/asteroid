@@ -99,10 +99,9 @@ x_val = state.symbol_table.lookup_sym('x')[1]
 i_val = state.symbol_table.lookup_sym('i')[1]
 
 # Convert the number to an array of bits
-bitarr = list(str(bin(x_val)))[2:]
+bitstr = bin(x_val)[2:]
 
-final = bitarr[i_val:] + bitarr[:i_val]
-final = ''.join(final)
+final = bitstr[i_val:] + bitstr[:i_val]
 final = int(final, 2)
 
 __retval__ = ('integer', final)
@@ -120,11 +119,10 @@ x_val = state.symbol_table.lookup_sym('x')[1]
 i_val = state.symbol_table.lookup_sym('i')[1]
 
 # Convert the number to an array of bits
-bitarr = list(str(bin(x_val)))[2:]
+bitstr = bin(x_val)[2:]
 
 # Use the negative of the index for the right rotation
-final = bitarr[-i_val:] + bitarr[:-i_val]
-final = ''.join(final)
+final = bitstr[-i_val:] + bitstr[:-i_val]
 final = int(final, 2)
 
 __retval__ = ('integer', final)
