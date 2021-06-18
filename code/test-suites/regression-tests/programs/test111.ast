@@ -8,4 +8,3 @@ function foo
 		end
 
 println(entries @map(foo)). 
-
