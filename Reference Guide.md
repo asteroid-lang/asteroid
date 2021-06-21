@@ -79,7 +79,7 @@
         
 #### Expressions/Patterns
 
-NOTE: There is no syntactic difference between a pattern and an expression. We introduce the 'pattern' nonterminal to highlight the SEMANTIC difference between patterns and expressions. 
+NOTE: There is no syntactic difference between a pattern and an expression. We introduce the `pattern` nonterminal to highlight the SEMANTIC difference between patterns and expressions. 
 
       pattern
          : exp
@@ -165,12 +165,60 @@ A **built-in function,** also called an **intrinsic function,** can complete a g
 * Function `inherit` lets users contruct an inheritance hierarchy by directly manipulating the structure types. For example, it can change an inputted string into a list.
 * Function `__list_extend__` will extend a list by adding all the items from the item where `item` is either a list, a string, or a tuple. The function can be called with the input `(self:%list,item)`, granted that `item_val[0]` is found in a list, string, or a tuple.
 * Function `__list_join__` converts an Asteroid list into a Python list. The function can be called with the input `(self:%list,join:%string)`.
+* Function `__string_split__`, given the input `(self:%string,sep:%string,count:%integer)`, will return a list of the words in a given string, using `sep` as the delimiter string.
 
 As mentioned in [this section of the User Guide](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/Asteroid%20User%20Guide.md#the-basics), a **list** is a structured data type that consists of square brackets enclosing comma-separated values. Lists can be modified after their creation.
 
 **The following member functions only support lists,**
 
-(???)
+* Function `islist`, given the input item `do`, returns the item `is %list`.
+* The following `list_member_functions`,
+
+      escape
+      "
+      global list_member_functions
+
+      list_member_functions.update({
+          'length'    : '__list_length__',
+          'append'    : '__list_append__',
+          'extend'    : '__list_extend__',
+          'insert'    : '__list_insert__',
+          'remove'    : '__list_remove__',
+          'pop'       : '__list_pop__',
+          'clear'     : '__list_clear__',
+          'index'     : '__list_index__',
+          'count'     : '__list_count__',
+          'sort'      : '__list_sort__',
+          'reverse'   : '__list_reverse__',
+          'copy'      : '__list_copy__',
+          'shuffle'   : '__list_shuffle__',
+          'map'       : '__list_map__',
+          'reduce'    : '__list_reduce__',
+          'filter'    : '__list_filter__',
+          'member'    : '__list_member__',
+          'join'      : '__list_join__',
+          })
+      ".
+
+(For implementation details, see Python lists [here](https://docs.python.org/3/tutorial/datastructures.html).)
+
+* Function `__list_length__`, given the input `self:%list`, returns the number of characters within that list.
+* Function `__list_append__`, given `(self:%list,item)`, adds an item to the end of a list.
+* Function `__list_extend__`, given `(self:%list,item)`, will extend the list by adding all the items from the item where `item` is either a list, a string or a tuple.
+* Function `__list_insert__`, given `(self:%list,ix:%integer,item)`, will insert an item at a given position. The first argument is the index of the element before which to insert, so `a@insert(0, x)` inserts at the front of the list, and `a@insert(a@length(), x)` is equivalent to `a@append(x)`.
+* Function `__list_remove__`, given `(self:%list,item)`, removes the first element from the list whose value is equal to `item.` It raises a ValueError if there is no such item.
+* Function `__list_pop__`, given `(self:%list,ix:%integer)`, removes the item at the given position in the list and returns it. If no index is specified,`a@pop()` removes and returns the last item in the list.
+* Function `__list_clear__`, given `self:%list`, removes all items from the list.
+* Function `__list_index__`, given `(self:%list,item,startix:%integer,endix:%integer)`, returns a zero-based index in the list of the first element whose value is equal to `item`. Raises a ValueError exception if there is no such item. The optional arguments `startix` and `endix` are interpreted as in the slice notation and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the `startix` argument.
+* Function `__list_count__`, given `(self:%list,item)`, returns the number of times `item` appears in the list.
+* Function `__list_sort__`, given `(self:%list,reverse:%boolean)`, sorts the items of the list in place.
+* Function `__list_reverse__`, given `self:%list`, reverses the elements of the list in place.
+* Function `__list_copy__`, given `self:%list`, makes a shallow copy of the list.
+* Function `__list_shuffle__`, given `self:%list`, returns a random permutation of a given list - in place!
+* Function `__list_map__`, given `(self:%list,f:%function)`, applies `f` to each element of the list.
+* Function `__list_reduce__` can be called with two different inputs: `(self:%list,f:%function)` or `(self:%list,f:%function,init)`.
+* Function `__list_filter__`, given `(self:%list,f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of input list that are false are removed.
+* Function `__list_member__`, given `(self:%list,item)`, returns `true` only if `self @count(item) > 0`.
 
 A **string** is a sequence of characters that can be used as a variable or a literal constant.
 
@@ -200,6 +248,10 @@ A **string** is a sequence of characters that can be used as a variable or a lit
 * Function `__string_explode__`, given the input `self:%string`, elongates that string.
 * Function `__string_trim__`, given the input `(self:%string,what:%string)`, returns a copy of the string with the leading and trailing characters removed. The what argument is a string specifying the set of characters to be removed. If omitted or none, the what argument defaults to removing whitespace. The what argument is not a prefix or suffix; rather, all combinations of its values are stripped.
 * Function `__string_replace__`, given the input `(self:%string,old:%string,new:%string,count:%integer)`, will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced.
+* Function `__string_toupper__`, given the input `self:%string`, converts all the lowercase letters in a string to uppercase.
+* Function `__string_tolower__`, given the input `self:%string`, converts all the uppercase letters in a string to lowercase.
+* Function `__string_index__`can be called with three different inputs: `(self:%string,item:%string,startix:%integer,endix:%integer)`, `(self:%string,item:%string,startix:%integer)`, or `(self:%string,item:%string)`. This function allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
+* Function `__string_flip__` explodes, reverses, and joins the given input `self:%string`.
 
 More information about the functions that `lists` and `strings` contribute to can be found in the [Prologue.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast).
 
