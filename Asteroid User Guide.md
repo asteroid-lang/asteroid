@@ -201,11 +201,42 @@ The output is: `[[1,2,3],[4,0,6],[7,8,9]]`
 
 ### Tuples
 
-The `tuple` is another important data structure that can be found in Asteroid.
+The `tuple` is another fundamental, built-in data structure that can be found in Asteroid.
 
-`Tuples` as well as `lists` are considered objects with member functions, e.g. `[1,2,3] @ reverse()`.
+Below is an example of a tuple declaration and access.
 
-It is also important to note that `structures` can have member functions giving rise to object-oriented programming.
+```
+load system "io".       -- load the io module so we can print
+let a = (1,2,3).  	-- construct tuple a
+let b = a @1.	  	-- access the second element in tuple a
+println b.     		-- print the element to the console
+```
+Like `lists`, `tuples` may also be nested,
+```
+load system "io".
+-- build a 2-D array
+let b = (("a","b","c"),
+         ("d","e","f"),
+         ("g","h","i")).
+-- Access an element in the nested structure.
+println(b @1 @1).
+```
+Unlike `lists`, `tuples` are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new `tuple`. The following code block demonstrates this,
+```
+load system "io".
+-- build a tuple
+let b = ("a","b","c").
+-- attempt to modify an element in the tuple
+try
+    let b @1 = "z".
+catch Exception(kind,s) do
+    println(s).
+end.
+```
+Which will print "'tuple' is not mutable a structure." to the console.
+`Tuples` also do not have access to the many different methods that are provided for the `list` structure. While the `list` structure may seem like the more attractive option to a developer due to its mutability and function suite, tuples offer better access times, consume less memory, and may even make debugging easier due to their immutability.
+
+`Tuples` as well as `lists` are considered objects with member functions, e.g. `[1,2,3] @ reverse()`. It is also important to note that `structures` can have member functions giving rise to object-oriented programming.
 
 ### Custom Data Structures using `structure`
 
