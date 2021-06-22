@@ -9,9 +9,28 @@
 ------------------------------------------------------------------
 structure Error
 ------------------------------------------------------------------
--- use this structure to throw error exceptions
-  with
+-- convenient user level exceptions
+with
   data err_val.
+  function __init__
+    with val do
+      let this @err_val = val.
+    end
+  end
+
+------------------------------------------------------------------
+structure Exception
+------------------------------------------------------------------
+-- asteroid's standard exception structure.
+-- note: both the kind and the val fields have to be given
+with
+  data kind.
+  data val.
+  function __init__
+    with (kind:%string,val) do
+      let this @kind = kind.
+      let this @val = val.
+    end
   end
 
 ------------------------------------------------------------------
@@ -275,12 +294,12 @@ list_member_functions.update({
 ------------------------------------------------------------------
 function __list_length__
 ------------------------------------------------------------------
-with self:%list do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('integer', len(self_val[1]))
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('integer', len(this_val[1]))
 "
 end
 
@@ -288,15 +307,15 @@ end
 function __list_append__
 ------------------------------------------------------------------
 -- Add an item to the end of the list.
-with (self:%list,item) do return escape
+with item do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-self_val[1].append(item_val)
-__retval__ = self_val
+this_val[1].append(item_val)
+__retval__ = this_val
 "
 end
 
@@ -306,18 +325,18 @@ function __list_extend__
 -- Extend the list by appending all the items
 -- from the item where item is either a list,
 -- a string or a tuple.
-with (self:%list,item) do return escape
+with item do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
 if item_val[0] not in ['list', 'string', 'tuple']:
     raise ValueError('extend expected a list, string, or tuple, got {}'
                 .format(item_val[0]))
 
-__retval__ = ('list', self_val[1].extend(item_val[1]))
+__retval__ = ('list', this_val[1].extend(item_val[1]))
 "
 end
 
@@ -329,15 +348,15 @@ function __list_insert__
 -- which to insert, so a@insert(0, x) inserts at the
 -- front of the list, and a@insert(a@length(), x) is
 -- equivalent to a@append(x).
-with (self:%list,ix:%integer,item) do return escape
+with (ix:%integer,item) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 ix_val = state.symbol_table.lookup_sym('ix')
 item_val = state.symbol_table.lookup_sym('item')
 
-__retval__ = ('list', self_val[1].insert(ix_val[1],item_val))
+__retval__ = ('list', this_val[1].insert(ix_val[1],item_val))
 "
 end
 
@@ -347,14 +366,14 @@ function __list_remove__
 -- Remove the first element from the list whose
 -- value is equal to item. It raises a ValueError
 -- if there is no such item.
-with (self:%list,item) do return escape
+with item do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-__retval__ = ('list', self_val[1].remove(item_val))
+__retval__ = ('list', this_val[1].remove(item_val))
 "
 end
 
@@ -364,21 +383,21 @@ function __list_pop__
 -- Remove the item at the given position in
 -- the list, and return it. If no index is specified,
 -- a@pop() removes and returns the last item in the list.
-with (self:%list,ix:%integer) do return escape
+with ix:%integer do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 ix_val = state.symbol_table.lookup_sym('ix')
 
-__retval__ = ('list', self_val[1].pop(ix_val[1]))
+__retval__ = ('list', this_val[1].pop(ix_val[1]))
 "
-orwith self:%list do return escape
+orwith none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('list', self_val[1].pop())
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('list', this_val[1].pop())
 "
 end
 
@@ -386,12 +405,12 @@ end
 function __list_clear__
 ------------------------------------------------------------------
 -- Remove all items from the list.
-with self:%list do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('list', self_val[1].clear())
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('list', this_val[1].clear())
 "
 end
 
@@ -404,37 +423,37 @@ function __list_index__
 -- notation and are used to limit the search to a particular subsequence of
 -- the list. The returned index is computed relative to the beginning of the
 -- full sequence rather than the startix argument.
-with (self:%list,item,startix:%integer,endix:%integer) do return escape
+with (item,startix:%integer,endix:%integer) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 startix_val = state.symbol_table.lookup_sym('startix')
 endix_val = state.symbol_table.lookup_sym('endix')
 
-__retval__ = ('integer', self_val[1].index(item_val,
+__retval__ = ('integer', this_val[1].index(item_val,
                             startix_val[1],
                             endix_val[1]))
 "
-orwith (self:%list,item,startix:%integer) do return escape
+orwith (item,startix:%integer) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 startix_val = state.symbol_table.lookup_sym('startix')
 
-__retval__ = ('integer', self_val[1].index(item_val, startix_val[1]))
+__retval__ = ('integer', this_val[1].index(item_val, startix_val[1]))
 "
-orwith (self:%list,item) do return escape
+orwith item do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-__retval__ = ('integer', self_val[1].index(item_val))
+__retval__ = ('integer', this_val[1].index(item_val))
 "
 end
 
@@ -442,14 +461,14 @@ end
 function __list_count__
 ------------------------------------------------------------------
 -- Return the number of times item appears in the list.
-with (self:%list,item) do return escape
+with item do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-__retval__ = ('integer', self_val[1].count(item_val))
+__retval__ = ('integer', this_val[1].count(item_val))
 "
 end
 
@@ -457,23 +476,23 @@ end
 function __list_sort__
 ------------------------------------------------------------------
 -- Sort the items of the list in place
-with (self:%list,reverse:%boolean) do return escape
+with (reverse:%boolean) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 reverse_val = state.symbol_table.lookup_sym('reverse')
 
-self_val[1].sort(reverse=reverse_val[1])
-__retval__ = self_val
+this_val[1].sort(reverse=reverse_val[1])
+__retval__ = this_val
 "
-orwith self:%list do return escape
+orwith none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-self_val[1].sort()
-__retval__ = self_val
+this_val = state.symbol_table.lookup_sym('this')
+this_val[1].sort()
+__retval__ = this_val
 "
 end
 
@@ -481,13 +500,13 @@ end
 function __list_reverse__
 ------------------------------------------------------------------
 -- Reverse the elements of the list in place.
-with self:%list do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-self_val[1].reverse()
-__retval__ = self_val
+this_val = state.symbol_table.lookup_sym('this')
+this_val[1].reverse()
+__retval__ = this_val
 "
 end
 
@@ -495,9 +514,9 @@ end
 function __list_copy__
 ------------------------------------------------------------------
 -- make a shallow copy of the list
-with self:%list do
+with none do
   let new_list = [].
-  for e in self do
+  for e in this do
     let new_list = new_list + [e].
   end
   return new_list.
@@ -507,14 +526,14 @@ end
 function __list_shuffle__
 ------------------------------------------------------------------
 -- return a random permutation of a given list - in place!
-with self:%list do return escape
+with none do return escape
 "
 global __retval__
 import random
 
-self_val = state.symbol_table.lookup_sym('self')
-random.shuffle(self_val[1])
-__retval__ = self_val
+this_val = state.symbol_table.lookup_sym('this')
+random.shuffle(this_val[1])
+__retval__ = this_val
 "
 end
 
@@ -522,9 +541,9 @@ end
 function __list_map__
 ------------------------------------------------------------------
 -- Apply f to each element of the list
-with (self:%list,f:%function) do
+with f:%function do
     let r = [].
-    for i in self do
+    for i in this do
         r @append(f i).
     end
     return r.
@@ -534,16 +553,16 @@ end
 function __list_reduce__
 ------------------------------------------------------------------
 -- Note: first arg to f is the accumulator
-with (self:%list,f:%function) do
-    let value = self@0.
-    for i in 1 to self@length()-1 do
-        let value = f(value,self@i).
+with f:%function do
+    let value = this@0.
+    for i in 1 to this@length()-1 do
+        let value = f(value,this@i).
     end
     return value.
-orwith (self:%list,f:%function,init) do
+orwith (f:%function,init) do
     let value = init.
-    for i in 0 to self@length()-1 do
-        let value = f(value,self@i).
+    for i in 0 to this@length()-1 do
+        let value = f(value,this@i).
     end
     return value.
 end
@@ -554,9 +573,9 @@ function __list_filter__
 -- Construct an output list from those elements of the list for which
 -- f returns true. If f is none, the identity function is assumed,
 -- that is, all elements of input list that are false are removed.
-with (self:%list,f:%function) do
+with f:%function do
     let out = [].
-    for e in self do
+    for e in this do
         let out = out+([e] if f(e) else []).
     end
     return out.
@@ -565,8 +584,8 @@ end
 ------------------------------------------------------------------
 function __list_member__
 ------------------------------------------------------------------
-with (self:%list,item) do
-    if self @count(item) > 0 do
+with item do
+    if this @count(item) > 0 do
         return true.
     else do
         return false.
@@ -576,16 +595,16 @@ end
 ------------------------------------------------------------------
 function __list_join__
 ------------------------------------------------------------------
-with (self:%list,join:%string) do return escape
+with join:%string do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 join_val = state.symbol_table.lookup_sym('join')
 
 # convert Asteroid list into a Python list
 raw_list = []
-for (t,v) in self_val[1]:
+for (t,v) in this_val[1]:
   if t != 'string':
     raise ValueError('join: string list only')
   raw_list.append(v)
@@ -624,21 +643,21 @@ string_member_functions.update({
 ------------------------------------------------------------------
 function __string_length__
 ------------------------------------------------------------------
-with self:%string do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('integer', len(self_val[1]))
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('integer', len(this_val[1]))
 "
 end
 
 ------------------------------------------------------------------
 function __string_explode__
 ------------------------------------------------------------------
-with self:%string do
+with none do
   let l = [].
-  for c in self do
+  for c in this do
       let l = l+[c].
   end
   return l.
@@ -652,20 +671,20 @@ function __string_trim__
 -- the set of characters to be removed. If omitted or none, the what
 -- argument defaults to removing whitespace. The what argument is
 -- not a prefix or suffix; rather, all combinations of its values are stripped.
-with (self:%string,what:%string) do return escape
+with what:%string do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 what_val = state.symbol_table.lookup_sym('what')
-__retval__ = ('string', self_val[1].strip(what_val[1]))
+__retval__ = ('string', this_val[1].strip(what_val[1]))
 "
-orwith self:%string do return escape
+orwith none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('string', self_val[1].strip())
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('string', this_val[1].strip())
 "
 end
 
@@ -675,28 +694,28 @@ function __string_replace__
 -- Return a copy of the string with all occurrences of regular expression pattern
 -- old replaced by the string new. If the optional argument count is given,
 -- only the first count occurrences are replaced.
-with (self:%string,old:%string,new:%string,count:%integer) do return escape
+with (old:%string,new:%string,count:%integer) do return escape
 "
 global __retval__
 from re import sub
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 old_val = state.symbol_table.lookup_sym('old')
 new_val = state.symbol_table.lookup_sym('new')
 count_val = state.symbol_table.lookup_sym('count')
 
-__retval__ = ('string', sub(old_val[1], new_val[1], self_val[1], count_val[1]))
+__retval__ = ('string', sub(old_val[1], new_val[1], this_val[1], count_val[1]))
 "
-orwith (self:%string,old:%string,new:%string) do return escape
+orwith (old:%string,new:%string) do return escape
 "
 global __retval__
 from re import sub
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 old_val = state.symbol_table.lookup_sym('old')
 new_val = state.symbol_table.lookup_sym('new')
 
-__retval__ = ('string', sub(old_val[1], new_val[1],self_val[1]))
+__retval__ = ('string', sub(old_val[1], new_val[1],this_val[1]))
 "
 end
 
@@ -719,38 +738,38 @@ function __string_split__
 -- contain no empty strings at the start or end if the string has leading or trailing
 -- whitespace. Consequently, splitting an empty string or a string consisting of
 -- just whitespace with a None separator returns [].
-with (self:%string,sep:%string,count:%integer) do return escape
+with (sep:%string,count:%integer) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 sep_val = state.symbol_table.lookup_sym('sep')
 count_val = state.symbol_table.lookup_sym('count')
 
-raw_list = self_val[1].split(sep_val[1], count_val[1])
+raw_list = this_val[1].split(sep_val[1], count_val[1])
 ast_list = [('string',e) for e in raw_list]
 
 __retval__ = ('list', ast_list)
 "
-orwith (self:%string,sep:%string) do return escape
+orwith sep:%string do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 sep_val = state.symbol_table.lookup_sym('sep')
 
-raw_list = self_val[1].split(sep_val[1])
+raw_list = this_val[1].split(sep_val[1])
 ast_list = [('string',e) for e in raw_list]
 
 __retval__ = ('list', ast_list)
 "
-orwith self:%string do return escape
+orwith none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 
-raw_list = self_val[1].split()
+raw_list = this_val[1].split()
 ast_list = [('string',e) for e in raw_list]
 
 __retval__ = ('list', ast_list)
@@ -760,67 +779,67 @@ end
 ------------------------------------------------------------------
 function __string_toupper__
 ------------------------------------------------------------------
-with self:%string do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('string', self_val[1].upper())
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('string', this_val[1].upper())
 "
 end
 
 ------------------------------------------------------------------
 function __string_tolower__
 ------------------------------------------------------------------
-with self:%string do return escape
+with none do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
-__retval__ = ('string', self_val[1].lower())
+this_val = state.symbol_table.lookup_sym('this')
+__retval__ = ('string', this_val[1].lower())
 "
 end
 
 ------------------------------------------------------------------
 function __string_index__
 ------------------------------------------------------------------
-with (self:%string,item:%string,startix:%integer,endix:%integer) do return escape
+with (item:%string,startix:%integer,endix:%integer) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 startix_val = state.symbol_table.lookup_sym('startix')
 endix_val = state.symbol_table.lookup_sym('endix')
 
-val = self_val[1].find(item_val[1], startix_val[1], endix_val[1])
+val = this_val[1].find(item_val[1], startix_val[1], endix_val[1])
 if val == -1:
     __retval__ = ('none', None')
 else:
     __retval__ = ('integer', val)
 "
-orwith (self:%string,item:%string,startix:%integer) do return escape
+orwith (item:%string,startix:%integer) do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 startix_val = state.symbol_table.lookup_sym('startix')
 
-val = self_val[1].find(item_val[1], startix_val[1])
+val = this_val[1].find(item_val[1], startix_val[1])
 if val == -1:
     __retval__ = ('none', None)
 else:
     __retval__ = ('integer',val)
 "
-orwith (self:%string,item:%string) do return escape
+orwith item:%string do return escape
 "
 global __retval__
 
-self_val = state.symbol_table.lookup_sym('self')
+this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-val = self_val[1].find(item_val[1])
+val = this_val[1].find(item_val[1])
 if val == -1:
     __retval__ = ('none', None)
 else:
@@ -831,8 +850,8 @@ end
 ------------------------------------------------------------------
 function __string_flip__
 ------------------------------------------------------------------
-with self:%string do
-    return self @explode()
+with none do
+    return this @explode()
                 @reverse()
                 @join("").
 end
