@@ -24,7 +24,6 @@ def display_help():
     print(" -l    disable prologue flag")
     print(" -h    display help flag")
     print(" -r    redundant pattern dectector")
-    print(" -e    show full exceptions")
 
 
 # defaults for the flags - when the flag is set on the command line
@@ -37,8 +36,7 @@ flags = {
     '-p' : False, # generate pstats flag
     '-l' : True,  # prologue flag
     '-h' : False, # display help flag
-    '-r' : True,  # redundant pattern dectector
-    '-e' : False, # show full exceptions
+    '-r' : True, # redundant pattern dectector
 }
 
 flag_names = list(flags.keys())
@@ -79,7 +77,6 @@ interp_object = \
        tree_dump=flags['-t'],
        do_walk=flags['-w'],
        symtab_dump=flags['-s'],
-       exceptions=flags['-e'],
        prologue=flags['-l'])'''
 
 if flags['-p']:

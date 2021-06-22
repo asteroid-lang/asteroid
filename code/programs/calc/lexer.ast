@@ -8,30 +8,30 @@ structure Lexer with
   data token_stream.
 
   function get
-    with none do
-      return this @token_stream @get().
+    with self do
+      return self @token_stream @get().
     end
 
   function next
-    with none do
-      this @token_stream @next().
+    with self do
+      self @token_stream @next().
     end
 
   function peek
-    with none do
-      return this @token_stream @peek().
+    with self do
+      return self @token_stream @peek().
     end
 
   function eof
-    with none do
-      return this @token_stream @eof().
+    with self do
+      return self @token_stream @eof().
     end
 
   function token_match
-    with (token_type) do
-      let token = this @token_stream @get().
+    with (self,token_type) do
+      let token = self @token_stream @get().
       if token @type == token_type do
-        this @token_stream @next().
+        self @token_stream @next().
       else do
         throw Error("expected token "+token_type+" got "+token @type).
       end

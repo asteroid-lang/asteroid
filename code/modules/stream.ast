@@ -18,17 +18,17 @@ data stream.
 data curr_ix.
 
 function __init__
-  with stream:%list do
-    let this @stream = stream @copy(). -- shallow copy of input list
-    let this @curr_ix = 0.
-  orwith none do
-    let this @stream = [].
-    let this @curr_ix = 0.
+  with (self, stream:%list) do
+    let self @stream = stream @copy(). -- shallow copy of input list
+    let self @curr_ix = 0.
+  orwith self do
+    let self @stream = [].
+    let self @curr_ix = 0.
   end
 
 function eof
-  with none do
-    if this @curr_ix == this @stream @length() do
+  with self do
+    if self @curr_ix == self @stream @length() do
       return true.
     else do
       return false.
@@ -36,58 +36,58 @@ function eof
   end
 
 function peek
-  with none do
-    if this @eof() do
+  with self do
+    if self @eof() do
       return none.
     else do
-      return this @stream @(this @curr_ix).
+      return self @stream @(self @curr_ix).
     end
   end
 
 function next
-  with none do
-    if this @eof() do
+  with self do
+    if self @eof() do
       return none.
     else do
-      let this @curr_ix = this @curr_ix + 1.
+      let self @curr_ix = self @curr_ix + 1.
     end
   end
 
 function get
-  with none do
-    return this @peek().
+  with self do
+    return self @peek().
   end
 
 function rewind
-  with none do
-    let this @curr_ix = 0.
+  with self do
+    let self @curr_ix = 0.
   end
 
 function map
-  with f do
-    for i in 0 to this @stream @length()-1 do
-      let this @stream @i = f(this @stream @i).
+  with (self,f) do
+    for i in 0 to self @stream @length()-1 do
+      let self @stream @i = f(self @stream @i).
     end
   end
 
 function append
-  with item do
-    this @stream @append(item).
+  with (self,item) do
+    self @stream @append(item).
   end
 
 function __string__
-with none do return
+with self do return
 escape
 "
 from asteroid_state import state
 global __retval__
 
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 __retval__ = ('string', term2string(memory[0]))
 "

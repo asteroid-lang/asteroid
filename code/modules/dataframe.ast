@@ -15,19 +15,19 @@ data df.
 ------------------------------------------------------------------
 function read_csv
 ------------------------------------------------------------------
-with (file,header_row) do escape
+with (self,file,header_row) do escape
 "
 from asteroid_state import state
 import pandas
 
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 file_val = state.symbol_table.lookup_sym('file')
 header_row_val = state.symbol_table.lookup_sym('header_row')
 
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 # read as Pandas dataframe
 df = pandas.read_csv(file_val[1], header=0 if header_row_val[1] else None)
@@ -41,19 +41,19 @@ end
 ------------------------------------------------------------------
 function row
 ------------------------------------------------------------------
-with ix do return escape
+with (self,ix) do return escape
 "
 global __retval__
 import numpy
 from asteroid_state import state
 
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 ix_val = state.symbol_table.lookup_sym('ix')
 
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
  # the dataframe is in the first slot in the object memory
 (FOREIGN, df_val) = memory[0]
@@ -81,18 +81,18 @@ end
 ------------------------------------------------------------------
 function col
 ------------------------------------------------------------------
-with ix do return escape
+with (self,ix) do return escape
 "
 global __retval__
 from asteroid_state import state
 import numpy
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 ix_val = state.symbol_table.lookup_sym('ix')
 
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
  # the dataframe is in the first slot in the object memory
 (FOREIGN, df_val) = memory[0]
@@ -120,16 +120,16 @@ end
 ------------------------------------------------------------------
 function nrow
 ------------------------------------------------------------------
-with none do return escape
+with self do return escape
 "
 global __retval__
 from asteroid_state import state
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
  # the dataframe is in the first slot in the object memory
 (FOREIGN, df_val) = memory[0]
@@ -140,20 +140,20 @@ end
 ------------------------------------------------------------------
 function ncol
 ------------------------------------------------------------------
-with none do return escape
+with self do return escape
 "
 global __retval__
 from asteroid_state import state
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
  # the dataframe is in the first slot in the object memory
 (FOREIGN, df_val) = memory[0]
 __retval__ = ('integer', df_val.shape[1])
 "
-end
+end 
 end -- structure

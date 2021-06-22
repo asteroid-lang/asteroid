@@ -19,18 +19,18 @@ structure Pick
 
   data items.
 
-  function pick with n:%integer do
+  function pick with (self,n:%integer) do
       let l = [].
       for i in 1 to n do
-          let ix = randint(0, this @items @length()-1).
-          l @append(this @items @ix).
+          let ix = randint(0, self @items @length()-1).
+          l @append(self @items @ix).
       end
       return l.
   end
 
   --make sure that we only pass lists into the constructor
-  function __init__ with l:%list do
-      let this @items = l.
+  function __init__ with (self,l:%list) do
+      let self @items = l.
   end
 
 end -- Pick

@@ -80,7 +80,7 @@ def unify(term, pattern, unifying = True ):
     # evaluating the pattern side(higher order of prescedence) when checking for redundant pattern clauses
     # 2.) We can't do this at the same time as the above check as term[0] can fail(it can be a primative)
     try:
-        if ((not unifying) and (term[0] == 'deref')):
+        if ((not unifying) and (term[0] == 'deref')): 
             (ID, sym) = term[1]
             term = state.symbol_table.lookup_sym(sym)
             term = term[1] # Discard the leading 'quote' node for redundancy evaluation
@@ -139,7 +139,7 @@ def unify(term, pattern, unifying = True ):
             # we want to 'punt' and print a warning message.
             if term[0] == 'cmatch':
 
-                if not redundant_clause_detector_flags[1]:
+                if not redundant_clause_detector_flags[1]: 
                     print("Redundant pattern detection is not supported for conditional pattern expressions.")
                     redundant_clause_detector_flags[1] = True
 
@@ -174,7 +174,7 @@ def unify(term, pattern, unifying = True ):
         # pattern clause. Therefore, we need to check if the subsume because if they do
         # the conditonal clause is redundant.
         (CMATCH, pexp, cond_exp) = term
-        return unify(pexp,pattern,False)
+        return unify(pexp,pattern,False) 
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
@@ -218,15 +218,10 @@ def unify(term, pattern, unifying = True ):
             else:
                 raise PatternMatchFailed(
                     "expected typematch {} got an object of type {}"
-                    .format(typematch, struct_id))
+                    .format(typematch, struct_id))   
 
         # ttc
         # Should we have an else here?
-        else:
-            raise PatternMatchFailed(
-                "expected typematch {} got an object of type {}"
-                .format(typematch, term[0]))
-
 
     elif pattern[0] == 'named-pattern':
         # unpack pattern
@@ -430,8 +425,6 @@ def declare_formal_args(unifiers):
         (ID, sym) = pattern
         if ID != 'id':
             raise ValueError("no pattern match possible in function call")
-        if sym == 'this':
-            raise ValueError("'this' is a reserved word")
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
@@ -559,7 +552,7 @@ def store_at_ix(structure_val, ix, value):
         state.symbol_table.pop_scope()
 
     else:
-        raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
+        raise ValueError("'{}' is not mutable a structure".format(structure_val[0]))
 
 
     # index into memory and set the value
@@ -687,7 +680,7 @@ def handle_builtins(node):
             raise ValueError('unknown builtin unary opname {}'.format(opname))
 
 #########################################################################
-def handle_call(obj_ref, fval, actual_val_args, fname):
+def handle_call(fval, actual_val_args, fname):
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -729,11 +722,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     declare_formal_args(unifiers)
 
-    # if we have an obj reference bind it to the
-    # variable 'this'
-    if obj_ref:
-        state.symbol_table.enter_sym('this', obj_ref)
-
     # Check for useless patterns
     if redundant_clause_detector_flags[0]:
         check_redundancy(body_list, fname)
@@ -773,8 +761,6 @@ def declare_unifiers(unifiers):
         (lval, value) = unifier
 
         if lval[0] == 'id':
-            if lval[1] == 'this':
-                raise ValueError("'this' is a reserved word")
             state.symbol_table.enter_sym(lval[1], value)
 
         elif lval[0] == 'index': # list/structure lval access
@@ -864,9 +850,6 @@ def try_stmt(node):
         walk(try_stmts)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
-    # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
-    #       by constructing Exception objects - see prologue.ast
-
     except ThrowValue as inst:
         except_val = inst.value
         inst_val = inst
@@ -876,49 +859,15 @@ def try_stmt(node):
         raise inst
 
     except PatternMatchFailed as inst:
-        except_val = ('object',
-                         ('struct-id', ('id', 'Exception')),
-                         ('object-memory',
-                          ('list',
-                           [('string', 'PatternMatchFailed'),
-                            ('string', inst.value)])))
-        inst_val = inst
-
-    except RedundantPatternFound as inst:
-        except_val = ('object',
-                         ('struct-id', ('id', 'Exception')),
-                         ('object-memory',
-                          ('list',
-                           [('string', 'RedundantPatternFound'),
-                            ('string', str(inst))])))
-        inst_val = inst
-
-    except ArithmeticError as inst:
-        except_val = ('object',
-                         ('struct-id', ('id', 'Exception')),
-                         ('object-memory',
-                          ('list',
-                           [('string', 'ArithmeticError'),
-                            ('string', str(inst))])))
-        inst_val = inst
-
-    except FileNotFoundError as inst:
-        except_val = ('object',
-                         ('struct-id', ('id', 'Exception')),
-                         ('object-memory',
-                          ('list',
-                           [('string', 'FileNotFound'),
-                            ('string', str(inst))])))
+        # convert a Python string to an Asteroid string
+        except_val = ('tuple',
+                      [('string', 'PatternMatchFailed'), ('string', inst.value)])
         inst_val = inst
 
     except Exception as inst:
-        # mapping general Python exceptions into Asteroid's SystemError
-        except_val = ('object',
-                         ('struct-id', ('id', 'Exception')),
-                         ('object-memory',
-                          ('list',
-                           [('string', 'SystemError'),
-                            ('string', str(inst))])))
+        # convert exception args to an Asteroid string
+        except_val = ('tuple',
+                      [('string', 'Exception'), ('string', str(inst))])
         inst_val = inst
 
     else:
@@ -1146,14 +1095,22 @@ def apply_exp(node):
         (MEMBER_FUNCTION_VAL, obj_ref, function_val) = f_val
         # Note: lists and tuples are objects/mutable data structures, they
         # have member functions defined in the Asteroid prologue.
-        result = handle_call(obj_ref,
-                             function_val,
-                             arg_val,
-                             f_name)
+        if arg_val[0] == 'none':
+            result = handle_call(function_val, obj_ref, f_name)
+        elif arg_val[0] != 'tuple':
+            new_arg_val = ('tuple', [obj_ref, arg_val])
+            result = handle_call(function_val, new_arg_val, f_name)
+        elif arg_val[0] == 'tuple':
+            arg_val[1].insert(0, obj_ref)
+            result = handle_call(function_val, arg_val, f_name)
+        else:
+            raise ValueError(
+                "unknown parameter type '{}' in apply"
+                .format(arg_val[0]))
 
     # regular function call
     elif f_val[0] == 'function-val':
-        result = handle_call(None, f_val, arg_val, f_name)
+        result = handle_call(f_val, arg_val, f_name)
 
     # object constructor call
     elif f_val[0] == 'struct':
@@ -1177,10 +1134,14 @@ def apply_exp(node):
             init_fval = struct_memory[slot_ix]
             # calling a member function - push struct scope
             state.symbol_table.push_scope(struct_scope)
-            handle_call(obj_ref,
-                        init_fval,
-                        arg_val,
-                        f_name)
+            if arg_val[0] == 'none':
+                handle_call(init_fval, obj_ref, f_name)
+            elif arg_val[0] != 'tuple':
+                arg_val = ('tuple', [obj_ref, arg_val])
+                handle_call(init_fval, arg_val, f_name)
+            elif arg_val[0] == 'tuple':
+                arg_val[1].insert(0, obj_ref)
+                handle_call(init_fval, arg_val, f_name)
             state.symbol_table.pop_scope()
         # the struct does not have an __init__ function but
         # we have a constructor call with args, e.g. Foo(1,2)
@@ -1575,9 +1536,9 @@ def check_redundancy( body_list, f_name ):
             # on the unify function to evaluate the subsumption relationship
             # between the two patterns.
             try:                                #CHECK FOR CONFLICTION
-                unify( ptrn_l, ptrn_h , False )
+                unify( ptrn_l, ptrn_h , False ) 
             except PatternMatchFailed:          #NO CONFLICTION
-                pass
+                pass                            
             else:                               #CONFLICTION
                 raise RedundantPatternFound( ptrn_h , ptrn_l , f_name, location_h, location_l )
 #######################################################################################

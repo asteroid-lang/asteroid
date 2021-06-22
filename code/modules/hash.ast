@@ -16,14 +16,14 @@ data table.
 
 function __init__
 -- constructor for HashTable initializes the underlying dictionary
-with none do escape
+with self do escape
 "
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 # the table is in the first slot in the object memory
 # store the dictionary as a foreign object in this slot
@@ -33,16 +33,16 @@ return none
 end
 
 function insert
-with (name,value) do escape
+with (self,name,value) do escape
 "
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 name_val = state.symbol_table.lookup_sym('name')
 value_val = state.symbol_table.lookup_sym('value')
 
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 # the table is in the first slot in the object memory
 # insert name-value pair
@@ -53,17 +53,17 @@ return none
 end
 
 function get
-with name do return escape
+with (self,name) do return escape
 "
 global __retval__
 
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 name_val = state.symbol_table.lookup_sym('name')
 
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 # the table is in the first slot in the object memory
 # get the value_val associated with name_val
@@ -76,16 +76,16 @@ else:
 end
 
 function aslist
-with none do return escape
+with (self) do return escape
 "
 global __retval__
 
-this_val = state.symbol_table.lookup_sym('this')
+self_val = state.symbol_table.lookup_sym('self')
 
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
- (OBJECT_MEMORY, (LIST, memory))) = this_val
+ (OBJECT_MEMORY, (LIST, memory))) = self_val
 
 # the table is in the first slot in the object memory
 # get the value_val associated with name_val
