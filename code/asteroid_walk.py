@@ -559,7 +559,7 @@ def store_at_ix(structure_val, ix, value):
         state.symbol_table.pop_scope()
 
     else:
-        raise ValueError("'{}' is not mutable a structure".format(structure_val[0]))
+        raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
 
 
     # index into memory and set the value
