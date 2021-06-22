@@ -264,13 +264,17 @@ catch Exception(kind,s) do
     println(kind+": "+s).
 end.
 ```
-Which will print "'tuple' is not a mutable structure." to the console.
-Tuples also do not have access to the many different methods that are provided for the `list` structure. While the `list` structure may seem like the more attractive option to a developer due to its mutability and function suite, tuples offer better access times, consume less memory, and may even make debugging easier due to their immutability.
-
+Which will print out the following message:
+```
+SystemError: 'tuple' is not a mutable structure
+```
+When to use tuples and when to use lists is really application dependent.
+Tuples tend to be preferred over lists when representing some sort of structure,
+like abstract syntax trees, where that structure is unmutable.
 
 ### Custom Data Structures using `structure`
 
-You can introduce custom data structures using the `structure` keyword.  These custom data structures differ from lists in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are introducing a new type into your program.  We should mention that Asteroid creates
+You can introduce custom data structures using the `structure` keyword.  These custom data structures differ from lists and tuples in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are in fact introducing a new type into your program.  We should mention that Asteroid creates
 a *default constructor* for a structure.  That constructor copies the arguments given to it into the
 data member fields of the structure in the order that the data members appear in the
 structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
@@ -286,7 +290,8 @@ structure Person with
 
 -- make a list of persons
 let people = [
-    Person("George", 32, "M"),
+    -- use default constructors to construct Person instances
+    Person("George", 32, "M"),  
     Person("Sophie", 46, "F"),
     Person("Oliver", 21, "X")
     ].
@@ -302,7 +307,8 @@ The output is,
 
 The `structure` statement introduces a new typed data structure. In this case it introduces a data structure of type `Person` with three "slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second `let` statement in the program above.
 
-It turns out that data structures defined with the `structure` command also support prototype based OO programming.  More of that below.
+In addition to the default constructor, structures in Asteroid also support user specified
+constructors and member functions.  We'll talk about those later when we talk about OO programming in Asteroid.
 
 ## The `let` Statement
 
