@@ -155,7 +155,7 @@ By now you probably figured out that statements are terminated with a period and
 
 ### Lists
 
-In Asteroid the `list` is the fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
+In Asteroid the `list` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
 ```
 load system "io".          -- load the io module so we can print
 
@@ -164,16 +164,31 @@ let b = a @[2,1,0].  -- reverse list a
 println b.
 ```
 The output is: `[3,2,1]`.
-As we have seen the `@` operator allows you to access either individual elements or slices of a list.  We can also use **list comprehensions** to construct lists,
+
+In Asteroid lists are considered objects with member functions that can manipulate the list
+object, e.g. `[1,2,3] @ reverse()`. We could rewrite the above example as
+```
+load system "io".          
+
+let a = [1,2,3].    
+let b = a @reverse().
+println b.
+```
+For a full list of available member functions for Asteroid lists please see the reference guide.
+
+As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.  
+
+Besides using the default constructor for lists which consists of the
+square brackets enclosing a list of elements we can use **list comprehensions** to construct lists,
 ```
 load system "io".          
 
 -- build a list of odd values
-let a = [1 to 10 step 2].
+let a = [1 to 10 step 2].  -- list comprehension
 println ("list: " + a).
 
--- reverse the list
-let slice = [4 to 0 step -1].
+-- reverse the list using a slice computed as comprehension
+let slice = [4 to 0 step -1]. -- list comprehension
 let b = a @slice.
 println ("reversed list: " + b).
 ```
@@ -181,6 +196,22 @@ The output is,
 ```
     list: [1,3,5,7,9]
     reversed list: [9,7,5,3,1]
+```
+List comprehensions in conjunction with the `map` function for lists allows you to
+construct virtually  any kind of list. For example, the following program constructs
+a list of of alternating 1 and -1,
+```
+load system "io".
+load system "math".
+
+let a = [1 to 10] @map(lambda with x do return mod(x,2))
+                  @map(lambda with x do return 1 if x else -1).
+
+println a.
+```
+where the output is,
+```
+[1,-1,1,-1,1,-1,1,-1,1,-1]
 ```
 Higher dimensional arrays can easily be simulated with lists of lists,
 ```
@@ -221,7 +252,7 @@ let b = (("a","b","c"),
 -- Access an element in the nested structure.
 println(b @1 @1).
 ```
-Unlike `lists`, `tuples` are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new `tuple`. The following code block demonstrates this,
+Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new `tuple`. The following code block demonstrates this,
 ```
 load system "io".
 -- build a tuple
@@ -230,13 +261,12 @@ let b = ("a","b","c").
 try
     let b @1 = "z".
 catch Exception(kind,s) do
-    println(s).
+    println(kind+": "+s).
 end.
 ```
-Which will print "'tuple' is not mutable a structure." to the console.
-`Tuples` also do not have access to the many different methods that are provided for the `list` structure. While the `list` structure may seem like the more attractive option to a developer due to its mutability and function suite, tuples offer better access times, consume less memory, and may even make debugging easier due to their immutability.
+Which will print "'tuple' is not a mutable structure." to the console.
+Tuples also do not have access to the many different methods that are provided for the `list` structure. While the `list` structure may seem like the more attractive option to a developer due to its mutability and function suite, tuples offer better access times, consume less memory, and may even make debugging easier due to their immutability.
 
-`Tuples` as well as `lists` are considered objects with member functions, e.g. `[1,2,3] @ reverse()`. It is also important to note that `structures` can have member functions giving rise to object-oriented programming.
 
 ### Custom Data Structures using `structure`
 
@@ -244,7 +274,6 @@ You can introduce custom data structures using the `structure` keyword.  These c
 a *default constructor* for a structure.  That constructor copies the arguments given to it into the
 data member fields of the structure in the order that the data members appear in the
 structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
-
 
 ```
 load system "io".
