@@ -260,11 +260,24 @@ More information about the functions that `lists` and `strings` contribute to ca
 
 There are a variety of useful modules that can be installed in Asteroid.
 
-[Hash.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/hash.ast) implements the `HashTable` structure, for mapping keys onto paired values.
+[Hash.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/hash.ast) implements the `HashTable` structure, for mapping keys onto paired values. It supports the following functions,
+* Function `__init__` can be called with the input `self`. This constructor for HashTable initializes the underlying dictionary, and stores the dictionary as a foreign object in its object memory alongside the table.
+* Function `insert`, given the input `(self,name,value)`, will insert a given name-value pair into the table in `self`'s object memory.
+* Function `get`, given `(self,name)`, will return the `value_val` associated with the given `name_val` as long as it can be found in `dictionary.keys()`.
+* Function `aslist`, given `(self)`, gets the `value_val` associated with `name_val` and then zips the keys and values. It then turns Python tuples into Asteroid tuples and puts them onto an output list, so that the return value output is `('list', out_list)`.
 
-[IO.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/io.ast) implements Asteroid's I/O system for delivering outputs from given inputs.
+[IO.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/io.ast) implements Asteroid's I/O system for delivering outputs from given inputs. It supports the following functions,
+* Function `raw_print` can be called with `item`, and dumps the AST to screen.
+* Function `print_ln` can be called with `item`, and prints a given argument.
+* Function `print` can be called with `item`, and prints a given argument.
+* Function `read` can be called with `none`, and will read a string from `stdin`.
+* Function `input` can be called with a string `prompt`, and maps the Asteroid input function onto the Python input function.
 
 [Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators.
+* Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
+* Function `log` can be called with two different arguments. With one argument, `(x)`, it returns the natural logarithm of x (to base e). With two arguments, `(x,base)` it returns the logarithm of x to the given base, calculated as log(x)/log(base).
+* Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b can be found in `real` and `integer`.
+* Function `sqrt`, given `a`, returns its square root as long as `a` can be found in `real` and `integer`.
 
 [Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function.
 
