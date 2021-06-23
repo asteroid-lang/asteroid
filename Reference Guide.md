@@ -283,7 +283,21 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `floor`, given `(x:%real)`, returns the floor of x: the largest integer less than or equal to x.
 * Function `gcd`, given `(a:%integer,b:%integer)`, returns the greatest common denominator that both integers share.
 * Function `isclose`, given `(a,b)` OR `(a,b,t)`, returns `True` if the two or three values are close to each other and `False` otherwise. Default tolerance 1e-09.
-* Function `mod`
+* Function `mod`, given `(v,d)`, will return the remainder of the operation `v/d`, as long as `v` and `d` can be found in `real` and `integer`.
+* Function `acos`, given `(x)`, returns the arc cosine of x in radians. The result is between 0 and pi.
+* Function `asin`, given `(x)`, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
+* Function `atan`, ,given `(x)`, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
+* Function `cos`, given `(x)`, returns the cosine of x radians.
+* Function `sin`, given `(x)`, returns the sine of x radians.
+* Function `tan`, given `(x)`, returns the tangent of x radians.
+* Function `acosh`, given `(x)`, returns the inverse hyperbolic cosine of x.
+* Function `asinh`, given `(x)`, returns the inverse hyperbolic sine of x.
+* Function `atanh`, given `(x)`, returns the inverse hyperbolic tangent of x.
+* Function `cosh`, given `(x)`, returns the hyperbolic cosine of x.
+* Function `sinh`, given `(x)`, returns the hyperbolic sine of x.
+* Function `tanh`, given `(x)`, returns the hyperbolic tangent of x.
+* Function `degrees`, given `(x)`, converts angle `x` from radians to degrees.
+* Function `radians`,  given `(x)`, converts angle `x` from degrees to radians.
 
 [Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function.
 
@@ -298,3 +312,5 @@ There are a variety of useful modules that can be installed in Asteroid.
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
 
 [Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic.
+
+[Bitwise.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/bitwise.ast)
