@@ -125,7 +125,7 @@ Here are some examples,
 let a = [1,2,3].  -- this is a list
 let c = (1,2,3).  -- this is a tuple
 ```
-In order to distinguish it from a parenthesized value the single element in a 1-tuple has to be followed by a comma, like so,
+As we said above, in order to distinguish it from a parenthesized value the single element in a 1-tuple has to be followed by a comma, like so,
 ```
 let one_tuple = (1,).  -- this is a 1-tuple
 ```
@@ -157,16 +157,16 @@ By now you probably figured out that statements are terminated with a period and
 
 In Asteroid the `list` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
 ```
-load system "io".          -- load the io module so we can print
+load system "io".    -- load the io module so we can print
 
-let a = [1,2,3].    -- construct list a
+let a = [1,2,3].     -- construct list a
 let b = a @[2,1,0].  -- reverse list a
 println b.
 ```
 The output is: `[3,2,1]`.
 
 In Asteroid lists are considered objects with member functions that can manipulate the list
-object, e.g. `[1,2,3] @ reverse()`. We could rewrite the above example as
+object, e.g. `[1,2,3] @ reverse()`. We could rewrite the above example as,
 ```
 load system "io".          
 
@@ -179,7 +179,8 @@ For a full list of available member functions for Asteroid lists please see the 
 As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.  
 
 Besides using the default constructor for lists which consists of the
-square brackets enclosing a list of elements we can use **list comprehensions** to construct lists,
+square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
+a step specifier allowying you to generate integer values within that range,
 ```
 load system "io".          
 
@@ -197,9 +198,9 @@ The output is,
     list: [1,3,5,7,9]
     reversed list: [9,7,5,3,1]
 ```
-List comprehensions in conjunction with the `map` function for lists allows you to
+Asteroid's simple list comprehensions in conjunction with the `map` function for lists allows you to
 construct virtually  any kind of list. For example, the following program constructs
-a list of of alternating 1 and -1,
+a list of alternating 1 and -1,
 ```
 load system "io".
 load system "math".
@@ -232,7 +233,7 @@ The output is: `[[1,2,3],[4,0,6],[7,8,9]]`
 
 ### Tuples
 
-The `tuple` is another fundamental, built-in data structure that can be found in Asteroid.
+As we saw earlier, the `tuple` is another fundamental, built-in data structure that can be found in Asteroid.
 
 Below is an example of a tuple declaration and access.
 
@@ -270,7 +271,8 @@ SystemError: 'tuple' is not a mutable structure
 ```
 When to use tuples and when to use lists is really application dependent.
 Tuples tend to be preferred over lists when representing some sort of structure,
-like abstract syntax trees, where that structure is unmutable.
+like abstract syntax trees, where that structure is unmutable meaning, for example,
+that the arity of a tree node cannot change.
 
 ### Custom Data Structures using `structure`
 
@@ -297,7 +299,7 @@ let people = [
     ].
 
 -- retrieve the second person on the list and print
-let Person(name,age,gender) = people @1.
+let Person(name,age,gender) = people @1. -- pattern match against the structure
 println (name + " is " + age + " years old and is " +  gender + ".").
 ```
 The output is,
@@ -305,7 +307,7 @@ The output is,
     Sophie is 46 years old and is F.
 ```
 
-The `structure` statement introduces a new typed data structure. In this case it introduces a data structure of type `Person` with three "slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second `let` statement in the program above.
+The `structure` statement introduces a new typed data structure. In this case it introduces a data structure of type `Person` with three "data slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second `let` statement in the program above.
 
 In addition to the default constructor, structures in Asteroid also support user specified
 constructors and member functions.  We'll talk about those later when we talk about OO programming in Asteroid.
