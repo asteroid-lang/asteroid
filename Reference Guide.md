@@ -260,6 +260,19 @@ More information about the functions that `lists` and `strings` contribute to ca
 
 There are a variety of useful modules that can be installed in Asteroid.
 
+[Bitwise.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/bitwise.ast) defines Bitwise operations. It supports the following functions,
+* Function `band` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise AND operation.
+* Function `bor` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise OR operation.
+* Function `bnot` can be called with the input `(x:%integer)`, and performs the Bitwise NOT operation.
+* Function `bxor` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise XOR operation.
+* Function `blshift` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise left shift operation.
+* Function `brshift` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise right shift operation.
+* Function `blrotate` can be called with the input `(x:%integer, i:%integer)`, and performs the Bitwise left rotate operation.
+* Function `brrotate` can be called with the input `(x:%integer, i:%integer)`, and performs the Bitwise right rotate operation.
+* Function `bsetbit` can be called with the input `(x:%integer, i:%integer)`, and sets the ith bit.
+* Function `bclearbit` can be called with the input `(x:%integer, i:%integer)`, and clears the ith bit.
+* Function `bsize`can be called with the input `(x:%integer)`, and returns the bit size.
+
 [Hash.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/hash.ast) implements the `HashTable` structure, for mapping keys onto paired values. It supports the following functions,
 * Function `__init__` can be called with the input `self`. This constructor for HashTable initializes the underlying dictionary, and stores the dictionary as a foreign object in its object memory alongside the table.
 * Function `insert`, given the input `(self,name,value)`, will insert a given name-value pair into the table in `self`'s object memory.
@@ -312,5 +325,3 @@ There are a variety of useful modules that can be installed in Asteroid.
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
 
 [Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic.
-
-[Bitwise.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/bitwise.ast)
