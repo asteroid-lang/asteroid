@@ -15,25 +15,34 @@ structure Dog
 
     function __init__
       with *ptrn1 do -- Will subsume all matches for (self, name, [])
-        let self@name = name.
-        let self@tricks = tricks.
+        let this@name = name.
+        let this@tricks = tricks.
       orwith *ptrn2 do  -- Redundant Constructor 
-        let self@name = name.
-        let self@tricks = [].
+        let this@name = name.
+        let this@tricks = [].
       orwith *ptrn3 do
-        let self@name = name.
-        let self@tricks = [].
+        let this@name = name.
+        let this@tricks = [].
       end
 
     function add_trick
-      with (self, new_trick) do
-        let self@tricks = self@tricks + [new_trick].
+      with new_trick do
+        let this@tricks = this@tricks + [new_trick].
       end
   end
 
-let ptrn1 = pattern with (self, name, tricks).
-let ptrn2 = pattern with (self, name, []).
-let ptrn3 = pattern with (self, name).
+let ptrn1 = pattern with (name, tricks).
+let ptrn2 = pattern with (name, []).
+let ptrn3 = pattern with name.
 
--- Fido the dog
-let fido = Dog("Fido").
+try      
+    
+  -- Fido the dog
+  let fido = Dog("Fido").
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+       exit "PASS.".
+    else
+       throw Error("FAIL: unexpected error "+s).
+    end.
+end.

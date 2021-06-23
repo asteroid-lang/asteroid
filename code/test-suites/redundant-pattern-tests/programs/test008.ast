@@ -6,6 +6,7 @@
 --------------------------------------
 --------------------------------------
 load "io".
+load "util".
 
 -- A testing function with multiple patterns
 function testFunction
@@ -18,11 +19,19 @@ function testFunction
     orwith 1.1 do     -- *** duplicate pattern
         return 4.     
     end.
+
     
+try
+    -- Evaluate the function with a test input.
+    let x = 1.1.
+    let y = testFunction( x ).
 
--- Evaluate the function with a test input.
-let x = 1.1.
-let y = testFunction( x ).
-
--- If the function test worked, print the output we got.
-println( "The value returned is: " + y ).
+    -- If the function test worked, print the output we got.
+    println( "The value returned is: " + y ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+       exit "PASS.".
+    else
+       throw Error("FAIL: unexpected error "+s).
+    end.
+end.

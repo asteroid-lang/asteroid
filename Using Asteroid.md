@@ -2542,21 +2542,21 @@ Here we use a simple class hierarchy of traits and animals that have those trait
 load "io".
 
 structure Walk with
-    function walk with self do println "I'm walking" end
+    function walk with none do println "I'm walking" end
     end
 
 structure Fly with
-    function fly with self do println "I'm flying" end
+    function fly with none do println "I'm flying" end
     end
 
 structure Sing with
-    function sing with self do println "I'm singing" end
+    function sing with none do println "I'm singing" end
     end
 
 
 structure Bird with
     -- constructor
-    function __init__ with self do println "The bird says:" end
+    function __init__ with none do println "The bird says:" end
     end
 
 inherit(Bird,Fly).
@@ -2587,8 +2587,8 @@ Write a class named `Arithmetic` with a method named `add` that takes 2  integer
 load "io".
 
 structure Arithmetic with
-    function add with (self,a:%integer,b:%integer) do return a+b end
-    function subtract with (self,a:%integer,b:%integer) do return a-b end
+    function add with (a:%integer,b:%integer) do return a+b end
+    function subtract with (a:%integer,b:%integer) do return a-b end
     end
 
 structure Adder with

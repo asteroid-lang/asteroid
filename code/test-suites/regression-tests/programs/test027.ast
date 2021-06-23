@@ -3,7 +3,7 @@ load "io".
 
 structure A with
     data a.
-    function hello with self do return "hello: "+ self @a end.
+    function hello with none do return "hello: "+ this @a end.
     end
     
 structure B with

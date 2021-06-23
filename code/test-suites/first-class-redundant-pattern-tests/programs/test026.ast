@@ -33,7 +33,15 @@ function testFunction
     orwith *ptrn3 do  --duplicate structure/object
         return 3.
     end.
-    
-let x = testFunction( Person("George", 32, "M") ).
-println ( x ).
 
+try 
+    
+    let x = testFunction( Person("George", 32, "M") ).
+    println ( x ).
+catch ("Exception", s) do
+    if not isnone(s @index("Redundant")) do
+       exit "PASS.".
+    else
+       throw Error("FAIL: unexpected error "+s).
+    end.
+end.

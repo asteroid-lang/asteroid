@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# # Regression Tests
+# run all program
 
 
 import sys
 import os
+import glob
 
 # Get the path of this run-tests.py file
 file_path = os.path.dirname(os.path.abspath( __file__ ))
@@ -13,16 +14,16 @@ file_path = os.path.dirname(os.path.abspath( __file__ ))
 # Temporarly change the working directory to that path
 os.chdir(file_path)
 
-# Set the path to two levels above (the code directory)
-sys.path[0] = "../../"
+# Set the path to the code directory
+sys.path[0] = "../"
 
 from asteroid_interp import interp
 
-programs = os.listdir("programs")
+programs = glob.glob("*.ast")
 programs.sort()
 
 for pname in programs:
-    f = open("programs/"+pname,"r")
+    f = open(pname,"r")
     p = f.read()
     print("**********"+pname+"************")
     print(p)

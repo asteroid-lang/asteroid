@@ -3,7 +3,7 @@ load "io".
     
 structure B with
     data b.
-    function get with self do return self @b end
+    function get with none do return this @b end
     end
     
 let q = B([1,2,3]).
