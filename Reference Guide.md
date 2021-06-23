@@ -273,11 +273,17 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `read` can be called with `none`, and will read a string from `stdin`.
 * Function `input` can be called with a string `prompt`, and maps the Asteroid input function onto the Python input function.
 
-[Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators.
+[Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators. It supports the following functions,
 * Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
 * Function `log` can be called with two different arguments. With one argument, `(x)`, it returns the natural logarithm of x (to base e). With two arguments, `(x,base)` it returns the logarithm of x to the given base, calculated as log(x)/log(base).
 * Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b can be found in `real` and `integer`.
 * Function `sqrt`, given `a`, returns its square root as long as `a` can be found in `real` and `integer`.
+* Function `abs`, given `(x)`, returns its absolute value.
+* Function `ceil`, given `(x:%real)`, returns the ceiling of x: the smallest integer greater than or equal to x.
+* Function `floor`, given `(x:%real)`, returns the floor of x: the largest integer less than or equal to x.
+* Function `gcd`, given `(a:%integer,b:%integer)`, returns the greatest common denominator that both integers share.
+* Function `isclose`, given `(a,b)` OR `(a,b,t)`, returns `True` if the two or three values are close to each other and `False` otherwise. Default tolerance 1e-09.
+* Function `mod`
 
 [Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function.
 
