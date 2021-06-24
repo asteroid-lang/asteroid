@@ -361,14 +361,15 @@ like a variable declaration in other languages but in Asteroid it is still just 
 about pattern matching.  Consider,
 ```
 load system "io".
+load system "math".
 
-let x:%real = 3.1 .
+let x:%real = pi.
 println x.
 ```
 The left side of the `let` statement is a named type patterns that matches any real value and
 if that match is successful then the value is bound to the variable `x`.  Note,
 that even though this looks like a declaration, it is in fact a pattern matching
-operation.  The program will print the value `3.1`.
+operation.  The program will print the value `3.141592653589793`.
 
 ## Flow of Control
 
