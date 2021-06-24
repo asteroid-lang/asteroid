@@ -260,6 +260,19 @@ More information about the functions that `lists` and `strings` contribute to ca
 
 There are a variety of useful modules that can be installed in Asteroid.
 
+[Bitwise.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/bitwise.ast) defines Bitwise operations. It supports the following functions,
+* Function `band` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise AND operation.
+* Function `bor` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise OR operation.
+* Function `bnot` can be called with the input `(x:%integer)`, and performs the Bitwise NOT operation.
+* Function `bxor` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise XOR operation.
+* Function `blshift` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise left shift operation.
+* Function `brshift` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise right shift operation.
+* Function `blrotate` can be called with the input `(x:%integer, i:%integer)`, and performs the Bitwise left rotate operation.
+* Function `brrotate` can be called with the input `(x:%integer, i:%integer)`, and performs the Bitwise right rotate operation.
+* Function `bsetbit` can be called with the input `(x:%integer, i:%integer)`, and sets the ith bit.
+* Function `bclearbit` can be called with the input `(x:%integer, i:%integer)`, and clears the ith bit.
+* Function `bsize`can be called with the input `(x:%integer)`, and returns the bit size.
+
 [Hash.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/hash.ast) implements the `HashTable` structure, for mapping keys onto paired values. It supports the following functions,
 * Function `__init__` can be called with the input `self`. This constructor for HashTable initializes the underlying dictionary, and stores the dictionary as a foreign object in its object memory alongside the table.
 * Function `insert`, given the input `(self,name,value)`, will insert a given name-value pair into the table in `self`'s object memory.
@@ -273,21 +286,61 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `read` can be called with `none`, and will read a string from `stdin`.
 * Function `input` can be called with a string `prompt`, and maps the Asteroid input function onto the Python input function.
 
-[Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators.
+[Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators. It supports the following functions,
 * Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
 * Function `log` can be called with two different arguments. With one argument, `(x)`, it returns the natural logarithm of x (to base e). With two arguments, `(x,base)` it returns the logarithm of x to the given base, calculated as log(x)/log(base).
 * Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b can be found in `real` and `integer`.
 * Function `sqrt`, given `a`, returns its square root as long as `a` can be found in `real` and `integer`.
+* Function `abs`, given `(x)`, returns its absolute value.
+* Function `ceil`, given `(x:%real)`, returns the ceiling of x: the smallest integer greater than or equal to x.
+* Function `floor`, given `(x:%real)`, returns the floor of x: the largest integer less than or equal to x.
+* Function `gcd`, given `(a:%integer,b:%integer)`, returns the greatest common denominator that both integers share.
+* Function `isclose`, given `(a,b)` OR `(a,b,t)`, returns `True` if the two or three values are close to each other and `False` otherwise. Default tolerance 1e-09.
+* Function `mod`, given `(v,d)`, will return the remainder of the operation `v/d`, as long as `v` and `d` can be found in `real` and `integer`.
+* Function `acos`, given `(x)`, returns the arc cosine of x in radians. The result is between 0 and pi.
+* Function `asin`, given `(x)`, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
+* Function `atan`, ,given `(x)`, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
+* Function `cos`, given `(x)`, returns the cosine of x radians.
+* Function `sin`, given `(x)`, returns the sine of x radians.
+* Function `tan`, given `(x)`, returns the tangent of x radians.
+* Function `acosh`, given `(x)`, returns the inverse hyperbolic cosine of x.
+* Function `asinh`, given `(x)`, returns the inverse hyperbolic sine of x.
+* Function `atanh`, given `(x)`, returns the inverse hyperbolic tangent of x.
+* Function `cosh`, given `(x)`, returns the hyperbolic cosine of x.
+* Function `sinh`, given `(x)`, returns the hyperbolic sine of x.
+* Function `tanh`, given `(x)`, returns the hyperbolic tangent of x.
+* Function `degrees`, given `(x)`, converts angle `x` from radians to degrees.
+* Function `radians`,  given `(x)`, converts angle `x` from degrees to radians.
 
-[Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function.
+[Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function. It supports the following functions that perform an output of this structure,
+* Function `pick` can be called with `n:%integer`.
+* Function `__init__` can be called with `l:%list`.
 
-[Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval.
+[Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval. It supports the following functions,
+* Function `random`, given the input `none`, returns a random floating point number in the range `[0.0, 1.0)`.
+* Function `randint` can be called with two different number interval inputs: `(lo:%integer,hi:%integer)` or `(lo:%real,hi:%real)`. In either case, it returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
+* Function `seed`, given `(sd:%integer)`, returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
 
-[Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members.
+[Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
+* Function `toset`, given `(lst:%list)`, converts the inputted list into a set.
+* Function `sdiff`, given `(a:%list,b:%list)`, does a side-by-side print of the differences between two files.
+* Function `sunion`, given `(a:%list,b:%list)`, prints the smallest set which contains all the elements of both `a` and `b`.
+* Function `sintersection`, given `(a:%list,b:%list)`, finds the interection between  `a` and `b`.
+* Function `sxunion`, given `(a:%list,b:%list)`, returns all elements in `a` or `b`, but not in both.
 
-[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm.
+[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. It supports the function below,
+* Function `sort` can be called with three different inputs to perform its sorting output. These are: `(_,[])`, `(_,[a])`, and `(p,[pivot|rest])`.
 
 [Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
+* Function `__init__` can be called with two different inputs: `none` and `stream:%list`. In either case, this function outputs a shallow copy of the input list.
+* Function `eof` can be called with the input `none`. If `this @curr_ix == this @stream @length()`, the function returns `true`. If not, it returns `false`.
+* Function `peek` can be called with the input `none`. If `this @eof()`, it returns `none`. If not, it returns `this @stream @(this @curr_ix)`.
+* Function `next` can be called with the input `none`. If `this @eof()`,  it returns `none`. If not, it decides to `let this @curr_ix = this @curr_ix + 1`.
+* Function `get` can be called with the input `none`, and returns `this @peek()`.
+* Function `rewind` can be called with the input `none`, and then decides to `let this @curr_ix = 0`.
+* Function `map`, given the input `f`, applies a given function to each element of a function.
+* Function `append`, given `item`, adds said item to a stream.
+* Function `__string__`, given `none`, outputs it as a string.
 
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
 
