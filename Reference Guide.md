@@ -312,15 +312,35 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `degrees`, given `(x)`, converts angle `x` from radians to degrees.
 * Function `radians`,  given `(x)`, converts angle `x` from degrees to radians.
 
-[Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function.
+[Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function. It supports the following functions that perform an output of this structure,
+* Function `pick` can be called with `n:%integer`.
+* Function `__init__` can be called with `l:%list`.
 
-[Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval.
+[Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval. It supports the following functions,
+* Function `random`, given the input `none`, returns a random floating point number in the range `[0.0, 1.0)`.
+* Function `randint` can be called with two different number interval inputs: `(lo:%integer,hi:%integer)` or `(lo:%real,hi:%real)`. In either case, it returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
+* Function `seed`, given `(sd:%integer)`, returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
 
-[Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members.
+[Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
+* Function `toset`, given `(lst:%list)`, converts the inputted list into a set.
+* Function `sdiff`, given `(a:%list,b:%list)`, does a side-by-side print of the differences between two files.
+* Function `sunion`, given `(a:%list,b:%list)`, prints the smallest set which contains all the elements of both `a` and `b`.
+* Function `sintersection`, given `(a:%list,b:%list)`, finds the interection between  `a` and `b`.
+* Function `sxunion`, given `(a:%list,b:%list)`, returns all elements in `a` or `b`, but not in both.
 
-[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm.
+[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. It supports the function below,
+* Function `sort` can be called with three different inputs to perform its sorting output. These are: `(_,[])`, `(_,[a])`, and `(p,[pivot|rest])`.
 
 [Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
+* Function `__init__` can be called with two different inputs: `none` and `stream:%list`. In either case, this function outputs a shallow copy of the input list.
+* Function `eof` can be called with the input `none`. If `this @curr_ix == this @stream @length()`, the function returns `true`. If not, it returns `false`.
+* Function `peek` can be called with the input `none`. If `this @eof()`, it returns `none`. If not, it returns `this @stream @(this @curr_ix)`.
+* Function `next` can be called with the input `none`. If `this @eof()`,  it returns `none`. If not, it decides to `let this @curr_ix = this @curr_ix + 1`.
+* Function `get` can be called with the input `none`, and returns `this @peek()`.
+* Function `rewind` can be called with the input `none`, and then decides to `let this @curr_ix = 0`.
+* Function `map`, given the input `f`, applies a given function to each element of a function.
+* Function `append`, given `item`, adds said item to a stream.
+* Function `__string__`, given `none`, outputs it as a string.
 
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
 
