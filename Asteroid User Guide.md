@@ -314,49 +314,73 @@ constructors and member functions.  We'll talk about those later when we talk ab
 
 ## The `let` Statement
 
-The `let` statement is Asteroid's version of the assignment statement.  Here is a snippet of Asteroid's grammar detailing the statement,
+The `let` statement is a pattern matching statement and can be viewed as Asteroid's version of the assignment statement even though statements like,
 ```
-stmt := LET pattern '=' exp '.'?
+let 1 = 1.
 ```
-In the grammar capital words and symbols in quotes represent language keywords and lower case letters represent non-terminals.  
+where we take the term on the right side and match it to the pattern on the left side of
+the `=` operator are completely legal and highlight the fact that `let` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.  
 
-The notation is an EBNF notation that means the question mark is a meta operator and makes the period at the end of the `let` statement optional.  Even though the period is optional we highly recommend using it because leaving it out can, under certain circumstances, lead to ambiguous statements and therefore will lead to syntax errors.
-
-As we said before, the `let` statement is a pattern matching statement which we can see expressed here by the `pattern` on the left side of the `=` sign. Patterns are expressions that consist purely of constructors and variables. Constructors consist of constants, list constructors, and user defined structures.  The quote operator `'` allows you to turn any Asteroid expression into a term structure that can be used as a pattern.
-
-Here is an example where we do some computations on the right side of a `let` statement and then match against a pattern on the left,
+Here is an example where we do some computations on the right side of a `let` statement and then match the result against a pattern on the left,
 ```
 load system "io".
 
 -- note 1+1 evaluates to 2 and is then matched
--- the variables x and y are bound to 1 and 3, respectively
+-- the variables x and y are bound to 1 and 3, respectively,
+-- via pattern matching
 let [x,2,y] = [1+0,1+1,1+2].
 println (x,y).
 ```
 The output is: `(1,3)`
 
-Here is a similar program but all terms have been quoted and therefore are not evaluated and the actual structure of the terms is matched,
+Asteroid supports special patterns called **type patterns** that match any value
+of a given type.  For instance, the `%integer` pattern matches any integer value.  Here is a simple example,
+```
+let %integer = 1.
+```
+This `let` statement succeeds because the value `1` can be pattern matched against
+the type pattern `%integer`
+
+Asteroid also
+supports something called a **named pattern** were a (sub)pattern on the left side
+of a `let` statement (or any pattern as it appears in Asteroid) can be given a name
+and that name will be instantiated with a term during pattern matching.  For example,
 ```
 load system "io".
 
--- note 1+1 does NOT evaluate to 2 and 1+1 is matched
--- the variables x and y are bound to term expressions
-let [x,'1+1,y] = ['1+0,'1+1,'1+2].
-println (x,y).
+let t:(1,2) = (1,2).  -- using a named pattern on lhs
+println t.
 ```
-The output is `(__plus__(1,0),__plus__(1,2))`
-
-The fact that none of the terms is being evaluated and their actual structure is being preserved becomes clear what we print what has been bound to the variables `x` and `y`.  Here the symbol `__plus__` is the internal notation of the `+` operator.
-
-## Loops and `if` Statements
-
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide of endnotes.
-
-Looking at the list of supported flow of control statements there are really not a lot of surprises.  For example, here is a short program with a `for` loop that prints out the first ten even positive integers,
+Here, the construct `t:(1,2)` is called a named pattern and the variable `t` will be unified with the term `(1,2)`, or more generally, the variable will be unified with term
+that matches the pattern on the right of the colon.  The program will print,
+```
+(1,2)
+```
+We can combine type patterns and named patterns to give us something that looks
+like a variable declaration in other languages but in Asteroid it is still just all
+about pattern matching.  Consider,
 ```
 load system "io".
+
+let x:%real = 3.1 .
+println x.
+```
+The left side of the `let` statement is a named type patterns that matches any real value and
+if that match is successful then the value is bound to the variable `x`.  Note,
+that even though this looks like a declaration, it is in fact a pattern matching
+operation.  The program will print the value `3.1`.
+
+## Flow of Control
+
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages in use such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.
+
+As we said, in terms flow of control statements there are really not a lot of surprises since
+Asteroid supports loops and conditionals in a way very similar to many of the other modern programming languages in use today.  For example, here is a short program with a `for` loop that prints out the first six even positive integers,
+```
+load system "io".
+
 for i in 0 to 10 step 2 do
-    println i
+    println i.
 end
 ```
 The output is,
@@ -369,99 +393,69 @@ The output is,
     10
 ```
 Here is another example that iterates over lists,
-
 ```
 load system "io".
+load system "util"
 
-for bird in ["turkey","duck","chicken"] do
-    println bird.
+for (ix,bird) in zip(["first","second","third"],["turkey","duck","chicken"]) do
+    println ("the "+ix+" bird is a "+bird).
 end
 ```
 The output is,
 ```
-    turkey
-    duck
-    chicken
+the first bird is a turkey
+the second bird is a duck
+the third bird is a chicken
 ```
+Here we first create a list of pairs using the `zip` function over which we then
+iterate pattern matching each of the pairs on the list with the pattern `(ix,bird)`.
 
-Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below. Here is a short program with an `if` statement that outlines what text to print as an output when certain inputs are (not) given,
-
+ The following is a short program that demonstrates an `if` statement,
 ```
-x = int(input("Please enter an integer: "))
+load system "io".
+load system "util".
 
-if x < 0:
-    x = 0
-    print('Negative changed to zero')
-elif x == 0:
-    print('Zero')
-elif x == 1:
-    print('Single')
-else:
-    print('More')
+let x = tointeger(input("Please enter an integer: ")).
+
+if x < 0 do
+    let x = 0.
+    println("Negative, changed to zero").
+elif x == 0 do
+    println("Zero").
+elif x == 1 do
+    println("Single")
+else do
+    println("More").
+end
 ```
-
+Even though Asteroid's flow of control statements look so familiar, they support pattern matching to a degree not found in other programming languages and which we will take a look at below.
 
 ## Functions
 
-Here is the grammar snippet that defines functions,
-```
-stmt      := FUNCTION ID body_defs END
-body_defs := WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
-```
-A closer look reveals that a function can have multiple bodies each associated with a different formal argument pattern.  Asteroid inherits this characteristic directly from functional languages like ML or Haskell.
+Functions in Asteroid resemble function definitions in functional programming
+languages such as Haskell and ML.
+Formal arguments are bound via pattern matching and functions are multi-dispatch, that is,
+a single function can have multiple bodies each attached to a different pattern
+instantiating the formal arguments.
 
-However, considering that a variable represents the simplest pattern we can write functions that look very familiar to the programmer coming from the Python or Java traditions.  Here is a function that reverses a list,
-```
-load system "util".
-load system "io".
-
-function reverse with list do
-    let len = length(list).
-    let r_list = list @[(len-1) to 0 step -1].
-    return r_list.
-end
-
-let my_list = [1,2,3].
-let my_reversed_list = reverse(my_list).
-println my_reversed_list.
-```
-The output is `[3,2,1]`.
-
-We'll talk about pattern matching in functions and multiple bodies later on in this document.  Asteroid also supports anonymous or `lambda` functions.  Here is a snippet of the grammar that defines anonymous functions,
-```
-primary := LAMBDA body_defs
-```
-where the `body_defs` are the same as for the functions defined above.  This implies that `lambda` functions can also have multiple bodies each associated with a different formal argument pattern.  Here is a simple example using a `lambda` function,
+Let's start with something simple.  Here is a function definition for `revdouble` that reverses a list of integers
+then doubles each value before returning the result,
 ```
 load system "io".
 
-println ((lambda with n do return n+1) 1).
-```
-The output is `2`.
+function revdouble
+  with l:%list do
+    return l @reverse() @map(lambda with x:%integer do return 2*x).
+  end
 
-## Basic Pattern Matching
+println (revdouble [1,2,3]).
+```
+The output is `[6,4,2]`.  Notice how we used type patterns to make sure that this
+function is only applied to lists of integers.
 
-Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern match ability when we discussed the `let` statement.  Below is another program that highlights a few other aspects of pattern matching.
-In particular, quoted expressions allow the programmer to treat expressions as structure and pattern match against that structure.  Quoted expressions can be interpreted as normal expressions using the `eval` function as shown in the following.  In the case that a statement is expected to fail, like the `let` statement `let '1 + 1 = 1 + 1.` we put it into a try-catch block.
-```
-load system "io".
-
-let '1 + 1 = '1 + 1. -- quoted expression
-let 2 = eval('1 + 1).
-let 2 = 1 + 1.
-try
-    let '1 + 1 = 1 + 1.  -- throws an exception
-catch _ do
-    println "1+1 pattern match failed".
-end
-```
-The output is,
-```
-    1+1 pattern match failed
-```
-Asteroid supports pattern matching on function arguments in the style of ML and many other functional programming languages.
-
-Below is the quick sort implemented in Asteroid as an example of this classic style pattern matching.  What is perhaps new is the `head-tail` operator being used in the last `orwith` clause.  Here the variable `pivot` matches the first element of the list and the variable `rest` matches the remaining list which is the original list with its first element removed.  We can  also see that the `+` operator symbols are overloaded operators in the standard model to act as a list concatenation operators in addition to arithmetic operators. What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is also expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
+In order to demonstrate multi-dispatch, the following is the quick sort implemented in
+Asteroid. Each `with`/`orwith` clause introduces a new function body with its
+corresponding pattern,
 ```
 load system "io".
 
@@ -488,10 +482,48 @@ function qsort
 -- print the sorted list
 println (qsort [3,2,1,0])
 ```
-The output is as excpected,
+The output is as expected,
 ```
-    [0,1,2,3]
+0,1,2,3]
 ```
+Notice that we use the multi-dispatch mechanism to deal with the base cases of the
+qsort recursion using separate function bodies in the first two `with` clauses.
+In the third `with` clause we use the head-tail operator `[pivot|rest]`
+which itself is a pattern matching any non-empty list.
+Here the variable `pivot` matches the first element of a list and the variable `rest` matches the remaining list which is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
+
+As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or `lambda` functions.  Lambda functions behave just like regular
+functions except that you declare them on-the-fly and they are not declared with a
+name.  Here is an example using a `lambda` function,
+```
+load system "io".
+
+println ((lambda with n do return n+1) 1).
+```
+The output is `2`.  
+
+## Basic Pattern Matching
+
+Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern match ability when we discussed the `let` statement.  Below is another program that highlights a few other aspects of pattern matching.
+In particular, quoted expressions allow the programmer to treat expressions as structure and pattern match against that structure.  Quoted expressions can be interpreted as normal expressions using the `eval` function as shown in the following.  In the case that a statement is expected to fail, like the `let` statement `let '1 + 1 = 1 + 1.` we put it into a try-catch block.
+```
+load system "io".
+
+let '1 + 1 = '1 + 1. -- quoted expression
+let 2 = eval('1 + 1).
+let 2 = 1 + 1.
+try
+    let '1 + 1 = 1 + 1.  -- throws an exception
+catch _ do
+    println "1+1 pattern match failed".
+end
+```
+The output is,
+```
+    1+1 pattern match failed
+```
+Asteroid supports pattern matching on function arguments in the style of ML and many other functional programming languages.
+
 We can also introduce our own custom constructors and use them in pattern matching.  The program below implements [Peano addition](https://en.wikipedia.org/wiki/Peano_axioms#Addition) on terms using the two Peano axioms,
 ```
 x + 0 = x
