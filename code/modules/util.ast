@@ -54,9 +54,53 @@ __retval__ = ('boolean', bool(item_val[1]))
 end
 
 ------------------------------------------------------------------
+let TP = pattern
+------------------------------------------------------------------
+-- pattern for selecting proper formatting body in 'tostring'
+with x %if (x is %boolean) or
+           (x is %integer) or
+           (x is %string).
+
+------------------------------------------------------------------
 function tostring
 ------------------------------------------------------------------
-with item do return escape
+-- convert an asteroid object to string.
+-- if format values are given apply the
+-- formatting to the object.
+
+-- booleans, integers, and strings with width spec are right justified
+-- if width spec is too narrow it is ignored
+with (v:*TP,w:%integer) do
+  let vs = tostring(v).
+  let padl = w - vs @length().
+  if padl > 0 do
+    return [1 to padl] @map(lambda with _ do return " ") @join("") + vs.
+  else do
+    return vs.
+  end
+-- floating point values with only a width spec are left justified with
+-- zero padding on the right.
+orwith (v:%real,w:%integer) do return escape
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+fmtstr = '{:'+str(w_val)+'f}'
+__retval__ = ('string', fmtstr.format(v_val))
+"
+-- floating point values with a width and precision specs
+-- are formatted according to Python formatting rules
+orwith (v:%real,w:%integer,p:%integer) do return escape
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+(P_TYPE, p_val) = state.symbol_table.lookup_sym('p')
+fmtstr = '{:'+str(w_val)+'.'+str(p_val)+'f}'
+__retval__ = ('string', fmtstr.format(v_val))
+"
+-- default clause
+orwith item do return escape
 "
 global __retval__
 from asteroid_support import term2string
