@@ -1,3 +1,4 @@
+#!/usr/bin/env asteroid
 load "io".
 load "util".
 load "random".

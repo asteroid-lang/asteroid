@@ -3,6 +3,7 @@
 --
 -- this module defines bitwise operations
 --
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
@@ -160,7 +161,7 @@ __retval__ = ('integer' , final)
 end
 
 ------------------------------------------------------------------
--- Get the bit size 
+-- Get the bit size
 function bsize
 ------------------------------------------------------------------
 with(x:%integer) do return escape

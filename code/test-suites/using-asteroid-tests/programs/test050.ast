@@ -1,6 +1,7 @@
 
 load "io".
 load "util".
+load "type".
 
 let number = 139487854.
 

@@ -1,5 +1,6 @@
 
 load "io".
+load "type".
 load "util".
 load "pick".
 

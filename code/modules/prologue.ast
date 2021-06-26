@@ -3,7 +3,7 @@
 --
 -- the standard Asteroid prologue defining global functions.
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
@@ -216,44 +216,6 @@ function range
   orwith stop:%integer do
     return [0 to stop-1].
   end
-
-------------------------------------------------------------------
--- TYPE FUNCTIONS --
-------------------------------------------------------------------
-
-------------------------------------------------------------------
-function islist
-------------------------------------------------------------------
-with item do
-  return item is %list
-end
-
-------------------------------------------------------------------
-function isscalar
-------------------------------------------------------------------
-with item do
-  return (item is %integer) or (item is %real).
-end
-
-------------------------------------------------------------------
-function isnone
-------------------------------------------------------------------
-with x do
-  return x is %none.
-end
-
-------------------------------------------------------------------
-function gettype
-------------------------------------------------------------------
-# get the type of 'x' as an Asteroid string
-with x do return escape
-"
-global __retval__
-
-(x_type, _) = state.symbol_table.lookup_sym('x')
-__retval__ = ('string', x_type)
-"
-end
 
 ------------------------------------------------------------------
 -- List member functions

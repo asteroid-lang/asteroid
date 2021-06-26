@@ -1,6 +1,7 @@
 
 load "io".
 load "util".
+load "type".
 
 function format with v do
     let maxlen = 3.

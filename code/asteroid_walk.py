@@ -1372,7 +1372,7 @@ def head_tail_exp(node):
 
     if TAIL_TYPE != 'list':
         raise ValueError(
-            "unsuported tail type {} in head-tail operator".
+            "unsupported tail type {} in head-tail operator".
             format(TAIL_TYPE))
 
     return ('list', [head_val] + tail_val)

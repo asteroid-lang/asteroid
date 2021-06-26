@@ -2,6 +2,7 @@
 load "io".
 load "math".
 load "util".
+load "type".
 
 function polar_to_cartesian with (r,psi) do
     -- return a tuple: (x,y)
@@ -12,7 +13,7 @@ function cartesian_to_polar with (x,y) do
     return (sqrt(pow(x,2)+pow(y,2)),cartesian_to_psi(x,y)).
 end
 
-function cartesian_to_psi 
+function cartesian_to_psi
     with (x,y) %if x > 0  do
         return atan(toreal(y)/x).
     orwith (x,y) %if x < 0 and y >= 0 do
@@ -26,7 +27,7 @@ function cartesian_to_psi
     orwith (x,y) %if x == 0 and y == 0 do
         return none.
     end
-    
+
 let (r,psi) = cartesian_to_polar(-3,5).
 let (x,y) = polar_to_cartesian(r,psi).
 

@@ -2,6 +2,7 @@
 load "io".
 load "random".
 load "util".
+load "type".
 
 seed(42).
 
@@ -13,4 +14,3 @@ println (randint(0,1)).      -- always 0 or 1
 let n = 10.
 println (randint(0.0,toreal(n))).
 println (randint(0,n)).
-

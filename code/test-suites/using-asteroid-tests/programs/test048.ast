@@ -1,6 +1,7 @@
 
 load "io".
 load "util".
+load "type".
 
 let bin = "101101".
 let int = tointeger(bin,2).
