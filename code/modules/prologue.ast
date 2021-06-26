@@ -46,13 +46,13 @@ item_val = state.symbol_table.lookup_sym('item')
 if item_val[0] in ['list','tuple','string']:
     __retval__ = ('integer', len(item_val[1]))
 elif item_val[0] == 'object':
-    (STRUCT,
+    (OBJECT,
         (STRUCT_ID, (ID, name)),
         (OBJECT_MEMORY, (LIST, object_memory))) = item_val
     l = len(data_only(object_memory))
     __retval__ = ('integer', l)
 elif item_val[0] == 'struct':
-    (OBJECT,
+    (STRUCT,
         (MEMBER_NAMES, (LIST, member_names)),
         (STRUCT_MEMORY, (LIST, struct_memory)),
         (STRUCT_SCOPE, t_struct_scope)) = item_val
