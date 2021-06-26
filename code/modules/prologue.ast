@@ -39,15 +39,30 @@ function len
 with item do return escape
 "
 global __retval__
+from asteroid_support import data_only
 
 item_val = state.symbol_table.lookup_sym('item')
 
-if item_val[0] not in ['list','tuple','string']:
-   raise ValueError(
-   	 'len expected a list, tuple, or string got {}'
-	 .format(item_val[0]))
+if item_val[0] in ['list','tuple','string']:
+    __retval__ = ('integer', len(item_val[1]))
+elif item_val[0] == 'object':
+    (STRUCT,
+        (STRUCT_ID, (ID, name)),
+        (OBJECT_MEMORY, (LIST, object_memory))) = item_val
+    l = len(data_only(object_memory))
+    __retval__ = ('integer', l)
+elif item_val[0] == 'struct':
+    (OBJECT,
+        (MEMBER_NAMES, (LIST, member_names)),
+        (STRUCT_MEMORY, (LIST, struct_memory)),
+        (STRUCT_SCOPE, t_struct_scope)) = item_val
+    l = len(data_only(struct_memory))
+    __retval__ = ('integer', l)
 
-__retval__ = ('integer', len(item_val[1]))
+else:
+    raise ValueError(
+   	  'len expected a list, tuple, string, or structure got {}'
+	    .format(item_val[0]))
 "
 end
 
