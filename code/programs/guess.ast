@@ -4,6 +4,7 @@
 load "io".
 load "util".
 load "random".
+load "type".
 
 println "".
 println "     \||||||||||||||||||/".

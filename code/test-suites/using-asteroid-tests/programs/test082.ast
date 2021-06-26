@@ -2,6 +2,7 @@
 load "io".
 load "vector".
 load "util".
+load "type".
 
 let triangle = [[1]].
 let ix = 0.

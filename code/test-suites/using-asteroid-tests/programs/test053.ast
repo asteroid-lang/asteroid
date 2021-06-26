@@ -3,6 +3,7 @@ load "io".
 load "math".
 load "util".
 load "hash".
+load "type".
 
 let roman_hash = HashTable().
 roman_hash @insert(1000,["","M","MM","MMM"]).

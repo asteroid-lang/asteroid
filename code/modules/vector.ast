@@ -3,10 +3,11 @@
 --
 -- this module defines functions useful for vector arithmetic
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 load system "util".
+load system "type".
 
 ------------------------------------------------------------------
 function vop
