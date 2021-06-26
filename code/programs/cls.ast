@@ -1,7 +1,7 @@
+#!/usr/bin/env asteroid
 load "io".
 load "util".
 load "random".
-load "type".
 
 cls().
 
