@@ -2,7 +2,7 @@
 ###########################################################################################
 # Asteroid toplevel driver
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import cProfile
