@@ -363,6 +363,16 @@ See the Built-ins section of this Reference Guide for more on the list and strin
 * Function `isscalar`, given `item`, returns `(item is %integer)` or `(item is %real)`.
 * Function `isnone`, given `x`, returns `x is %none`.
 
-[Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
+[Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures. It supports the following functions,
 
-[Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic.
+* Function `exit`, given `none` or `msg:%string`, imports `sys.exit(1)` to exit the program.
+* Function `copy`, given Asteroid object `obj`, makes a deep copy of it.
+* Function `cls`, given `none`, clears the screen.
+* Function `sleep`, given `secs %if isscalar(secs)`, programs sleep for `secs` seconds.
+* Function `zip`, given `(list1:%list,list2:%list)`, implements Python's zip function. It turns Python tuples into Asteroid tuples and puts them onto an output list.
+* Function `unzip`, given `(list:%list)`, will unzip a list of pairs.
+* Function `ascii`, given a character `item:%string`, returns the corresponding ASCII code.
+* Function `achar`, given a decimal ASCII code `item:%integer`, returns the corresponding character symbol.
+
+[Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic). It supports the following functions,
+* Function `vop` can be called with three different inputs: `(f:%function,a:%list,b:%list)`, `(f:%function,a:%list,b %if isscalar(b))`, and `(f:%function,a %if isscalar(a),b:%list)`. In any case, this function implements actual vector arithmetic. It also implements vector/scalar arithmetic.
