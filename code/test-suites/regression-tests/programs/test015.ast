@@ -2,13 +2,50 @@
 load "io".
 load "util".
 
+-- UPDATED 6-28-21 to reflect issue #27 resolution
+--------------------------------------------------
 try
-    let (x,x) = (1,2).
+    let (x,x) = (1,1).
     println x.
 catch Exception(kind, s) do
     if not isnone(s @index("Non-linear")) do
-        . -- pass
+        println("PASSED.").
     else
         throw Error("FAIL: unexpected error "+s).
     end.
 end.
+--------------------------------------------------
+try
+    let [x,w,y,[a,b,x]] = [1,2,3,[1,2,1]].
+    println x.
+catch Exception(kind, s) do
+    if not isnone(s @index("Non-linear")) do
+        println("PASSED.").
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.
+--------------------------------------------------
+try
+    let (name:%string,name:%string) = ("a","a").
+catch Exception(kind, s) do
+    if not isnone(s @index("Non-linear")) do
+        println("PASSED.")
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.
+--------------------------------------------------
+try
+    let p1 = pattern with x.
+    let p2 = pattern with x.
+    let p3 = pattern with (*p1,*p2).
+    let *p3 = ("a","a").
+catch Exception(kind, s) do
+    if not isnone(s @index("Non-linear")) do
+        println("PASSED.")
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.
+--------------------------------------------------
