@@ -2,7 +2,6 @@
 load "io".
 load "util".
 
--- TODO: this is NOT correct see issue #27
 try
     let (x,x) = (1,2).
     println x.
