@@ -1,6 +1,15 @@
 
 load "io".
+load "util".
 
 -- TODO: this is NOT correct see issue #27
-let (x,x) = (1,2).
-println x.
+try
+    let (x,x) = (1,2).
+    println x.
+catch Exception(kind, s) do
+    if not isnone(s @index("Non-linear")) do
+        . -- pass
+    else
+        throw Error("FAIL: unexpected error "+s).
+    end.
+end.

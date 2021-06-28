@@ -122,6 +122,7 @@ def unify(term, pattern, unifying = True ):
                     unifier += unify(term[i], pattern[i])
                 else:
                     unifier += unify(term[i], pattern[i], False)
+            check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
     ### Asteroid value level matching
@@ -341,6 +342,7 @@ def unify(term, pattern, unifying = True ):
             else:
                 unifier += unify(list_head, pattern_head,False)
                 unifier += unify(list_tail, pattern_tail,False)
+            check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
         else: #Else we are evaluating subsumption to another head-tail
@@ -360,7 +362,16 @@ def unify(term, pattern, unifying = True ):
             else: #Else we continue evaluating the different terms in the head-tail pattern
                 (HEAD_TAIL, patternH_head, patternH_tail) = pattern
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
-                return unify(patternL_head,patternH_head,False) + unify(patternL_tail,patternH_tail,False)
+                unifier = []
+                for i in range(lengthH):
+                    unifier += unify(patternL_head,patternH_head,False)
+                    try:
+                        (RAW_HEAD_TAIL, patternH_head, patternH_tail) = patternH_tail
+                        (RAW_HEAD_TAIL, patternL_head, patternL_tail) = patternL_tail
+                    except:
+                        break
+                check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+                return unifier
 
     elif pattern[0] == 'deref':  # ('deref', ('id', sym))
         (ID, sym) = pattern[1]
@@ -433,6 +444,44 @@ def declare_formal_args(unifiers):
         if sym == 'this':
             raise ValueError("'this' is a reserved word")
         state.symbol_table.enter_sym(sym, term)
+
+#########################################################################
+# Evaluates a set of unifiers for the presence of repeated variable 
+# names within a pattern. Repeated variables names within the same pattern
+# are what is called a non-linear pattern, which is not currently supported
+# by Asteroid. 
+# This function will raise a PatternMatchFailed exception when a non-linear
+# pattern has been recognized.
+# Otherwise, this function returns control to the caller after finishing.
+def check_repeated_symbols( unifiers ):
+
+    symbols = {} # Will hold all previously seen unifiers(term-pattern) as (key-value) 
+    skip_unifier = False #Determines if we want to eval the current unifier pair
+
+    # For each pair of unifiers
+    for unifier in unifiers:
+        
+        # Unpack the pattern-term pair
+        (pattern, term) = unifier
+
+        # If the pattern side is an ID node, unpack it
+        # Else we skip this unifier
+        if pattern[0] == 'id':
+            (ID, sym) = pattern
+        else:
+            skip_unifier = True
+
+        # If we are not skipping this turn, check to see if we have seen this
+        # variable before. 
+        if skip_unifier:
+            skip_unifier = False
+
+        elif sym in symbols: # We have found a non-linear pattern
+            raise PatternMatchFailed(
+            "Non-linear pattern dectected. Multiple instances of {} found within a pattern.".format(sym))
+
+        else: # Ekse we have never seen this before so we record it.
+            symbols[sym] = term
 
 #########################################################################
 # we are indexing into the memory of either a list/tuple/string or an
