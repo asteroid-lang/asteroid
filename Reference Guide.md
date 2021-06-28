@@ -171,7 +171,7 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 
 **The following member functions only support lists,**
 
-* Function `islist`, given the input item `do`, returns the item `is %list`.
+* Function `islist`, given the input item `do`, returns the item `is %list`. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.)
 * The following `list_member_functions`,
 
       escape
@@ -220,10 +220,12 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 * Function `__list_filter__`, given `(self:%list,f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of input list that are false are removed.
 * Function `__list_member__`, given `(self:%list,item)`, returns `true` only if `self @count(item) > 0`.
 
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)for more on all the functions above.
+
 A **string** is a sequence of characters that can be used as a variable or a literal constant.
 
 **The following member functions only support strings,**
-* Function `gettype` will get the type of `x` as an Asteroid string.
+* Function `gettype` will get the type of `x` as an Asteroid string. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.)
 * The following `string_member_functions`, 
 
             escape
@@ -253,7 +255,17 @@ A **string** is a sequence of characters that can be used as a variable or a lit
 * Function `__string_index__`can be called with three different inputs: `(self:%string,item:%string,startix:%integer,endix:%integer)`, `(self:%string,item:%string,startix:%integer)`, or `(self:%string,item:%string)`. This function allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
 * Function `__string_flip__` explodes, reverses, and joins the given input `self:%string`.
 
-More information about the functions that `lists` and `strings` contribute to can be found in the [Prologue.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast).
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)   for more on all the functions above.
+
+/////
+
+* Function `tointeger`, given `(item:%string,base:%integer)`, returns `('integer', int(item_val[1], base=base_val[1]))`. It can also be called with `item`, which gives the output `('integer', int(item_val[1]))`.
+* Function `tostring` converts an Asteroid object into a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs: `(v:*TP,w:%integer)`, `(v:%real,w:%integer)`, `(v:%real,w:%integer,p:%integer)`, and `item`.
+* Function `tobase`, given `(x:%integer,base:%integer)`, returns the given integer `x` as a numeral in different bases (as a string).
+
+See the [Type.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for the functions above.
+
+More information about the functions that `lists` and `strings` contribute to can be found in the [Prologue.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast), as well as the [Type.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast).
 
 
 ## Asteroid Modules
@@ -341,6 +353,15 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `map`, given the input `f`, applies a given function to each element of a function.
 * Function `append`, given `item`, adds said item to a stream.
 * Function `__string__`, given `none`, outputs it as a string.
+
+[Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) defines type related functions and structures.
+
+See the Built-ins section of this Reference Guide for more on the list and string related functions this module supports. Other than those, this module supports the following functions,
+
+* Function `toreal`, given `item`, returns the input as a real number data type `('real', float(item_val[1]))`.
+* Function `toboolean`, given `item`, returns the input as a Boolean value of either true or false.
+* Function `isscalar`, given `item`, returns `(item is %integer)` or `(item is %real)`.
+* Function `isnone`, given `x`, returns `x is %none`.
 
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures.
 
