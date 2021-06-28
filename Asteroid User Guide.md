@@ -362,14 +362,15 @@ about pattern matching.  Consider,
 ```
 load system "io".
 load system "math".
+load system "type".
 
 let x:%real = pi.
-println x.
+println (tostring(x,stringformat(4,2))).
 ```
 The left side of the `let` statement is a named type patterns that matches any real value and
 if that match is successful then the value is bound to the variable `x`.  Note,
 that even though this looks like a declaration, it is in fact a pattern matching
-operation.  The program will print the value `3.141592653589793`.
+operation.  The program will print the value `3.14`.
 
 ## Flow of Control
 
@@ -485,7 +486,7 @@ println (qsort [3,2,1,0])
 ```
 The output is as expected,
 ```
-0,1,2,3]
+[0,1,2,3]
 ```
 Notice that we use the multi-dispatch mechanism to deal with the base cases of the
 qsort recursion using separate function bodies in the first two `with` clauses.
@@ -494,51 +495,96 @@ which itself is a pattern matching any non-empty list.
 Here the variable `pivot` matches the first element of a list and the variable `rest` matches the remaining list which is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or `lambda` functions.  Lambda functions behave just like regular
-functions except that you declare them on-the-fly and they are not declared with a
+functions except that you declare them on-the-fly and they are declared without a
 name.  Here is an example using a `lambda` function,
 ```
 load system "io".
 
 println ((lambda with n do return n+1) 1).
 ```
-The output is `2`.  
+The output is `2`.  Here, the lambda function is a function that takes a value
+and increments it by one.  We then apply the value `1` to the function and the
+print function prints out the value `2`.
 
-## Basic Pattern Matching
+## Pattern Matching
 
-Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern match ability when we discussed the `let` statement.  Below is another program that highlights a few other aspects of pattern matching.
-In particular, quoted expressions allow the programmer to treat expressions as structure and pattern match against that structure.  Quoted expressions can be interpreted as normal expressions using the `eval` function as shown in the following.  In the case that a statement is expected to fail, like the `let` statement `let '1 + 1 = 1 + 1.` we put it into a try-catch block.
+Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern matching ability when we discussed the `let` statement.  We can also have pattern matching
+in expression using the `is` predicate.
+
+### Pattern Matching in Expressions: The `is` Predicate
+
+The advantage of the `is` predicate is that we can have pattern matching
+in Asteroid anywhere where expressions are allowed.  Consider,
 ```
 load system "io".
 
-let '1 + 1 = '1 + 1. -- quoted expression
-let 2 = eval('1 + 1).
-let 2 = 1 + 1.
-try
-    let '1 + 1 = 1 + 1.  -- throws an exception
-catch _ do
-    println "1+1 pattern match failed".
+let p =	(1,2).
+
+if p is (x,y,z) do
+  println ("it's a triple with: "+x+","+y+","+z)
+elif p is (x,y) do
+  println ("it's a pair with: "+x+","+y).
+else do
+  println "it's something else".
 end
+```
+Here we use patterns to determine if `p` is either a triple, a pair, or something else where
+pattern matching is embedded in the expressions of the `if` statement. The
+output of this program is,
+```
+it's a pair with: 1,2
+```
+Pattern matching with the `is` predicate can happen anywhere where expressions can
+be used.  That means we can use the predicate also in the `let` statements,
+```
+let true = (1,2) is (1,2).
+```
+This is kind of strange looking but it succeeds.  Here the
+left side of the `is` predicate is the term and
+the right side is the pattern.  Obviously this pattern match will succeed because the
+term and the pattern look identical.  The return value of the `is` predicate is then
+pattern matched against the `true` value on the left of the `=` operator.
+
+Given that we can employ pattern matching anywhere where there is an expression using
+the `is` predicate, that means, we can also employ pattern matching in loops.
+In the following program we use the `is` predicate to test whether the list is empty or not
+while looping,
+```
+load system "io".
+
+let list = [1,2,3].
+
+repeat do
+    let [head|tail] = list.
+    println head.
+    let list = tail.
+until list is [].
 ```
 The output is,
 ```
-    1+1 pattern match failed
+1
+2
+3
 ```
-Asteroid supports pattern matching on function arguments in the style of ML and many other functional programming languages.
+The example employs pattern matching using the head-tail operator in the `repeat-until` loop expression in order to iterate over a list and print the list elements.  The
+termination condition of the loop is computed with the `is` predicate.
 
-We can also introduce our own custom constructors and use them in pattern matching.  The program below implements [Peano addition](https://en.wikipedia.org/wiki/Peano_axioms#Addition) on terms using the two Peano axioms,
+### Pattern Matching in Function Arguments
+
+As we have seen earlier, Asteroid supports pattern matching on function arguments in the style of ML and many other functional programming languages.
+Here is an example that uses pattern matching on function arguments using custom data structures.  The program below implements [Peano addition](https://en.wikipedia.org/wiki/Peano_axioms#Addition) on terms using the two Peano axioms,
 ```
 x + 0 = x
-x + S(y) = S(x+y)
+x + s(y) = s(x+y)
 ```
-Here `x` and `y` are variables, `0` represents the natural number with value zero, and `S` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number `0`. Here is the program where we replaced the `+` operator with the
+Here `x` and `y` are variables, `0` represents the natural number with value zero, and `s` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number `0`. Here is the program where we replaced the `+` operator with the
 `add` symbol,
 ```
 -- implements Peano addition on terms
 load system "io".
-load system "util".
 
-structure S with
-    data x.
+structure s with
+    data val.
     end
 
 structure add with
@@ -549,110 +595,53 @@ structure add with
 function reduce
     with add(x,0) do      
         return reduce(x).
-    orwith add(x,S(y))  do
-        return S(reduce(add(x,y))).
+    orwith add(x,s(y))  do
+        return s(reduce(add(x,y))).
     orwith term do     
         return term.
     end
 
 -- add 2 3
-println(reduce(add(S(S(0)),S(S(S(0)))))).
+println(reduce(add(s(s(0)),s(s(s(0)))))).
 ```
-Our program defines the structure `S` to represent the successor function and the structure `add` to represent Peano addition. Next, it defines a function that uses pattern matching to identify the left sides of the two axioms.  If either pattern matches the input to the `reduce` function it will activate the corresponding function body and rewrite the term recursively in an appropriate manner.  We have one additional pattern which matches if neither one of the Peano axiom patterns matches and terminates the recursion.  Finally,  on the last line, we use our `reduce` function to compute the Peano term for the addition of 2 + 3. As expected, the output of this program is,
+Our program defines the structure `s` to represent the successor function and the structure `add` to represent Peano addition. Next, it defines a function that uses pattern matching to identify the left sides of the two axioms.  If either pattern matches the input to the `reduce` function it will activate the corresponding function body and rewrite the term recursively in an appropriate manner.  We have one additional pattern which matches if neither one of the Peano axiom patterns matches and terminates the recursion.  Finally,  on the last line, we use our `reduce` function to compute the Peano term for the addition of 2 + 3. As expected, the output of this program is,
 ```
-S(S(S(S(S(0)))))
+s(s(s(s(s(0)))))
 ```
 which represents the value 5.
 
-## Pattern Matching in Control Structures
+### Conditional Pattern Matching
 
-Before we begin the discussion we need to introduce the `is` predicate  which is a built-in operator that takes the pattern on the right side and applies it to the subject term on the left side.  If there is a match the predicate will return `true` if not then it will return `false`.  Here is a snippet that illustrates the predicate,
-```
-let true = (1,2) %is (x,y).
-```
-The subject term `1 + 2` is matched to the pattern `x + y` which of course will succeed with the variable bindings `x`  &#x21A6; `1` and `y` &#x21A6; `2`.
-
-### Pattern Matching in `if` Statements
-
-In Asteroid an `if` statement consists of an `if` clause followed by zero or more `elif` clauses followed by an optional `else` clause.  The semantics of the `if` statement is fairly standard.  The `if` and `elif` clauses test the value of their corresponding expressions for the term `true` and execute their corresponding set of statements if it does evaluate to `true`.  If none of the expressions evaluate to `true` then the `else` clause is executed if present.
-
-In order to enable pattern matching in `if` statements we use the `is` predicate.  We can rewrite the `reduce` function from the above Peano arithmetic example using pattern matching in `if` statements as an illustration,
-```
-function reduce with term do
-   if term %is add(x,0) do
-        return reduce(x).
-    elif term %is add(x,S(y))  do
-        return S(reduce(add(x,y))).
-    else do
-        return term.
-    end
-end
-```
-One thing to note is that the variable bindings of a successful pattern match are immediately available in the surrounding scope and therefore are available in the corresponding statements of the `if` or `elif` clause.
-
-### Pattern Matching in `repeat-until` Loops
-
-Pattern matching in `while` loops follows a similar approach to pattern matching in `if` statements.  The `while` statement tests the evaluation of the loop expression and if it evaluates to the term `true` then the loop body is executed.  Again we use the `is` predicate to enable pattern matching in `while` loops.
-
-The example below shows a program that employs pattern matching using the head-tail operator in the `repeat-until` loop expression in order to iterate over a list and print the list elements.  Note the use of the `is` predicate to test whether the list is empty or not.  
+Asteroid allows the user to attach conditions to patterns that need to hold in order
+for the pattern match to succeed.  This is particularly useful for restricting
+input values to function bodies.  Consider the following definition of the
+`factorial` function where we use conditional pattern matching to control
+the kind of values that are being passed to a particular function body,
 ```
 load system "io".
 
-let list = [1,2,3].
+function factorial
+    with 0 do
+        return 1
+    orwith (n:%integer) %if n > 0 do
+        return n * factorial (n-1).
+    orwith (n:%integer) %if n < 0 do
+        throw Error("factorial is not defined for "+n).
+    end
 
-repeat do
-    let [head|tail] = list.
-    println head.
-    let list = tail.
-until list %is [].
+println ("The factorial of 3 is: " + factorial (3)).
 ```
-The output is,
-```
-    1
-    2
-    3
-```
+Here we see that first, we make sure that we are being passed integers and second,
+that the integers are positive using the appropriate conditions on the input values. If
+we are being passed a negative integer then we throw an error.
+
 
 ### Pattern Matching in `for` Loops
 
-For completeness sake we have repeated here an example of a simple `for` from above,
-```
-load system "io".
-
-for bird in ["turkey","duck","chicken"] do
-    println bird.
-end
-```
-Turns out that in simple `for` loops such as the one above the loop variable is actually a pattern that gets matched to the elements of the list the loop iterates over.
-We can expand this simple pattern into a much more complicated pattern and do pattern matching while we are iterating.  This allows us to access substructures of the items being iterated over in a direct and succinct way.  The example below shows such a program.  The program constructs a list of `Person` structures that consist of a name and an age.  The `for` loop iterates over this list while pattern matching the `Person` constructor at each iteration binding the age variable to the appropriate value in the structure.  In the loop body it carries a running sum of the age values which it then uses to compute the average age of the persons on the list.  
-```
-load system "io".
-
-structure Person with
-    data name.
-    data age.
-    end
-
-let people = [
-    Person("George", 32),
-    Person("Sophie", 46),
-    Person("Oliver", 21)
-    ].
-
-let n = people @length().
-let sum = 0.
-
-for Person(_,age) in people do
-    let sum = sum + age.
-end
-
-println ("Average Age: " + (sum/n)).
-```
-The output is,
-```
-    Average Age: 33
-```
-We can also use pattern matching in a `for` loop to select certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
+We have seen pattern matching in `for` loops earlier.  Here we show another
+example that combines structural matching with regular expression matching
+in `for` loops
+that selects certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
 ```
 load system "io".
 
@@ -673,16 +662,15 @@ for Person(name:".*p.*",_) in people do
   println name.
 end
 ```
-The output is `Sophie`.
-
-Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name so that we can print out the name if the regular expression matches.
+Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is `Sophie`.  
 
 ### Pattern Matching in `try-catch` Statements
 
-Exception handling in Asteroid is very similar to exception handling in many of the other modern programming languages available today.  The example below shows an Asteroid program shows that throws one of two exceptions depending on the randomly generated value `i`,
+Exception handling in Asteroid is very similar to exception handling in many of the other modern programming languages available today.  The example below shows an Asteroid program  that throws one of two exceptions depending on the randomly generated value `i`,
 ```
 load system "io".
-load system "util".
+load system "random".
+load system "type".
 
 structure Head with
     data val.
@@ -700,12 +688,15 @@ try
         throw Tail(i).
     end
 catch Head(v) do
-    println("you win with "+v).
+    println("you win with "+tostring(v,stringformat(4,2))).
 catch Tail(v) do
-    println("you loose with "+v).
+    println("you loose with "+tostring(v,stringformat(4,2))).
 end
 ```
-The `Head` and `Tail` exceptions are handled by their corresponding `catch` statements on, respectively.  In both cases the exception object is unpacked using pattern matching and the unpacked value is used in the appropriate message printed to the screen.
+The `Head` and `Tail` exceptions are handled by their corresponding `catch` statements, respectively.  In both cases the exception object is unpacked using pattern matching and the unpacked value is used in the appropriate message printed to the screen.
+
+It is worth noting that even though Asteroid has builtin exception objects such as `Error`
+you can construct any kind of object and throw it as part of an exception.
 
 
 ## Object-Oriented Programming and Pattern Matching
