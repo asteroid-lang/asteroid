@@ -357,7 +357,7 @@ that matches the pattern on the right of the colon.  The program will print,
 (1,2)
 ```
 We can combine type patterns and named patterns to give us something that looks
-like a variable declaration in other languages but in Asteroid it is still just all
+like a variable declaration in other languages. In Asteroid, though, it is still just all
 about pattern matching.  Consider,
 ```
 load system "io".
@@ -367,8 +367,8 @@ load system "type".
 let x:%real = pi.
 println (tostring(x,stringformat(4,2))).
 ```
-The left side of the `let` statement is a named type patterns that matches any real value and
-if that match is successful then the value is bound to the variable `x`.  Note,
+The left side of the `let` statement is a named type pattern that matches any real value, and
+if that match is successful then the value is bound to the variable `x`.  Note
 that even though this looks like a declaration, it is in fact a pattern matching
 operation.  The program will print the value `3.14`.
 
@@ -376,8 +376,7 @@ operation.  The program will print the value `3.14`.
 
 Control structure implementation in Asteroid is along the lines of any of the modern programming languages in use such as Python, Swift, or Rust.  For example, the `for` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the `if` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.
 
-As we said, in terms flow of control statements there are really not a lot of surprises since
-Asteroid supports loops and conditionals in a way very similar to many of the other modern programming languages in use today.  For example, here is a short program with a `for` loop that prints out the first six even positive integers,
+As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages in use today.  For example, here is a short program with a `for` loop that prints out the first six even positive integers,
 ```
 load system "io".
 
@@ -409,8 +408,8 @@ the first bird is a turkey
 the second bird is a duck
 the third bird is a chicken
 ```
-Here we first create a list of pairs using the `zip` function over which we then
-iterate pattern matching each of the pairs on the list with the pattern `(ix,bird)`.
+Here we first create a list of pairs using the `zip` function, over which we then
+iterate pattern matching on each of the pairs on the list with the pattern `(ix,bird)`.
 
  The following is a short program that demonstrates an `if` statement,
 ```
@@ -434,8 +433,7 @@ Even though Asteroid's flow of control statements look so familiar, they support
 
 ## Functions
 
-Functions in Asteroid resemble function definitions in functional programming
-languages such as Haskell and ML.
+Functions in Asteroid resemble function definitions in functional programming languages such as Haskell and ML.
 Formal arguments are bound via pattern matching and functions are multi-dispatch, that is,
 a single function can have multiple bodies each attached to a different pattern
 instantiating the formal arguments.
@@ -489,10 +487,10 @@ The output is as expected,
 [0,1,2,3]
 ```
 Notice that we use the multi-dispatch mechanism to deal with the base cases of the
-qsort recursion using separate function bodies in the first two `with` clauses.
+`qsort` recursion using separate function bodies in the first two `with` clauses.
 In the third `with` clause we use the head-tail operator `[pivot|rest]`
 which itself is a pattern matching any non-empty list.
-Here the variable `pivot` matches the first element of a list and the variable `rest` matches the remaining list which is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
+Here the variable `pivot` matches the first element of a list, and the variable `rest` matches the remaining list. This remaining list is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if `foobar` is a function then `foobar(a)` is a function call in Asteroid but so is `foobar a`.  The latter form of function call is used in the last line of the function `qsort` below.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or `lambda` functions.  Lambda functions behave just like regular
 functions except that you declare them on-the-fly and they are declared without a
@@ -528,13 +526,12 @@ else do
   println "it's something else".
 end
 ```
-Here we use patterns to determine if `p` is either a triple, a pair, or something else where
-pattern matching is embedded in the expressions of the `if` statement. The
+Here we use patterns to determine if `p` is a triple, a pair, or something else. Pattern matching is embedded in the expressions of the `if` statement. The
 output of this program is,
 ```
 it's a pair with: 1,2
 ```
-Pattern matching with the `is` predicate can happen anywhere where expressions can
+Pattern matching with the `is` predicate can happen anywhere expressions can
 be used.  That means we can use the predicate also in the `let` statements,
 ```
 let true = (1,2) is (1,2).
@@ -545,8 +542,8 @@ the right side is the pattern.  Obviously this pattern match will succeed becaus
 term and the pattern look identical.  The return value of the `is` predicate is then
 pattern matched against the `true` value on the left of the `=` operator.
 
-Given that we can employ pattern matching anywhere where there is an expression using
-the `is` predicate, that means, we can also employ pattern matching in loops.
+It is a given that we can employ pattern matching anywhere there is an expression using
+the `is` predicate. That means we can also employ pattern matching in loops.
 In the following program we use the `is` predicate to test whether the list is empty or not
 while looping,
 ```
@@ -604,7 +601,7 @@ function reduce
 -- add 2 3
 println(reduce(add(s(s(0)),s(s(s(0)))))).
 ```
-Our program defines the structure `s` to represent the successor function and the structure `add` to represent Peano addition. Next, it defines a function that uses pattern matching to identify the left sides of the two axioms.  If either pattern matches the input to the `reduce` function it will activate the corresponding function body and rewrite the term recursively in an appropriate manner.  We have one additional pattern which matches if neither one of the Peano axiom patterns matches and terminates the recursion.  Finally,  on the last line, we use our `reduce` function to compute the Peano term for the addition of 2 + 3. As expected, the output of this program is,
+Our program defines the structure `s` to represent the successor function and the structure `add` to represent Peano addition. Next, it defines a function that uses pattern matching to identify the left sides of the two axioms.  If either pattern matches the input to the `reduce` function, it will activate the corresponding function body and rewrite the term recursively in an appropriate manner.  We have one additional pattern which matches if neither one of the Peano axiom patterns matches and terminates the recursion.  Finally,  on the last line, we use our `reduce` function to compute the Peano term for the addition of 2 + 3. As expected, the output of this program is,
 ```
 s(s(s(s(s(0)))))
 ```
@@ -633,13 +630,13 @@ println ("The factorial of 3 is: " + factorial (3)).
 ```
 Here we see that first, we make sure that we are being passed integers and second,
 that the integers are positive using the appropriate conditions on the input values. If
-we are being passed a negative integer then we throw an error.
+we are being passed a negative integer, then we throw an error.
 
 
 ### Pattern Matching in `for` Loops
 
 We have seen pattern matching in `for` loops earlier.  Here we show another
-example that combines structural matching with regular expression matching
+example. This combines structural matching with regular expression matching
 in `for` loops
 that selects certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
 ```
@@ -695,7 +692,7 @@ end
 ```
 The `Head` and `Tail` exceptions are handled by their corresponding `catch` statements, respectively.  In both cases the exception object is unpacked using pattern matching and the unpacked value is used in the appropriate message printed to the screen.
 
-It is worth noting that even though Asteroid has builtin exception objects such as `Error`
+It is worth noting that even though Asteroid has builtin exception objects such as `Error`,
 you can construct any kind of object and throw it as part of an exception.
 
 
