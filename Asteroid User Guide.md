@@ -507,12 +507,11 @@ print function prints out the value `2`.
 ## Pattern Matching
 
 Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern matching ability when we discussed the `let` statement.  We can also have pattern matching
-in expression using the `is` predicate.
+in expressions using the `is` predicate.
 
 ### Pattern Matching in Expressions: The `is` Predicate
 
-The advantage of the `is` predicate is that we can have pattern matching
-in Asteroid anywhere where expressions are allowed.  Consider,
+Consider the following example of this predicate among some patterns,
 ```
 load system "io".
 
@@ -542,8 +541,7 @@ the right side is the pattern.  Obviously this pattern match will succeed becaus
 term and the pattern look identical.  The return value of the `is` predicate is then
 pattern matched against the `true` value on the left of the `=` operator.
 
-It is a given that we can employ pattern matching anywhere there is an expression using
-the `is` predicate. That means we can also employ pattern matching in loops.
+We can also employ pattern matching in loops.
 In the following program we use the `is` predicate to test whether the list is empty or not
 while looping,
 ```
