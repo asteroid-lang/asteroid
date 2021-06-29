@@ -477,8 +477,8 @@ def check_repeated_symbols( unifiers ):
             skip_unifier = False
 
         elif sym in symbols: # We have found a non-linear pattern
-            raise PatternMatchFailed(
-            "Non-linear pattern dectected. Multiple instances of {} found within a pattern.".format(sym))
+            raise NonLinearPatternError(
+            "multiple instances of {} found within a pattern.".format(sym))
 
         else: # Ekse we have never seen this before so we record it.
             symbols[sym] = term
