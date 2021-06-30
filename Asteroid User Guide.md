@@ -694,15 +694,106 @@ It is worth noting that even though Asteroid has builtin exception objects such 
 you can construct any kind of object and throw it as part of an exception.
 
 
-## Object-Oriented Programming and Pattern Matching
+## Structures, Object-Based Programming, and Pattern Matching
 
-We introduce Asteroid's objects using the dog example from the [Python documentation](https://docs.python.org/3/tutorial/classes.html).  The code below shows that Python example translated into Asteroid.  Asteroid's object system is prototype based.  Objects are defined with the `structure` keyword and the structure name serves as a new type. The structure name itself also serves as a constructor call in order to instantiate new objects.
-Here we provide a constructor using the `__init__` member function name.  If no such member function exists
-Asteroid would provide a default constructor to initialize the data members of the form `Dog(a,b)` where the value
-`a` would be copied to the data member `name` and the value `b` would be copied to the `tricks` data member.
-Asteroid generates an implicit object reference as the first argument to the called function.  Notice that at the call site  we only provide a single argument whereas the function definition has two arguments; the first one capturing the object reference.
+We saw structures such as,
+```
+structure Person with
+    data name.
+    data age.
+    data gender.
+    end
+```
+earlier.  It is Asteroid's way to create custom data structures. These structures
+introduce a new type name into a program, for instance, in the case above, the `structure`
+statement introduces the type name `Person`.   Given a structure definition we can
+create **instances** of that structure.  For example,
+```
+let scarlett = Person("Scarlett",28,"F").
+```
+The right side of the `let` statement invokes the default constructor for the
+structure in order to create an instance stored in the variable `scarlett`. We
+can access members of the instance,
 ```
 load system "io".
+
+structure Person with
+    data name.
+    data age.
+    data gender.
+    end
+
+let scarlett = Person("Scarlett",28,"F").
+-- access the name field of the structure instance
+println (scarlett @name).  
+```
+Asteroid allows you to attach functions to structures.  In member functions
+the object identity of the instance is available through the `this` keyword.
+For example, we can
+extend our `Person` structure with the `hello` function that uses the `name` field
+of the instance,
+```
+load system "io".
+
+structure Person with
+    data name.
+    data age.
+    data gender.
+    function hello
+      with none do
+        println ("Hello, my name is "+this @name).
+      end
+    end
+
+let scarlett = Person("Scarlett",28,"F").
+-- call the member function
+scarlett @hello().
+```
+This program will print out,
+```
+Hello, my name is Scarlett
+```
+The expression `this @name` accesses the `name` field of the instance the
+function `hello` was called on.
+Even though our structures are starting to look a bit more like object definitions
+pattern matching continues to work in the same way when we discussed structures.
+The only thing you need to keep in mind is that you **cannot** pattern match on a
+function field.  From a pattern matching perspective a structure consists only of
+data fields.  So even if we declare a structure like this,
+```
+load system "io".
+
+structure Person with
+    data name.
+    -- the function is defined in the middle of the data fields
+    function hello
+      with none do
+        println ("Hello, my name is "+this @name).
+      end
+    data age.
+    data gender.
+    end
+
+-- pattern matching ignores function definitions
+let Person(name,age,_) = Person("Scarlett",28,"F").
+println (name+" is "+age+" years old").
+```
+where the function `hello` is defined in the middle of the data fields
+pattern matching simply ignores the function definition and pattern matches
+only on the data fields.  The output of the program is,
+```
+Scarlett is 28 years old
+```
+Here is a slightly more involved example based on the
+dog example from the [Python documentation](https://docs.python.org/3/tutorial/classes.html).  
+The idea of the dog example is to have a structure that describes dogs by their
+names and the tricks that they can perform.  Tricks can be added to a particular
+dog instance by calling the `add_trick` function.  Rather than using the default
+constructor we define a constructor for our instances with the `__init__` function.
+Here is the program listing for the example in Asteroid,
+```
+load system "io".
+load system "type".
 
 structure Dog with
 
@@ -710,140 +801,53 @@ structure Dog with
   data tricks.
 
   function add_trick
-    with new_trick do
-      let this @tricks = this @tricks + [new_trick].
+    with new_trick:%string do
+      this @tricks @append new_trick.
     end
 
   function __init__
-    with name do
+    with name:%string do
       let this @name = name.
       let this @tricks = [].
     end
 
   end
 
--- Fido the dog
 let fido = Dog("Fido").
-fido @add_trick("roll over").
 fido @add_trick("play dead").
+fido @add_trick("fetch").
 
--- Buddy the dog
 let buddy = Dog("Buddy").
-buddy @add_trick("roll over").
 buddy @add_trick("sit stay").
-
--- print out the tricks
-println ("Fido: " + fido @tricks).
-println ("Buddy: " + buddy @tricks).
-```
-The output is,
-```
-    Fido: [roll over,play dead]
-    Buddy: [roll over,sit stay]
-```
-In order to demonstrate pattern matching with objects we add a third dog and add a list of dogs to our program. The resulting program below shows this and we also added code that iterates over the list of the dogs and prints out the names of the dogs whose first trick is `roll over`.  The filtering of the objects on the list is done via pattern matching in the `for` loop.
-```
-load system "io".
-
-structure Dog with
-
-  data name.
-  data tricks.
-
-  function add_trick
-    with new_trick do
-      let this @tricks = this @tricks + [new_trick].
-    end
-
-  function __init__
-    with name do
-      let this @name = name.
-      let this @tricks = [].
-    end
-
-  end -- structure
-
--- Fido the dog
-let fido = Dog("Fido").
-fido @add_trick("roll over").
-fido @add_trick("play dead").
-
--- Buddy the dog
-let buddy = Dog("Buddy").
 buddy @add_trick("roll over").
-buddy @add_trick("sit stay").
 
--- Fifi the dog
-let fifi = Dog("Fifi").
-fifi @add_trick("sit stay").
-
--- print out all the names of dogs
--- whose first trick is 'roll over'.
-let dogs = [fido, buddy, fifi].
-
-for Dog(name, ["roll over"|_]) in dogs do
-    println (name + " does roll over").
+-- print out all the dogs that know how to fetch using
+-- structural, conditional, and regular expression pattern matching
+for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+    println (name+" knows how to fetch").
 end
 ```
+After declaring the structure we instantiate two dogs, Fido and Buddy, and add
+tricks to their respective trick repertiores.  The last couple of lines
+of the program consist of a `for` looping over the of our dogs.
+The `for` loop is interesting
+because here we use structural, conditional, and regular expression pattern
+matching in order to only select the dogs that know how to do `fetch` from
+a list of dogs.  The pattern is,
+```
+Dog(name,tricks) %if tostring(tricks) is ".*fetch.*"
+```
+The structural part of the pattern is `Dog(name,tricks)` which simply matches
+any dog instance on the list.  However, that match is only successful if
+the conditional part of the pattern holds expressed with,
+```
+%if tostring(tricks) is ".*fetch.*"
+```
+This condition only succeeds if the `tricks` list viewed as a string matches
+the regular expression `".*fetch.*"`, that is, if the list contains the word `fetch`.
 The output is,
 ```
-    Fido does roll over
-    Buddy does roll over
-```
-
-There is an elegant way of rewriting the last part of the code of the above example using the fact that in Asteroid patterns are first-class citizens.  In the program below we associate our pattern with the variable `dog`. The quote at the beginning of the pattern is necessary otherwise Asteroid will try to dereference the variable `name` as well as the anonymous variables `_`. We use the pattern associated with `dog` in the `for` loop in order to filter the objects on the list. The `*` operator is necessary in order to tell Asteroid to use the pattern associated with the variable `dog` rather than using the variable itself as a pattern.
-```
-load system "io".
-
-structure Dog with
-
-  data name.
-  data tricks.
-
-  function add_trick
-    with new_trick do
-      let this @tricks = this @tricks + [new_trick].
-    end
-
-  function __init__
-    with name do
-      let this @name = name.
-      let this @tricks = [].
-    end
-
-end -- structure
-
--- Fido the dog
-let fido = Dog("Fido").
-fido @add_trick("roll over").
-fido @add_trick("play dead").
-
--- Buddy the dog
-let buddy = Dog("Buddy").
-buddy @add_trick("roll over").
-buddy @add_trick("sit stay").
-
--- Fifi the dog
-let fifi = Dog("Fifi").
-fifi @add_trick("sit stay").
-
--- print out all the names of dogs
--- whose first trick is 'roll over'.
-let dogs = [fido, buddy, fifi].
-
--- define our pattern
-let DOG = 'Dog(name, ["roll over"|_]).
-
--- iterate over dogs applying our pattern
--- only if the pattern match is successful will the loop body be executed
-for *DOG in dogs do
-  println (name + " does roll over").
-end
-```
-The output again is,
-```
-    Fido does roll over
-    Buddy does roll over
+Fido knows how to fetch
 ```
 
 ## Patterns as First Class Citizens
