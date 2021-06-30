@@ -374,5 +374,9 @@ See the Built-ins section of this Reference Guide for more on the list and strin
 * Function `ascii`, given a character `item:%string`, returns the corresponding ASCII code.
 * Function `achar`, given a decimal ASCII code `item:%integer`, returns the corresponding character symbol.
 
-[Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic). It supports the following functions,
+[Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic. It supports the following functions,
 * Function `vop` can be called with three different inputs: `(f:%function,a:%list,b:%list)`, `(f:%function,a:%list,b %if isscalar(b))`, and `(f:%function,a %if isscalar(a),b:%list)`. In any case, this function implements actual vector arithmetic. It also implements vector/scalar arithmetic.
+* Function `vadd`, given the input `(a,b)`, returns `vop(lambda with (x,y) do return x+y,a,b)`.
+* Function `vsub`, given the input `(a,b)`, returns `vop(lambda with (x,y) do return x-y,a,b)`.
+* Function `vmult`, given the input `(a,b)`, returns ` vop(lambda with (x,y) do return x*y,a,b)`.
+* Function `dot`, given `(a:%list,b:%list)`, computes the dot product of the two lists.
