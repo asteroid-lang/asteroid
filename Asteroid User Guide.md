@@ -755,7 +755,7 @@ Hello, my name is Scarlett
 ```
 The expression `this @name` accesses the `name` field of the instance the
 function `hello` was called on.
-Even though our structures are starting to look a bit more like object definitions
+Even though our structures are starting to look a bit more like object definitions,
 pattern matching continues to work in the same way when we discussed structures.
 The only thing you need to keep in mind is that you **cannot** pattern match on a
 function field.  From a pattern matching perspective a structure consists only of
