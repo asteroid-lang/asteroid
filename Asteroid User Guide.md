@@ -705,8 +705,8 @@ structure Person with
     end
 ```
 earlier.  It is Asteroid's way to create custom data structures. These structures
-introduce a new type name into a program, for instance, in the case above, the `structure`
-statement introduces the type name `Person`.   Given a structure definition we can
+introduce a new type name into a program. For instance, in the case above, the `structure`
+statement introduces the type name `Person`.   Given a structure definition, we can
 create **instances** of that structure.  For example,
 ```
 let scarlett = Person("Scarlett",28,"F").
@@ -756,9 +756,9 @@ Hello, my name is Scarlett
 The expression `this @name` accesses the `name` field of the instance the
 function `hello` was called on.
 Even though our structures are starting to look a bit more like object definitions,
-pattern matching continues to work in the same way when we discussed structures.
+pattern matching continues to work in the same way from when we discussed structures.
 The only thing you need to keep in mind is that you **cannot** pattern match on a
-function field.  From a pattern matching perspective a structure consists only of
+function field.  From a pattern matching perspective, a structure consists only of
 data fields.  So even if we declare a structure like this,
 ```
 load system "io".
@@ -778,7 +778,7 @@ structure Person with
 let Person(name,age,_) = Person("Scarlett",28,"F").
 println (name+" is "+age+" years old").
 ```
-where the function `hello` is defined in the middle of the data fields
+where the function `hello` is defined in the middle of the data fields,
 pattern matching simply ignores the function definition and pattern matches
 only on the data fields.  The output of the program is,
 ```
@@ -789,7 +789,7 @@ dog example from the [Python documentation](https://docs.python.org/3/tutorial/c
 The idea of the dog example is to have a structure that describes dogs by their
 names and the tricks that they can perform.  Tricks can be added to a particular
 dog instance by calling the `add_trick` function.  Rather than using the default
-constructor we define a constructor for our instances with the `__init__` function.
+constructor, we define a constructor for our instances with the `__init__` function.
 Here is the program listing for the example in Asteroid,
 ```
 load system "io".
@@ -844,7 +844,7 @@ the conditional part of the pattern holds expressed with,
 %if tostring(tricks) is ".*fetch.*"
 ```
 This condition only succeeds if the `tricks` list viewed as a string matches
-the regular expression `".*fetch.*"`, that is, if the list contains the word `fetch`.
+the regular expression `".*fetch.*"`. That is, if the list contains the word `fetch`.
 The output is,
 ```
 Fido knows how to fetch
