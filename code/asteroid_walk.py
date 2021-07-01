@@ -450,7 +450,7 @@ def declare_formal_args(unifiers):
 # names within a pattern. Repeated variables names within the same pattern
 # are what is called a non-linear pattern, which is not currently supported
 # by Asteroid. 
-# This function will raise a PatternMatchFailed exception when a non-linear
+# This function will raise a NonLinearPatternError exception when a non-linear
 # pattern has been recognized.
 # Otherwise, this function returns control to the caller after finishing.
 def check_repeated_symbols( unifiers ):
@@ -480,7 +480,7 @@ def check_repeated_symbols( unifiers ):
             raise NonLinearPatternError(
             "multiple instances of {} found within a pattern.".format(sym))
 
-        else: # Ekse we have never seen this before so we record it.
+        else: # Else we have never seen this before so we record it.
             symbols[sym] = term
 
 #########################################################################
@@ -939,6 +939,15 @@ def try_stmt(node):
                          ('object-memory',
                           ('list',
                            [('string', 'RedundantPatternFound'),
+                            ('string', str(inst))])))
+        inst_val = inst
+
+    except NonLinearPatternError as inst:
+        except_val = ('object',
+                         ('struct-id', ('id', 'Exception')),
+                         ('object-memory',
+                          ('list',
+                           [('string', 'NonLinearPatternError'),
                             ('string', str(inst))])))
         inst_val = inst
 

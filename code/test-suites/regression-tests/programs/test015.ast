@@ -7,36 +7,39 @@ load "util".
 try
     let (x,x) = (1,1).
     println x.
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.").
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST2--
 try
     let [x,w,y,[a,b,x]] = [1,2,3,[1,2,1]].
     println x.
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.").
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST3--
 try
     let (name:%string,name:%string) = ("a","a").
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.")
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST4--
 try
@@ -44,24 +47,26 @@ try
     let p2 = pattern with x.
     let p3 = pattern with (*p1,*p2).
     let *p3 = ("a","a").
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.")
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST5--
 try
     let false = ((1,1) is (x,x)).
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.")
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST6--
 try
@@ -74,14 +79,15 @@ try
             return 3.
         end.
 
-    assert( foo( (1,1) ) == 2 ).
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.")
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+    foo( (1,1) ).
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST7--
 try
@@ -99,12 +105,46 @@ try
     end.
 
     assert(counter == 3).
-catch Exception(kind, s) do
-    if not isnone(s @index("non-linear")) do
-        println("PASSED.")
-    else
-        println("FAILED.").
-        throw Error("FAIL: unexpected error "+s).
-    end.
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
+end.
+--------------------------------------------------TEST8--
+try
+    function foo
+        with [ x | x | tail ] do
+            return 1.
+        orwith [x | y | tail] do
+            return 2.
+        orwith x do
+            return 3.
+        end.
+
+    foo( [1,1,1,1] ).
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
+end.
+--------------------------------------------------TEST9--
+try
+    let (x,x:%integer) = (1,1).
+
+    println("FAILED.").
+    throw Error("FAIL: no error").
+catch Exception("NonLinearPatternError", s) do
+    println("PASSED.").
+catch _ do
+    println("FAILED.").
+    throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------END----
