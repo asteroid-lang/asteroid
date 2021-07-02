@@ -813,33 +813,32 @@ structure Dog with
 
   end
 
-let fido = Dog("Fido").
-fido @add_trick("play dead").
-fido @add_trick("fetch").
+let fido = Dog "Fido".
+fido @add_trick "play dead".
+fido @add_trick "fetch".
 
-let buddy = Dog("Buddy").
-buddy @add_trick("sit stay").
-buddy @add_trick("roll over").
+let buddy = Dog "Buddy".
+buddy @add_trick "sit stay".
+buddy @add_trick "roll over".
 
--- print out all the dogs that know how to fetch using
--- structural, conditional, and regular expression pattern matching
+-- print out all the dogs that know how to fetch
 for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     println (name+" knows how to fetch").
 end
 ```
 After declaring the structure we instantiate two dogs, Fido and Buddy, and add
 tricks to their respective trick repertiores.  The last couple of lines
-of the program consist of a `for` looping over the of our dogs.
+of the program consist of a `for` loop over a list of our dogs.
 The `for` loop is interesting
 because here we use structural, conditional, and regular expression pattern
 matching in order to only select the dogs that know how to do `fetch` from
-a list of dogs.  The pattern is,
+the list of dogs.  The pattern is,
 ```
 Dog(name,tricks) %if tostring(tricks) is ".*fetch.*"
 ```
 The structural part of the pattern is `Dog(name,tricks)` which simply matches
 any dog instance on the list.  However, that match is only successful if
-the conditional part of the pattern holds expressed with,
+the conditional part of the pattern holds,
 ```
 %if tostring(tricks) is ".*fetch.*"
 ```
@@ -850,70 +849,230 @@ The output is,
 Fido knows how to fetch
 ```
 
-## Patterns as First Class Citizens
+## Patterns as First-Class Citizens
 
-We have shown in the above program that patterns can be associated with and dereferenced from variables.  The program below illustrates that we can also pass patterns to functions where they can be used for pattern matching.  Here we define a function `match` that expects a subject term and a pattern.  It proceeds to pattern match the subject term to the pattern using the `is` predicate and returns whatever the predicate returns.  Observe the `*` operator in front of the `pattern` variable stating that we want to use the pattern associated with that variable.  In the program we call the function `match` with subject term `1+1` and pattern `_+_`.  
+A programming language feature that gets promoted to first-class status does not
+change the power of a programming language in terms of computability but it does
+increase its expressiveness.  Think functions as first-class citizens of a programming
+language.  First-class functions give `lambda` functions and `map`, both powerful
+programming tools.
+
+The same is true when we promote patterns to first-class citizen status in a language.  It
+doesn't change what we can and cannot compute with the language. But it does change how
+we can express what we want to compute.  That is, it changes the expressiveness
+of a programming language.
+
+In Asteroid first-class patterns are introduced with the keywords `pattern with`
+and patterns themselve are values that we can store in variables and then reference
+when we want to use them.  Like so,
+```
+let P = pattern with (x,y).
+let *P = (1,2).
+```
+The left side of the second `let` statement derefences the pattern store in variable `P`
+and uses the pattern to match against the term `(1,2)`.
+
+Here we look at three examples of how first-class patterns can add to a developer's
+programming toolbox.
+
+### Pattern Factoring
+
+Patterns can become very complicated especially when conditional pattern matching
+is involved.  First-class patterns allow us to control the complexity of patterns
+by breaking patterns up into smaller subpatterns that are more easily managed. Consider
+the following function that takes a pair of values.  The twist is that
+the first component of the pair is restricted to the primitive data types of
+Asteroid,
+```
+function foo
+    with (x %if (x is %boolean) or (x is %integer) or (x is %string),y) do
+     println (x,y).
+    end
+```
+That complicated pattern for the first component completely obliterates the
+overall structure of the parameter pattern and makes the function definition
+difficult to read.
+
+We can express the same function with a first-class pattern,
+```
+let TP = pattern
+    with q %if (q is %boolean) or
+               (q is %integer) or
+               (q is %string).
+
+function foo
+    with (x:*TP,y) do
+     println (x,y).
+    end
+```
+It is clear now that the main input structure to the function is a pair and the
+conditional type restriction pattern has been relegated to a subpattern stored in the variable
+`TP`.
+
+### Pattern Reuse
+
+In most applications of patterns in programming languages specific patterns appear
+in many spots in a program.  If patterns are not first-class citizens the developer
+will have to retype the same patterns over and over again in the various different
+spots where the patterns occurs. Consider the following program snippet,
+```
+function fact
+    with 0 do
+        return 1
+    orwith (n:%integer) %if n > 0 do
+        return n * fact (n-1).
+    orwith (n:%integer) %if n < 0 do
+        throw Error("fact undefined for negative values").
+    end
+
+function stepf
+   with 0 do
+        return 1
+    orwith (n:%integer) %if n > 0 do
+        return 1.
+    orwith (n:%integer) %if n < 0 do
+        return -1.
+    end
+```
+In order to write these two functions we had to repeat the almost identical pattern
+four times.  First-class patterns allow us to write the same two functions in a
+much more elegant way,
+```
+let POS_INT = pattern with (x:%integer) %if x > 0.
+let NEG_INT = pattern with (x:%integer) %if x < 0.
+
+function fact
+    with 0 do
+        return 1
+    orwith n:*POS_INT do
+        return n * fact (n-1).
+    orwith *NEG_INT do
+        throw Error("fact undefined for negative values").
+    end
+
+function stepf
+   with 0 do
+        return 1
+    orwith *POS_INT do
+        return 1.
+    orwith *NEG_INT do
+        return -1.
+    end
+```
+The relevant patterns are now stored in the variables `POS_INT` and `NEG_INT`
+which are then used in the function definitions.
+
+### Running Patterns in Reverse
+
+One of the challenges when programming with patterns is to keep the object structure and
+the patterns aimed at destructuring that object structure in sync.  First-class
+patterns solve this problem in an elegant way by viewing first-class patterns
+essentially "object network constructors".  In that way, a first-class pattern is
+used to construct an object structure as well as destructure it without having to
+worry that structure and pattern will get out of sync.
+
+As an example, consider the following
+program that defines structures to construct a family object network.  It
+uses the first-class pattern `FP` to both construct an object network representing
+a family and, since it is a pattern, can also be used to destructure a family object
+network.  Here is the program listing,
 ```
 load system "io".
 
-function match with (subject,pattern) do
-    return subject %is *pattern.
-    end
+-----------------------------
+structure Family
+-----------------------------
+  with
+    data parent1.
+    data parent2.
+    data children.
 
-println (match('1+1, '_+_)).
+    function __init__
+      with (p1:%Parent,p2:%Parent,c:%Children) do
+        let this @parent1 = p1.
+        let this @parent2 = p2.
+        let this @children = c.
+      end
+  end
+
+-----------------------------
+structure Parent
+-----------------------------
+  with
+    data name.
+    function __init__
+      with name:%string do
+        let this @name = name
+      end
+  end
+
+-----------------------------
+structure Children
+-----------------------------
+  with
+    data list.
+
+    function __init__
+      with list:%list do
+        let this @list = list.
+      end
+  end
+
+-----------------------------
+let FP = pattern
+-----------------------------
+  with Family(Parent(p1),Parent(p2),Children(c)).
+
+-----------------------------
+function construct_family
+-----------------------------
+  with (P,p1,p2,c) do
+    return eval(P).  -- run pattern in reverse, construct object network.
+  end
+
+-----------------------------
+function destructure_family
+-----------------------------
+  with (P,term) do
+    let *P = term.   -- pattern match, destructure object network.
+    return [p1,p2]+c.
+  end
+
+-----------------------------
+-- construct families
+-----------------------------
+let f1 = construct_family(FP,"Harry","Bridget",["Sue","Peter"]).
+let f2 = construct_family(FP,"Margot","Selma",["Latisha","Rudolf"]).
+
+-----------------------------
+-- destructure families
+-----------------------------
+println(destructure_family(FP,f1)).
+println(destructure_family(FP,f2)).
 ```
-The output is `true`.
+The function `construct_family` constructs a family evaluating the pattern using
+the `eval` function.  The formal parameters of the function provide values for
+the free variables in the pattern.  Since we are dealing with first-class
+patterns we can simply pass the pattern to the function as a value.
 
-We can also construct patterns on-the-fly as shown below.  Here we construct two subpatterns `cl` and `cr`.  These two subpatterns are used to construct the full pattern `p` when the pattern is evaluated during a pattern match. Finally, we check whether our pattern is assembled correctly on last line.  The output of the program is `true` meaning our pattern has the same structure as the subject term `1+2+3`.
+The function `destructure_family` does the opposite.  It uses the first-class
+pattern to pattern-match the passed in term, that is, it destructures that term
+using the pattern.  The return statement captures the variables declared as a result
+of that pattern match and returns the values as a list.
+
+Notice that the whole program is essentially parameterized over the structure
+of the pattern.  We could easily change some internals of this pattern without
+affecting the rest of the program.
+
+The output of the program is,
 ```
-load system "io".
-
-let cl = '_ + _.
-let cr = '3.
-let p = 'cl + cr.
-
-println (('1+2+3) is *p).
+[Harry,Bridget,Sue,Peter]
+[Margot,Selma,Latisha,Rudolf]
 ```
-The output is `true`.
-
-With Asteroid's ability to manipulate patterns we can rewrite the Peano addition program from above.  In the rewritten version below the pertinent Peano axioms are stored as rules in a rule table which the program will access during execution.   Our two Peano axioms appear as rules in the rule table.  Note that each rule is written as a pair where the first component is the left side of the corresponding rule and the second component is the right side of the corresponding rule.  The left sides of the rules represent the patterns that need to match the subject term and therefore it is not surprising that they are written as quoted expressions.  We also need to write the right sides of the rules as quoted expressions because we want to delay their evaluations until their corresponding patterns have matched an appropriate subject term.
-
-The function `reduce` searches through the rule table for a match to the current subject term `term`.  If a match is found the corresponding right side of the rule is evaluated.  If no match is found then the term is returned unmodified.  The output of the program is of course the Peano term `S(S(S(S(S(0)))))`.
-```
-load system "io".
-
-structure S with
-    data x.
-    end
-
-structure add with
-    data left.
-    data right.
-    end .
-
-let rule_table = [
-    ('add(x,0), 'reduce(x)),
-    ('add(x,S(y)), 'S(reduce(add(x,y))))
-    ].
-
-function reduce
-    with term do
-        for i in 0 to rule_table@length() - 1 do
-            let (lhs, rhs) = rule_table@i.
-            if term %is *lhs do
-                return eval rhs.
-            end
-        end
-        return term.
-    end
-
-println (reduce('add(S(S(0)),S(S(S(0)))))).
-```
-As before, the output is `S(S(S(S(S(0)))))`.
 
 ## More on Exceptions
 
-This section will give further information on how to solve **exceptions,** or unexpected conditions that break the regular flow of execution.
+This section will give further information on how to solve **exceptions**, or unexpected conditions that break the regular flow of execution.
 
 System exceptions are now visible to the user at the Asteroid level as Exception objects with the following structure,
 
@@ -926,6 +1085,7 @@ System exceptions are now visible to the user at the Asteroid level as Exception
 
 The kind field will be populated with one of the following strings,
 * `PatternMatchFailed`
+* `NonLinearPatternError`
 * `RedundantPatternFound`
 * `ArithmeticError` -- e.g. division by zero
 * `FileNotFound` -- encodes the Python `FileNotFoundError` exception
@@ -984,34 +1144,6 @@ Here is an example using a variable,
     catch e do
       println ("something happened: "+tostring(e)).
     end
-
-
-## Escaping Asteroid
-
-The Asteroid interpreter is written in Python and the `escape` expression gives the user full access to the Python ecosystem from within Asteroid code.  In particular it gives the user access to the interpreter internals making it easy to write interpreter extensions.  The following example shows one way to incorporate graphics into Asteroid programs,
-```
-function circle with (x, y, r) do escape
-"
-from asteroid_state import state
-
-# get the function parameters from the symbol table
-vx = float(state.symbol_table.lookup_sym('x')[1])
-vy = float(state.symbol_table.lookup_sym('y')[1])
-vr = float(state.symbol_table.lookup_sym('r')[1])
-
-# plot the circle at (vx,vy) with radius vr
-import matplotlib.pyplot as plt
-
-circle = plt.Circle((vx, vy), vr, color='blue')
-fig, ax = plt.subplots()
-ax.add_artist(circle)
-plt.show()
-"
-end
-
--- call the escaped function
-circle(.5, .5, .2)
-```
 
 ## Basic Asteroid I/O
 
