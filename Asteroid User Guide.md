@@ -863,13 +863,13 @@ we can express what we want to compute.  That is, it changes the expressiveness
 of a programming language.
 
 In Asteroid first-class patterns are introduced with the keywords `pattern with`
-and patterns themselve are values that we can store in variables and then reference
+and patterns themselves are values that we can store in variables and then reference
 when we want to use them.  Like so,
 ```
 let P = pattern with (x,y).
 let *P = (1,2).
 ```
-The left side of the second `let` statement derefences the pattern store in variable `P`
+The left side of the second `let` statement dereferences the pattern stored in variable `P`
 and uses the pattern to match against the term `(1,2)`.
 
 Here we look at three examples of how first-class patterns can add to a developer's
@@ -966,8 +966,8 @@ which are then used in the function definitions.
 
 One of the challenges when programming with patterns is to keep an object structure and
 the patterns aimed at destructuring that object structure in sync.  First-class
-patterns solve this problem in an elegant way by viewing first-class patterns
-essentially "object network constructors."  In that way, a first-class pattern is
+patterns solve this problem in an elegant way by viewing first-class patterns as
+essentially "object network constructors".  In that way, a first-class pattern is
 used to construct an object structure as well as destructure it without having to
 worry that structure and pattern will get out of sync.
 
