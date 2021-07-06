@@ -972,7 +972,7 @@ used to construct an object structure as well as destructure it without having t
 worry that structure and pattern will get out of sync.
 
 In order to use a pattern as a constructor we apply the `eval` function to it which
-turns the pattern into value from Asteroid's point of view which can then be used
+turns the pattern into a value from Asteroid's point of view which can then be used
 in computations.  For example,
 ```
 load system "io".
@@ -989,7 +989,7 @@ The output of the program is,
 which is the value computed by the `eval` function given the values of associated with
 the variables `a` and `b`, and
 the first-class pattern `P`.  Of course, first-class patterns can be used
-to destructure the contructed value,
+to destructure the constructed value,
 ```
 load system "io".
 let P = pattern with ([a],[b]).
