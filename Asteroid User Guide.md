@@ -986,7 +986,7 @@ The output of the program is,
 ```
 ([1],[2])
 ```
-which is the value computed by the `eval` function given the values of associated with
+which is the value computed by the `eval` function given the values associated with
 the variables `a` and `b`, and
 the first-class pattern `P`.  Of course, first-class patterns can be used
 to destructure the contructed value,
