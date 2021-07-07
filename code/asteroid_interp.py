@@ -6,7 +6,7 @@
 
 import sys
 from asteroid_globals import *
-from  asteroid_support import *
+from asteroid_support import *
 from pathlib import Path
 from asteroid_frontend import Parser
 from asteroid_state import state
@@ -90,6 +90,10 @@ def interp(input_stream,
         sys.exit(1)
 
     except RedundantPatternFound as e:
+        print("Error:  {}".format(e))
+        sys.exit(1)
+    
+    except NonLinearPatternError as e:
         print("Error:  {}".format(e))
         sys.exit(1)
 
