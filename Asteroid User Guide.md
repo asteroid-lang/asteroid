@@ -851,10 +851,10 @@ Fido knows how to fetch
 
 ## Patterns as First-Class Citizens
 
-A programming language feature that gets promoted to first-class status does not
+A programming language feature that is promoted to first-class status does not
 change the power of a programming language in terms of computability but it does
 increase its expressiveness.  Think functions as first-class citizens of a programming
-language.  First-class functions give `lambda` functions and `map`, both powerful
+language.  First-class functions give us `lambda` functions and `map`, both powerful
 programming tools.
 
 The same is true when we promote patterns to first-class citizen status in a language.  It
@@ -1216,7 +1216,7 @@ something happened: Exception(PatternMatchFailed,pattern match failed: term and 
 
 ## Basic Asteroid I/O
 
-`Println` is a function that prints its argument in a readable form to the terminal.  Remember that under the standard model the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
+I/O functions are defined in the `io` module. The `println` function prints its argument in a readable form to the terminal.  Recall that the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
 ```
 load system "io".
 
@@ -1226,10 +1226,51 @@ println ("a + b = " + (a + b)).
 ```
 The output is
 ```
-    a + b = 3
+a + b = 3
 ```
+We can use the `tostring` function defined in the `type` module to provide some
+additional formatting. The idea is that the `tostring` function takes a value to be turned into a string together with an optional `stringformat` formatting specifier object,
+```
+tostring(value[,stringformat(width spec[,precision spec])])
+```
+The width specifier tells the `tostring` function how many characters to reserve for the string conversion of the value.  If the value requires more characters than given in the width specifier then the width specifier is ignored.  If the width specifier is larger than than the number of characters required for the value then the value will be right justified.  For real values there is an optional precision specifier.
 
-`Input` is a function that given a prompt string will prompt the user at the terminal and return the input value as a string.  Here is a small example,
+Here is a program that exercises some of the string formatting options,
+```
+load system "io".
+load system "type".
+load system "math".
+
+-- if the width specifier is larger than the length of the value
+-- then the value will be right justified
+let b = tostring(true,stringformat(10)).
+println b.
+
+let i = tostring(5,stringformat(5)).
+println i.
+
+-- we can format a string by applying tostring to the string
+let s = tostring("hello there!",stringformat(30)).
+println s.
+
+-- for floating point values: first value is width, second value precision.
+-- if precision is missing then value is left justified and zero padded on right.
+let r = tostring(pi,stringformat(6,3)).
+println r.
+```
+The output of the program is,
+```
+      true
+    5
+                  hello there!
+ 3.142
+```
+Notice the right justification of the various values within the given string length.
+
+The `io` module also defines a function `print` which behaves just like `println`
+except that it does not terminate print with a newline.
+
+Another useful function defined in the `io` module is the `input` function that, given an optional prompt string, will prompt the user at the terminal and return the input value as a string.  Here is a small example,
 ```
 load system "io".
 
@@ -1238,14 +1279,15 @@ println ("Hello " + name + "!").
 ```
 The output is,
 ```
-    What is your name? Leo
-    Hello Leo!
+What is your name? Leo
+Hello Leo!
 ```
 
-We can use the type casting functions such as `tointeger` or `toreal` to convert the string returned from `input` into a numeric value,
+We can use the type casting functions such as `tointeger` or `toreal` defined in the
+`type` module to convert the string returned from `input` into a numeric value,
 ```
 load system "io".
-load system "util".
+load system "type".
 
 let i = tointeger(input("Please enter a positive integer value: ")).
 
@@ -1259,29 +1301,17 @@ end
 ```
 The output is,
 ```
-    Please enter a positive integer value: 3
-    1
-    2
-    3
+Please enter a positive integer value: 3
+1
+2
+3
 ```
 
-`Raw_print` is a function similar to `println` except that it outputs Asteroid's internal term structure for the given argument,
-```
-load system "io".
-
-let a = 1.
-let b = 2.
-raw_print ("a + b = " + (a + b)).
-```
-The output is,
-```
-    ('string', 'a + b = 3')
-```
-Note that here we get the output value represented as a `(<type>,<value>)` tuple.
+Finally, the function `read` reads from `stdin` and returns the input as a string.  The function `write` writes a string to `stdout`.
 
 ## The Module System
 
-A module in Asteroid is a file with a set of valid Asteroid statements.  You can include this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space; symbols from a module are entered into Asteroid's global name space.
+A module in Asteroid is a file with a set of valid Asteroid statements.  You can load this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space; symbols from a module are entered into Asteroid's global name space.
 
 The search strategy for a module to be loaded is as follows,
 1. raw module name - could be an absolute path
@@ -1289,7 +1319,10 @@ The search strategy for a module to be loaded is as follows,
 1. search in directory where Asteroid is installed (path[0])
 1. search in subdirectory where Asteroid was started
 
-Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program imports the `math` module as well as the `io` (input/output) module. Only after importing them would you be able to complete the sine function below:
+Modules defined by the Asteroid system should be loaded with the keyword `system`
+in order to avoid any clashes with locally defined modules.
+
+Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program loads the `math` module as well as the `io`  module. Only after loading them would you be able to complete the sine function below,
 ```
 load system "io".
 load system "math".
@@ -1297,4 +1330,4 @@ load system "math".
 let x = sin( pi / 2 ).
 println("The sine of pi / 2 is " + x + ".").
 ```
-Both the function `sin()` and the constant value `pi` are defined in the `math` module. In addition, the `io` module is where all input/output functions in Asteroid (such as `println`) come from.
+Both the function `sin` and the constant value `pi` are defined in the `math` module. In addition, the `io` module is where all input/output functions in Asteroid (such as `println`) come from.
