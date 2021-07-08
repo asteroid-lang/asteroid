@@ -969,7 +969,7 @@ the patterns aimed at destructuring that object structure in sync.  First-class
 patterns solve this problem in an elegant way by viewing first-class patterns as
 essentially "object network constructors".  In that way, a first-class pattern is
 used to construct an object structure as well as destructure it without having to
-worry that structure and pattern will get out of sync.
+worry that the structure and pattern will get out of sync.
 
 In order to use a pattern as a constructor we apply the `eval` function to it which
 turns the pattern into a value from Asteroid's point of view which can then be used
