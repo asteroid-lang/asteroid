@@ -79,6 +79,14 @@ class PatternMatchFailed(Exception):
     def __str__(self):
         return(repr(self.value))
 
+#########################################################################
+class NonLinearPatternError(Exception):
+    def __init__(self, value):
+        self.value = "non-linear pattern error: " + value
+
+    def __str__(self):
+        return(repr(self.value))
+
 ##############################################################################################
 # *** Part of the Redundant Pattern Detector ***
 #
