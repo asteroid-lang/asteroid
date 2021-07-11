@@ -4,30 +4,40 @@
 
 ------------------------------------------------------------------
 structure File with
-------------------------------------------------------------------
-data f.
+    data f.
+end
 ------------------------------------------------------------------
     
 ------------------------------------------------------------------
-function __init__
+function fopen
 ------------------------------------------------------------------
-with (name:%string, mode:%string) do escape
+with (name:%string, mode:%string) do 
+
+let file = File()
+return escape
 "
 from asteroid_state import state
-this_val = state.symbol_table.lookup_sym('this')
+global __retval__
+
+# Get variables
+file_val = state.symbol_table.lookup_sym('file')
 name_val = state.symbol_table.lookup_sym('name')
 mode_val = state.symbol_table.lookup_sym('mode')
 
 # destructure object
 (OBJECT,
 (CLASS_ID, (ID, class_id)),
-(OBJECT_MEMORY, (LIST, memory))) = this_val
+(OBJECT_MEMORY, (LIST, memory))) = file_val
 
+# Open file
 f = open(name_val[1], mode_val[1])
+
+# Set memory location
 memory[0] = ('foreign', f)
+
+__retval__ = file_val
 "
 end
-end -- structure
 ------------------------------------------------------------------
 
 
