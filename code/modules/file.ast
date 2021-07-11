@@ -31,7 +31,7 @@ end -- structure
 
 
 ------------------------------------------------------------------
-function fread
+function freadline
 ------------------------------------------------------------------
 with file:%File do 
 ------------------------------------------------------------------
@@ -41,12 +41,50 @@ global __retval__
 from asteroid_state import state
 file_val = state.symbol_table.lookup_sym('file')
 
-(OBJECT,
+(_,
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = file_val
 
-file_conents = memory[0].read()
+file_conents = memory[0].readline()
 __retval__ = ('string', file_conents)
 "
 end
 ------------------------------------------------------------------
+
+------------------------------------------------------------------
+function fwrite
+------------------------------------------------------------------
+with (file:%File, contents:%string) do
+------------------------------------------------------------------
+escape
+"
+from asteroid_state import state
+file_val = state.symbol_table.lookup_sym('file')
+contents = state.symbol_table.lookup_sym('contents')
+
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = file_val
+
+memory[0].write(contents[1])
+"
+end
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function fclose
+------------------------------------------------------------------
+with file:%File do
+------------------------------------------------------------------
+escape
+"
+from asteroid_state import state
+file_val = state.symbol_table.lookup_sym('file')
+
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = file_val
+
+memory[0].close()
+"
+end
