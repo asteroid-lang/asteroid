@@ -33,9 +33,7 @@ end -- structure
 ------------------------------------------------------------------
 function freadline
 ------------------------------------------------------------------
-with file:%File do 
-------------------------------------------------------------------
-return escape
+with file:%File do return escape
 "
 global __retval__
 from asteroid_state import state
@@ -54,9 +52,7 @@ end
 ------------------------------------------------------------------
 function fwrite
 ------------------------------------------------------------------
-with (file:%File, contents:%string) do
-------------------------------------------------------------------
-escape
+with (file:%File, contents:%string) do escape
 "
 from asteroid_state import state
 file_val = state.symbol_table.lookup_sym('file')
@@ -74,9 +70,7 @@ end
 ------------------------------------------------------------------
 function fclose
 ------------------------------------------------------------------
-with file:%File do
-------------------------------------------------------------------
-escape
+with file:%File do escape
 "
 from asteroid_state import state
 file_val = state.symbol_table.lookup_sym('file')
