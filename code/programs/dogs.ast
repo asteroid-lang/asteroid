@@ -1,40 +1,33 @@
-load "io".
-load "util".
+load system "io".
+load system "type".
 
-structure Dog
-  with
-    data name.
-    data tricks.
+structure Dog with
 
-    function __init__
-      with (name, tricks) do
-        let this@name = name.
-        let this@tricks = tricks.
-      orwith name do
-        let this@name = name.
-        let this@tricks = [].
-      end
+  data name.
+  data tricks.
 
-    function add_trick
-      with new_trick do
-        let this@tricks = this@tricks + [new_trick].
-      end
+  function add_trick
+    with new_trick:%string do
+      this @tricks @append new_trick.
+    end
+
+  function __init__
+    with name:%string do
+      let this @name = name.
+      let this @tricks = [].
+    end
+
   end
 
--- Fido the dog
-let fido = Dog("Fido").
+let fido = Dog "Fido".
+fido @add_trick "play dead".
+fido @add_trick "fetch".
 
--- use function 'add_trick' to add tricks to the object
-fido@add_trick("roll over").
-fido@add_trick("play dead").
+let buddy = Dog "Buddy".
+buddy @add_trick "sit stay".
+buddy @add_trick "roll over".
 
--- Buddy the dog
-let buddy = Dog("Buddy").
-
--- use function 'add_trick' to add tricks to the object
-buddy@add_trick("roll over").
-buddy@add_trick("sit stay").
-
--- print out the tricks
-println ("Fido's tricks: " + fido@tricks).
-println ("Buddy's tricks: " + buddy@tricks).
+-- print out all the dogs that know how to fetch
+for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+    println (name+" knows how to fetch").
+end

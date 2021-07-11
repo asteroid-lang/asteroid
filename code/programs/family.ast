@@ -1,47 +1,75 @@
 -- a small program that demonstrates that patterns can be used both
--- for constructing as well as destructuring of terms.
+-- for constructing as well as destructuring of object networks.
 
--- load modules
-load "io".
-load "util".
+load system "io".
 
--- family term constructors for our pattern
-structure Family with
-  data parent1.
-  data parent2.
-  data children.
+-----------------------------
+structure Family
+-----------------------------
+  with
+    data parent1.
+    data parent2.
+    data children.
+
+    function __init__
+      with (p1:%Parent,p2:%Parent,c:%Children) do
+        let this @parent1 = p1.
+        let this @parent2 = p2.
+        let this @children = c.
+      end
   end
 
-structure Parent with
-  data name.
+-----------------------------
+structure Parent
+-----------------------------
+  with
+    data name.
+    function __init__
+      with name:%string do
+        let this @name = name
+      end
   end
 
-structure Children with
-  data list.
+-----------------------------
+structure Children
+-----------------------------
+  with
+    data list.
+
+    function __init__
+      with list:%list do
+        let this @list = list.
+      end
   end
 
--- first-class family pattern
--- note: the quote operator prevents immediate evaluation
-let family_pattern = 'Family(Parent(p1), Parent(p2), Children(c)).
-println family_pattern.
+-----------------------------
+let FP = pattern
+-----------------------------
+  with Family(Parent(p1),Parent(p2),Children(c)).
 
--- construct a family using the family pattern as a constructor
+-----------------------------
 function construct_family
-  with (pat, p1, p2, c) do
-    return eval(pat). -- use first-class pattern as a constructor
+-----------------------------
+  with (P,p1,p2,c) do
+    return eval(P).  -- run pattern in reverse, construct object network.
   end
 
--- destructure a family using pattern matching
+-----------------------------
 function destructure_family
-  with (pat, term) do
-    let *pat = term. -- use first-class pattern as pattern
-    return [p1, p2, c].
+-----------------------------
+  with (P,term) do
+    let *P = term.   -- pattern match, destructure object network.
+    return [p1,p2]+c.
   end
 
--- construct a family
-let family = construct_family(family_pattern,"Harry","Bridget",["Sue","Peter"]).
-println family.
+-----------------------------
+-- construct families
+-----------------------------
+let f1 = construct_family(FP,"Harry","Bridget",["Sue","Peter"]).
+let f2 = construct_family(FP,"Margot","Selma",["Latisha","Rudolf"]).
 
--- destructure a family
-let members = destructure_family(family_pattern, family).
-println members.
+-----------------------------
+-- destructure families
+-----------------------------
+println(destructure_family(FP,f1)).
+println(destructure_family(FP,f2)).

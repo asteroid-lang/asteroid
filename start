@@ -1,0 +1,10 @@
+# bash script to init environment on replit.com
+clear
+echo "Welcome to Asteroid!"
+echo " "
+export PATH=$PWD/code:$PATH
+cd code/programs
+echo "Available Example Programs:"
+ls *.ast
+echo " "
+echo "To run a program: asteroid <prog name>.ast"
