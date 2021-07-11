@@ -23,7 +23,8 @@ mode_val = state.symbol_table.lookup_sym('mode')
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = this_val
 
-memory[0] = open(name_val[1], mode_val[1])
+f = open(name_val[1], mode_val[1])
+memory[0] = ('foreign', f)
 "
 end
 end -- structure
@@ -39,12 +40,15 @@ global __retval__
 from asteroid_state import state
 file_val = state.symbol_table.lookup_sym('file')
 
-(_,
+(OBJECT,
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = file_val
 
-file_conents = memory[0].readline()
-__retval__ = ('string', file_conents)
+(FOREIGN, py_file) = memory[0]
+
+line = py_file.readline()
+
+__retval__ = ('string', line)
 "
 end
 ------------------------------------------------------------------
@@ -62,7 +66,9 @@ contents = state.symbol_table.lookup_sym('contents')
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = file_val
 
-memory[0].write(contents[1])
+(FOREIGN, py_file) = memory[0]
+
+py_file.write(contents[1])
 "
 end
 ------------------------------------------------------------------
@@ -79,6 +85,8 @@ file_val = state.symbol_table.lookup_sym('file')
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = file_val
 
-memory[0].close()
+(FOREIGN, py_file) = memory[0]
+
+py_file.close()
 "
 end
