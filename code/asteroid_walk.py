@@ -65,28 +65,6 @@ def unify(term, pattern, unifying = True ):
     # else:
     #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
-    # 1.) We don't care what the pattern is called if evaluating subsumption.
-    # 2.) A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
-    # check allows us to unpack it normally as opposed to checking each time we unpack.
-    # most nodes: (1,2)
-    # named-patterns: (1,2,3)
-    try:
-        if ((not unifying) and (term[0] == 'named-pattern')):
-            term = term[2]
-    except:
-        pass
-
-    # 1.) We want to derefence a first-class pattern found on the term side(lower order of prescedence) before
-    # evaluating the pattern side(higher order of prescedence) when checking for redundant pattern clauses
-    # 2.) We can't do this at the same time as the above check as term[0] can fail(it can be a primative)
-    try:
-        if ((not unifying) and (term[0] == 'deref')):
-            (ID, sym) = term[1]
-            term = state.symbol_table.lookup_sym(sym)
-            term = term[1] # Discard the leading 'quote' node for redundancy evaluation
-    except:
-        pass
-
     ### Python value level matching
     # NOTE: in the first rules where we test instances we are comparing
     # Python level values, if they don't match exactly then we have
@@ -122,6 +100,16 @@ def unify(term, pattern, unifying = True ):
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
+    
+    elif ((not unifying) and (term[0] == 'named-pattern')):
+
+        return unify(term[2],pattern,unifying)
+
+    elif ((not unifying) and (term[0] == 'deref')):
+        (ID, sym) = term[1]
+        term = state.symbol_table.lookup_sym(sym)
+
+        return unify(term[1], pattern, unifying)
 
     ### Asteroid value level matching
     elif pattern[0] == 'string' and term[0] != 'string':
