@@ -118,10 +118,8 @@ def unify(term, pattern, unifying = True ):
         else:
             unifier = []
             for i in range(len(term)):
-                if unifying:
-                    unifier += unify(term[i], pattern[i])
-                else:
-                    unifier += unify(term[i], pattern[i], False)
+                unifier += unify(term[i], pattern[i], unifying)
+
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -150,10 +148,7 @@ def unify(term, pattern, unifying = True ):
 
         (CMATCH, pexp, cond_exp) = pattern
 
-        if unifying:
-            unifiers = unify(term, pexp)
-        else:
-            unifiers = unify(term, pexp, False)
+        unifiers = unify(term, pexp, unifying)
 
         # evaluate the conditional expression in the
         # context of the unifiers.
@@ -233,10 +228,7 @@ def unify(term, pattern, unifying = True ):
         # unpack pattern
         (NAMED_PATTERN, name, p) = pattern
 
-        if unifying:
-            return unify(term, p ) + [(name, term )]
-        else:
-            return unify(term, p, False)
+        return unify(term, p, unifying) + [(name, term)]
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -259,21 +251,16 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'quote':
         # quotes on the pattern side can always be ignored
-        if unifying:
-            return unify(term, pattern[1])
+        # --TODO double check - ttc
+        if term[0] == 'quote':
+            return unify(term[1], pattern[1], unifying)
         else:
-            if term[0] == 'quote':
-                return unify(term[1], pattern[1], False)
-            else:
-                return unify(term, pattern[1], False)
+            return unify(term, pattern[1], unifying)
 
     elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
-        if unifying:
-            return unify(term[1], pattern)
-        else:
-            return unify(term[1], pattern, False)
+        return unify(term[1], pattern, unifying)
 
     elif term[0] == 'object' and pattern[0] == 'apply':
         # unpack term
@@ -293,10 +280,7 @@ def unify(term, pattern, unifying = True ):
         else:
             pattern_list = [arg]
         # only pattern match on object data members
-        if unifying:
-            return unify(data_only(obj_memory), pattern_list)
-        else:
-            return unify(data_only(obj_memory), pattern_list, False)
+        return unify(data_only(obj_memory), pattern_list, unifying)
 
     elif pattern[0] == 'index': # list element lval access
         unifier = (pattern, term)
@@ -336,12 +320,8 @@ def unify(term, pattern, unifying = True ):
             list_tail = ('list', list_val[1:])
 
             unifier = []
-            if unifying:
-                unifier += unify(list_head, pattern_head)
-                unifier += unify(list_tail, pattern_tail)
-            else:
-                unifier += unify(list_head, pattern_head,False)
-                unifier += unify(list_tail, pattern_tail,False)
+            unifier += unify(list_head, pattern_head, unifying)
+            unifier += unify(list_tail, pattern_tail, unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -351,7 +331,7 @@ def unify(term, pattern, unifying = True ):
             lengthL = head_tail_length(term)    #L->lower order of predcence pattern
 
             if lengthH == 2 and lengthL != 2:
-                return unify(pattern[1],term[1],False)
+                return unify(pattern[1],term[1],unifying)
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is
@@ -364,7 +344,7 @@ def unify(term, pattern, unifying = True ):
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
                 unifier = []
                 for i in range(lengthH):
-                    unifier += unify(patternL_head,patternH_head,False)
+                    unifier += unify(patternL_head,patternH_head,unifying)
                     try:
                         (RAW_HEAD_TAIL, patternH_head, patternH_tail) = patternH_tail
                         (RAW_HEAD_TAIL, patternL_head, patternL_tail) = patternL_tail
@@ -377,10 +357,7 @@ def unify(term, pattern, unifying = True ):
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
 
-        if unifying:
-            return unify(term,p)
-        else:
-            return unify(term,p,False)
+        return unify(term,p,unifying)
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply':
@@ -399,10 +376,7 @@ def unify(term, pattern, unifying = True ):
                 .format(t_id, p_id))
 
         # unify the args
-        if unifying:
-            return unify(t_arg, p_arg)
-        else:
-            return unify(t_arg, p_arg,False)
+        return unify(t_arg, p_arg, unifying)
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
         raise PatternMatchFailed(
@@ -419,10 +393,7 @@ def unify(term, pattern, unifying = True ):
         #print("unifying {}".format(pattern[0]))
         unifier = []
         for i in range(1,len(term)):
-            if unifying:
-                unifier += unify(term[i], pattern[i])
-            else:
-                unifier += unify(term[i], pattern[i], False)
+            unifier += unify(term[i], pattern[i], unifying)
         #lhh
         #print("returning unifier: {}".format(unifier))
         return unifier
