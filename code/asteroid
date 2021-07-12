@@ -20,8 +20,8 @@ def display_help():
     print(" -t    AST dump flag")
     print(" -v    version flag")
     print(" -w    disable tree walk flag")
-    print(" -p    generate pstats flag")
-    print(" -l    disable prologue flag")
+    print(" -z    generate pstats flag")
+    print(" -p    disable prologue flag")
     print(" -h    display help flag")
     print(" -r    redundant pattern dectector")
     print(" -e    show full exceptions")
@@ -34,8 +34,8 @@ flags = {
     '-t' : False, # AST dump flag
     '-v' : False, # version flag
     '-w' : True,  # tree walk flag
-    '-p' : False, # generate pstats flag
-    '-l' : True,  # prologue flag
+    '-z' : False, # generate pstats flag
+    '-p' : True,  # prologue flag
     '-h' : False, # display help flag
     '-r' : True,  # redundant pattern dectector
     '-e' : False, # show full exceptions
