@@ -43,19 +43,25 @@ function freadline
 ------------------------------------------------------------------
 with file:%FILE do return escape
 "
+# Instantiate return value
 global __retval__
+
+# Import state and lookup 'file'
 from asteroid_state import state
 file_val = state.symbol_table.lookup_sym('file')
 
-# destructure object
+# destructure file object
 (OBJECT,
 (CLASS_ID, (ID, class_id)),
 (OBJECT_MEMORY, (LIST, memory))) = file_val
 
+# Get the foreign object from memory
 foreign_object = memory[0]
 
+# Use the python file object to read a line
 line = foreign_object[1].readline()
 
+# Return the read line
 __retval__ = ('string', line)
 "
 end
