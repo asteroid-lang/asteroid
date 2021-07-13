@@ -310,6 +310,7 @@ def unify(term, pattern, unifying = True ):
             unifier = []
             unifier += unify(list_head, pattern_head, unifying)
             unifier += unify(list_tail, pattern_tail, unifying)
+            
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -322,14 +323,14 @@ def unify(term, pattern, unifying = True ):
                 return unify(pattern[1],term[1],unifying)
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
-                                    # then length of the lower precedence pattern, it is
-                                    # not redundant
+                                    # then length of the lower precedence pattern, it is not redundant
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
             else: #Else we continue evaluating the different terms in the head-tail pattern
                 (HEAD_TAIL, patternH_head, patternH_tail) = pattern
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
+                
                 unifier = []
                 for i in range(lengthH):
                     unifier += unify(patternL_head,patternH_head,unifying)
@@ -338,6 +339,7 @@ def unify(term, pattern, unifying = True ):
                         (RAW_HEAD_TAIL, patternL_head, patternL_tail) = patternL_tail
                     except:
                         break
+                    
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 return unifier
 

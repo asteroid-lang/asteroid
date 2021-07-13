@@ -41,6 +41,5 @@ for pname in programs:
         interp(p,exceptions=True)
     except:
         pass
-    else:
-        print("FAIL: no exception thrown for",pname)
+
     f.close()

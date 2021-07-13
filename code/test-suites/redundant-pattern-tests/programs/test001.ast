@@ -25,10 +25,9 @@ try
     -- Evaluate the function with a test input.
     let x = testFunction( 1 , 2 , 3 ).
     println( "The value returned is: " + x ).
-catch ("Exception", s) do
-    if not isnone(s @index("Redundant")) do
-       exit "PASS.".
-    else
-       throw Error("FAIL: unexpected error "+s).
-    end.
+catch Exception("RedundantPatternFound",s) do
+    println("PASS.").
+catch e do
+    println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
 end.
