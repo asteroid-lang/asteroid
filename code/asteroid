@@ -80,7 +80,7 @@ interp_object = \
        do_walk=flags['-w'],
        symtab_dump=flags['-s'],
        exceptions=flags['-e'],
-       prologue=flags['-l'])'''
+       prologue=flags['-p'])'''
 
 if flags['-p']:
     # generates pstats into the file 'pstats'
