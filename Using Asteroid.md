@@ -1,6 +1,6 @@
 # Using Asteroid
 
-This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are due to the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
+This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are lifted from the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
 # Table of Contents
 [Chapter: Strings](#chapterstrings)<br>
@@ -150,7 +150,7 @@ assert(digits == ["1","2","3"]).
     [1,2,3]
 
 
-Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator and the second argument get instantiated with the elements of the list to be processed.  In our function `unique` the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is on the list.  If it is not then it adds it to the list otherwise it just returns the accumulator unchanged.
+Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator, and the second argument gets instantiated with the elements of the list to be processed.  In our function `unique`, the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is in the list.  If it is not, then it adds it to the list. Otherwise, it just returns the accumulator unchanged.
 
 ## Section: Modifying string data <a name="modifyingstrings"></a>
 
@@ -158,7 +158,7 @@ Probably the most noteworthy characteric about this program is the `reduce` func
 
 > Print a string in the reversed order from right to left.
 
-We use the `explode` function to turn a string into a list of characters, then we reverse the list and turn it back into a string using the `join` function,
+We use the `explode` function to turn a string into a list of characters. Then, we reverse the list and turn it back into a string using the `join` function,
 
 
 ```
@@ -177,7 +177,7 @@ assert(str == "!dlroW ,olleH").
 
 ### Challenge: Removing blanks from a string
 
-> Remove leading, trailing and double spaces from a given string.
+> Remove leading, trailing, and double spaces from a given string.
 
 
 ```
@@ -197,8 +197,8 @@ assert(str == "Hello, World!").
 
 > Create a camel-case identifier from a given phrase.
 
-In this task, we will form the `CamelCase` variable names from a given phrase.
-Names created in this style are built of several words; each of which starts
+In this task, we will form the `CamelCase` variable for names from a given phrase.
+Names created in this style are built of several words, each of which starts
 with a capital letter.
 
 
@@ -257,7 +257,7 @@ end
 
 > Generate a random string that can be used as a password.
 
-In our solution we take advantage of Asteroid's `Pick` object.  The `Pick` object maintains a list of items that we can randomly select from using the `pick` member function.  As input to the `Pick` object we compute a bunch of lists of characters that are useful for password construction.  The function `achar` converts a decimal ASCII code to a single character string.
+In our solution we take advantage of Asteroid's `Pick` object.  The `Pick` object maintains a list of items that we can randomly select from using the `pick` member function.  As input to the `Pick` object, we compute a bunch of lists of characters that are useful for password construction.  The function `achar` converts a decimal ASCII code to a single character string.
 
 
 ```
@@ -297,7 +297,7 @@ to RNA happens according to the following table:
 DNA: A C G T
 RNA: U G C A
 ```
-We will solve this programming problem using Asteroid's first-class patterns. We could have solved this with just testing equality on DNA characters but using first-class patterns in more general and can be applied to problems with a more structured mapping relationship.
+We will solve this programming problem using Asteroid's first-class patterns. We could have solved this with just testing equality on DNA characters. However, using first-class patterns is more general and can be applied to problems with a more structured mapping relationship.
 
 
 ```
@@ -473,7 +473,7 @@ assert (most_frequent_word == "sed").
 Let us limit ourselves with finding only the first longest substring. If there
 are more common substrings of the same length, then the rest are ignored.
 There are two loops (see also Task 17, The longest palindrome) over the first
-string (`stra`), and they use the index method to search for the substring in the
+string (`stra`). These use the index method to search for the substring in the
 second string (`strb`).
 
 
@@ -579,7 +579,7 @@ varying width. In other words, starting from a given character, test all the
 substrings of any length possible at that position.
 Now, extract the substring and do the check similar to the solution of Task
 16, Palindrome test. Here, we have to be careful to check the palindrome
-without taking into account the non-letter characters but saving the result as
+without taking into account the non-letter characters, but saving the result as
 part of the original string.
 
 
@@ -792,7 +792,7 @@ Fibonacci numbers are defined by the recurring formula:
 f_n = f_{n-1} + f_{n-2}
 ```
 
-You can assign two values at a time (Challenge: Swap two values). You can use that technique for calculating the next Fibonacci number from the pre- vious two. To bootstrap the algorithm, the two first values are needed. In one of the definitions of the Fibonacci row, the first two values are both 1.
+You can assign two values at a time (**Challenge: Swap two values**). You can use that technique for calculating the next Fibonacci number from the previous two. To bootstrap the algorithm, the two first values are needed. In one of the definitions of the Fibonacci row, the first two values are both 1.
 
 Here we give an iterative solutions.  It is clear that there exists a trivial recursive solution by implementing the above formula.
 
