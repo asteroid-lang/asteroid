@@ -817,9 +817,9 @@ assert (f_1 == 55)
 
 ### Challenge: Print squares
 
-> Print the squares of the numbers from 1 to 10.
+> Print the squares of the numbers 1 through 10.
 
-Of course this is straight forward with a for-loop over a list.  Here we show another solution using the list `map` function.
+Of course this is straightforward, with a `for-loop` over a list.  Here we show another solution using the list `map` function.
 
 
 ```
@@ -839,7 +839,7 @@ assert (sq == [1,4,9,16,25,36,49,64,81,100])
 
 > Print the first ten powers of two.
 
-Just as in the previous challenge we skip the naive loop solution and give a solution using the `map` function.
+Just as in the previous challenge, we skip the naive loop solution and give a solution using the `map` function.
 
 
 ```
@@ -860,7 +860,7 @@ assert (p2 == [1,2,4,8,16,32,64,128,256,512])
 
 > Print the first ten odd numbers. Print the first ten even numbers.
 
-We start with printing the first ten odd numbers.
+We start with printing the first ten odd numbers,
 
 
 ```
@@ -879,7 +879,7 @@ assert(odd == [1,3,5,7,9])
     [1,3,5,7,9]
 
 
-Now the even numbers.
+Now the even numbers,
 
 
 ```
