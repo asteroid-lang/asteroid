@@ -903,7 +903,7 @@ assert(even == [2,4,6,8,10])
 
 > Compare the two non-integer values approximately.
 
-Comparing non-integer numbers, which are represented as floating-point numbers is often a task that requires approximate comparison.  In Asteroid this can be accomplished with the `isclose` function availabel in the `math` module.
+Comparing non-integer numbers (which are represented as floating-point numbers) is often a task that requires approximate comparison.  In Asteroid this can be accomplished with the `isclose` function availabel in the `math` module.
 
 
 
@@ -1144,7 +1144,7 @@ println (randint(0,n)).
 
 ### Challenge: Neumann’s random generator
 
-> Implement the von Neumann’s random number generator (also known as Middle-square method).
+> Implement Von Neumann’s random number generator (also known as Middle-square method).
 
 This algorithm is a simple method of generating short sequences of four-digit random integers. The method has its drawbacks, but for us, it is an interesting algorithmic task. The recipe has these steps:
 
@@ -1185,7 +1185,7 @@ assert (rval == 5227)
 
 The quality of the built-in generator of random numbers fully depends on the algorithm the developers of the compiler used. As a user, you cannot do much to change the existing generator, but you can always test if it delivers numbers uniformly distributed across the whole interval.  
 
-In our solution we generate 10 random integers between 0 and 9 and count how many times each of the integers have been generated.  If it is a decent random number generators all numbers should have been generated roughly an equal number of times.
+In our solution, we generate 10 random integers between 0 and 9. We then count how many times each of the integers have been generated.  If it is a decent random number generator, all numbers should have been generated roughly an equal number of times.
 
 
 ```
@@ -1259,7 +1259,7 @@ assert (d == 2.23606797749979)
     2.23606797749979
 
 
-The interesting  part about the second approach is that it is completely dimension independent.  Note that except for the definition of the vectors $x$ and $y$ dimension never play a part of the definition of the program.
+The interesting part about the second approach is that it is completely dimension independent.  Note that except for the definition of the vectors $x$ and $y$ dimension never plays a part in the definition of the program.
 
 ### Challenge: Standard deviation
 
@@ -1271,7 +1271,7 @@ Standard deviation is a statistical term that shows how compact data distributio
 sigma = sqrt(Sum(x_i - avg_x)^2/(N - 1))
 ```
 
-where `N` is the number of elements in the array `x`; `avg_x` is the average value (Challenge: Average on an array).
+where `N` is the number of elements in the array `x`; `avg_x` is the average value (**Challenge: Average on an array**).
 
 
 
@@ -1298,7 +1298,7 @@ assert (sigma == 420.96248961952256)
 
 > Convert the Cartesian coordinates to polar and backward.
 
-Polar coordinates are a convenient way of representing points on a surface with the two values: distance from the centre of coordinates and the angle between the vector and the pole axis.
+Polar coordinates are a convenient way of representing points on a surface with the two values: distance from the centre of coordinates, and the angle between the vector and the pole axis.
 The conversion formulae between the Cartesian and polar systems, which is valid for **positive** `x` and `y`, are the following:
 
 ```
@@ -1339,8 +1339,8 @@ assert (isclose(1,x,0.0001) and isclose(2,y,0.0001)).
 
 
 For the **negative** `x` and `y`, the Cartesian-to-polar conversion is a bit more complicated. Depending on the quadrant of the point, the `psi` value is bigger
-or smaller by `pi`. When `x` is zero, it is either `-pi/2` or `pi/2`.
-All these variants can be implemented by using with/orwith clauses and conditional matching, as demonstrated below:
+or smaller than `pi`. When `x` is zero, it is either `-pi/2` or `pi/2`.
+All these variants can be implemented by using `with`/`orwith` clauses and conditional matching, as demonstrated below:
 
 
 ```
@@ -1391,7 +1391,7 @@ assert (isclose(-3,x,0.0001) and isclose(5,y,0.0001)).
 
 The Monte Carlo method is a statistical method of calculating data whose formula is not known. The idea is to generate a big number of random numbers and see how many of them satisfy the condition.
 
-To calculate the area of a circle of the radius 1, pairs of random numbers between −1 and 1 are generated. These pairs represent the points in the square in the center of coordinates with sides of length 2. The area of the square is thus 4. If the distance between the random point and the center of the square is less than 1, then this point is located inside the circle of that radius. Counting the number of points that landed inside the circle and the number of points outside the circle gives the approximate value of the area of the circle, as soon as the area of the square is known. Here is the program.
+To calculate the area of a circle with a radius of 1, pairs of random numbers between −1 and 1 are generated. These pairs represent the points in the square in the center of coordinates with sides of length 2. The area of the square is thus 4. If the distance between the random point and the center of the square is less than 1, then this point is located inside the circle of that radius. Counting the number of points that landed inside the circle and the number of points outside the circle gives the approximate value of the area of the circle, as soon as the area of the square is known. Here is the program.
 
 
 ```
@@ -1420,9 +1420,9 @@ assert (area == 3.1392).
 
 ### Challenge: Guess the number
 
-> Write a program that generates a random integer number 0 through 10 and asks the user to guess it, saying if the entered value is too small or too big.
+> Write a program that generates a random integer number between 0 and 10, asks the user to guess it, and says if the entered value is too small or too big.
 
-First, a random number needs to be generated and then
+First, a random number needs to be generated. Then the program must
 ask for the initial guess and enter the loop, which compares the guess with the generated number.
 
 
@@ -1448,7 +1448,7 @@ println "Yes, this is it!".
 
 > Convert a binary number to a decimal integer.
 
-In Asteroid this is straight forward using the built-in `tointeger` function passing it a string representation of the binary number and the base.
+In Asteroid this is straightforward using the built-in `tointeger` function, passing it a string representation of the binary number and the base.
 
 
 ```
@@ -1497,7 +1497,7 @@ assert (tointeger(tobase(val,16),16) == val).
 
 > Calculate the sum of digits of a given number.
 
-Pretty straight forward using string and list manipulation.
+Pretty straightforward using string and list manipulation.
 
 
 ```
@@ -1522,7 +1522,7 @@ assert (s == 49).
 
 > Count the number of bits set to 1 in a binary representation of a positive integer number.
 
-If we remove all the zeros from a binary number then we left with only 1 characters which we can then count.
+If we remove all the zeros from a binary number, then we are left with only `1` characters which we can then count.
 
 
 ```
@@ -1542,7 +1542,7 @@ assert (bits == 4).
 
 > Given the list of integers, compose the largest possible number by concatenating them.
 
-The easiest way to achieve that is to treat numbers as strings, sort them alphabetically in descending order, concatenate the pieces to a single string, and get the resulting integer.
+The easiest way to achieve that is to treat the numbers as strings, sort them alphabetically in descending order, concatenate the pieces to a single string, and get the resulting integer.
 
 
 ```
@@ -1565,7 +1565,7 @@ assert (a == 8675451).
 
 Roman numbers are not a direct translation of the decimal system. In this task, we assume that the number is not more than 3999, which is the maximum a regular Roman number can reach.
 
-Let’s use the algorithm that keeps the table of pre-calculated sequences of Roman letters so that we don’t have to check when III becomes IV, or when another I appears after V, etc.
+Let’s use the algorithm that keeps the table of pre-calculated sequences of Roman letters. This is so that we don’t have to check when III becomes IV, or when another I appears after V, etc.
 
 In the program below, there are four such sequences: for thousands, hundreds, tens, and ones. The program iterates over the digits of the number in the decimal representation and chooses one of the values from the array of lists stored in the `roman_hash` table.
 
@@ -1613,11 +1613,11 @@ The program is listed on the next page. Let’s discuss the algorithm first.
 
 Take a number; for example, 987,654. The rules for spelling out the groups of three digits, 987 and 654, are the same. For the first group, the word thousand must be added.
 
-Now, examine a group of three digits. The first digit is the number of hun- dreds, and it has to be spelled only if it is not zero. If it is not zero, then we spell the digit and add the word hundred.
+Now, examine a group of three digits. The first digit is the number of hundreds, and it has to be spelled only if it is not zero. If it is not zero, then we spell the digit and add the word hundred.
 
-Now, remove the leftmost digit, and we’ve got two digits left. If the remain- ing two digits form the number from 1 to 20, then it can be directly con- verted to the corresponding name. The names for the numbers from 0 to 10 are obviously different. The names for the numbers from 11 to 19 have some commonalities, but is it still easier to directly prepare the names for all of them.
+Now, remove the leftmost digit, and we’ve got two digits left. If the remaining two digits form the number from 1 to 20, then it can be directly converted to the corresponding name. The names for the numbers from 0 to 10 are obviously different. The names for the numbers from 11 to 19 have some commonalities, but is it still easier to directly prepare the names for all of them.
 
-For the larger numbers (21 to 99), there are two cases. If the number is dividable by 10 then a name for 20, 30, 40, etc. is taken. If not, then the name is built of the name of tens and the name for units, joined with a hy- phen, such as forty-five.
+For the larger numbers (21 to 99), there are two cases. If the number is dividable by 10 then a name for 20, 30, 40, etc. is taken. If not, then the name is built of the name of tens and the name for units, joined with a hyphen, such as forty-five.
 
 The zero name appears only in the case when the given number is zero.
 
