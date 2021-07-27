@@ -1732,7 +1732,7 @@ assert(a == [50,40,30,20,10]).
 
 > Move all elements of an array N positions to the left or to the right.
 
-Asteroid does not have a built-in rotate function but such a function is easily constructed using the fact that we can slice lists (see `vix` below).
+Asteroid does not have a built-in `rotate` function. However, such a function is easily constructed through slicing lists (see `vix` below).
 
 
 ```
@@ -1786,7 +1786,7 @@ assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).
 
 > Increment each element in an array.
 
-For this we use Asteroid's `vector` module which can handle incrementing a vector with a scalar.
+For this we use Asteroid's `vector` module, which can handle incrementing a vector with a scalar.
 
 
 ```
@@ -1807,7 +1807,7 @@ assert(b == [2,3,4,5,6,7,8,9,10,11]).
 
 > Take two arrays and create a new one whose elements are the sums of the corresponding items of the initial arrays.
 
-Again, here we take advantage of Asteroid's vector module.  Note that the two vectors have to be of the same length in order to add them together.
+Again, here we take advantage of Asteroid's `vector` module.  Note that the two vectors have to be of the same length in order to add them together.
 
 
 ```
@@ -1908,7 +1908,7 @@ assert (s == 125).
     125
 
 
-Summing up elements that are greater than 10.
+If summing up elements that are greater than 10,
 
 
 ```
@@ -1948,7 +1948,7 @@ assert (avg == 60).
 
 > Calculate the moving average for the given array of numbers.
 
-Compute the moving average over 100 random values using a window of size 7 (3 values below, 3 values above, and the current values).
+Compute the moving average over 100 random values, using a window of size 7 (3 values below, 3 values above, and the current values).
 
 
 ```
@@ -2060,7 +2060,7 @@ end
 
 > Find the first odd number in a list of integers.
 
-The easiest way to do this is with a reduction.
+The easiest way to do this is with a reduction,
 
 
 ```
@@ -2112,7 +2112,7 @@ assert (array == [21,23,25,27,29]).
     [21,23,25,27,29]
 
 
-### Challenge: Number of occurrences in array
+### Challenge: Number of occurrences in an array
 
 > Count how many times a particular element appears in the array.
 
@@ -2212,11 +2212,11 @@ assert (b).
 
 ## Section: Multi-dimensional data <a name="multidimensionaldata"></a>
 
-### Challenge Transpose a matrix
+### Challenge: Transpose a matrix
 
 > Take a matrix and print its transposed version.
 
-In Asteroid a matrix can be represented by nested lists like so,
+In Asteroid a matrix can be represented by nested lists, like so,
 ```
 let m = [[1,2],
          [3,4]].
@@ -2330,7 +2330,7 @@ assert(mt == [[1,3,5],[2,4,6]]).
 
 > Sort a list of hashes using data in their values.
 
-This task is commonly performed to sort items where the sortable parameter is one of the values in the hash, for example, sorting a list of people by age.
+This task is commonly performed to sort items where the sortable parameter is one of the values in the hash. For example, sorting a list of people by age.
 
 
 
@@ -2370,7 +2370,7 @@ assert (sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
 
 ### Challenge: Count hash values
 
-> Having a hash, count the number of occurrences of each of its values.
+> For a given hash, count the number of occurrences of each of its values.
 
 For example, a hash is a collection mapping a car’s license plate to the colour of the car or a passport number to the name of the street where the person lives. In the first example, the task is to count how many cars of each colour there are. In the second example, we have to say how many people live on each street. But let’s simply count the colours of fruit.
 
@@ -2482,7 +2482,7 @@ and
 ```
 [0,1,3,3,1]
 ```
-We then add them  together,
+We then add them together,
 ```
 vadd([1,3,3,1,0],[0,1,3,3,1]) = [1,4,6,4,1]
 ```
@@ -2524,7 +2524,7 @@ interp(program)
     1 6 15 20 15 6 1
 
 
-The program prints the first seven rows of the Pascal triangle. The rows are not centred and are aligned to the left side.
+The program prints the first seven rows of the Pascal triangle. The rows are not centred, and are aligned to the left side.
 As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
 
 # Chapter: Object-Oriented programming <a name="oop"></a>
@@ -2579,7 +2579,7 @@ bird @sing().
 
 > Using behavior from base classes.
 
-Write a class named `Arithmetic` with a method named `add` that takes 2  integers as parameters and returns an integer denoting their sum. Write a class named `Adder` that inherits from a superclass named `Arithmetic`. The `Adder` performs arithmetic by calling `add`.
+Write a class named `Arithmetic` with a method named `add` that takes 2 integers as parameters and returns an integer denoting their sum. Write a class named `Adder` that inherits from a superclass named `Arithmetic`. The `Adder` performs arithmetic by calling `add`.
 
 
 
