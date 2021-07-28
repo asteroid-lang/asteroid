@@ -1,182 +1,36 @@
+<!-- Note to Ariel: functions in Asteroid can have different kinds of input
+     constellations which is indicated using the `with` and `orwith` keywords.
+     When writing documentation you will need to document all the different input
+     constellations.  See the `range` function below. -->
+
 # Reference Guide
 
-## User Guide Language Features 
+## Language Features
 
-### Asteroid Grammar (written in EBNF/PEG Format)
+TBD
 
-////////////////////////////////////////////////////////////////////////////////////////
+## Builtin Functions
 
-// (c) Lutz Hamel, University of Rhode Island  //
+* Function `len`, when given an input value, returns the length of that input. The
+function can only be applied to lists, strings, tuples, or structures.
 
-////////////////////////////////////////////////////////////////////////////////////////
-
-#### Statements
-
-
-      prog
-        : stmt_list
-
-      stmt_list
-        : stmt*
-
-      stmt
-        : '.' // NOOP
-        | LOAD SYSTEM? STRING '.'?
-        | GLOBAL id_list '.'?
-        | NONLOCAL id_list '.'?
-        | ASSERT exp '.'?
-        | STRUCTURE ID WITH struct_stmts END
-        | LET pattern '=' exp '.'?
-        | LOOP DO? stmt_list END
-        | FOR pattern IN exp DO stmt_list END
-        | WHILE exp DO stmt_list END
-        | REPEAT DO? stmt_list UNTIL exp '.'?
-        | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-        | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
-        | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
-        | THROW exp '.'?
-        | BREAK '.'?
-        | RETURN exp? '.'?
-        | function_def
-        | call_or_index '.'?  
-
-#### Grammar Snippet of Control Statements in terms of the Non-Terminal `stmt`
+* Function `range` will compute a list of values depending on the input values:
+1. `(start:%integer,stop:%integer)` returns list `[start to stop-1]`.
+1. `(start:%integer,stop:%integer,inc:%integer)` returns list `[start to stop-1 step inc]`.
+1. `(stop:%integer)` returns list `[0 to stop-1]`.
 
 
-     stmt := FOR pattern IN exp DO stmt_list END
-       | WHILE exp DO stmt_list END
-       | REPEAT DO? stmt_list UNTIL exp '.'?
-       | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-       | TRY stmt_list (CATCH pattern DO stmt_list)+ END
-       | THROW exp '.'?
-       | BREAK '.'?
+## List and String Objects
 
-#### More General Statements
+In Asteroid, both `lists` and `strings,` are treated like objects. Due to this, they have member functions that can manipulate the contents of those objects.
 
-
-     function_def
-       : FUNCTION ID body_defs END
-
-
-     body_defs
-       : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
-
-
-     data_stmt
-       : DATA ID
-
-
-     struct_stmt
-       : data_stmt  '.'?
-       | function_def '.'?
-       | '.'
-
-     struct_stmts
-       : struct_stmt*
-       
-      id_list
-        : ID (',' ID)*
-        
-#### Expressions/Patterns
-
-NOTE: There is no syntactic difference between a pattern and an expression. We introduce the `pattern` nonterminal to highlight the SEMANTIC difference between patterns and expressions. 
-
-      pattern
-         : exp
-         
-      exp
-        : quote_exp
-        
-      quote_exp
-        : QUOTE head_tail
-        | PATTERN WITH? head_tail
-        | head_tail
-        
-      head_tail
-        : conditional ('|' exp)?
-        
-        
-     compound
-       : logic_exp0
-           (
-              (IS pattern) |
-              (IN exp) |               // exp has to be a list
-              (TO exp (STEP exp)?) |   // list comprehension
-           )?
-
-
-      logic_exp0
-        : logic_exp1 (OR logic_exp1)*
-
-     logic_exp1
-        : rel_exp0 (AND rel_exp0)*
-
-     rel_exp0
-       : rel_exp1 (('==' | '=/=' ) rel_exp1)*
-
-     rel_exp1
-       : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
-
-     arith_exp0
-       : arith_exp1 (('+' | '-') arith_exp1)*
-
-     arith_exp1
-       : call_or_index (('*' | '/') call_or_index)*
-
-     call_or_index
-       : primary (primary | '@' primary)*
-
-     primary
-       : INTEGER
-       | REAL
-       | STRING
-       | TRUE
-       | FALSE
-       | NONE
-       | ID (':' pattern)?  // named pattern when ': pattern' exists
-       | '*' ID         // "dereference" a variable during pattern matching
-       | NOT call_or_index
-       | MINUS call_or_index
-       | ESCAPE STRING
-       | EVAL primary
-       | '(' tuple_stuff ')' // tuple/parenthesized expr
-       | '[' list_stuff ']'  // list or list access
-       | function_const
-       | TYPEMATCH           // TYPEMATCH == '%'<typename>
-
-     tuple_stuff
-       : exp (',' exp?)*
-       | empty
-
-     list_stuff
-       : exp (',' exp)*
-       | empty
-
-     function_const
-       : LAMBDA body_defs
-       
-## Asteroid Built-ins
-
-A **built-in function,** also called an **intrinsic function,** can complete a given task directly within a language. Asteroid includes built-ins such as `lists` and `strings.` Both `lists` and `strings,` when instantiated, are treated like objects. Due to this, they have member functions that can manipulate the contents of those objects.
-
-**The following member functions support both lists and strings,**
-
-* Function `len`, when given an input value (or `item_val[0]`), returns the output of whether or not that input can be found in a given list, string, or tuple.
-* Function `inherit` lets users contruct an inheritance hierarchy by directly manipulating the structure types. For example, it can change an inputted string into a list.
-* Function `__list_extend__` will extend a list by adding all the items from the item where `item` is either a list, a string, or a tuple. The function can be called with the input `(self:%list,item)`, granted that `item_val[0]` is found in a list, string, or a tuple.
-* Function `__list_join__` converts an Asteroid list into a Python list. The function can be called with the input `(self:%list,join:%string)`.
-* Function `__string_split__`, given the input `(self:%string,sep:%string,count:%integer)`, will return a list of the words in a given string, using `sep` as the delimiter string.
+### Lists
 
 As mentioned in [this section of the User Guide](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/Asteroid%20User%20Guide.md#the-basics), a **list** is a structured data type that consists of square brackets enclosing comma-separated values. Lists can be modified after their creation.
 
-**The following member functions only support lists,**
-
-* Function `islist`, given the input item `do`, returns the item `is %list`. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.)
-* The following `list_member_functions`,
-
-      escape
-      "
-      global list_member_functions
+<!-- Note to Ariel: the short names in the list below is what users will be
+    seeing, the long names are internal names.  So the documentation should
+    be written using the short names.
 
       list_member_functions.update({
           'length'    : '__list_length__',
@@ -201,10 +55,18 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
       ".
 
 (For implementation details, see Python lists [here](https://docs.python.org/3/tutorial/datastructures.html).)
+-->
 
-* Function `__list_length__`, given the input `self:%list`, returns the number of characters within that list.
-* Function `__list_append__`, given `(self:%list,item)`, adds an item to the end of a list.
-* Function `__list_extend__`, given `(self:%list,item)`, will extend the list by adding all the items from the item where `item` is either a list, a string or a tuple.
+<!-- Note to Ariel: the member functions to objects have changed.  We no longer
+     use the `self` variable.  Make sure that you are using the latest version
+     of the `prologue.ast` file. I have edited the first couple of Functions
+     so you can see what I mean. -->
+
+* Function `length` returns the number of elements within that list.
+* Function `append`, given `(item)`, adds that item to the end of a list.
+* Function `extend`, given `(item)`, will extend the list by adding all the items from the item where `item` is either a list, a string or a tuple.
+
+
 * Function `__list_insert__`, given `(self:%list,ix:%integer,item)`, will insert an item at a given position. The first argument is the index of the element before which to insert, so `a@insert(0, x)` inserts at the front of the list, and `a@insert(a@length(), x)` is equivalent to `a@append(x)`.
 * Function `__list_remove__`, given `(self:%list,item)`, removes the first element from the list whose value is equal to `item.` It raises a ValueError if there is no such item.
 * Function `__list_pop__`, given `(self:%list,ix:%integer)`, removes the item at the given position in the list and returns it. If no index is specified,`a@pop()` removes and returns the last item in the list.
@@ -219,14 +81,21 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 * Function `__list_reduce__` can be called with two different inputs: `(self:%list,f:%function)` or `(self:%list,f:%function,init)`.
 * Function `__list_filter__`, given `(self:%list,f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of input list that are false are removed.
 * Function `__list_member__`, given `(self:%list,item)`, returns `true` only if `self @count(item) > 0`.
+* Function `__list_join__` converts an Asteroid list into a Python list. The function can be called with the input `(self:%list,join:%string)`.
 
+<!--
 See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)for more on all the functions above.
+-->
 
-A **string** is a sequence of characters that can be used as a variable or a literal constant.
+### Strings
 
-**The following member functions only support strings,**
-* Function `gettype` will get the type of `x` as an Asteroid string. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.)
-* The following `string_member_functions`, 
+A string is a sequence of characters that can be used as a variable or a literal constant.
+
+<!-- Note to Ariel: this is not a member function and should be documented as part of the `type` module
+* Function `gettype` will get the type of `x` as an Asteroid string. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.) -->
+
+<!-- Note to Ariel: This should not be exposed to the user, this is an internal data structure
+* The following `string_member_functions`,
 
             escape
             "
@@ -245,11 +114,14 @@ A **string** is a sequence of characters that can be used as a variable or a lit
             })
             "
 (For implementation details, see Python lists [here](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str).)
+-->
+<!-- Note to Ariel: I edited the first few member functions -->
+* Function `length` returns the number of characters within that string.
+* Function `explode`, turns a string into a list of characters.
+* Function `trim`, given the input `(what:%string)`, returns a copy of the string with the leading and trailing characters removed. The `what` argument is a string specifying the set of characters to be removed. If omitted or none, the `what` argument defaults to removing whitespace. The `what` argument is not a prefix or suffix; rather, all combinations of its values are stripped.
 
-* Function `__string_length__`, given the input `self:%string`, returns the number of characters within that string.
-* Function `__string_explode__`, given the input `self:%string`, elongates that string.
-* Function `__string_trim__`, given the input `(self:%string,what:%string)`, returns a copy of the string with the leading and trailing characters removed. The what argument is a string specifying the set of characters to be removed. If omitted or none, the what argument defaults to removing whitespace. The what argument is not a prefix or suffix; rather, all combinations of its values are stripped.
 * Function `__string_replace__`, given the input `(self:%string,old:%string,new:%string,count:%integer)`, will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced.
+* Function `__string_split__`, given the input `(self:%string,sep:%string,count:%integer)`, will return a list of the words in a given string, using `sep` as the delimiter string.
 * Function `__string_toupper__`, given the input `self:%string`, converts all the lowercase letters in a string to uppercase.
 * Function `__string_tolower__`, given the input `self:%string`, converts all the uppercase letters in a string to lowercase.
 * Function `__string_index__`can be called with three different inputs: `(self:%string,item:%string,startix:%integer,endix:%integer)`, `(self:%string,item:%string,startix:%integer)`, or `(self:%string,item:%string)`. This function allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
