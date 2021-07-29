@@ -144,16 +144,29 @@ It can be called with several different inputs:
 1. Input `(old:%string,new:%string,count:%integer)` returns `('string', sub(old_val[1], new_val[1], this_val[1], count_val[1]))`.
 1. Input `(old:%string,new:%string)` returns `('string', sub(old_val[1], new_val[1],this_val[1]))`.
 
-* Function `split`
+* Function `split` will return a list of the words in a given string, using `sep` as the delimiter string. If `maxsplit` is given: at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
 
+If `sep` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, '1,,2'.split(',') returns ['1', '', '2']). The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']). Splitting an empty string with a specified separator returns [''].
 
-* Function `__string_split__`, given the input `(self:%string,sep:%string,count:%integer)`, will return a list of the words in a given string, using `sep` as the delimiter string.
-* Function `__string_toupper__`, given the input `self:%string`, converts all the lowercase letters in a string to uppercase.
-* Function `__string_tolower__`, given the input `self:%string`, converts all the uppercase letters in a string to lowercase.
-* Function `__string_index__`can be called with three different inputs: `(self:%string,item:%string,startix:%integer,endix:%integer)`, `(self:%string,item:%string,startix:%integer)`, or `(self:%string,item:%string)`. This function allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
-* Function `__string_flip__` explodes, reverses, and joins the given input `self:%string`.
+If `sep` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
 
-See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)   for more on all the functions above.
+Function `split` can be called with several different inputs:
+1. Input `(sep:%string,count:%integer)` returns `('list', ast_list)`
+1. Input `(sep:%string)` returns the same.
+1. Input `(none)` also returns the same.
+
+* Function `toupper`, given `(none)`, converts all the lowercase letters in a string to uppercase.
+* Function `tolower`, given `(none)`, converts all the uppercase letters in a string to lowercase.
+* Function `index` allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
+
+It can be called with several different inputs:
+1. Input `(item:%string,startix:%integer,endix:%integer)` returns `('integer',val)` -- **unless** `val` == -1, in which case `__retval__ = ('none', None)`.
+1. Input `(item:%string)` returns all of the same.
+1. Input `(item:%string)` also returns all of the same.
+
+* Function `flip` explodes, reverses, and joins the given input `(none)`.
+
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)  for more on all the functions above.
 
 /////
 
