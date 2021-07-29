@@ -65,27 +65,45 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 * Function `length` returns the number of elements within that list.
 * Function `append`, given `(item)`, adds that item to the end of a list.
 * Function `extend`, given `(item)`, will extend the list by adding all the items from the item where `item` is either a list, a string or a tuple.
+* Function `insert`, given `(ix:%integer,item)`, will insert an item at a given position. The first argument is the index of the element before which to insert, so `a@insert(0, x)` inserts at the front of the list, and `a@insert(a@length(), x)` is equivalent to `a@append(x)`.
+* Function `remove`, given `(item)`, removes the first element from the list whose value is equal to `(item)`. It raises a ValueError if there is no such item.
+* Function `pop`, given `(ix:%integer)`, removes the item at the given position in the list and returns it. If no index is specified,`a@pop()` removes and returns the last item in the list.
+* Function `clear`, given `(none)`, removes all items from the list.
+* Function `index` returns a zero-based index in the list of the first element whose value is equal to `(item)`. It raises a ValueError exception if there is no such item. The optional arguments `(startix)` and `(endix)` are interpreted as in the slice notation, and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the `(startix)` argument.     
+
+This function can be called with several inputs:
+1. Input `(item,startix:%integer,endix:%integer)` returns `('integer', this_val[1].index(item_val,
+                                                                          startix_val[1],
+                                                                          endix_val[1]))`
+1. Input `(item,startix:%integer)` returns `('integer', this_val[1].index(item_val, startix_val[1]))`
+1. Input `(item)` returns `('integer', this_val[1].index(item_val))`
+
+* Function `count`, given `(item)`, returns the number of times `(item)` appears in the list.
+* Function `sort` sorts the items of the list in place.
+
+It can be called with several different inputs:
+1. Input `(reverse:%boolean)` returns `(this_val)`.
+1. Input `(none)` returns `(this_val)`.
+
+* Function `reverse`, given `(none)`, reverses the elements of the list in place.
+* Function `copy`, given `(none)`, makes a shallow copy of the list.
+* Function `shuffle`, given `(none)`, returns a random permutation of a given list - in place!
+* Function `map`, given `(f:%function)`, applies `f` to each element of the list.
+* Function `reduce` reduces the value of elements in a list. 
+
+This function can be called with several different inputs:
+1. Input `(f:%function)` returns `value`, such that `value = f(value,this@i)`.
+1. Input `(f:%function,init)` returns the same format.
+
+The first argument to `f` is the accumulator.
+
+* Function `filter`, given `(f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of the input list that are false are removed.
+* Function `member`, given `(item)`, returns `true` only `if this @count(item) > 0`.
+* Function `join`, given `(join:%string)`, converts an Asteroid list into a Python list.
 
 
-* Function `__list_insert__`, given `(self:%list,ix:%integer,item)`, will insert an item at a given position. The first argument is the index of the element before which to insert, so `a@insert(0, x)` inserts at the front of the list, and `a@insert(a@length(), x)` is equivalent to `a@append(x)`.
-* Function `__list_remove__`, given `(self:%list,item)`, removes the first element from the list whose value is equal to `item.` It raises a ValueError if there is no such item.
-* Function `__list_pop__`, given `(self:%list,ix:%integer)`, removes the item at the given position in the list and returns it. If no index is specified,`a@pop()` removes and returns the last item in the list.
-* Function `__list_clear__`, given `self:%list`, removes all items from the list.
-* Function `__list_index__`, given `(self:%list,item,startix:%integer,endix:%integer)`, returns a zero-based index in the list of the first element whose value is equal to `item`. Raises a ValueError exception if there is no such item. The optional arguments `startix` and `endix` are interpreted as in the slice notation and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the `startix` argument.
-* Function `__list_count__`, given `(self:%list,item)`, returns the number of times `item` appears in the list.
-* Function `__list_sort__`, given `(self:%list,reverse:%boolean)`, sorts the items of the list in place.
-* Function `__list_reverse__`, given `self:%list`, reverses the elements of the list in place.
-* Function `__list_copy__`, given `self:%list`, makes a shallow copy of the list.
-* Function `__list_shuffle__`, given `self:%list`, returns a random permutation of a given list - in place!
-* Function `__list_map__`, given `(self:%list,f:%function)`, applies `f` to each element of the list.
-* Function `__list_reduce__` can be called with two different inputs: `(self:%list,f:%function)` or `(self:%list,f:%function,init)`.
-* Function `__list_filter__`, given `(self:%list,f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of input list that are false are removed.
-* Function `__list_member__`, given `(self:%list,item)`, returns `true` only if `self @count(item) > 0`.
-* Function `__list_join__` converts an Asteroid list into a Python list. The function can be called with the input `(self:%list,join:%string)`.
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast) for more on all the functions above.
 
-<!--
-See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)for more on all the functions above.
--->
 
 ### Strings
 
@@ -120,7 +138,15 @@ A string is a sequence of characters that can be used as a variable or a literal
 * Function `explode`, turns a string into a list of characters.
 * Function `trim`, given the input `(what:%string)`, returns a copy of the string with the leading and trailing characters removed. The `what` argument is a string specifying the set of characters to be removed. If omitted or none, the `what` argument defaults to removing whitespace. The `what` argument is not a prefix or suffix; rather, all combinations of its values are stripped.
 
-* Function `__string_replace__`, given the input `(self:%string,old:%string,new:%string,count:%integer)`, will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced.
+* Function `replace` will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced.
+
+It can be called with several different inputs:
+1. Input `(old:%string,new:%string,count:%integer)` returns `('string', sub(old_val[1], new_val[1], this_val[1], count_val[1]))`.
+1. Input `(old:%string,new:%string)` returns `('string', sub(old_val[1], new_val[1],this_val[1]))`.
+
+* Function `split`
+
+
 * Function `__string_split__`, given the input `(self:%string,sep:%string,count:%integer)`, will return a list of the words in a given string, using `sep` as the delimiter string.
 * Function `__string_toupper__`, given the input `self:%string`, converts all the lowercase letters in a string to uppercase.
 * Function `__string_tolower__`, given the input `self:%string`, converts all the uppercase letters in a string to lowercase.
