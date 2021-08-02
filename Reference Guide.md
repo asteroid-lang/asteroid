@@ -247,7 +247,11 @@ There are a variety of useful modules that can be installed in Asteroid.
 
 [Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval. It supports the following functions,
 * Function `random`, given the input `none`, returns a random floating point number in the range `[0.0, 1.0)`.
-* Function `randint` can be called with two different number interval inputs: `(lo:%integer,hi:%integer)` or `(lo:%real,hi:%real)`. In either case, it returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
+* Function `randint` returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval. It can be called with two different number interval inputs:
+1. `(lo:%integer,hi:%integer)` 
+1. `(lo:%real,hi:%real)`
+1. Note: if the given input is ` (_,_) `, it will instead output an error message for "unsupported interval specificaton in randint."
+
 * Function `seed`, given `(sd:%integer)`, returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
 
 [Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
