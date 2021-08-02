@@ -211,14 +211,20 @@ There are a variety of useful modules that can be installed in Asteroid.
 
 [Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators. It supports the following functions,
 * Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
-* Function `log` can be called with two different arguments. With one argument, `(x)`, it returns the natural logarithm of x (to base e). With two arguments, `(x,base)` it returns the logarithm of x to the given base, calculated as log(x)/log(base).
+* Function `log` can be called with two different argument setups. 
+1. If only one argument, `(x)`, is inputted, this returns the natural logarithm of x (to base e). 
+1. If two arguments, `(x,base)`, are inputted, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
+
 * Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b can be found in `real` and `integer`.
 * Function `sqrt`, given `a`, returns its square root as long as `a` can be found in `real` and `integer`.
 * Function `abs`, given `(x)`, returns its absolute value.
 * Function `ceil`, given `(x:%real)`, returns the ceiling of x: the smallest integer greater than or equal to x.
 * Function `floor`, given `(x:%real)`, returns the floor of x: the largest integer less than or equal to x.
 * Function `gcd`, given `(a:%integer,b:%integer)`, returns the greatest common denominator that both integers share.
-* Function `isclose`, given `(a,b)` OR `(a,b,t)`, returns `True` if the two or three values are close to each other and `False` otherwise. Default tolerance 1e-09.
+* Function `isclose` can be called with two different argument setups.
+1. With input values `(a,b)`, it returns returns `True` if the two values are close to each other and `False` otherwise. Default tolerance 1e-09.
+1. With input values `(a,b,t)`, it performs the same tasks for comparing these *three* different input values.
+
 * Function `mod`, given `(v,d)`, will return the remainder of the operation `v/d`, as long as `v` and `d` can be found in `real` and `integer`.
 * Function `acos`, given `(x)`, returns the arc cosine of x in radians. The result is between 0 and pi.
 * Function `asin`, given `(x)`, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
