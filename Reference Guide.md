@@ -270,8 +270,11 @@ The `Sort` module supports the function below,
 1. Input `(_,[])` returns `[]`.
 1. Input `(_,[a])` returns `[a]`.
 1. Input `(p,[pivot|rest])` is more complicated. In this situation the function will `let less=[]` and also `let more=[]`. Then for `e` in `rest` :
+     
      3a. If `p(e,pivot)`, then `less = less + [e].`,
+     
      3b. Else `more = more + [e].`
+     
      3c. The function will then return `sort(p,less) + [pivot] + sort(p,more).`
 
 [Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
