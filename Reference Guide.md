@@ -258,7 +258,7 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `toset`, given `(lst:%list)`, converts the inputted list into a set.
 * Function `sdiff`, given `(a:%list,b:%list)`, does a side-by-side print of the differences between two files.
 * Function `sunion`, given `(a:%list,b:%list)`, prints the smallest set which contains all the elements of both `a` and `b`.
-* Function `sintersection`, given `(a:%list,b:%list)`, finds the interection between  `a` and `b`.
+* Function `sintersection`, given `(a:%list,b:%list)`, finds the intersection between  `a` and `b`.
 * Function `sxunion`, given `(a:%list,b:%list)`, returns all elements in `a` or `b`, but not in both.
 
 [Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. It supports the function below,
