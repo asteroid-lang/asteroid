@@ -261,8 +261,18 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `sintersection`, given `(a:%list,b:%list)`, finds the intersection between  `a` and `b`.
 * Function `sxunion`, given `(a:%list,b:%list)`, returns all elements in `a` or `b`, but not in both.
 
-[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. It supports the function below,
-* Function `sort` can be called with three different inputs to perform its sorting output. These are: `(_,[])`, `(_,[a])`, and `(p,[pivot|rest])`.
+[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. 
+
+The `Quicksort` is the underlying sort algorithm. See the module for an example of it in action.
+
+The `Sort` module supports the function below,
+* Function `sort` performs a sorting output. It can be called with three different inputs,
+1. Input `(_,[])` returns `[]`.
+1. Input `(_,[a])` returns `[a]`.
+1. Input `(p,[pivot|rest])` is more complicated. In this situation the function will `let less=[]` and also `let more=[]`. Then for `e` in `rest` :
+     3a. If `p(e,pivot)`, then `less = less + [e].`,
+     3b. Else `more = more + [e].`
+     3c. The function will then return `sort(p,less) + [pivot] + sort(p,more).`
 
 [Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
 * Function `__init__` can be called with two different inputs: `none` and `stream:%list`. In either case, this function outputs a shallow copy of the input list.
