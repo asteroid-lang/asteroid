@@ -278,7 +278,12 @@ The `Sort` module supports the function below,
      3c. The function will then return `sort(p,less) + [pivot] + sort(p,more).`
 
 [Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
-* Function `__init__` can be called with two different inputs: `none` and `stream:%list`. In either case, this function outputs a shallow copy of the input list.
+* Function `__init__` outputs a shallow copy of the input list. It can be called with two different inputs: 
+
+1. `none` 
+
+1. `stream:%list`
+
 * Function `eof` can be called with the input `none`. If `this @curr_ix == this @stream @length()`, the function returns `true`. If not, it returns `false`.
 * Function `peek` can be called with the input `none`. If `this @eof()`, it returns `none`. If not, it returns `this @stream @(this @curr_ix)`.
 * Function `next` can be called with the input `none`. If `this @eof()`,  it returns `none`. If not, it decides to `let this @curr_ix = this @curr_ix + 1`.
@@ -287,6 +292,8 @@ The `Sort` module supports the function below,
 * Function `map`, given the input `f`, applies a given function to each element of a function.
 * Function `append`, given `item`, adds said item to a stream.
 * Function `__string__`, given `none`, outputs it as a string.
+
+Finally, see the code page linked above for more on importing `state` from `asteroid_state` into this module. 
 
 [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) defines type related functions and structures.
 
