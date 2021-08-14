@@ -3,106 +3,140 @@
 ------------------------------------------------------------------
 
 structure FILE with
-    data f.
-end
-------------------------------------------------------------------
-function fopen
-------------------------------------------------------------------
-with (name:%string, mode:%string) do
 
-let file = FILE().
+------------------------------------------------------------------
+data fd.
+------------------------------------------------------------------
 
-return escape
+------------------------------------------------------------------
+function __init__
+------------------------------------------------------------------
+with (name:%string, mode:%string) do escape
 "
 from asteroid_state import state
 global __retval__
 
 # Get variables
-file_val = state.symbol_table.lookup_sym('file')
+this_val = state.symbol_table.lookup_sym('this')
 name_val = state.symbol_table.lookup_sym('name')
 mode_val = state.symbol_table.lookup_sym('mode')
 
 # destructure object
 (OBJECT,
 (CLASS_ID, (ID, class_id)),
-(OBJECT_MEMORY, (LIST, memory))) = file_val
+(OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # Open file
 f = open(name_val[1], mode_val[1])
-
 memory[0] = ('foreign', f)
-
-__retval__ = file_val
+__retval__ = this_val
 "
 end
 ------------------------------------------------------------------
 
+------------------------------------------------------------------
+function close 
+------------------------------------------------------------------
+with none do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+f_val.close()
+"
+end
+------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function freadline
-------------------------------------------------------------------
-with file:%FILE do return escape
+function read 
+with none do return escape
 "
-# Instantiate return value
 global __retval__
-
-# Import state and lookup 'file'
 from asteroid_state import state
-file_val = state.symbol_table.lookup_sym('file')
+this_val = state.symbol_table.lookup_sym('this')
 
-# destructure file object
 (OBJECT,
-(CLASS_ID, (ID, class_id)),
-(OBJECT_MEMORY, (LIST, memory))) = file_val
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
 
-# Get the foreign object from memory
-foreign_object = memory[0]
+(FOREIGN, f_val) = memory[0]
 
-# Use the python file object to read a line
-line = foreign_object[1].readline()
-
-# Return the read line
-__retval__ = ('string', line)
+__retval__ = ('string', f_val.read())
 "
+end
+
+------------------------------------------------------------------
+
+function readln
+with none do return escape
+"
+global __retval__
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+__retval__ = ('string', f_val.readline())
+"
+end
+
+------------------------------------------------------------------
+
+function write 
+with (what:%string) do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+what_val = state.symbol_table.lookup_sym('what')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+f_val.write(what_val[1])
+"
+end
+
+------------------------------------------------------------------
 end
 ------------------------------------------------------------------
 
-------------------------------------------------------------------
-function fwrite
-------------------------------------------------------------------
-with (file:%FILE, contents:%string) do escape
-"
-from asteroid_state import state
-file_val = state.symbol_table.lookup_sym('file')
-contents = state.symbol_table.lookup_sym('contents')
+function fopen 
+   with (name:%string, mode:%string) do
+      return FILE(name, mode).
+   end
 
-# destructure object
-(OBJECT,
-(CLASS_ID, (ID, class_id)),
-(OBJECT_MEMORY, (LIST, memory))) = file_val
-
-foreign_object = memory[0]
-
-foreign_object[1].write(contents[1])
-"
-end
-------------------------------------------------------------------
-
-------------------------------------------------------------------
 function fclose
-------------------------------------------------------------------
-with file do escape
-"
-from asteroid_state import state
-file_val = state.symbol_table.lookup_sym('file')
+    with(file:%FILE) do
+        file @close().
+    end
 
-# destructure object
-(OBJECT,
-(CLASS_ID, (ID, class_id)),
-(OBJECT_MEMORY, (LIST, memory))) = file_val
+function fread
+    with(file:%FILE) do
+        return file @read().
+    end
 
-foreign_object = memory[0]
+function freadln
+    with(file:%FILE) do
+        return file @readln().
+    end
 
-foreign_object[1].close()
-"
-end
+function fwrite
+    with(file:%FILE, what:%string) do
+        file @write(what).
+    end
+
+--stdin
+--stdout
+--stderr
