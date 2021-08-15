@@ -31,6 +31,33 @@ f = open(name_val[1], mode_val[1])
 memory[0] = ('foreign', f)
 __retval__ = this_val
 "
+
+orwith (std:%string) do escape
+"
+import sys
+from asteroid_state import state
+
+this_val = state.symbol_table.lookup_sym('this')
+std_val = state.symbol_table.lookup_sym('std')[1]
+
+stream = None
+if std_val == 'stdin':
+    stream = sys.stdin
+elif std_val == 'stdout':
+    stream = sys.stdout
+elif std_val == 'stderr':
+    stream = sys.stderr
+else:
+    raise Exception('Unknown standard stream')
+
+# destructure object
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = this_val
+
+memory[0] = ('foreign', stream)
+"
+
 end
 ------------------------------------------------------------------
 
@@ -112,6 +139,10 @@ end
 end
 ------------------------------------------------------------------
 
+let stdin = FILE("stdin").
+let stdout = FILE("stdout").
+let stderr = FILE("stderr").
+
 function fopen 
    with (name:%string, mode:%string) do
       return FILE(name, mode).
@@ -136,7 +167,3 @@ function fwrite
     with(file:%FILE, what:%string) do
         file @write(what).
     end
-
---stdin
---stdout
---stderr
