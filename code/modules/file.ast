@@ -82,6 +82,7 @@ end
 
 ------------------------------------------------------------------
 function read 
+------------------------------------------------------------------
 with none do return escape
 "
 global __retval__
@@ -99,8 +100,8 @@ __retval__ = ('string', f_val.read())
 end
 
 ------------------------------------------------------------------
-
 function readln
+------------------------------------------------------------------
 with none do return escape
 "
 global __retval__
@@ -118,8 +119,8 @@ __retval__ = ('string', f_val.readline())
 end
 
 ------------------------------------------------------------------
-
 function write 
+------------------------------------------------------------------
 with (what:%string) do escape
 "
 from asteroid_state import state
@@ -177,4 +178,11 @@ function fwrite
 ------------------------------------------------------------------
 with(file:%FILE, what:%string) do
     file @write(what).
+end
+
+------------------------------------------------------------------
+function fwriteln
+------------------------------------------------------------------
+with(file:%FILE, what:%string) do
+    file @write(what + "\n")
 end
