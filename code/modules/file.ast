@@ -29,6 +29,7 @@ mode_val = state.symbol_table.lookup_sym('mode')
 # Open file
 f = open(name_val[1], mode_val[1])
 memory[0] = ('foreign', f)
+
 __retval__ = this_val
 "
 
@@ -48,7 +49,7 @@ elif std_val == 'stdout':
 elif std_val == 'stderr':
     stream = sys.stderr
 else:
-    raise Exception('Unknown standard stream')
+    raise Exception('Unknown standard stream' + std_val)
 
 # destructure object
 (OBJECT,
@@ -143,27 +144,37 @@ let stdin = FILE("stdin").
 let stdout = FILE("stdout").
 let stderr = FILE("stderr").
 
+------------------------------------------------------------------
 function fopen 
-   with (name:%string, mode:%string) do
-      return FILE(name, mode).
-   end
+------------------------------------------------------------------
+with (name:%string, mode:%string) do
+   return FILE(name, mode).
+end
 
+------------------------------------------------------------------
 function fclose
-    with(file:%FILE) do
-        file @close().
-    end
+------------------------------------------------------------------
+with(file:%FILE) do
+    file @close().
+end
 
+------------------------------------------------------------------
 function fread
-    with(file:%FILE) do
-        return file @read().
-    end
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @read().
+end
 
+------------------------------------------------------------------
 function freadln
-    with(file:%FILE) do
-        return file @readln().
-    end
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @readln().
+end
 
+------------------------------------------------------------------
 function fwrite
-    with(file:%FILE, what:%string) do
-        file @write(what).
-    end
+------------------------------------------------------------------
+with(file:%FILE, what:%string) do
+    file @write(what).
+end
