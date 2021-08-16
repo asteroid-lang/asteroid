@@ -62,6 +62,7 @@ id_list
 
 pattern
   : exp
+  | '%[' exp ']%'     // Constraint-only pattern match
 
 exp
   : quote_exp
