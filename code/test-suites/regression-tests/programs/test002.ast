@@ -1,28 +1,26 @@
-
-load "io".
-
-structure Foo with
-    data name.
-    function get with none do return (this @name) end
-    end
-
-structure Goo with
-    data n.
-    end
-    
-inherit(Goo,Foo).
-
-
-let g = Goo("Albert","Bert").
-println (g @name).
-println(g @get()).
-
--- debugging purposes
-escape
-"
-val = state.symbol_table.lookup_sym('Goo')
-# print('{}'.format(val))
-".
-
-assert (g @name == "Bert" and g @get() == "Bert").
-
+--load "io".
+--
+--structure Foo with
+--    data name.
+--    function get with none do return (this @name) end
+--    end
+--
+--structure Goo with
+--    data n.
+--    end
+--    
+--inherit(Goo,Foo).
+--
+--
+--let g = Goo("Albert","Bert").
+--println (g @name).
+--println(g @get()).
+--
+---- debugging purposes
+--escape
+--"
+--val = state.symbol_table.lookup_sym('Goo')
+--# print('{}'.format(val))
+--".
+--
+--assert (g @name == "Bert" and g @get() == "Bert").
