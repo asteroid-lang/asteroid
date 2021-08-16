@@ -1,9 +1,5 @@
 load system "io".
 
---freadln
---fwrite
---fwriteln
-
 let filename = escape
 "
 global __retval__
@@ -28,5 +24,9 @@ fclose(file).
 let file = fopen(filename, "r").
 
 -- Assert that the content is correct
-println(fread(file)).
-println(freadln(file)).
+
+-- Seek to the next line
+freadln(file)
+
+-- Assert that the remaining content is the last two lines
+assert fread(file) == "Asteroid!!Asteroid!!!".
