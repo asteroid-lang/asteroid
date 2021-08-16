@@ -207,7 +207,36 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `print_ln` can be called with `item`, and prints a given argument.
 * Function `print` can be called with `item`, and prints a given argument.
 * Function `read` can be called with `none`, and will read a string from `stdin`.
+* Function `write` can be called with `item:%string`, and will write a string to `stdout`.
 * Function `input` can be called with a string `prompt`, and maps the Asteroid input function onto the Python input function.
+
+The following functions are associated with **basic file I/O,**
+
+
+* Function `__init__` will get variables and destructure an object in order to open a certain file. It can be called with two different argument setups,
+1. `(name:%string, mode:%string)`
+1. `(std:%string)`
+
+* Function `close` can be called with `none`. It closes or deallocates a given file descriptor.
+* Function `read` is discussed above.
+* Function `readln` can be called with `none`. It reads a given line of input.
+* Function `write` (similar to as discussed above) can be called with `(what:%string)`.
+* The program `end` includes several predefined standard stream constants: 
+
+``
+let stdin = FILE("stdin").
+let stdout = FILE("stdout").
+let stderr = FILE("stderr").
+``
+
+* Function `fopen` opens a certain file. Given `(name:%string, mode:%string)`, it returns a file's name and mode.
+* Function `fclose`, given `(file:%FILE)`, closes that file.
+* Function `fread`, given `(file:%FILE)`, reads a file.
+* Function `freadln`, given `(file:%FILE)`, reads a given line of input from the file.
+* Function `fwrite`, given `(file:%FILE, what:%string)`, will return ` file @write(what).`
+* Function `fwriteln`, given `(file:%FILE, what:%string)`, will return `file @write(what + "\n")`.
+
+
 
 [Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators. It supports the following functions,
 * Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
