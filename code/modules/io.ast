@@ -224,7 +224,7 @@ f_val.write(what_val[1])
 end
 
 ------------------------------------------------------------------
-end
+end -- FILE
 ------------------------------------------------------------------
 
 -- Predefined standard stream constants
@@ -233,6 +233,8 @@ let stdin = FILE("stdin").
 let stdout = FILE("stdout").
 let stderr = FILE("stderr").
 
+
+-- File I/O library functions
 ------------------------------------------------------------------
 function fopen 
 -- Open a file given a filename and mode

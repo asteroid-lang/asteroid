@@ -18,8 +18,8 @@ let file = fopen(filename, "a").
 
 -- Write some content and close the file
 fwriteln(file, "Asteroid!").
-fwriteln(file, "Asteroid!!").
-fwriteln(file, "Asteroid!!!").
+fwrite(file, "Asteroid!!").
+fwrite(file, "Asteroid!!!").
 fclose(file).
 
 ----------------------------------------------------
