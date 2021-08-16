@@ -1,0 +1,32 @@
+load system "io".
+
+--freadln
+--fwrite
+--fwriteln
+
+let filename = escape
+"
+global __retval__
+
+import tempfile
+
+new_file, filename = tempfile.mkstemp()
+
+__retval__ = ('string', filename)
+".
+
+-- Open up the temporary file for writing
+let file = fopen(filename, "a").
+
+-- Write the word 'Asteroid' and close the file
+fwriteln(file, "Asteroid!").
+fwriteln(file, "Asteroid!!").
+fwriteln(file, "Asteroid!!!").
+fclose(file).
+
+-- Open the file for reading
+let file = fopen(filename, "r").
+
+-- Assert that the content is correct
+println(fread(file)).
+println(freadln(file)).

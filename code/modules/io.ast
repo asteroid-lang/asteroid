@@ -84,3 +84,194 @@ else:
   __retval__ = ('string', input(term2string(prompt_val)))
 "
 end
+
+------------------------------------------------------------------
+-- Basic file i/o
+------------------------------------------------------------------
+structure FILE with
+
+------------------------------------------------------------------
+data fd.
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function __init__
+------------------------------------------------------------------
+with (name:%string, mode:%string) do escape
+"
+from asteroid_state import state
+global __retval__
+
+# Get variables
+this_val = state.symbol_table.lookup_sym('this')
+name_val = state.symbol_table.lookup_sym('name')
+mode_val = state.symbol_table.lookup_sym('mode')
+
+# destructure object
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = this_val
+
+# Open file
+f = open(name_val[1], mode_val[1])
+memory[0] = ('foreign', f)
+
+__retval__ = this_val
+"
+
+orwith (std:%string) do escape
+"
+import sys
+from asteroid_state import state
+
+this_val = state.symbol_table.lookup_sym('this')
+std_val = state.symbol_table.lookup_sym('std')[1]
+
+stream = None
+if std_val == 'stdin':
+    stream = sys.stdin
+elif std_val == 'stdout':
+    stream = sys.stdout
+elif std_val == 'stderr':
+    stream = sys.stderr
+else:
+    raise Exception('Unknown standard stream' + std_val)
+
+# destructure object
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = this_val
+
+memory[0] = ('foreign', stream)
+"
+
+end
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function close 
+------------------------------------------------------------------
+with none do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+f_val.close()
+"
+end
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function read 
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+__retval__ = ('string', f_val.read())
+"
+end
+
+------------------------------------------------------------------
+function readln
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+__retval__ = ('string', f_val.readline())
+"
+end
+
+------------------------------------------------------------------
+function write 
+------------------------------------------------------------------
+with (what:%string) do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+what_val = state.symbol_table.lookup_sym('what')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+f_val.write(what_val[1])
+"
+end
+
+------------------------------------------------------------------
+end
+------------------------------------------------------------------
+
+-- Predefined standard stream constants
+
+let stdin = FILE("stdin").
+let stdout = FILE("stdout").
+let stderr = FILE("stderr").
+
+------------------------------------------------------------------
+function fopen 
+------------------------------------------------------------------
+with (name:%string, mode:%string) do
+   return FILE(name, mode).
+end
+
+------------------------------------------------------------------
+function fclose
+------------------------------------------------------------------
+with(file:%FILE) do
+    file @close().
+end
+
+------------------------------------------------------------------
+function fread
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @read().
+end
+
+------------------------------------------------------------------
+function freadln
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @readln().
+end
+
+------------------------------------------------------------------
+function fwrite
+------------------------------------------------------------------
+with(file:%FILE, what:%string) do
+    file @write(what).
+end
+
+------------------------------------------------------------------
+function fwriteln
+------------------------------------------------------------------
+with(file:%FILE, what:%string) do
+    file @write(what + "\n")
+end
+------------------------------------------------------------------
