@@ -80,6 +80,8 @@ token_specs = [
     (r'\)',                         'RPAREN'),
     (r'\[',                         'LBRACKET'),
     (r'\]',                         'RBRACKET'),
+    (r'\%\[',                       'RCONSTRAINT'),
+    (r'\]\%',                       'LCONSTRAINT'),
     (r':',                          'COLON'),
     (r'\|',                         'BAR'),
     (r'\.',                         'DOT'),
