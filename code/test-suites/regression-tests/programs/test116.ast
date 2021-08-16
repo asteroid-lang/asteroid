@@ -1,3 +1,5 @@
+-- Tests for file i/o
+
 load system "io".
 
 let filename = escape
@@ -11,14 +13,16 @@ new_file, filename = tempfile.mkstemp()
 __retval__ = ('string', filename)
 ".
 
--- Open up the temporary file for writing
+-- Open up the temporary file for appending
 let file = fopen(filename, "a").
 
--- Write the word 'Asteroid' and close the file
+-- Write some content and close the file
 fwriteln(file, "Asteroid!").
 fwriteln(file, "Asteroid!!").
 fwriteln(file, "Asteroid!!!").
 fclose(file).
+
+----------------------------------------------------
 
 -- Open the file for reading
 let file = fopen(filename, "r").
@@ -30,3 +34,6 @@ freadln(file)
 
 -- Assert that the remaining content is the last two lines
 assert fread(file) == "Asteroid!!Asteroid!!!".
+
+-- Close the file
+fclose(file).
