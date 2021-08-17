@@ -61,4 +61,5 @@ writeln(__STDERR__, "^ This is just a test. You're doing fine").
 -- Test implicit write and read
 writeln("What's your favorite color?").
 let x = readln().
-writeln("Wow! I like " + x + " too!").
+write("Wow! I like ").
+writeln(x + " too!").
