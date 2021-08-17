@@ -501,14 +501,17 @@ class Parser:
     ###########################################################################################
     # pattern
     #    : exp
+    #    | '%[' exp ']%]
     def pattern(self):
-        dbg_print("parsing PATTERN")
+
         if self.lexer.peek().type == 'LCONSTRAINT':
+            dbg_print("parsing CONSTRAINT-ONLY PATTERN")
             self.lexer.match('LCONSTRAINT')
             e = self.exp()
             self.lexer.match('RCONSTRAINT')
             return ('constraint',e)
         else:
+            dbg_print("parsing PATTERN")
             e = self.exp()
             return e
     ###########################################################################################
