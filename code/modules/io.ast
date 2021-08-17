@@ -128,11 +128,11 @@ this_val = state.symbol_table.lookup_sym('this')
 std_val = state.symbol_table.lookup_sym('std')[1]
 
 stream = None
-if std_val == 'stdin':
+if std_val == '__STDIN__':
     stream = sys.stdin
-elif std_val == 'stdout':
+elif std_val == '__STDOUT__':
     stream = sys.stdout
-elif std_val == 'stderr':
+elif std_val == '__STDERR__':
     stream = sys.stderr
 else:
     raise Exception('Unknown standard stream' + std_val)
@@ -229,9 +229,9 @@ end -- FILE
 
 -- Predefined standard stream constants
 
-let __STDIN__ = FILE("stdin").
-let __STDOUT__ = FILE("stdout").
-let __STDERR__ = FILE("stderr").
+let __STDIN__ = FILE("__STDIN__").
+let __STDOUT__ = FILE("__STDOUT__").
+let __STDERR__ = FILE("__STDERR__").
 
 
 -- File I/O library functions
