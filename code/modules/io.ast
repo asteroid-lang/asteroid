@@ -215,7 +215,6 @@ let __STDIN__ = FILE("__STDIN__").
 let __STDOUT__ = FILE("__STDOUT__").
 let __STDERR__ = FILE("__STDERR__").
 
-
 -- File I/O library functions
 ------------------------------------------------------------------
 function open 
@@ -259,21 +258,20 @@ end
 function write
 -- Write to a given file
 ------------------------------------------------------------------
-with(file:%FILE, what:%string) do
-    file @write(what).
-
-orwith item:%string do
+with what:%string do
     __STDOUT__@ write(what).
+orwith(file:%FILE, what:%string) do
+    file @write(what).
 end
 
 ------------------------------------------------------------------
 function writeln
 -- Write a complete line to a given file
 ------------------------------------------------------------------
-with(file:%FILE, what:%string) do
-    file @write(what + "\n")
-
-orwith item:%string do
+with what:%string do
     __STDOUT__@ write(what + "\n").
+
+orwith(file:%FILE, what:%string) do
+    file @write(what + "\n").
 end
 ------------------------------------------------------------------

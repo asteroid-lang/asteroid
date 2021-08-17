@@ -54,3 +54,11 @@ println("Hello, " + name).
 -- Write to STDERR
 writeln(__STDERR__, "Oh no, you've encountered an error!").
 writeln(__STDERR__, "^ This is just a test. You're doing fine").
+
+
+----------------------------------------------------
+
+-- Test implicit write and read
+writeln("What's your favorite color?").
+let x = readln().
+writeln("Wow! I like " + x + " too!").
