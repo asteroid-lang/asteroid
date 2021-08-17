@@ -403,6 +403,10 @@ def unify(term, pattern, unifying = True ):
             return unify(t_arg, p_arg)
         else:
             return unify(t_arg, p_arg,False)
+        
+    elif pattern[0] == 'constraint':
+        unifier = unify(term,pattern[1])
+        return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
         raise PatternMatchFailed(

@@ -40,7 +40,9 @@ primary_lookahead = {
     'TYPEMATCH',
     } | ops
 
-exp_lookahead = {'QUOTE'} | primary_lookahead
+exp_lookahead = {
+    'QUOTE',
+    'LCONSTRAINT',} | primary_lookahead
 
 exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 
@@ -501,9 +503,14 @@ class Parser:
     #    : exp
     def pattern(self):
         dbg_print("parsing PATTERN")
-        e = self.exp()
-        return e
-
+        if self.lexer.peek().type == 'LCONSTRAINT':
+            self.lexer.match('LCONSTRAINT')
+            e = self.exp()
+            self.lexer.match('RCONSTRAINT')
+            return ('constraint',e)
+        else:
+            e = self.exp()
+            return e
     ###########################################################################################
     # exp
     #    : conditional
