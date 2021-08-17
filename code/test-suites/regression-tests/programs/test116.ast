@@ -14,26 +14,43 @@ __retval__ = ('string', filename)
 ".
 
 -- Open up the temporary file for appending
-let file = fopen(filename, "a").
+let file = open(filename, "a").
 
 -- Write some content and close the file
-fwriteln(file, "Asteroid!").
-fwrite(file, "Asteroid!!").
-fwrite(file, "Asteroid!!!").
-fclose(file).
+writeln(file, "Asteroid!").
+write(file, "Asteroid!!").
+write(file, "Asteroid!!!").
+close(file).
 
 ----------------------------------------------------
 
 -- Open the file for reading
-let file = fopen(filename, "r").
-
--- Assert that the content is correct
+let file = open(filename, "r").
 
 -- Seek to the next line
-freadln(file)
+readln(file).
 
 -- Assert that the remaining content is the last two lines
-assert fread(file) == "Asteroid!!Asteroid!!!".
+assert read(file) == "Asteroid!!Asteroid!!!".
 
 -- Close the file
-fclose(file).
+close(file).
+
+----------------------------------------------------
+
+-- Check that print(X) is write(__STDOUT__, X)
+print("Hello,").
+write(__STDOUT__, " world!" + "\n").
+
+-- Check that println(X) is writeln(__STDOUT__, X)
+println("First-class patterns").
+writeln(__STDOUT__, "are pretty cool!").
+
+-- Check that input() is the same as read(__STDIN__).
+println("Please enter your name: ").
+let name = readln(__STDIN__).
+println("Hello, " + name).
+
+-- Write to STDERR
+writeln(__STDERR__, "Oh no, you've encountered an error!").
+writeln(__STDERR__, "^ This is just a test. You're doing fine").

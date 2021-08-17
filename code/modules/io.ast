@@ -229,14 +229,14 @@ end -- FILE
 
 -- Predefined standard stream constants
 
-let stdin = FILE("stdin").
-let stdout = FILE("stdout").
-let stderr = FILE("stderr").
+let __STDIN__ = FILE("stdin").
+let __STDOUT__ = FILE("stdout").
+let __STDERR__ = FILE("stderr").
 
 
 -- File I/O library functions
 ------------------------------------------------------------------
-function fopen 
+function open 
 -- Open a file given a filename and mode
 ------------------------------------------------------------------
 with (name:%string, mode:%string) do
@@ -244,7 +244,7 @@ with (name:%string, mode:%string) do
 end
 
 ------------------------------------------------------------------
-function fclose
+function close
 -- Close a given file
 ------------------------------------------------------------------
 with(file:%FILE) do
@@ -252,7 +252,7 @@ with(file:%FILE) do
 end
 
 ------------------------------------------------------------------
-function fread
+function read
 -- Return the contents of a given file
 ------------------------------------------------------------------
 with(file:%FILE) do
@@ -260,7 +260,7 @@ with(file:%FILE) do
 end
 
 ------------------------------------------------------------------
-function freadln
+function readln
 -- Return the next line of a given file
 ------------------------------------------------------------------
 with(file:%FILE) do
@@ -268,7 +268,7 @@ with(file:%FILE) do
 end
 
 ------------------------------------------------------------------
-function fwrite
+function write
 -- Write to a given file
 ------------------------------------------------------------------
 with(file:%FILE, what:%string) do
@@ -276,7 +276,7 @@ with(file:%FILE, what:%string) do
 end
 
 ------------------------------------------------------------------
-function fwriteln
+function writeln
 -- Write a complete line to a given file
 ------------------------------------------------------------------
 with(file:%FILE, what:%string) do
