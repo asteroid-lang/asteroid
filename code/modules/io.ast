@@ -42,30 +42,6 @@ return none
 end
 
 ------------------------------------------------------------------
-function read
-------------------------------------------------------------------
--- read string from stdin
-with none do return escape
-"
-global __retval__
-from sys import stdin
-__retval__ = ('string', stdin.read())
-"
-end
-
-------------------------------------------------------------------
-function write
-------------------------------------------------------------------
--- write string to stdout
-with item:%string do escape
-"
-from sys import stdout
-(STRING, item_val) = state.symbol_table.lookup_sym('item')
-stdout.write(item_val)
-"
-end
-
-------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
 -- mapping the Asteroid input function onto the
@@ -227,6 +203,12 @@ end
 end -- FILE
 ------------------------------------------------------------------
 
+
+
+
+
+------------------------------------------------------------------
+
 -- Predefined standard stream constants
 
 let __STDIN__ = FILE("__STDIN__").
@@ -257,6 +239,9 @@ function read
 ------------------------------------------------------------------
 with(file:%FILE) do
     return file @read().
+
+orwith none do 
+    return __STDIN__@ read().
 end
 
 ------------------------------------------------------------------
@@ -265,6 +250,9 @@ function readln
 ------------------------------------------------------------------
 with(file:%FILE) do
     return file @readln().
+
+orwith none do
+    return __STDIN__@ readln().
 end
 
 ------------------------------------------------------------------
@@ -273,6 +261,9 @@ function write
 ------------------------------------------------------------------
 with(file:%FILE, what:%string) do
     file @write(what).
+
+orwith item:%string do
+    __STDOUT__@ write(what).
 end
 
 ------------------------------------------------------------------
@@ -281,5 +272,8 @@ function writeln
 ------------------------------------------------------------------
 with(file:%FILE, what:%string) do
     file @write(what + "\n")
+
+orwith item:%string do
+    __STDOUT__@ write(what + "\n").
 end
 ------------------------------------------------------------------
