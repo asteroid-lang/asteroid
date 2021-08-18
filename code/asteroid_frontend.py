@@ -501,19 +501,11 @@ class Parser:
     ###########################################################################################
     # pattern
     #    : exp
-    #    | '%[' exp ']%]
     def pattern(self):
+        dbg_print("parsing PATTERN")
+        e = self.exp()
+        return e
 
-        if self.lexer.peek().type == 'LCONSTRAINT':
-            dbg_print("parsing CONSTRAINT-ONLY PATTERN")
-            self.lexer.match('LCONSTRAINT')
-            e = self.exp()
-            self.lexer.match('RCONSTRAINT')
-            return ('constraint',e)
-        else:
-            dbg_print("parsing PATTERN")
-            e = self.exp()
-            return e
     ###########################################################################################
     # exp
     #    : conditional
@@ -521,6 +513,34 @@ class Parser:
         dbg_print("parsing EXP")
         v = self.quote_exp()
         return v
+
+    ###########################################################################################
+    # quote_exp
+    #    : QUOTE exp
+    #    | PATTERN WITH? exp
+    #    | '%[' exp ']%'
+    #    | head_tail
+    def quote_exp(self):
+        dbg_print("parsing QUOTE_EXP")
+
+        if self.lexer.peek().type == 'QUOTE':
+            self.lexer.match('QUOTE')
+            v = self.exp()
+            return ('quote', v)
+        # 'pattern with' is just the long version of the quote char
+        elif self.lexer.peek().type == 'PATTERN':
+            self.lexer.match('PATTERN')
+            self.lexer.match_optional('WITH')
+            v = self.exp()
+            return ('quote', v)
+        elif self.lexer.peek.type == 'LCONSTRAINT': #constraint-only pattern match
+            self.lexer.match('LCONSTRAINT')
+            v = self.exp()
+            self.lexer.match('RCONSTRAINT')
+            return ('constraint', v)
+        else:
+            v = self.head_tail()
+            return v
 
     ###########################################################################################
     # conditional
@@ -548,28 +568,6 @@ class Parser:
             return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
 
         else:
-            return v
-
-    ###########################################################################################
-    # quote_exp
-    #    : QUOTE head_tail
-    #    | PATTERN WITH? head_tail
-    #    | head_tail
-    def quote_exp(self):
-        dbg_print("parsing QUOTE_EXP")
-
-        if self.lexer.peek().type == 'QUOTE':
-            self.lexer.match('QUOTE')
-            v = self.head_tail()
-            return ('quote', v)
-        # 'pattern with' is just the long version of the quote char
-        elif self.lexer.peek().type == 'PATTERN':
-            self.lexer.match('PATTERN')
-            self.lexer.match_optional('WITH')
-            v = self.head_tail()
-            return ('quote', v)
-        else:
-            v = self.head_tail()
             return v
 
     ###########################################################################################
