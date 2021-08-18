@@ -326,12 +326,36 @@ Finally, see the code page linked above for more on importing `state` from `aste
 
 [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) defines type related functions and structures.
 
-See the Built-ins section of this Reference Guide for more on the list and string related functions this module supports. Other than those, this module supports the following functions,
+See the Built-ins section of this Reference Guide for more on the list and string related functions this module supports. Overall, this module supports the following functions.
+
+*FOR TYPE CONVERSION:*
+
+* Function `tointeger` converts a given input to an integer. It can be called with two different arguments,
+1. `(item:%string,base:%integer)`
+2. `item`
+
 
 * Function `toreal`, given `item`, returns the input as a real number data type `('real', float(item_val[1]))`.
 * Function `toboolean`, given `item`, returns the input as a Boolean value of either true or false.
+* `TP` is a *pattern* for selecting a proper formatting body in `tostring`. See the Type module for more information on it.
+* `stringformat` is a *structure* for formatting an object for `tostring`. See the Type module for more information on it.
+* Function `tostring` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs:
+1. `(v:*TP,stringformat(w:%integer,none))`
+2. `(v:%real,stringformat(w:%integer,none))`
+3. `(v:%real,stringformat(w:%integer,p:%integer))`
+4. `item` (a default clause here)
+
+* Function `tobase` represents the given integer `x` (*specifically* within the given input `(x:%integer,base:%integer)`) as a numeral in different bases.
+
+
+*TYPE QUERY FUNCTIONS:*
+
+* Function `islist`, given `item`, returns `item is %list`.
 * Function `isscalar`, given `item`, returns `(item is %integer)` or `(item is %real)`.
 * Function `isnone`, given `x`, returns `x is %none`.
+* Function `gettype`, given `x`, gets the type of `x` as an Asteroid string.
+
+
 
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures. It supports the following functions,
 
