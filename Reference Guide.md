@@ -359,7 +359,10 @@ See the Built-ins section of this Reference Guide for more on the list and strin
 
 [Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures. It supports the following functions,
 
-* Function `exit`, given `none` or `msg:%string`, imports `sys.exit(1)` to exit the program.
+* Function `exit` imports `sys.exit(1)` to exit the program. It can be called with two inputs,
+1.`none`
+2.`msg:%string`
+
 * Function `copy`, given Asteroid object `obj`, makes a deep copy of it.
 * Function `cls`, given `none`, clears the screen.
 * Function `sleep`, given `secs %if isscalar(secs)`, programs sleep for `secs` seconds.
