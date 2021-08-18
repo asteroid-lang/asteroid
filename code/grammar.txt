@@ -62,14 +62,14 @@ id_list
 
 pattern
   : exp
-  | '%[' exp ']%'     // Constraint-only pattern match
 
 exp
   : quote_exp
 
 quote_exp
-  : QUOTE head_tail
-  | PATTERN WITH? head_tail
+  : QUOTE exp
+  | PATTERN WITH? exp
+  | '%[' exp ']%'      // constraint-only pattern match
   | head_tail
 
 head_tail
