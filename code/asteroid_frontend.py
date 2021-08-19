@@ -533,7 +533,7 @@ class Parser:
             self.lexer.match_optional('WITH')
             v = self.exp()
             return ('quote', v)
-        elif self.lexer.peek.type == 'LCONSTRAINT': #constraint-only pattern match
+        elif self.lexer.peek().type == 'LCONSTRAINT': #constraint-only pattern match
             self.lexer.match('LCONSTRAINT')
             v = self.exp()
             self.lexer.match('RCONSTRAINT')
