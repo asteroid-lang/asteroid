@@ -1,28 +1,79 @@
+load system "io".
+load system "util".
+-----------------------------------------------------------------------
+let x = [1,2].
+let %[ x ]% = (2,1).
+assert( x == [1,2] ).
+-----------------------------------------------------------------------
+let POS_INT = pattern with (p:%integer) %if p > 0.
 
-load "io".
+-- using the POS_INT pattern as a constraint not generating any unifiers
+function f with (x:%[*POS_INT]%,y:%[*POS_INT]%) do
+  return x+y.
+end
 
-structure Foo with
-    data name.
-    function get with none do return (this @name) end
-    end
+-- using the POS_INT pattern in the traditional sense
+function g with *POS_INT do
+  return 2*p.
+end
 
-structure Goo with
-    data n.
-    end
-    
-inherit(Goo,Foo).
+assert (f(1,2) == 3).
+assert (g(1) == 2).
+-----------------------------------------------------------------------
+-- the POS_INT pattern is just a constraint, no unifiers are exported.
+let POS_INT = pattern with %[(p:%integer) %if p > 0 ]%.
 
 
-let g = Goo("Albert","Bert").
-println (g @name).
-println(g @get()).
+function g with *POS_INT do
+  return 2*p. -- error: no unifier for 'p'
+end
 
--- debugging purposes
-escape
-"
-val = state.symbol_table.lookup_sym('Goo')
-# print('{}'.format(val))
-".
+assert (g(1) == 2).
+-----------------------------------------------------------------------
+let %[ x:%integer ]% = 1.
+-----------------------------------------------------------------------
+try
+  let v = 1 %if v == 2.
+catch Exception("SystemError", s) do
+  if not isnone(s @index("constraint")) do
+  . -- pass
+  else
+    throw Error("FAIL: unexpected error "+s).
+  end.
+end.
+-----------------------------------------------------------------------
+try
+  let v = 1%integer.
+catch Exception("SystemError", s) do
+  if not isnone(s @index("constraint")) do
+  . -- pass
+  else
+    throw Error("FAIL: unexpected error "+s).
+  end.
+end.  
+-----------------------------------------------------------------------
+try
+  let v = %[ 1 ]%.
+catch Exception("SystemError", s) do
+  if not isnone(s @index("constraint")) do
+  . -- pass
+  else
+    throw Error("FAIL: unexpected error "+s).
+  end.
+end.
+-----------------------------------------------------------------------
+try
+  function g with *POS_INT do
+    return 2*p. -- error: no unifier for 'p'
+  end.
 
-assert (g @name == "Bert" and g @get() == "Bert").
-
+  assert(20 == g(10)).
+catch Exception("SystemError", s) do
+  if not isnone(s @index("constraint")) do
+  . -- pass
+  else
+    throw Error("FAIL: unexpected error "+s).
+  end.
+end.
+-----------------------------------------------------------------------
+println("PASSED.").
