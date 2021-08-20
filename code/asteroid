@@ -82,7 +82,7 @@ interp_object = \
        exceptions=flags['-e'],
        prologue=flags['-p'])'''
 
-if flags['-p']:
+if flags['-z']:
     # generates pstats into the file 'pstats'
     # see https://docs.python.org/3/library/profile.html
     cProfile.run(interp_object, 'pstats')
