@@ -301,6 +301,13 @@ def term2string(term):
         term_string += cType
         return term_string
 
+    elif TYPE == 'constraint':          # Handle a constraint-only pattern
+        (CONSTRAINT,ptrn) = term
+        term_string = '%['
+        term_string += term2string(ptrn)
+        term_string += ']%'
+        return term_string
+
     elif TYPE == 'deref':               # Handle a first-class pattern
         (DEREF, (ID, pName)) = term
         term_string = pName

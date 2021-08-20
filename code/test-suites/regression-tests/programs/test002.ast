@@ -101,13 +101,15 @@ catch Exception("SystemError", s) do
 end.
 -----------------------------------------------------------------------
 try
-  function g with *POS_INT do
-    return 2*p. -- error: no unifier for 'p'
-  end.
+  let POS_INT = pattern with %[(number:%integer) %if number > 0]%.
 
+  function g with *POS_INT do
+    return 2*number. -- error: no unifier for 'number'
+  end.
   assert(20 == g(10)).
+
 catch Exception("SystemError", s) do
-  if not isnone(s @index("constraint")) do
+  if not isnone(s @index("not defined")) do
   . -- pass
   else
     throw Error("FAIL: unexpected error "+s).
