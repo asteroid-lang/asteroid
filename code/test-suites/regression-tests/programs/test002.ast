@@ -8,6 +8,8 @@ assert( x == [1,2] ).
 let %[ ( a , b ) ]% = (1,2).
 try
   assert(a == 1).
+
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("not defined")) do
   . -- pass
@@ -17,6 +19,8 @@ catch Exception("SystemError", s) do
 end.
 try
   assert(b == 2).
+
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("not defined")) do
   . -- pass
@@ -29,6 +33,8 @@ let ( one , %[ two ]% ) = (1,2).
 assert(one == 1).
 try
   assert(two == 2).
+
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("not defined")) do
   . -- pass
@@ -72,6 +78,7 @@ let %[ ( one , %[ two ]% ) ]% = (1,2).
 -----------------------------------------------------------------------
 try
   let v = 1 %if v == 2.
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("constraint")) do
   . -- pass
@@ -82,6 +89,7 @@ end.
 -----------------------------------------------------------------------
 try
   let v = 1%integer.
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("constraint")) do
   . -- pass
@@ -92,6 +100,7 @@ end.
 -----------------------------------------------------------------------
 try
   let v = %[ 1 ]%.
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("constraint")) do
   . -- pass
@@ -107,7 +116,8 @@ try
     return 2*number. -- error: no unifier for 'number'
   end.
   assert(20 == g(10)).
-
+  
+  throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("not defined")) do
   . -- pass
