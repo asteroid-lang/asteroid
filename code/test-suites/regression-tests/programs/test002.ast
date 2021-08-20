@@ -52,15 +52,14 @@ end
 assert (f(1,2) == 3).
 assert (g(1) == 2).
 -----------------------------------------------------------------------
-let POS_INT = pattern with (p:%integer) %if p > 0.
+-- the POS_INT pattern is just a constraint, no unifiers are exported.
+let POS_INT = pattern with %[(p:%integer) %if p > 0]%.
 
--- using the POS_INT pattern as a constraint not generating any unifiers
-function f with (x:%[*POS_INT]%,y:%[*POS_INT]%) do
+function f with (x:*POS_INT,y:*POS_INT) do
   return x+y.
 end
 
--- using the POS_INT pattern in the traditional sense
-function g with *POS_INT do
+function g with p:*POS_INT do
   return 2*p.
 end
 
