@@ -155,12 +155,16 @@ def unify(term, pattern, unifying = True ):
         else:
             unifiers = unify(term, pexp, False)
 
+        if state.constraint_lvl: 
+            state.symbol_table.push_scope({})
+
         # evaluate the conditional expression in the
         # context of the unifiers.
-        #state.symbol_table.push_scope({})
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
-        #state.symbol_table.pop_scope()
+
+        if state.constraint_lvl:
+            state.symbol_table.pop_scope()
 
         if bool_val[1]:
             return unifiers
@@ -405,7 +409,9 @@ def unify(term, pattern, unifying = True ):
             return unify(t_arg, p_arg,False)
         
     elif pattern[0] == 'constraint':
+        state.constraint_lvl += 1
         unifier = unify(term,pattern[1])
+        state.constraint_lvl -= 1
         return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
