@@ -1485,11 +1485,6 @@ def deref_exp(node):
 
 #########################################################################
 def constraint_exp(node):
-
-    try:
-        (CONSTRAINT,pattern) = node
-    except:
-        (CONSTRAINT,exp,pattern) = node
     
     # Constraint-only pattern matches should not exist where only an
     # expression is expected. If we get here, we have come across this
@@ -1497,7 +1492,8 @@ def constraint_exp(node):
     # A constraint-only pattern match AST cannot be walked and therefor
     # we raise an error. 
     raise ValueError(
-        "constraint pattern found where an expression is expected.")
+        "constraint pattern: {} cannot be used as a constructor.".
+        format(term2string(node)))
 
 #########################################################################
 # walk
