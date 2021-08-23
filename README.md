@@ -8,7 +8,7 @@ Asteroid is an open source, dynamically typed, multi-paradigm programming langua
 
 OK, before we get started here is the obligatory ''Hello World!'' program written in Asteroid,
 ```
-load "io".
+load system "io".
 println "Hello World!".
 ```
 Since pattern matching is at the core of Asteroid we find that the simplest pattern matching occurs in Asteroid's `let` statement. For example,
