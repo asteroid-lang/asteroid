@@ -1,7 +1,7 @@
 #########################################################################
 # A tree walker to interpret Asteroid programs
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 #########################################################################
 
 from asteroid_globals import *
@@ -446,21 +446,21 @@ def declare_formal_args(unifiers):
         state.symbol_table.enter_sym(sym, term)
 
 #########################################################################
-# Evaluates a set of unifiers for the presence of repeated variable 
+# Evaluates a set of unifiers for the presence of repeated variable
 # names within a pattern. Repeated variables names within the same pattern
 # are what is called a non-linear pattern, which is not currently supported
-# by Asteroid. 
+# by Asteroid.
 # This function will raise a NonLinearPatternError exception when a non-linear
 # pattern has been recognized.
 # Otherwise, this function returns control to the caller after finishing.
 def check_repeated_symbols( unifiers ):
 
-    symbols = {} # Will hold all previously seen unifiers(term-pattern) as (key-value) 
+    symbols = {} # Will hold all previously seen unifiers(term-pattern) as (key-value)
     skip_unifier = False #Determines if we want to eval the current unifier pair
 
     # For each pair of unifiers
     for unifier in unifiers:
-        
+
         # Unpack the pattern-term pair
         (pattern, term) = unifier
 
@@ -472,7 +472,7 @@ def check_repeated_symbols( unifiers ):
             skip_unifier = True
 
         # If we are not skipping this turn, check to see if we have seen this
-        # variable before. 
+        # variable before.
         if skip_unifier:
             skip_unifier = False
 
@@ -798,12 +798,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     else:
         return_value = ('none', None) # need that in case function has no return statement
 
-    # coming back from a function call - restore caller's lineinfo
+    # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
-
-    # NOTE: popping the function scope is not necessary because we
-    # are restoring the original symtab configuration. this is necessary
-    # because a return statement might come out of a nested with statement
+    state.symbol_table.pop_scope()
     state.symbol_table.set_config(save_symtab)
 
     return return_value
@@ -1444,7 +1441,7 @@ def function_exp(node):
 
     return ('function-val',
             body_list,
-            state.symbol_table.get_config())
+            state.symbol_table.get_closure())
 
 #########################################################################
 # Named patterns - when walking a named pattern we are interpreting a

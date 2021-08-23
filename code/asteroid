@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ###########################################################################################
 # Asteroid toplevel driver
 #
@@ -13,6 +13,7 @@ from asteroid_version import VERSION
 from asteroid_globals import redundant_clause_detector_flags
 
 def display_help():
+    print("** Asteroid Version {} **".format(VERSION))
     print("usage: asteroid [-s][-t][-v][-w][-p][-l] <input file>")
     print("")
     print("command line flags:")
