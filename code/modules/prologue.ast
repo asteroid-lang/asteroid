@@ -392,14 +392,14 @@ global __retval__
 this_val = state.symbol_table.lookup_sym('this')
 ix_val = state.symbol_table.lookup_sym('ix')
 
-__retval__ = ('list', this_val[1].pop(ix_val[1]))
+__retval__ = this_val[1].pop(ix_val[1])
 "
 orwith none do return escape
 "
 global __retval__
 
 this_val = state.symbol_table.lookup_sym('this')
-__retval__ = ('list', this_val[1].pop())
+__retval__ = this_val[1].pop()
 "
 end
 
