@@ -103,7 +103,6 @@ We use the type pattern `%integer` to restrict the domain of the function to int
 Type patterns are extremely useful in dynamically typed languages like Asteroid in order to provide some additional type safety that would otherwise not be available. Type patterns are also available for user defined types. Consider,
 ```
 load system "io".
-load system "util".
 
 structure A with
     data a.
@@ -113,7 +112,7 @@ structure A with
 let a = A(1,2).
 let v:%A = a.
 
-println (tostring v).
+println v.
 ```
 In the pattern `v:%A` the variable `v` will be bound to objects that the type pattern `%A` matches and that pattern will only match objects of type `A`.
 
