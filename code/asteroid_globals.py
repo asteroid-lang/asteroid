@@ -14,7 +14,7 @@ asteroid_file_suffix = ".ast"
 # This list contains the global flags utilized by the redundant pattern
 # clause detector. Element/flag discriptions are listed below.
 # [0] = Indicates if the Redundant Pattern dectector has been turned on.
-redundant_clause_detector_flags = [False]
+eval_redundancy = [False]
 
 ###########################################################################################
 # symbols for builtin operators.

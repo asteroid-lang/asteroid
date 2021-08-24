@@ -747,7 +747,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         state.symbol_table.enter_sym('this', obj_ref)
 
     # Check for useless patterns
-    if redundant_clause_detector_flags[0]:
+    if eval_redundancy[0]:
         check_redundancy(body_list, fname)
 
     # execute the function
