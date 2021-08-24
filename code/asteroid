@@ -10,7 +10,6 @@ import sys
 import os
 from asteroid_interp import interp
 from asteroid_version import VERSION
-from asteroid_globals import eval_redundancy
 
 def display_help():
     print("usage: asteroid [-s][-t][-v][-w][-p][-l] <input file>")
