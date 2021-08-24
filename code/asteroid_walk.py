@@ -103,12 +103,14 @@ def unify(term, pattern, unifying = True ):
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
+        # Unpack a term-side name-pattern if evaluating redundant clauses
         return unify(term[2],pattern,unifying)
 
     elif ((not unifying) and (term[0] == 'deref')):
+
+        # Unpack a term-side first-class pattern if evaluating redundant clauses
         (ID, sym) = term[1]
         term = state.symbol_table.lookup_sym(sym)
-
         return unify(term[1], pattern, unifying)
 
     ### Asteroid value level matching
