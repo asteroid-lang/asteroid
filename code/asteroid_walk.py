@@ -155,12 +155,16 @@ def unify(term, pattern, unifying = True ):
         else:
             unifiers = unify(term, pexp, False)
 
+        if state.constraint_lvl: 
+            state.symbol_table.push_scope({})
+
         # evaluate the conditional expression in the
         # context of the unifiers.
-        #state.symbol_table.push_scope({})
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
-        #state.symbol_table.pop_scope()
+
+        if state.constraint_lvl:
+            state.symbol_table.pop_scope()
 
         if bool_val[1]:
             return unifiers
@@ -403,6 +407,12 @@ def unify(term, pattern, unifying = True ):
             return unify(t_arg, p_arg)
         else:
             return unify(t_arg, p_arg,False)
+        
+    elif pattern[0] == 'constraint':
+        state.constraint_lvl += 1
+        unifier = unify(term,pattern[1])
+        state.constraint_lvl -= 1
+        return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
         raise PatternMatchFailed(
@@ -1465,26 +1475,6 @@ def process_lineinfo(node):
     state.lineinfo = lineinfo_val
 
 #########################################################################
-def typematch_exp(node):
-
-    (TYPEMATCH, type) = node
-    assert_match(TYPEMATCH, 'typematch')
-
-    raise ValueError(
-            "typematch {} cannot appear in expressions or constructors"
-            .format(type))
-
-#########################################################################
-def cmatch_exp(node):
-
-    (CMATCH, exp, cond_exp) = node
-    assert_match(CMATCH, 'cmatch')
-
-    # on a walk to interpret the tree as a value we simply
-    # ignore the conditional expression
-    return walk(exp)
-
-#########################################################################
 def deref_exp(node):
 
     (DEREF, id_exp) = node
@@ -1495,6 +1485,18 @@ def deref_exp(node):
     # NOTE: the second walk is necessary to interpret what we retrieved
     # through the indirection
     return walk(walk(id_exp))
+
+#########################################################################
+def constraint_exp(node):
+    
+    # Constraint-only pattern matches should not exist where only an
+    # expression is expected. If we get here, we have come across this
+    # situation. 
+    # A constraint-only pattern match AST cannot be walked and therefor
+    # we raise an error. 
+    raise ValueError(
+        "constraint pattern: {} cannot be used as a constructor.".
+        format(term2string(node)))
 
 #########################################################################
 # walk
@@ -1545,6 +1547,10 @@ dispatch_dict = {
     'eval'          : eval_exp,
     # quoted code should be treated like a constant if not ignore_quote
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
+    # constraint patterns 
+    'constraint'    : constraint_exp,
+    'cmatch'        : constraint_exp,
+    'typematch'     : constraint_exp,
     # type tag used in conjunction with escaped code in order to store
     # foreign objects in Asteroid data structures
     'foreign'       : lambda node : node,
@@ -1557,8 +1563,6 @@ dispatch_dict = {
     'if-exp'        : if_exp,
     'named-pattern' : named_pattern_exp,
     'member-function-val' : lambda node : node,
-    'typematch'     : typematch_exp,
-    'cmatch'        : cmatch_exp,
     'deref'         : deref_exp,
 }
 
