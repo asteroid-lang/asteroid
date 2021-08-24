@@ -1,0 +1,13 @@
+
+-- regression tests for list pop member function
+let x = [1,2,3,4,5,6].
+let y = x@pop(0).
+assert(y == 1).
+
+let x = [1,2,3,4,5,6].
+let y = x@pop(1).
+assert(y == 2).
+
+let x = [1,2,3,4,5,6].
+let y = x@pop().
+assert(y == 6).

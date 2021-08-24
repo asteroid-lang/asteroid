@@ -67,8 +67,33 @@ else:
 end
 
 ------------------------------------------------------------------
-function inherit
+function hd
 ------------------------------------------------------------------
+-- return the first element of a list, error is list is empty
+with [] do
+  throw Exception("ValueError","empty list not supported").
+orwith l:%list do
+  return l@0.
+end
+
+------------------------------------------------------------------
+function tl
+------------------------------------------------------------------
+-- return the rest of the list without the first element
+with [] do
+throw Exception("ValueError","empty list not supported").
+orwith [_] do
+  return [].
+orwith l:%list do
+  return l@[1 to len(l)-1].
+end
+
+------------------------------------------------------------------
+function __do_not_use_inherit__
+------------------------------------------------------------------
+-- Note: this function modifies a given structure which is not
+-- a good thing.  Left here for documentation purposes of object structure
+--
 -- allow the user to construct an inheritance hierachy by directly
 -- manipulating the structure types.
 with (target,source) do escape
@@ -367,14 +392,14 @@ global __retval__
 this_val = state.symbol_table.lookup_sym('this')
 ix_val = state.symbol_table.lookup_sym('ix')
 
-__retval__ = ('list', this_val[1].pop(ix_val[1]))
+__retval__ = this_val[1].pop(ix_val[1])
 "
 orwith none do return escape
 "
 global __retval__
 
 this_val = state.symbol_table.lookup_sym('this')
-__retval__ = ('list', this_val[1].pop())
+__retval__ = this_val[1].pop()
 "
 end
 

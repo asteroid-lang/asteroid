@@ -1,0 +1,15 @@
+-- head and tail operator tests
+
+let l1 = [1].
+assert(hd(l1) == 1).
+assert(tl(l1) == []).
+
+
+let l1 = [1,2].
+assert(hd(l1) == 1).
+assert(tl(l1) == [2]).
+
+
+let l1 = [1,2,3].
+assert(hd(l1) == 1).
+assert(tl(l1) == [2,3]).
