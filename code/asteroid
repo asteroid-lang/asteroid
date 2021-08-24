@@ -76,7 +76,7 @@ interp_object = \
        do_walk=flags['-w'],
        symtab_dump=flags['-s'],
        exceptions=flags['-e'],
-       redundancy=flags['-r],
+       redundancy=flags['-r'],
        prologue=flags['-p'])'''
 
 if flags['-p']:
