@@ -128,9 +128,9 @@ def unify(term, pattern, unifying = True ):
             # we want to 'punt' and print a warning message.
             if term[0] == 'cmatch':
 
-                if not redundant_clause_detector_flags[1]:
+                if not state.cond_warning:
                     print("Redundant pattern detection is not supported for conditional pattern expressions.")
-                    redundant_clause_detector_flags[1] = True
+                    state.cond_warning = True
 
             # Otherwise if the term is not another cmatch the clauses are correctly ordered.
             raise PatternMatchFailed(

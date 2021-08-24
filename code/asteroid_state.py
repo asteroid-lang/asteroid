@@ -15,6 +15,9 @@ class State:
         self.modules = [] # loaded modules
         self.AST = None
         self.ignore_quote = False # used to evaluate quoted expressions
+
+        self.cond_warning = False # used to indicate if conditional subsumption
+                                  # warning has been displayed
         self.lineinfo = ("<input>", 1) # tuple: module, lineno
 
 state = State()
