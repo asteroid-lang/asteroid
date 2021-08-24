@@ -76,6 +76,8 @@ token_specs = [
     (r'>=',                         'GE'),
     (r'>',                          'GT'),
     (r'@',                          'AT'),
+    (r'\%\[',                       'LCONSTRAINT'),
+    (r'\]\%',                       'RCONSTRAINT'),
     (r'\(',                         'LPAREN'),
     (r'\)',                         'RPAREN'),
     (r'\[',                         'LBRACKET'),
