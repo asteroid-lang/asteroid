@@ -1,4 +1,4 @@
-# Using Asteroid
+# Asteroid in Action
 
 This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).  Here of course we use Asteroid to solve these programming challenges. The OO challenges are lifted from the [hackerrank.com](https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1) website.
 
@@ -33,7 +33,7 @@ The canonical `Hello, World!` program.  The easiest way to write this in Asteroi
 
 
 ```
-load "io".
+load system "io".
 
 println "Hello, World!".
 ```
@@ -47,7 +47,7 @@ Two other print functions exists:
 
 
 ```
-load "io".
+load system "io".
 
 raw_print "Hello, World!".
 ```
@@ -65,7 +65,7 @@ Here is our first solution using a separate function for each of the steps,
 
 
 ```
-load "io".
+load system "io".
 
 print ("Enter your name: ").
 let name = input().
@@ -76,7 +76,7 @@ Letting the function `input` do the prompting,
 
 
 ```
-load "io".
+load system "io".
 
 let name = input("Enter your name: ").
 print ("Hello, "+name+"!").
@@ -86,7 +86,7 @@ Doing everything in one step,
 
 
 ```
-load "io".
+load system "io".
 
 print ("Hello, "+input("Enter your name: ")+"!").
 ```
@@ -99,8 +99,8 @@ In order to print the length of a string we can use the function `len` available
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 println (len("Hello!")).
 ```
@@ -112,7 +112,7 @@ We can also use the string member function `length` in order to compute the leng
 
 
 ```
-load "io".
+load system "io".
 
 println ("Hello!" @length()).
 ```
@@ -129,7 +129,7 @@ Finally we use the `reduce` function to map a list with repeated digits to a lis
 
 
 ```
-load "io".
+load system "io".
 
 function unique with (x,y) do
     if not (x @member(y)) do
@@ -162,7 +162,7 @@ We use the `explode` function to turn a string into a list of characters. Then, 
 
 
 ```
-load "io".
+load system "io".
 
 let str = "Hello, World!" @explode()
                           @reverse()
@@ -181,7 +181,7 @@ assert(str == "!dlroW ,olleH").
 
 
 ```
-load "io".
+load system "io".
 
 let str = "   Hello  ,   World    !   " @trim()
                                         @replace("  ","").
@@ -203,7 +203,7 @@ with a capital letter.
 
 
 ```
-load "io".
+load system "io".
 
 function title with w do
     let letter_list = w @tolower()
@@ -236,7 +236,7 @@ assert(camel_str == "OnceUponATime").
 
 
 ```
-load "io".
+load system "io".
 
 let root = "file".
 let ext = ".txt".
@@ -261,9 +261,9 @@ In our solution we take advantage of Asteroid's `Pick` object.  The `Pick` objec
 
 
 ```
-load "io".
-load "util".
-load "pick".
+load system "io".
+load system "util".
+load system "pick".
 
 seed(42).
 
@@ -301,7 +301,7 @@ We will solve this programming problem using Asteroid's first-class patterns. We
 
 
 ```
-load "io".
+load system "io".
 
 let dna2rna_table =
     [
@@ -345,8 +345,8 @@ w to z.
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
 
@@ -402,7 +402,7 @@ If there is only one file, then the phrase should be `1 file found` instead.
 
 
 ```
-load "io".
+load system "io".
 
 for n in 0 to 5 do
     println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
@@ -425,9 +425,9 @@ In our solution we use a hash table to count the number of word occurances.
 
 
 ```
-load "io".
-load "util".
-load "hash".
+load system "io".
+load system "util".
+load system "hash".
 
 -- text generated at 'https://www.lipsum.com/'
 let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan magna quis risus commodo, et pellentesque dui cursus. Sed quis risus libero. Cras et mattis libero, eget varius nisi. Phasellus ultrices, augue non dictum eleifend, nunc elit blandit velit, a viverra risus enim in tellus. Maecenas quis ante eget turpis rhoncus rhoncus eget ut mauris. Suspendisse nec erat sed nunc tempus hendrerit. Nunc dictum nunc molestie eleifend tempus. Praesent cursus lorem diam, sed mattis velit vehicula scelerisque. Nunc iaculis rhoncus ante. Etiam quam nisi, fermentum et euismod a, vulputate eu elit. Suspendisse tincidunt ligula quis interdum blandit. Quisque sed aliquam tellus. Pellentesque ac lacus pulvinar, ornare purus ac, viverra ex. Donec quis pharetra dolor.
@@ -478,7 +478,7 @@ second string (`strb`).
 
 
 ```
-load "io".
+load system "io".
 
 let stra = "the quick brown fox jumps over the lazy dog".
 let strb = "what does the fox say?".
@@ -513,7 +513,7 @@ An anagram is a word, phrase, or name formed by rearranging the letters of anoth
 
 
 ```
-load "io".
+load system "io".
 
 let str1 = "cinema".
 let str2 = "iceman".
@@ -545,7 +545,7 @@ to left.
 
 
 ```
-load "io".
+load system "io".
 
 let str = "Was it a rat I saw?".
 
@@ -584,7 +584,7 @@ part of the original string.
 
 
 ```
-load "io".
+load system "io".
 
 let str = "Hello, World!".
 
@@ -630,8 +630,8 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
 
 
 ```
-load "io".
-load "hash".
+load system "io".
+load system "hash".
 
 -- text from "www.lipsum.com"
 
@@ -704,8 +704,8 @@ end
 
 
 ```
-load "io".
-load "math". -- definition of pi
+load system "io".
+load system "math". -- definition of pi
 
 println pi.
 ```
@@ -717,8 +717,8 @@ Other constants are also available.
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 println e.
 println tau. -- tau=2*pi
@@ -736,7 +736,7 @@ By definition, the factorial of a positive integer number N is a product of all 
 
 
 ```
-load "io".
+load system "io".
 
 let n = 3.
 let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
@@ -761,7 +761,7 @@ the predicate applied to the input is true.  The last case is of some interest b
 
 
 ```
-load "io".
+load system "io".
 
 let POS_INT = pattern with (x:%integer) %if x > 0.
 let NEG_INT = pattern with (x:%integer) %if x < 0.
@@ -799,7 +799,7 @@ Here we give an iterative solutions.  It is clear that there exists a trivial re
 
 
 ```
-load "io".
+load system "io".
 
 let n = 10. -- compute the 10th Fib number
 
@@ -823,7 +823,7 @@ Of course this is straightforward, with a `for-loop` over a list.  Here we show 
 
 
 ```
-load "io".
+load system "io".
 
 let sq = [1 to 10] @map(lambda with x do return x*x).
 
@@ -843,8 +843,8 @@ Just as in the previous challenge, we skip the naive loop solution and give a so
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let p2 = [0 to 9] @map(lambda with x do return pow(2,x)).
 
@@ -864,8 +864,8 @@ We start with printing the first ten odd numbers,
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let odd = []
 for (n %if mod(n,2) =/= 0) in 1 to 10 do
@@ -883,8 +883,8 @@ Now the even numbers,
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let even = []
 for (n %if mod(n,2) == 0) in 1 to 10 do
@@ -909,8 +909,8 @@ Comparing non-integer numbers (which are represented as floating-point numbers) 
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 -- not equal under the default tolerance of 1E-09
 assert (not isclose(2.0,2.00001)).
@@ -927,8 +927,8 @@ Prime numbers are those that can be divided only by 1, and by themselves.
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 function isprime with x do
     if x >= 2 do
@@ -962,8 +962,8 @@ assert (not isprime(15)).
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 function isprime with x do
     if x >= 2 do
@@ -1010,8 +1010,8 @@ Prime factors are the prime numbers that divide the given integer number exactly
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 function isprime with x do
     if x >= 2 do
@@ -1064,8 +1064,8 @@ assert (factors == [3,5,11])
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 -- fraction a/b
 let a = 16.
@@ -1094,7 +1094,7 @@ Asteroid is an eager language, that is, expressions are evaluated as early as po
 
 
 ```
-load "io".
+load system "io".
 
 try
     println (42/0).
@@ -1118,9 +1118,9 @@ Asteroid has two random number generation functions: `random()` generates a rand
 
 
 ```
-load "io".
-load "random".
-load "util".
+load system "io".
+load system "random".
+load system "util".
 
 seed(42).
 
@@ -1158,8 +1158,8 @@ To illustrate it with an example, let’s take the number 1234 as the seed. On s
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let n = 1234.
 let sq = n*n.
@@ -1189,8 +1189,8 @@ In our solution, we generate 10 random integers between 0 and 9. We then count h
 
 
 ```
-load "io".
-load "random".
+load system "io".
+load system "random".
 
 let hist = [0 to 9] @map(lambda with _ do return 0).
 
@@ -1219,8 +1219,8 @@ A straightforward solution would be to use the Pythagorean theorem:
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let x = [10, 3].
 let y = [9, 1].
@@ -1243,9 +1243,9 @@ where `.` represents the dot product. In our case `a` would be the distance vect
 
 
 ```
-load "io".
-load "math".
-load "vector".
+load system "io".
+load system "math".
+load system "vector".
 
 let x = [10, 3].
 let y = [9, 1].
@@ -1276,8 +1276,8 @@ where `N` is the number of elements in the array `x`; `avg_x` is the average val
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let values = [727.7, 1086.5, 1091.0, 1361.3, 1490.5, 1956.1].
 
@@ -1312,8 +1312,8 @@ These expressions can be implemented as-is in the code:
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 function polar_to_cartesian with (r,psi) do
     -- return a tuple: (x,y)
@@ -1344,9 +1344,9 @@ All these variants can be implemented by using `with`/`orwith` clauses and condi
 
 
 ```
-load "io".
-load "math".
-load "util".
+load system "io".
+load system "math".
+load system "util".
 
 function polar_to_cartesian with (r,psi) do
     -- return a tuple: (x,y)
@@ -1395,9 +1395,9 @@ To calculate the area of a circle with a radius of 1, pairs of random numbers be
 
 
 ```
-load "io".
-load "math".
-load "random".
+load system "io".
+load system "math".
+load system "random".
 
 seed(42).
 
@@ -1427,9 +1427,9 @@ ask for the initial guess and enter the loop, which compares the guess with the 
 
 
 ```
-load "io".
-load "random".
-load "util".
+load system "io".
+load system "random".
+load system "util".
 
 let n = randint(0,10).
 let guess = tointeger(input("Guess my number between 0 and 10: ")).
@@ -1452,8 +1452,8 @@ In Asteroid this is straightforward using the built-in `tointeger` function, pas
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let bin = "101101".
 let int = tointeger(bin,2).
@@ -1473,8 +1473,8 @@ In Asteroid this is easily done with the `tobase` function.
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let val = 42.
 
@@ -1501,8 +1501,8 @@ Pretty straightforward using string and list manipulation.
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let number = 139487854.
 
@@ -1526,7 +1526,7 @@ If we remove all the zeros from a binary number, then we are left with only `1` 
 
 
 ```
-load "io".
+load system "io".
 
 let bits = "1010101" @replace("0","")
                      @length().
@@ -1546,8 +1546,8 @@ The easiest way to achieve that is to treat the numbers as strings, sort them al
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let a = tointeger([67, 8, 1, 5, 45] @map(tostring) @sort(true) @join("")).
 println a.
@@ -1572,10 +1572,10 @@ In the program below, there are four such sequences: for thousands, hundreds, te
 
 
 ```
-load "io".
-load "math".
-load "util".
-load "hash".
+load system "io".
+load system "math".
+load system "util".
+load system "hash".
 
 let roman_hash = HashTable().
 roman_hash @insert(1000,["","M","MM","MMM"]).
@@ -1623,8 +1623,8 @@ The zero name appears only in the case when the given number is zero.
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let names = ["zero","one","two","three","four","five","six","seven","eight","nine",
              "ten","eleven","twelve","thirteen","fourteen","fifteen",
@@ -1678,7 +1678,7 @@ Consider the complete program:
 
 
 ```
-load "io".
+load system "io".
 
 let (a,b) = (10,20).
 let (b,a) = (a,b).
@@ -1698,7 +1698,7 @@ This approach also works with elements of an array:
 
 
 ```
-load "io".
+load system "io".
 
 let a = [3,5,7,4].
 let (a@2,a@3) = (a@3,a@2).
@@ -1717,7 +1717,7 @@ assert (a is [3,5,4,7]).
 
 
 ```
-load "io".
+load system "io".
 
 let a = [10, 20, 30, 40, 50].
 println (a @reverse()).
@@ -1736,8 +1736,8 @@ Asteroid does not have a built-in `rotate` function. However, such a function is
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 function rotate with (l:%list,i:%integer) do
     let n = l @length().
@@ -1769,8 +1769,8 @@ This is easily accomplished with the built-in `shuffle`.
 
 
 ```
-load "io".
-load "random".
+load system "io".
+load system "random".
 
 seed(42).
 let b = [1 to 20] @shuffle().
@@ -1790,8 +1790,8 @@ For this we use Asteroid's `vector` module, which can handle incrementing a vect
 
 
 ```
-load "io".
-load "vector".
+load system "io".
+load system "vector".
 
 let a = [1 to 10].
 let b = vadd(a,1).
@@ -1811,8 +1811,8 @@ Again, here we take advantage of Asteroid's `vector` module.  Note that the two 
 
 
 ```
-load "io".
-load "vector".
+load system "io".
+load system "vector".
 
 let a = [10 to 20].
 let b = [30 to 40].
@@ -1829,8 +1829,8 @@ The vector module defines a function called `vop` that allows you to combine two
 
 
 ```
-load "io".
-load "vector".
+load system "io".
+load system "vector".
 
 let a = [10 to 20].
 let b = [30 to 40].
@@ -1847,9 +1847,9 @@ As I said above, any arbitrary binary function. Consider the relational operator
 
 
 ```
-load "io".
-load "vector".
-load "random".
+load system "io".
+load system "vector".
+load system "random".
 
 seed(42).
 
@@ -1873,8 +1873,8 @@ Here we use Asteroid's `set` module.
 
 
 ```
-load "io".
-load "set".
+load system "io".
+load system "set".
 
 let a = [1 to 10].
 let b = [5 to 15].
@@ -1896,7 +1896,7 @@ assert(c @sort() == [1,2,3,4]).
 
 
 ```
-load "io".
+load system "io".
 
 let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
 let s = a @reduce(lambda with (x,y) do return x+y).
@@ -1912,7 +1912,7 @@ If summing up elements that are greater than 10,
 
 
 ```
-load "io".
+load system "io".
 
 let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
 let f = (lambda with (x,y) do return x+(y if y > 10 else 0)).
@@ -1932,7 +1932,7 @@ assert (s == 92).
 
 
 ```
-load "io".
+load system "io".
 
 let a = [7, 11, 34, 50, 200].
 let avg = a @reduce(lambda with (x,y) do return x+y)/a @length().
@@ -1952,8 +1952,8 @@ Compute the moving average over 100 random values, using a window of size 7 (3 v
 
 
 ```
-load "io".
-load "random".
+load system "io".
+load system "random".
 
 seed(42).
 
@@ -2027,7 +2027,7 @@ plot(dt @[3 to 96],mavg).
 
 
 ```
-load "io".
+load system "io".
 
 let array = [10, 14, 0, 15, 17, 20, 30, 35].
 let x = 17.
@@ -2041,7 +2041,7 @@ We can also use a reduction function to solve this,
 
 
 ```
-load "io".
+load system "io".
 
 let array = [10, 14, 0, 15, 17, 20, 30, 35].
 let x = 17.
@@ -2064,8 +2064,8 @@ The easiest way to do this is with a reduction,
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let array = [2, 4, 18, 9, 16, 7, 10].
 let odd = array @reduce(lambda with (acc,i) do return i if isnone(acc) and mod(i,2) else acc,none).
@@ -2083,8 +2083,8 @@ println odd.
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let array = [20 to 30] @filter(lambda with x do return mod(x,2)).
 println array.
@@ -2099,8 +2099,8 @@ We can use an index vector to accomplish  the same thing,
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let a = [20 to 30].
 let array = a @[1 to a @length()-1 step 2] .
@@ -2119,8 +2119,8 @@ assert (array == [21,23,25,27,29]).
 
 
 ```
-load "io".
-load "math".
+load system "io".
+load system "math".
 
 let dt = ["apple","pear","grape","lemon","peach","apple","banana","grape","pineapple","avocado"].
 let cnt = dt @count("grape").
@@ -2140,8 +2140,8 @@ Converting a list to a set will remove all duplicate elements in the list.
 
 
 ```
-load "io".
-load "set".
+load system "io".
+load system "set".
 
 function unique with lst:%list do
     return toset lst @sort().
@@ -2165,7 +2165,7 @@ assert (a == [2,3,4,5,6,7,10])
 
 
 ```
-load "io".
+load system "io".
 
 function max with lst:%list do
     return lst @sort(true) @0.
@@ -2197,8 +2197,8 @@ assert (a == 15 and b == 2).
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let a = [3, 7, 19, 20, 34].
 let b = toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
@@ -2240,7 +2240,7 @@ let m = [[1,3,5],
 
 
 ```
-load "io".
+load system "io".
 
 function transpose with m do
     -- figure out the dimensions
@@ -2335,10 +2335,10 @@ This task is commonly performed to sort items where the sortable parameter is on
 
 
 ```
-load "io".
-load "hash".
-load "sort".
-load "random".
+load system "io".
+load system "hash".
+load system "sort".
+load system "random".
 
 seed(42).
 
@@ -2376,9 +2376,9 @@ For example, a hash is a collection mapping a car’s license plate to the colou
 
 
 ```
-load "io".
-load "hash".
-load "sort".
+load system "io".
+load system "hash".
+load system "sort".
 
 let fruit_hash = HashTable().
 fruit_hash @insert("apple","red").
@@ -2422,8 +2422,8 @@ We will do this with an outer loop  and a `map` function.
 
 
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 function format with v do
     let maxlen = 3.
@@ -2492,9 +2492,9 @@ The only thing that is left to do is to iterate appropiately and format the outp
 ```python
 program =\
 '''
-load "io".
-load "vector".
-load "util".
+load system "io".
+load system "vector".
+load system "util".
 
 let triangle = [[1]].
 let ix = 0.
@@ -2539,7 +2539,7 @@ Here we use a simple class hierarchy of traits and animals that have those trait
 
 
 ```
-load "io".
+load system "io".
 
 structure Walk with
     function walk with none do println "I'm walking" end
@@ -2584,7 +2584,7 @@ Write a class named `Arithmetic` with a method named `add` that takes 2 integers
 
 
 ```
-load "io".
+load system "io".
 
 structure Arithmetic with
     function add with (a:%integer,b:%integer) do return a+b end
