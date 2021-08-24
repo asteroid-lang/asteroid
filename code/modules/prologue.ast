@@ -71,7 +71,7 @@ function hd
 ------------------------------------------------------------------
 -- return the first element of a list, error is list is empty
 with [] do
-  throw Error("empty list not supported").
+  throw Exception("ValueError","empty list not supported").
 orwith l:%list do
   return l@0.
 end
@@ -81,7 +81,7 @@ function tl
 ------------------------------------------------------------------
 -- return the rest of the list without the first element
 with [] do
-  throw Error("empty list not supported").
+throw Exception("ValueError","empty list not supported").
 orwith [_] do
   return [].
 orwith l:%list do
