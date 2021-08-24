@@ -23,6 +23,7 @@ def interp(input_stream,
            do_walk=True,
            symtab_dump=False,
            exceptions=False,
+           redundancy=True,
            prologue=True):
     try:
         # initialize state
@@ -31,6 +32,9 @@ def interp(input_stream,
         #lhh
         #print("path[0]: {}".format(sys.path[0]))
         #print("path[1]: {}".format(sys.path[1]))
+
+        # initialize "check for useless clauses" flag
+        state.eval_redundancy = redundancy
 
         # read in prologue
         if prologue:

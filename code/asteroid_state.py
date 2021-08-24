@@ -18,6 +18,7 @@ class State:
 
         self.cond_warning = False # used to indicate if conditional subsumption
                                   # warning has been displayed
+        self.eval_redundancy = True
         self.lineinfo = ("<input>", 1) # tuple: module, lineno
 
 state = State()
