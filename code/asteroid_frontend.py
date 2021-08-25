@@ -40,7 +40,9 @@ primary_lookahead = {
     'TYPEMATCH',
     } | ops
 
-exp_lookahead = {'QUOTE'} | primary_lookahead
+exp_lookahead = {
+    'QUOTE',
+    'LCONSTRAINT',} | primary_lookahead
 
 exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
 
@@ -513,6 +515,34 @@ class Parser:
         return v
 
     ###########################################################################################
+    # quote_exp
+    #    : QUOTE exp
+    #    | PATTERN WITH? exp
+    #    | '%[' exp ']%'
+    #    | head_tail
+    def quote_exp(self):
+        dbg_print("parsing QUOTE_EXP")
+
+        if self.lexer.peek().type == 'QUOTE':
+            self.lexer.match('QUOTE')
+            v = self.exp()
+            return ('quote', v)
+        # 'pattern with' is just the long version of the quote char
+        elif self.lexer.peek().type == 'PATTERN':
+            self.lexer.match('PATTERN')
+            self.lexer.match_optional('WITH')
+            v = self.exp()
+            return ('quote', v)
+        elif self.lexer.peek().type == 'LCONSTRAINT': #constraint-only pattern match
+            self.lexer.match('LCONSTRAINT')
+            v = self.exp()
+            self.lexer.match('RCONSTRAINT')
+            return ('constraint', v)
+        else:
+            v = self.head_tail()
+            return v
+
+    ###########################################################################################
     # conditional
     #    : quote_exp
     #        (
@@ -538,28 +568,6 @@ class Parser:
             return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
 
         else:
-            return v
-
-    ###########################################################################################
-    # quote_exp
-    #    : QUOTE head_tail
-    #    | PATTERN WITH? head_tail
-    #    | head_tail
-    def quote_exp(self):
-        dbg_print("parsing QUOTE_EXP")
-
-        if self.lexer.peek().type == 'QUOTE':
-            self.lexer.match('QUOTE')
-            v = self.head_tail()
-            return ('quote', v)
-        # 'pattern with' is just the long version of the quote char
-        elif self.lexer.peek().type == 'PATTERN':
-            self.lexer.match('PATTERN')
-            self.lexer.match_optional('WITH')
-            v = self.head_tail()
-            return ('quote', v)
-        else:
-            v = self.head_tail()
             return v
 
     ###########################################################################################

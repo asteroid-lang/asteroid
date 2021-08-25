@@ -2,7 +2,7 @@
 #
 # Asteroid Version
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ##########################################################################################
 
-VERSION = "alpha 0.0.2"
+VERSION = "beta 0.1"

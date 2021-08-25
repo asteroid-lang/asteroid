@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 ###########################################################################################
 # Asteroid toplevel driver
 #
@@ -12,6 +12,7 @@ from asteroid_interp import interp
 from asteroid_version import VERSION
 
 def display_help():
+    print("** Asteroid Version {} **".format(VERSION))
     print("usage: asteroid [-s][-t][-v][-w][-p][-l] <input file>")
     print("")
     print("command line flags:")
@@ -79,7 +80,7 @@ interp_object = \
        redundancy=flags['-r'],
        prologue=flags['-p'])'''
 
-if flags['-p']:
+if flags['-z']:
     # generates pstats into the file 'pstats'
     # see https://docs.python.org/3/library/profile.html
     cProfile.run(interp_object, 'pstats')

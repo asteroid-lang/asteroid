@@ -29,9 +29,13 @@ class SymTab:
         print("*** Global Scope:")
         pprint(self.global_scope)
 
-    def get_config(self):
+    def get_closure(self):
         # we make a shallow copy of the symbol table, globals...
         return (list(self.scoped_symtab), list(self.globals), self.global_scope)
+
+    def get_config(self):
+        # return the relevant symtab objects
+        return (self.scoped_symtab, self.globals, self.global_scope)
 
     def set_config(self, c):
         self.scoped_symtab, self.globals, self.global_scope = c

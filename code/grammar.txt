@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Grammar for Asteroid written in EBNF/PEG format.
-// (c) Lutz Hamel, University of Rhode Island
+// (c) University of Rhode Island
 ////////////////////////////////////////////////////////////////////////////////////////
 // statements
 
@@ -67,8 +67,9 @@ exp
   : quote_exp
 
 quote_exp
-  : QUOTE head_tail
-  | PATTERN WITH? head_tail
+  : QUOTE exp
+  | PATTERN WITH? exp
+  | '%[' exp ']%'      // constraint-only pattern match
   | head_tail
 
 head_tail

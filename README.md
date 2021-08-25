@@ -8,7 +8,7 @@ Asteroid is an open source, dynamically typed, multi-paradigm programming langua
 
 OK, before we get started here is the obligatory ''Hello World!'' program written in Asteroid,
 ```
-load "io".
+load system "io".
 println "Hello World!".
 ```
 Since pattern matching is at the core of Asteroid we find that the simplest pattern matching occurs in Asteroid's `let` statement. For example,
@@ -17,7 +17,7 @@ let [x,2,y] = [1,2,3].
 ```
 here the list  `[1,2,3]` is matched against the pattern `[x,2,y]` successfully with the corresponding assignments x→1 and y→3. Pattern matching can also occur in iteration. Consider the following program that prints out the names of persons whose name contains a lower case 'p',
 ```
-load "io".
+load system "io".
 
 -- define what persons look like
 
@@ -52,7 +52,7 @@ Asteroid supports functional programming style pattern matching on the arguments
 ```
 -- Quicksort
 
-load "io".
+load system "io".
 
 function qsort
     with [] do
@@ -84,8 +84,8 @@ The last line of the program prints out the sorted list returned by the Quicksor
 
 Asteroid supports patterns that match whole type classes.  For instance, `%integer` matches any integer but will fail with any other type.  A conditional pattern is a pattern that only matches if a condition is fulfilled in addition to the structural match.  Here is a recursive implementation of the factorial function where we use type and conditional patterns to appropriately restrict the domain of the function,
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 function fact
     with 0 do
@@ -102,8 +102,7 @@ We use the type pattern `%integer` to restrict the domain of the function to int
 
 Type patterns are extremely useful in dynamically typed languages like Asteroid in order to provide some additional type safety that would otherwise not be available. Type patterns are also available for user defined types. Consider,
 ```
-load "io".
-load "util".
+load system "io".
 
 structure A with
     data a.
@@ -113,7 +112,7 @@ structure A with
 let a = A(1,2).
 let v:%A = a.
 
-println (tostring v).
+println v.
 ```
 In the pattern `v:%A` the variable `v` will be bound to objects that the type pattern `%A` matches and that pattern will only match objects of type `A`.
 
@@ -132,8 +131,8 @@ The `is` is useful for providing pattern matching capabilities in control struct
 
 One of the distinguishing features of Asteroid is the fact that it supports patterns as first-class citizens.  That means, patterns can be stored in variables, passed to functions, and computationally manipulated.  Here is the factorial program from above rewritten using first-class patterns,
 ```
-load "io".
-load "util".
+load system "io".
+load system "util".
 
 let POS_INT = pattern with (x:%integer) %if x > 0.
 let NEG_INT = pattern with (x:%integer) %if x < 0.
@@ -155,61 +154,49 @@ The interesting part of first-class patterns is that the definition point and th
 
 Asteroid also supports OO style programming.  Here is the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation implemented in Asteroid.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know "roll over" as their first trick using pattern matching. The `[ _ | _ ]` is known as the head-tail operator related to the cons function in Lisp and allows you to decompose a list into the first element and the rest of the list.
 ```
-load "io".
+load system "io".
+load system "type".
 
--- Dog objects
 structure Dog with
 
   data name.
   data tricks.
 
-  -- member function
   function add_trick
-    with new_trick do
-      let this @tricks = this @tricks + [new_trick].
+    with new_trick:%string do
+      this @tricks @append new_trick.
     end
 
-  -- constructor
   function __init__
-    with name do
+    with name:%string do
       let this @name = name.
       let this @tricks = [].
     end
 
-  end -- structure
+  end
 
--- Fido the dog
-let fido = Dog("Fido").
-fido @add_trick("roll over").
-fido @add_trick("play dead").
+let fido = Dog "Fido".
+fido @add_trick "play dead".
+fido @add_trick "fetch".
 
--- Buddy the dog
-let buddy = Dog("Buddy").
-buddy @add_trick("roll over").
-buddy @add_trick("sit stay").
+let buddy = Dog "Buddy".
+buddy @add_trick "sit stay".
+buddy @add_trick "roll over".
 
--- Fifi the dog
-let fifi = Dog("Fifi").
-fifi @add_trick("sit stay").
-
--- print out all the names of dogs
--- whose first trick is 'roll over'.
-let dogs = [fido, buddy, fifi].
-
-for Dog(name, ["roll over"|_]) in dogs do
-    println (name + " does roll over").
+-- print out all the dogs that know how to fetch
+for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+    println (name+" knows how to fetch").
 end
 ```
 The output is,
 ```
-Fido does roll over
-Buddy does roll over
+Fido knows how to fetch
 ```
 
 ## For more Information...
 
 Take a look at the [Asteroid User Guide](https://github.com/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.md) for a more detailed discussion of the language.
 
-Check out the [Using Asteroid](https://github.com/lutzhamel/asteroid/blob/master/Using%20Asteroid.md) document which is based on Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).
+Check out the [Asteroid in Action](https://github.com/lutzhamel/asteroid/blob/master/Asteroid%20in%20Action.md) document which is based on Andrew Shitov's excellent book [Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language](https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf).
 
 Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md)

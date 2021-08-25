@@ -42,30 +42,6 @@ return none
 end
 
 ------------------------------------------------------------------
-function read
-------------------------------------------------------------------
--- read string from stdin
-with none do return escape
-"
-global __retval__
-from sys import stdin
-__retval__ = ('string', stdin.read())
-"
-end
-
-------------------------------------------------------------------
-function write
-------------------------------------------------------------------
--- write string to stdout
-with item:%string do escape
-"
-from sys import stdout
-(STRING, item_val) = state.symbol_table.lookup_sym('item')
-stdout.write(item_val)
-"
-end
-
-------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
 -- mapping the Asteroid input function onto the
@@ -84,3 +60,218 @@ else:
   __retval__ = ('string', input(term2string(prompt_val)))
 "
 end
+
+------------------------------------------------------------------
+-- Basic file i/o
+------------------------------------------------------------------
+structure FILE with
+
+------------------------------------------------------------------
+data fd.
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function __init__
+------------------------------------------------------------------
+with (name:%string, mode:%string) do escape
+"
+from asteroid_state import state
+global __retval__
+
+# Get variables
+this_val = state.symbol_table.lookup_sym('this')
+name_val = state.symbol_table.lookup_sym('name')
+mode_val = state.symbol_table.lookup_sym('mode')
+
+# destructure object
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = this_val
+
+# Open file
+f = open(name_val[1], mode_val[1])
+memory[0] = ('foreign', f)
+
+__retval__ = this_val
+"
+
+orwith (std:%string) do escape
+"
+import sys
+from asteroid_state import state
+
+this_val = state.symbol_table.lookup_sym('this')
+std_val = state.symbol_table.lookup_sym('std')[1]
+
+stream = None
+if std_val == '__STDIN__':
+    stream = sys.stdin
+elif std_val == '__STDOUT__':
+    stream = sys.stdout
+elif std_val == '__STDERR__':
+    stream = sys.stderr
+else:
+    raise Exception('Unknown standard stream' + std_val)
+
+# destructure object
+(OBJECT,
+(CLASS_ID, (ID, class_id)),
+(OBJECT_MEMORY, (LIST, memory))) = this_val
+
+memory[0] = ('foreign', stream)
+"
+
+end
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function close 
+------------------------------------------------------------------
+with none do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+f_val.close()
+"
+end
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function read 
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+__retval__ = ('string', f_val.read())
+"
+end
+
+------------------------------------------------------------------
+function readln
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+__retval__ = ('string', f_val.readline())
+"
+end
+
+------------------------------------------------------------------
+function write 
+------------------------------------------------------------------
+with (what:%string) do escape
+"
+from asteroid_state import state
+this_val = state.symbol_table.lookup_sym('this')
+what_val = state.symbol_table.lookup_sym('what')
+
+(OBJECT,
+ (CLASS_ID, (ID, class_id)),
+ (OBJECT_MEMORY, (LIST, memory))) = this_val
+
+(FOREIGN, f_val) = memory[0]
+
+f_val.write(what_val[1])
+"
+end
+
+------------------------------------------------------------------
+end -- FILE
+------------------------------------------------------------------
+
+
+
+
+
+------------------------------------------------------------------
+
+-- Predefined standard stream constants
+
+let __STDIN__ = FILE("__STDIN__").
+let __STDOUT__ = FILE("__STDOUT__").
+let __STDERR__ = FILE("__STDERR__").
+
+-- File I/O library functions
+------------------------------------------------------------------
+function open 
+-- Open a file given a filename and mode
+------------------------------------------------------------------
+with (name:%string, mode:%string) do
+   return FILE(name, mode).
+end
+
+------------------------------------------------------------------
+function close
+-- Close a given file
+------------------------------------------------------------------
+with(file:%FILE) do
+    file @close().
+end
+
+------------------------------------------------------------------
+function read
+-- Return the contents of a given file
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @read().
+
+orwith none do 
+    return __STDIN__@ read().
+end
+
+------------------------------------------------------------------
+function readln
+-- Return the next line of a given file
+------------------------------------------------------------------
+with(file:%FILE) do
+    return file @readln().
+
+orwith none do
+    return __STDIN__@ readln().
+end
+
+------------------------------------------------------------------
+function write
+-- Write to a given file
+------------------------------------------------------------------
+with what:%string do
+    __STDOUT__@ write(what).
+orwith(file:%FILE, what:%string) do
+    file @write(what).
+end
+
+------------------------------------------------------------------
+function writeln
+-- Write a complete line to a given file
+------------------------------------------------------------------
+with what:%string do
+    __STDOUT__@ write(what + "\n").
+
+orwith(file:%FILE, what:%string) do
+    file @write(what + "\n").
+end
+------------------------------------------------------------------

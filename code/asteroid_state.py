@@ -15,7 +15,7 @@ class State:
         self.modules = [] # loaded modules
         self.AST = None
         self.ignore_quote = False # used to evaluate quoted expressions
-
+        self.constraint_lvl = 0 # used to evaluate constraint-only patterns
         self.cond_warning = False # used to indicate if conditional subsumption
                                   # warning has been displayed
         self.eval_redundancy = True
