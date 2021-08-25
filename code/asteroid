@@ -10,7 +10,6 @@ import sys
 import os
 from asteroid_interp import interp
 from asteroid_version import VERSION
-from asteroid_globals import redundant_clause_detector_flags
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))
@@ -60,9 +59,6 @@ if flags['-v']:
     print("** Asteroid Version {} **".format(VERSION))
     sys.exit(0)
 
-if flags['-r']:
-    redundant_clause_detector_flags[0] = True
-
 input_file = sys.argv[-1]
 
 if not os.path.isfile(input_file):
@@ -81,6 +77,7 @@ interp_object = \
        do_walk=flags['-w'],
        symtab_dump=flags['-s'],
        exceptions=flags['-e'],
+       redundancy=flags['-r'],
        prologue=flags['-p'])'''
 
 if flags['-z']:

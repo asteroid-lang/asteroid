@@ -24,9 +24,6 @@ os.chdir(file_path)
 sys.path[0] = "../../"
 
 from asteroid_interp import interp
-from asteroid_globals import redundant_clause_detector_flags
-
-redundant_clause_detector_flags[0] = True
 
 programs = os.listdir("programs")
 programs.sort()
@@ -41,6 +38,5 @@ for pname in programs:
         interp(p,exceptions=True)
     except:
         pass
-    else:
-        print("FAIL: no exception thrown for",pname)
+
     f.close()

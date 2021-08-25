@@ -39,10 +39,9 @@ try
     
   -- Fido the dog
   let fido = Dog("Fido").
-catch ("Exception", s) do
-    if not isnone(s @index("Redundant")) do
-       exit "PASS.".
-    else
-       throw Error("FAIL: unexpected error "+s).
-    end.
+catch Exception("RedundantPatternFound",s) do
+    println("PASS.").
+catch e do
+    println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
 end.

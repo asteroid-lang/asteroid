@@ -38,11 +38,10 @@ function testFunction
 try    
     let x = testFunction( Person("George", 32, "M") ).
     println ( x ).
-catch ("Exception", s) do
-    if not isnone(s @index("Redundant")) do
-        exit "PASS.".
-    else
-        throw Error("FAIL: unexpected error "+s).
-    end.
+catch Exception("RedundantPatternFound",s) do
+    println("PASS.").
+catch e do
+    println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
 end.
 

@@ -10,13 +10,6 @@ from asteroid_support import term2string #Used by redundantPatternFound exceptio
 # this is used to compute the filename extensions of the modules
 asteroid_file_suffix = ".ast"
 
-#########################################################################
-# This vector contains the global flags utilized by the redundant pattern
-# clause detector. Element/flag discriptions are listed below.
-# [0] = Indicates if the Redundant Pattern dectector has been turned on.
-# [1] = Indicates if the Redundant Conditional Pattern Warning has been displayed.
-redundant_clause_detector_flags = [False,False]
-
 ###########################################################################################
 # symbols for builtin operators.
 # NOTE: if you add new builtins make sure to keep this table in sync.

@@ -65,28 +65,6 @@ def unify(term, pattern, unifying = True ):
     # else:
     #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
-    # 1.) We don't care what the pattern is called if evaluating subsumption.
-    # 2.) A named patterns node(tuple) shape can get us into trouble when unpacking. This intial
-    # check allows us to unpack it normally as opposed to checking each time we unpack.
-    # most nodes: (1,2)
-    # named-patterns: (1,2,3)
-    try:
-        if ((not unifying) and (term[0] == 'named-pattern')):
-            term = term[2]
-    except:
-        pass
-
-    # 1.) We want to derefence a first-class pattern found on the term side(lower order of prescedence) before
-    # evaluating the pattern side(higher order of prescedence) when checking for redundant pattern clauses
-    # 2.) We can't do this at the same time as the above check as term[0] can fail(it can be a primative)
-    try:
-        if ((not unifying) and (term[0] == 'deref')):
-            (ID, sym) = term[1]
-            term = state.symbol_table.lookup_sym(sym)
-            term = term[1] # Discard the leading 'quote' node for redundancy evaluation
-    except:
-        pass
-
     ### Python value level matching
     # NOTE: in the first rules where we test instances we are comparing
     # Python level values, if they don't match exactly then we have
@@ -118,12 +96,22 @@ def unify(term, pattern, unifying = True ):
         else:
             unifier = []
             for i in range(len(term)):
-                if unifying:
-                    unifier += unify(term[i], pattern[i])
-                else:
-                    unifier += unify(term[i], pattern[i], False)
+                unifier += unify(term[i], pattern[i], unifying)
+
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
+    
+    elif ((not unifying) and (term[0] == 'named-pattern')):
+
+        # Unpack a term-side name-pattern if evaluating redundant clauses
+        return unify(term[2],pattern,unifying)
+
+    elif ((not unifying) and (term[0] == 'deref')):
+
+        # Unpack a term-side first-class pattern if evaluating redundant clauses
+        (ID, sym) = term[1]
+        term = state.symbol_table.lookup_sym(sym)
+        return unify(term[1], pattern, unifying)
 
     ### Asteroid value level matching
     elif pattern[0] == 'string' and term[0] != 'string':
@@ -140,9 +128,9 @@ def unify(term, pattern, unifying = True ):
             # we want to 'punt' and print a warning message.
             if term[0] == 'cmatch':
 
-                if not redundant_clause_detector_flags[1]:
+                if not state.cond_warning:
                     print("Redundant pattern detection is not supported for conditional pattern expressions.")
-                    redundant_clause_detector_flags[1] = True
+                    state.cond_warning = True
 
             # Otherwise if the term is not another cmatch the clauses are correctly ordered.
             raise PatternMatchFailed(
@@ -150,10 +138,7 @@ def unify(term, pattern, unifying = True ):
 
         (CMATCH, pexp, cond_exp) = pattern
 
-        if unifying:
-            unifiers = unify(term, pexp)
-        else:
-            unifiers = unify(term, pexp, False)
+        unifiers = unify(term, pexp, unifying)
 
         if state.constraint_lvl: 
             state.symbol_table.push_scope({})
@@ -237,10 +222,7 @@ def unify(term, pattern, unifying = True ):
         # unpack pattern
         (NAMED_PATTERN, name, p) = pattern
 
-        if unifying:
-            return unify(term, p ) + [(name, term )]
-        else:
-            return unify(term, p, False)
+        return unify(term, p, unifying) + [(name, term)]
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -263,21 +245,16 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'quote':
         # quotes on the pattern side can always be ignored
-        if unifying:
-            return unify(term, pattern[1])
+        # --TODO double check - ttc
+        if term[0] == 'quote':
+            return unify(term[1], pattern[1], unifying)
         else:
-            if term[0] == 'quote':
-                return unify(term[1], pattern[1], False)
-            else:
-                return unify(term, pattern[1], False)
+            return unify(term, pattern[1], unifying)
 
     elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
         # ignore quote on the term if we are not trying to unify term with
         # a variable or other kind of lval
-        if unifying:
-            return unify(term[1], pattern)
-        else:
-            return unify(term[1], pattern, False)
+        return unify(term[1], pattern, unifying)
 
     elif term[0] == 'object' and pattern[0] == 'apply':
         # unpack term
@@ -297,10 +274,7 @@ def unify(term, pattern, unifying = True ):
         else:
             pattern_list = [arg]
         # only pattern match on object data members
-        if unifying:
-            return unify(data_only(obj_memory), pattern_list)
-        else:
-            return unify(data_only(obj_memory), pattern_list, False)
+        return unify(data_only(obj_memory), pattern_list, unifying)
 
     elif pattern[0] == 'index': # list element lval access
         unifier = (pattern, term)
@@ -340,12 +314,9 @@ def unify(term, pattern, unifying = True ):
             list_tail = ('list', list_val[1:])
 
             unifier = []
-            if unifying:
-                unifier += unify(list_head, pattern_head)
-                unifier += unify(list_tail, pattern_tail)
-            else:
-                unifier += unify(list_head, pattern_head,False)
-                unifier += unify(list_tail, pattern_tail,False)
+            unifier += unify(list_head, pattern_head, unifying)
+            unifier += unify(list_tail, pattern_tail, unifying)
+            
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -355,25 +326,26 @@ def unify(term, pattern, unifying = True ):
             lengthL = head_tail_length(term)    #L->lower order of predcence pattern
 
             if lengthH == 2 and lengthL != 2:
-                return unify(pattern[1],term[1],False)
+                return unify(pattern[1],term[1],unifying)
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
-                                    # then length of the lower precedence pattern, it is
-                                    # not redundant
+                                    # then length of the lower precedence pattern, it is not redundant
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
             else: #Else we continue evaluating the different terms in the head-tail pattern
                 (HEAD_TAIL, patternH_head, patternH_tail) = pattern
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
+                
                 unifier = []
                 for i in range(lengthH):
-                    unifier += unify(patternL_head,patternH_head,False)
+                    unifier += unify(patternL_head,patternH_head,unifying)
                     try:
                         (RAW_HEAD_TAIL, patternH_head, patternH_tail) = patternH_tail
                         (RAW_HEAD_TAIL, patternL_head, patternL_tail) = patternL_tail
                     except:
                         break
+                    
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 return unifier
 
@@ -381,10 +353,7 @@ def unify(term, pattern, unifying = True ):
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
 
-        if unifying:
-            return unify(term,p)
-        else:
-            return unify(term,p,False)
+        return unify(term,p,unifying)
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply':
@@ -403,11 +372,8 @@ def unify(term, pattern, unifying = True ):
                 .format(t_id, p_id))
 
         # unify the args
-        if unifying:
-            return unify(t_arg, p_arg)
-        else:
-            return unify(t_arg, p_arg,False)
-        
+        return unify(t_arg, p_arg, unifying)
+ 
     elif pattern[0] == 'constraint':
         state.constraint_lvl += 1
         unifier = unify(term,pattern[1])
@@ -429,10 +395,7 @@ def unify(term, pattern, unifying = True ):
         #print("unifying {}".format(pattern[0]))
         unifier = []
         for i in range(1,len(term)):
-            if unifying:
-                unifier += unify(term[i], pattern[i])
-            else:
-                unifier += unify(term[i], pattern[i], False)
+            unifier += unify(term[i], pattern[i], unifying)
         #lhh
         #print("returning unifier: {}".format(unifier))
         return unifier
@@ -794,7 +757,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         state.symbol_table.enter_sym('this', obj_ref)
 
     # Check for useless patterns
-    if redundant_clause_detector_flags[0]:
+    if state.eval_redundancy:
         check_redundancy(body_list, fname)
 
     # execute the function
