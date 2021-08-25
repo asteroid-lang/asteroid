@@ -24,9 +24,6 @@ os.chdir(file_path)
 sys.path[0] = "../../"
 
 from asteroid_interp import interp
-from asteroid_globals import eval_redundancy
-
-eval_redundancy[0] = True
 
 programs = os.listdir("programs")
 programs.sort()
