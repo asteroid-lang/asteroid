@@ -3,7 +3,7 @@
 --
 -- this module implements the Stream structure
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 load system "util".
@@ -20,9 +20,6 @@ data curr_ix.
 function __init__
   with stream:%list do
     let this @stream = stream @copy(). -- shallow copy of input list
-    let this @curr_ix = 0.
-  orwith none do
-    let this @stream = [].
     let this @curr_ix = 0.
   end
 

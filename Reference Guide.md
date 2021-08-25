@@ -1,23 +1,178 @@
-<!-- Note to Ariel: functions in Asteroid can have different kinds of input
+<!-- Note: functions in Asteroid can have different kinds of input
      constellations which is indicated using the `with` and `orwith` keywords.
      When writing documentation you will need to document all the different input
      constellations.  See the `range` function below. -->
 
-# Reference Guide
+# Asteroid Reference Guide
 
-## Language Features
+## Language Syntax
 
-TBD
+The following is the complete grammar for the Asteroid language. Capitalized
+words are either keywords or tokens such as `STRING` or `ID`.  Non-terminals
+are written in all lowercase letters.  The grammar utilizes an extended BNF notation
+where `<syntactic unit>*` means zero or more occurrences of the syntactic unit and
+`<syntactic unit>+` means one or more occurrences of the syntactic unit. Furthermore,
+`<syntactic unit>?` means that the syntactic unit is optional.  Simple terminals
+are written in quotes.
+
+```
+////////////////////////////////////////////////////////////////////////////////////////
+// statements
+
+prog
+  : stmt_list
+
+stmt_list
+  : stmt*
+
+stmt
+  : '.' // NOOP
+  | LOAD SYSTEM? STRING '.'?
+  | GLOBAL id_list '.'?
+  | NONLOCAL id_list '.'?
+  | ASSERT exp '.'?
+  | STRUCTURE ID WITH struct_stmts END
+  | LET pattern '=' exp '.'?
+  | LOOP DO? stmt_list END
+  | FOR pattern IN exp DO stmt_list END
+  | WHILE exp DO stmt_list END
+  | REPEAT DO? stmt_list UNTIL exp '.'?
+  | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
+  | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
+  | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
+  | THROW exp '.'?
+  | BREAK '.'?
+  | RETURN exp? '.'?
+  | function_def
+  | call_or_index '.'?
+
+function_def
+  : FUNCTION ID body_defs END
+
+body_defs
+  : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+
+data_stmt
+  : DATA ID
+
+struct_stmt
+  : data_stmt  '.'?
+  | function_def '.'?
+  | '.'
+
+struct_stmts
+  : struct_stmt*
+
+id_list
+  : ID (',' ID)*
+
+////////////////////////////////////////////////////////////////////////////////////////
+// expressions/patterns
+
+////////////////////////////////////////////////////////////////////////////////////////
+// NOTE: There is no syntactic difference between a pattern
+// and an expression. We introduce the 'pattern' nonterminal
+// to highlight the SEMANTIC difference between patterns and
+// expressions.
+
+pattern
+  : exp
+
+exp
+  : quote_exp
+
+quote_exp
+  : QUOTE exp
+  | PATTERN WITH? exp
+  | '%[' exp ']%'      // constraint-only pattern match
+  | head_tail
+
+head_tail
+  : conditional ('|' exp)?
+
+conditional
+  : compound
+      (
+         (CMATCH exp) |   // CMATCH == '%'IF
+         (IF exp ELSE exp)
+      )?
+
+compound
+  : logic_exp0
+      (
+         (IS pattern) |
+         (IN exp) |               // exp has to be a list
+         (TO exp (STEP exp)?) |   // list comprehension
+      )?
+
+logic_exp0
+  : logic_exp1 (OR logic_exp1)*
+
+logic_exp1
+  : rel_exp0 (AND rel_exp0)*
+
+rel_exp0
+  : rel_exp1 (('==' | '=/=' ) rel_exp1)*
+
+rel_exp1
+  : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
+
+arith_exp0
+  : arith_exp1 (('+' | '-') arith_exp1)*
+
+arith_exp1
+  : call_or_index (('*' | '/') call_or_index)*
+
+call_or_index
+  : primary (primary | '@' primary)*
+
+primary
+  : INTEGER
+  | REAL
+  | STRING
+  | TRUE
+  | FALSE
+  | NONE
+  | ID (':' pattern)?  // named pattern when ': pattern' exists
+  | '*' ID         // "dereference" a variable during pattern matching
+  | NOT call_or_index
+  | MINUS call_or_index
+  | ESCAPE STRING
+  | EVAL primary
+  | '(' tuple_stuff ')' // tuple/parenthesized expr
+  | '[' list_stuff ']'  // list or list access
+  | function_const
+  | TYPEMATCH           // TYPEMATCH == '%'<typename>
+
+tuple_stuff
+  : exp (',' exp?)*
+  | empty
+
+list_stuff
+  : exp (',' exp)*
+  | empty
+
+function_const
+  : LAMBDA body_defs
+
+```
 
 ## Builtin Functions
 
 * Function `len`, when given an input value, returns the length of that input. The
 function can only be applied to lists, strings, tuples, or structures.
 
+* Function `hd`, when given a list as input returns the first element of that list.
+  It is an error to apply this function to an empty list.
+
+* Function `tl`, when given a list as input returns the rest of the list without the first element.
+  It is an error to apply this function to an empty list.
+
 * Function `range` will compute a list of values depending on the input values:
-1. `(start:%integer,stop:%integer)` returns list `[start to stop-1]`.
-1. `(start:%integer,stop:%integer,inc:%integer)` returns list `[start to stop-1 step inc]`.
-1. `(stop:%integer)` returns list `[0 to stop-1]`.
+  1. `(start:%integer,stop:%integer)` returns list `[start to stop-1]`.
+  1. `(start:%integer,stop:%integer,inc:%integer)` returns list `[start to stop-1 step inc]`.
+  1. `(stop:%integer)` returns list `[0 to stop-1]`.
+
 
 
 ## List and String Objects
@@ -26,9 +181,9 @@ In Asteroid, both `lists` and `strings,` are treated like objects. Due to this, 
 
 ### Lists
 
-As mentioned in [this section of the User Guide](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/Asteroid%20User%20Guide.md#the-basics), a **list** is a structured data type that consists of square brackets enclosing comma-separated values. Lists can be modified after their creation.
+As mentioned in [this section of the User Guide](https://github.com/lutzhamel/asteroid/blob/master/Asteroid%20User%20Guide.md#the-basics), a **list** is a structured data type that consists of square brackets enclosing comma-separated values. Lists can be modified after their creation.
 
-<!-- Note to Ariel: the short names in the list below is what users will be
+<!-- Note: the short names in the list below is what users will be
     seeing, the long names are internal names.  So the documentation should
     be written using the short names.
 
@@ -57,7 +212,7 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 (For implementation details, see Python lists [here](https://docs.python.org/3/tutorial/datastructures.html).)
 -->
 
-<!-- Note to Ariel: the member functions to objects have changed.  We no longer
+<!-- Note: the member functions to objects have changed.  We no longer
      use the `self` variable.  Make sure that you are using the latest version
      of the `prologue.ast` file. I have edited the first couple of Functions
      so you can see what I mean. -->
@@ -69,50 +224,43 @@ As mentioned in [this section of the User Guide](https://github.com/lutzhamel/as
 * Function `remove`, given `(item)`, removes the first element from the list whose value is equal to `(item)`. It raises a ValueError if there is no such item.
 * Function `pop`, given `(ix:%integer)`, removes the item at the given position in the list and returns it. If no index is specified,`a@pop()` removes and returns the last item in the list.
 * Function `clear`, given `(none)`, removes all items from the list.
-* Function `index` returns a zero-based index in the list of the first element whose value is equal to `(item)`. It raises a ValueError exception if there is no such item. The optional arguments `(startix)` and `(endix)` are interpreted as in the slice notation, and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the `(startix)` argument.     
-
-This function can be called with several inputs:
-1. Input `(item,startix:%integer,endix:%integer)` returns `('integer', this_val[1].index(item_val,
-                                                                          startix_val[1],
-                                                                          endix_val[1]))`
-1. Input `(item,startix:%integer)` returns `('integer', this_val[1].index(item_val, startix_val[1]))`
-1. Input `(item)` returns `('integer', this_val[1].index(item_val))`
+* Function `index` returns a zero-based index in the list of the first element whose value is equal to `(item)`. It raises a ValueError exception if there is no such item. The optional arguments `(startix)` and `(endix)` are interpreted as in the slice notation, and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the `(startix)` argument.   This function can be called with several input configurations:
+  1. `(item,startix:%integer,endix:%integer)`
+  1. `(item,startix:%integer)`
+  1. `item`
 
 * Function `count`, given `(item)`, returns the number of times `(item)` appears in the list.
-* Function `sort` sorts the items of the list in place.
+* Function `sort` sorts the items of the list in place. It can be called with several different inputs:
+  1. `(reverse:%boolean)` if the boolean is set to true then the sorted list is reversed.
+  1. `none` returns the reverse list.
 
-It can be called with several different inputs:
-1. Input `(reverse:%boolean)` returns `(this_val)`.
-1. Input `(none)` returns `(this_val)`.
-
-* Function `reverse`, given `(none)`, reverses the elements of the list in place.
-* Function `copy`, given `(none)`, makes a shallow copy of the list.
-* Function `shuffle`, given `(none)`, returns a random permutation of a given list - in place!
-* Function `map`, given `(f:%function)`, applies `f` to each element of the list.
-* Function `reduce` reduces the value of elements in a list. 
-
-This function can be called with several different inputs:
-1. Input `(f:%function)` returns `value`, such that `value = f(value,this@i)`.
-1. Input `(f:%function,init)` returns the same format.
-
-The first argument to `f` is the accumulator.
+* Function `reverse`, reverses the elements of the list in place.
+* Function `copy`, makes a shallow copy of the list.
+* Function `shuffle`, returns a random permutation of a given list - in place!
+* Function `map`, given `(f:%function)`, applies `f` to each element of the list in place. The modified list is returned.
+* Function `reduce` reduces the value of elements in a list. This
+  function can be called with several different inputs:
+  1. Input `(f:%function)` returns `value`, such that `value = f(value,this@i)`.
+  1. Input `(f:%function,init)` returns the same format but uses `init` as an initial value.
+  The first argument to `f` is the accumulator.
 
 * Function `filter`, given `(f:%function)`, constructs an output list from those elements of the list for which `f` returns true. If `f` is none, the identity function is assumed, that is, all elements of the input list that are false are removed.
-* Function `member`, given `(item)`, returns `true` only `if this @count(item) > 0`.
-* Function `join`, given `(join:%string)`, converts an Asteroid list into a Python list.
+* Function `member`, given `(item)`, returns true only if `item` exists on the list.
+* Function `join`, given `(join:%string)`, turns the list into a string using `join` between the elements.  The string is returned
+as the return value from this function.
 
 
-See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast) for more on all the functions above.
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/master/code/modules/prologue.ast) for more on all the functions above.
 
 
 ### Strings
 
 A string is a sequence of characters that can be used as a variable or a literal constant.
 
-<!-- Note to Ariel: this is not a member function and should be documented as part of the `type` module
-* Function `gettype` will get the type of `x` as an Asteroid string. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for more on this function.) -->
+<!-- Note: this is not a member function and should be documented as part of the `type` module
+* Function `gettype` will get the type of `x` as an Asteroid string. (See the module [Type.ast](https://github.com/lutzhamel/asteroid/blob/master/code/modules/type.ast) for more on this function.) -->
 
-<!-- Note to Ariel: This should not be exposed to the user, this is an internal data structure
+<!-- Note: This should not be exposed to the user, this is an internal data structure
 * The following `string_member_functions`,
 
             escape
@@ -133,57 +281,46 @@ A string is a sequence of characters that can be used as a variable or a literal
             "
 (For implementation details, see Python lists [here](https://docs.python.org/3/library/stdtypes.html#text-sequence-type-str).)
 -->
-<!-- Note to Ariel: I edited the first few member functions -->
 * Function `length` returns the number of characters within that string.
 * Function `explode`, turns a string into a list of characters.
 * Function `trim`, given the input `(what:%string)`, returns a copy of the string with the leading and trailing characters removed. The `what` argument is a string specifying the set of characters to be removed. If omitted or none, the `what` argument defaults to removing whitespace. The `what` argument is not a prefix or suffix; rather, all combinations of its values are stripped.
 
-* Function `replace` will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced.
-
-It can be called with several different inputs:
-1. Input `(old:%string,new:%string,count:%integer)` returns `('string', sub(old_val[1], new_val[1], this_val[1], count_val[1]))`.
-1. Input `(old:%string,new:%string)` returns `('string', sub(old_val[1], new_val[1],this_val[1]))`.
+* Function `replace` will return a copy of the string with all occurrences of regular expression pattern `old` replaced by the string `new`. If the optional argument count is given, only the first count occurrences are replaced. It can be called with several
+different inputs:
+  1. `(old:%string,new:%string,count:%integer)`
+  1. `(old:%string,new:%string)`
 
 * Function `split` will return a list of the words in a given string, using `sep` as the delimiter string. If `maxsplit` is given: at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
 
-If `sep` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, '1,,2'.split(',') returns ['1', '', '2']). The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']). Splitting an empty string with a specified separator returns [''].
+  If `sep` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, '1,,2'.split(',') returns ['1', '', '2']). The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']). Splitting an empty string with a specified separator returns [''].
 
-If `sep` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
+  If `sep` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
 
-Function `split` can be called with several different inputs:
-1. Input `(sep:%string,count:%integer)` returns `('list', ast_list)`
-1. Input `(sep:%string)` returns the same.
-1. Input `(none)` also returns the same.
+  Function `split` can be called with several different inputs:
+  1. Input `(sep:%string,count:%integer)`
+  1. Input `(sep:%string)`
+  1. Input `(none)`
 
-* Function `toupper`, given `(none)`, converts all the lowercase letters in a string to uppercase.
-* Function `tolower`, given `(none)`, converts all the uppercase letters in a string to lowercase.
-* Function `index` allows the user to search for a given `item_val[1]`, and/or `startix_val[1]` and `endix_val[1]` as well.
+* Function `toupper`, converts all the lowercase letters in a string to uppercase.
+* Function `tolower`, converts all the uppercase letters in a string to lowercase.
+* Function `index` allows the user to search for a given `item` in
+a list. It returns an integer index into the string or `none` if `item` was not found.  The function can be called with several different inputs:
+  1. Input `(item:%string,startix:%integer,endix:%integer)`
+  1. Input `(item:%string,startix:%integer)`
+  1. Input `(item:%string)`
 
-It can be called with several different inputs:
-1. Input `(item:%string,startix:%integer,endix:%integer)` returns `('integer',val)` -- **unless** `val` == -1, in which case `__retval__ = ('none', None)`.
-1. Input `(item:%string)` returns all of the same.
-1. Input `(item:%string)` also returns all of the same.
+* Function `flip` explodes reverses a string.
 
-* Function `flip` explodes, reverses, and joins the given input `(none)`.
-
-See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast)  for more on all the functions above.
-
-/////
-
-* Function `tointeger`, given `(item:%string,base:%integer)`, returns `('integer', int(item_val[1], base=base_val[1]))`. It can also be called with `item`, which gives the output `('integer', int(item_val[1]))`.
-* Function `tostring` converts an Asteroid object into a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs: `(v:*TP,w:%integer)`, `(v:%real,w:%integer)`, `(v:%real,w:%integer,p:%integer)`, and `item`.
-* Function `tobase`, given `(x:%integer,base:%integer)`, returns the given integer `x` as a numeral in different bases (as a string).
-
-See the [Type.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) for the functions above.
-
-More information about the functions that `lists` and `strings` contribute to can be found in the [Prologue.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/prologue.ast), as well as the [Type.ast Module](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast).
+See the [Prologue module](https://github.com/lutzhamel/asteroid/blob/master/code/modules/prologue.ast)  for more on all the functions above.
 
 
 ## Asteroid Modules
 
-There are a variety of useful modules that can be installed in Asteroid.
+There are a variety of useful modules that can be loaded into an Asteroid program using the `load system <module name>`.
 
-[Bitwise.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/bitwise.ast) defines Bitwise operations. It supports the following functions,
+### Bitwise
+
+The [bitwise](https://github.com/lutzhamel/asteroid/blob/master/code/modules/bitwise.ast) module defines Bitwise operations. It supports the following functions,
 * Function `band` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise AND operation.
 * Function `bor` can be called with the input `(x:%integer, y:%integer)`, and performs the Bitwise OR operation.
 * Function `bnot` can be called with the input `(x:%integer)`, and performs the Bitwise NOT operation.
@@ -196,191 +333,173 @@ There are a variety of useful modules that can be installed in Asteroid.
 * Function `bclearbit` can be called with the input `(x:%integer, i:%integer)`, and clears the ith bit.
 * Function `bsize`can be called with the input `(x:%integer)`, and returns the bit size.
 
-[Hash.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/hash.ast) implements the `HashTable` structure, for mapping keys onto paired values. It supports the following functions,
-* Function `__init__` can be called with the input `self`. This constructor for HashTable initializes the underlying dictionary, and stores the dictionary as a foreign object in its object memory alongside the table.
-* Function `insert`, given the input `(self,name,value)`, will insert a given name-value pair into the table in `self`'s object memory.
-* Function `get`, given `(self,name)`, will return the `value_val` associated with the given `name_val` as long as it can be found in `dictionary.keys()`.
-* Function `aslist`, given `(self)`, gets the `value_val` associated with `name_val` and then zips the keys and values. It then turns Python tuples into Asteroid tuples and puts them onto an output list, so that the return value output is `('list', out_list)`.
+### Hash
 
-[IO.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/io.ast) implements Asteroid's I/O system for delivering outputs from given inputs. It supports the following functions,
-* Function `raw_print` can be called with `item`, and dumps the AST to screen.
-* Function `print_ln` can be called with `item`, and prints a given argument.
-* Function `print` can be called with `item`, and prints a given argument.
-* Function `read` can be called with `none`, and will read a string from `stdin`.
-* Function `write` can be called with `item:%string`, and will write a string to `stdout`.
-* Function `input` can be called with a string `prompt`, and maps the Asteroid input function onto the Python input function.
+The [hash](https://github.com/lutzhamel/asteroid/blob/master/code/modules/hash.ast) module implements a hash for name-values pairs. It supports the following functions,
+* Function `insert`, given the input `(name,value)`, will insert a given name-value pair into the table.
+* Function `get`, given `name`, will return the `value` associated with the given `name` as long as it can be found otherwise an exception will be thrown.
+* Function `aslist` returns the hash as a list of name-value pairs.
 
-The following functions are associated with **basic file I/O,**
+### IO
 
+The [io](https://github.com/lutzhamel/asteroid/blob/master/code/modules/io.ast) module implements Asteroid's I/O system. The module defines three default streams,
+1. `__STDIN__` - the standard input stream.
+1. `__STDOUT__` - the standard output stream.
+1. `__STDERR__` - the standard error stream.
 
-* Function `__init__` will get variables and destructure an object in order to open a certain file. It can be called with two different argument setups,
-1. `(name:%string, mode:%string)`
-1. `(std:%string)`
+Furthermore, the module supports the following functions,
 
-* Function `close` can be called with `none`. It closes or deallocates a given file descriptor.
-* Function `read` is discussed above.
-* Function `readln` can be called with `none`. It reads a given line of input.
-* Function `write` (similar to as discussed above) can be called with `(what:%string)`.
-* The program `end` includes several predefined standard stream constants: 
+* Function `println` can be called with `item`, and prints a given argument to the terminal (`__STDOUT__`) with an implicit newline character.
+* Function `print` can be called with `item`, and prints a given argument. No implicit newline is appended to the output.
+* Function `input` can be called with a string `prompt`.  If `prompt` is given it is printed and then input is read from the terminal (`__STDIN__`) and returned as a string.
+* Function `open` opens a file. Given `(name:%string, mode:%string)`, it returns a file descriptor of type `FILE`. The `mode` string can be `"r"` when the file will only be read, `"w"` for only writing (an existing file with the same name will be erased), and `"a"` opens the file for appending; any data written to the file is automatically added to the end. The `"r+"` opens the file for both reading and writing.
+* Function `close`, given `file:%FILE`, closes that file.
+* Function `read`, given `file:%FILE`, reads a file. If no file is given the `__STDIN__` stream is read.
+* Function `readln`, given `file:%FILE`, reads a given line of input from the file. If no file is given the `__STDIN__` stream is read.
+* Function `write`, given `(file:%FILE, what:%string)`, will write `what` to the given `file`.  If `file` is not given then it writes to the `__STDOUT__` stream.
+* Function `writeln`, works the same way as `write` except that it appends a newline character to the output.
 
-``
-let stdin = FILE("stdin").
-let stdout = FILE("stdout").
-let stderr = FILE("stderr").
-``
+### Math
 
-* Function `fopen` opens a certain file. Given `(name:%string, mode:%string)`, it returns a file's name and mode.
-* Function `fclose`, given `(file:%FILE)`, closes that file.
-* Function `fread`, given `(file:%FILE)`, reads a file.
-* Function `freadln`, given `(file:%FILE)`, reads a given line of input from the file.
-* Function `fwrite`, given `(file:%FILE, what:%string)`, will return ` file @write(what).`
-* Function `fwriteln`, given `(file:%FILE, what:%string)`, will return `file @write(what + "\n")`.
+The [math](https://github.com/lutzhamel/asteroid/blob/master/code/modules/math.ast) module implements mathematical constants and operators. It supports the following functions,
+* Function `exp`, given `x:%integer`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
+* Function `log` can be called with two different argument setups,
+  1. If only one argument, `(x)`, is input, this returns the natural logarithm of x (to base e).
+  1. If two arguments, `(x,base)`, are input, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
 
-
-
-[Math.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/math.ast) implements its mathematical constants and operators. It supports the following functions,
-* Function `exp`, given `(x:%integer)`, returns e raised to the power `x`, where e = 2.718281… is the base of natural logarithms.
-* Function `log` can be called with two different argument setups. 
-1. If only one argument, `(x)`, is inputted, this returns the natural logarithm of x (to base e). 
-1. If two arguments, `(x,base)`, are inputted, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
-
-* Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b can be found in `real` and `integer`.
-* Function `sqrt`, given `a`, returns its square root as long as `a` can be found in `real` and `integer`.
-* Function `abs`, given `(x)`, returns its absolute value.
-* Function `ceil`, given `(x:%real)`, returns the ceiling of x: the smallest integer greater than or equal to x.
-* Function `floor`, given `(x:%real)`, returns the floor of x: the largest integer less than or equal to x.
+* Function `pow`, given `(b,p:%integer)`, returns "b <sup>p</sup>" as long as b is either `real` or `integer`.
+* Function `sqrt`, given `a`, returns its square root as long as `a` is either `real` or `integer`.
+* Function `abs`, given `x`, returns its absolute value.
+* Function `ceil`, given `x:%real`, returns the ceiling of x: the smallest integer greater than or equal to x.
+* Function `floor`, given `x:%real`, returns the floor of x: the largest integer less than or equal to x.
 * Function `gcd`, given `(a:%integer,b:%integer)`, returns the greatest common denominator that both integers share.
-* Function `isclose` can be called with two different argument setups.
-1. With input values `(a,b)`, it returns returns `True` if the two values are close to each other and `False` otherwise. Default tolerance 1e-09.
-1. With input values `(a,b,t)`, it performs the same tasks for comparing these *three* different input values.
+* Function `isclose` can be called with two different argument setups,
+  1. With input values `(a,b)`, it returns returns `true` if the two values are close to each other and `False` otherwise. Default tolerance 1e-09.
+  1. With input values `(a,b,t)`, it compares `a` and `b` with tolerance `t`.
 
-* Function `mod`, given `(v,d)`, will return the remainder of the operation `v/d`, as long as `v` and `d` can be found in `real` and `integer`.
-* Function `acos`, given `(x)`, returns the arc cosine of x in radians. The result is between 0 and pi.
-* Function `asin`, given `(x)`, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
-* Function `atan`, ,given `(x)`, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
-* Function `cos`, given `(x)`, returns the cosine of x radians.
-* Function `sin`, given `(x)`, returns the sine of x radians.
-* Function `tan`, given `(x)`, returns the tangent of x radians.
-* Function `acosh`, given `(x)`, returns the inverse hyperbolic cosine of x.
-* Function `asinh`, given `(x)`, returns the inverse hyperbolic sine of x.
-* Function `atanh`, given `(x)`, returns the inverse hyperbolic tangent of x.
-* Function `cosh`, given `(x)`, returns the hyperbolic cosine of x.
-* Function `sinh`, given `(x)`, returns the hyperbolic sine of x.
-* Function `tanh`, given `(x)`, returns the hyperbolic tangent of x.
-* Function `degrees`, given `(x)`, converts angle `x` from radians to degrees.
-* Function `radians`,  given `(x)`, converts angle `x` from degrees to radians.
+* Function `mod`, given `(v,d)`, will return the remainder of the operation `v/d`, as long as `v` and `d` are either `real` or `integer` values.
+* Function `acos`, given `x`, returns the arc cosine of x in radians. The result is between 0 and pi.
+* Function `asin`, given `x`, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
+* Function `atan`, ,given `x`, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
+* Function `cos`, given `x`, returns the cosine of x radians.
+* Function `sin`, given `x`, returns the sine of x radians.
+* Function `tan`, given `x`, returns the tangent of x radians.
+* Function `acosh`, given `x`, returns the inverse hyperbolic cosine of x.
+* Function `asinh`, given `x`, returns the inverse hyperbolic sine of x.
+* Function `atanh`, given `x`, returns the inverse hyperbolic tangent of x.
+* Function `cosh`, given `x`, returns the hyperbolic cosine of x.
+* Function `sinh`, given `x`, returns the hyperbolic sine of x.
+* Function `tanh`, given `x`, returns the hyperbolic tangent of x.
+* Function `degrees`, given `x`, converts angle `x` from radians to degrees.
+* Function `radians`,  given `x`, converts angle `x` from degrees to radians.
 
-[Pick.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/pick.ast) implements the `Pick` structure. A `pick` object contains a list of items that can be randomly picked from using the `pick` member function. It supports the following functions that perform an output of this structure,
-* Function `pick` can be called with `n:%integer`.
-* Function `__init__` can be called with `l:%list`.
+### Pick
 
-[Random.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/random.ast) implements the `random` numbers. Using the functions included in this module will return a random value or floating point number within a given range or interval. It supports the following functions,
+The [pick](https://github.com/lutzhamel/asteroid/blob/master/code/modules/pick.ast) module implements the to randomly pick objects from a list of objects. A `Pick` object contains a list of items that can be randomly picked from using the `pick` member function. The `pick` function can be called with `n:%integer` and returns a list of `n` randomly picked objects from the object list.
+
+### Random
+
+The [random](https://github.com/lutzhamel/asteroid/blob/master/code/modules/random.ast) module implements the `random` numbers. Using the functions included in this module will return a random value within a given range or interval. It supports the following functions,
 * Function `random`, given the input `none`, returns a random floating point number in the range `[0.0, 1.0)`.
 * Function `randint` returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval. It can be called with two different number interval inputs:
-1. `(lo:%integer,hi:%integer)` 
-1. `(lo:%real,hi:%real)`
-1. Note: if the given input is ` (_,_) `, it will instead output an error message for "unsupported interval specificaton in randint."
+  1. `(lo:%integer,hi:%integer)`
+  1. `(lo:%real,hi:%real)`
+  1. Note: any other interval specification will instead output an error message for "unsupported interval specification in randint."
 
-* Function `seed`, given `(sd:%integer)`, returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval.
+* Function `seed`, given `(sd:%integer)`, provides a seed value for the random number generator.
 
-[Set.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/set.ast) implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
-* Function `toset`, given `(lst:%list)`, converts the inputted list into a set.
-* Function `sdiff`, given `(a:%list,b:%list)`, does a side-by-side print of the differences between two files.
-* Function `sunion`, given `(a:%list,b:%list)`, prints the smallest set which contains all the elements of both `a` and `b`.
-* Function `sintersection`, given `(a:%list,b:%list)`, finds the intersection between  `a` and `b`.
+### Set
+
+The [set](https://github.com/lutzhamel/asteroid/blob/master/code/modules/set.ast) module implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
+* Function `toset`, given `(lst:%list)`, converts the input list into a set.
+* Function `sdiff`, given `(a:%list,b:%list)`, computes the difference set between the two set `a` and `b`.
+* Function `sintersection`, given `(a:%list,b:%list)`, finds the intersection between  sets `a` and `b`.
+* Function `sunion`, given `(a:%list,b:%list)`, computes the union of sets `a` and `b`.
 * Function `sxunion`, given `(a:%list,b:%list)`, returns all elements in `a` or `b`, but not in both.
 
-[Sort.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/sort.ast) defines a parameterized sort function over a list. `Sort` makes use of a user-defined order predicate on the list's elements to perform the sort. 
+### Sort
 
-The `Quicksort` is the underlying sort algorithm. See the module for an example of it in action.
+The [sort](https://github.com/lutzhamel/asteroid/blob/master/code/modules/sort.ast) module defines a parameterized `sort` function over a list.  The `sort` function makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. See the module for an example of it in action. Example:
+```
+sort(
+  (lambda with (x,y) do return true if x<y else false),
+  [10,5,110,50]).
+```
+return the sorted list,
+```
+[5,10,50,110]
+```
 
-The `Sort` module supports the function below,
-* Function `sort` performs a sorting output. It can be called with three different inputs,
-1. Input `(_,[])` returns `[]`.
-1. Input `(_,[a])` returns `[a]`.
-1. Input `(p,[pivot|rest])` is more complicated. In this situation the function will `let less=[]` and also `let more=[]`. Then for `e` in `rest` :
-     
-     3a. If `p(e,pivot)`, then `less = less + [e].`,
-     
-     3b. Else `more = more + [e].`
-     
-     3c. The function will then return `sort(p,less) + [pivot] + sort(p,more).`
+### Stream
 
-[Stream.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/stream.ast) implements the `Stream` structure. Asteroid stream implementation is based on lists.
-* Function `__init__` outputs a shallow copy of the input list. It can be called with two different inputs: 
+The [stream](https://github.com/lutzhamel/asteroid/blob/master/code/modules/stream.ast) module implements a `Stream` structure. The `Stream` structure allows the developer to turn any list into a stream supporting interface functions like `peeking` ahead or `rewinding` the stream.  In order
+to construct a stream call the constructor on a list, e.g., `Stream([1,2,3])`.  The following stream
+interface functions are available,
 
-1. `none` 
+* Function `eof` returns `true` if the stream
+does not contain any further elements for processing. Otherwise it returns `false`.
+* Function `peek` returns the next element available on the stream otherwise it returns `none`.
+* Function `next` returns the next element available on the stream and moves the implicit stream pointer forward.  If the stream is at the `eof` then it returns `none`.
+* Function `get` is synonymous to `peek`.
+* Function `rewind` resets the stream pointer to the first element of the stream.
+* Function `map` applies a given function to each element in the stream.
+* Function `append`, given `item`, adds item to the end of the stream.
+* Function `__string__` maps a the stream to a string representation.
 
-1. `stream:%list`
+### Type
 
-* Function `eof` can be called with the input `none`. If `this @curr_ix == this @stream @length()`, the function returns `true`. If not, it returns `false`.
-* Function `peek` can be called with the input `none`. If `this @eof()`, it returns `none`. If not, it returns `this @stream @(this @curr_ix)`.
-* Function `next` can be called with the input `none`. If `this @eof()`,  it returns `none`. If not, it decides to `let this @curr_ix = this @curr_ix + 1`.
-* Function `get` can be called with the input `none`, and returns `this @peek()`.
-* Function `rewind` can be called with the input `none`, and then decides to `let this @curr_ix = 0`.
-* Function `map`, given the input `f`, applies a given function to each element of a function.
-* Function `append`, given `item`, adds said item to a stream.
-* Function `__string__`, given `none`, outputs it as a string.
+The [type](https://github.com/lutzhamel/asteroid/blob/master/code/modules/type.ast) module defines type related functions and structures.
 
-Finally, see the code page linked above for more on importing `state` from `asteroid_state` into this module. 
-
-[Type.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/type.ast) defines type related functions and structures.
-
-See the Built-ins section of this Reference Guide for more on the list and string related functions this module supports. Overall, this module supports the following functions.
-
-*FOR TYPE CONVERSION:*
+#### Type Conversion
 
 * Function `tointeger` converts a given input to an integer. It can be called with two different arguments,
-1. `(item:%string,base:%integer)`
-2. `item`
+  1. `(item:%string,base:%integer)` where `base` is a valid base for integer conversion
+  2. `item` where `item` is converted to a base 10 integer.
 
 
-* Function `toreal`, given `item`, returns the input as a real number data type `('real', float(item_val[1]))`.
+* Function `toreal`, given `item`, returns the input as a real number data type.
 * Function `toboolean`, given `item`, returns the input as a Boolean value of either true or false.
-* `TP` is a *pattern* for selecting a proper formatting body in `tostring`. See the Type module for more information on it.
-* `stringformat` is a *structure* for formatting an object for `tostring`. See the Type module for more information on it.
-* Function `tostring` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs:
-1. `(v:*TP,stringformat(w:%integer,none))`
-2. `(v:%real,stringformat(w:%integer,none))`
-3. `(v:%real,stringformat(w:%integer,p:%integer))`
-4. `item` (a default clause here)
+* Function `tostring` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs where `*TP` indicates a`boolean`, `integer`, or `string` type and `w` is the width specification and `p` is the precision specification.  When no formatting information is provided a default string conversion occurs,
+  1. `(v:*TP,stringformat(w:%integer))`
+  2. `(v:%real,stringformat(w:%integer))`
+  3. `(v:%real,stringformat(w:%integer,p:%integer))`
+  4. `item` - defaul conversion
 
-* Function `tobase` represents the given integer `x` (*specifically* within the given input `(x:%integer,base:%integer)`) as a numeral in different bases.
+* Function `tobase` represents the given integer `x` (*specifically* within the given input `(x:%integer,base:%integer)`) as a string in the given base.
 
 
-*TYPE QUERY FUNCTIONS:*
+#### Type Query Functions
 
-* Function `islist`, given `item`, returns `item is %list`.
-* Function `isscalar`, given `item`, returns `(item is %integer)` or `(item is %real)`.
-* Function `isnone`, given `x`, returns `x is %none`.
-* Function `gettype`, given `x`, gets the type of `x` as an Asteroid string.
+* Function `islist` returns `true` if given `item` is a list otherwise it will return `false`.
+* Function `isscalar` returns `true` if given `item` is either an integer or a real value.
+* Function `isnone`, returns `true` if given `item` is equal to the value `none`.
+* Function `gettype` returns the type of a given `item` as an Asteroid string.
 
+### Util
 
+The [util](https://github.com/lutzhamel/asteroid/blob/master/code/modules/util.ast) module defines utility functions and structures that don't really fit into any other modules. It supports the following functions,
 
-[Util.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/util.ast) defines utility functions and structures. It supports the following functions,
-
-* Function `exit` imports `sys.exit(1)` to exit the program. It can be called with two inputs,
-
-1.`none`
-
-2.`msg:%string`
+* Function `exit` exits the program. It can be called with two inputs,
+  1. `none`
+  1. `msg:%string`
 
 * Function `copy`, given Asteroid object `obj`, makes a deep copy of it.
-* Function `cls`, given `none`, clears the screen.
-* Function `sleep`, given `secs %if isscalar(secs)`, programs sleep for `secs` seconds.
-* Function `zip`, given `(list1:%list,list2:%list)`, implements Python's zip function. It turns Python tuples into Asteroid tuples and puts them onto an output list.
-* Function `unzip`, given `(list:%list)`, will unzip a list of pairs.
-* Function `ascii`, given a character `item:%string`, returns the corresponding ASCII code.
+* Function `cls` clears the terminal screen.
+* Function `sleep`,  programs sleep for `secs` seconds where the argument `secs` is either an integer or real value.
+* Function `zip`, given `(list1:%list,list2:%list)`, will return a list where element `i` of the list is the tuple `(list1@i,list2@i)`.
+* Function `unzip`, given a list of pairs will return a pair of lists where the first component of the pair is the list of all the first components of the pairs of the input list and the second component of the return list is a list of all the second components of the input list.
+* Function `ascii`, given a character `item:%string`, returns the corresponding ASCII code of the first character of the input string.
 * Function `achar`, given a decimal ASCII code `item:%integer`, returns the corresponding character symbol.
 
-[Vector.ast](https://github.com/lutzhamel/asteroid/blob/ariel-asteroid-copy/code/modules/vector.ast) defines functions useful for vector arithmetic. It supports the following functions,
-* Function `vop` is a worker function that implements actual vector arithmetic. It also implements vector/scalar arithmetic. It can be called with three different inputs:
-1. `(f:%function,a:%list,b:%list)` 
-2. `(f:%function,a:%list,b %if isscalar(b))`
-3. `(f:%function,a %if isscalar(a),b:%list)`
+### Vector
 
+The [vector](https://github.com/lutzhamel/asteroid/blob/master/code/modules/vector.ast) defines functions useful for vector arithmetic. It supports the following functions.  Here `a` and `b` are vectors implemented as lists,
 
-* Function `vadd`, given the input `(a,b)`, returns `vop(lambda with (x,y) do return x+y,a,b)`.
-* Function `vsub`, given the input `(a,b)`, returns `vop(lambda with (x,y) do return x-y,a,b)`.
-* Function `vmult`, given the input `(a,b)`, returns ` vop(lambda with (x,y) do return x*y,a,b)`.
-* Function `dot`, given `(a:%list,b:%list)`, computes the dot product of the two lists.
+* Function `vadd`, given the input `(a,b)`, returns a vector that contains the element by element sum of the input vectors.
+* Function `vsub`, given the input `(a,b)`, returns the element by element difference vector.
+* Function `vmult`, given the input `(a,b)`, returns the element by element vector multiplication.
+* Function `dot`, given `(a,b)`, computes the dot product of the two vectors.
+* Function `vop`  allows the developer to vectorize an function. It can be called with three different inputs:
+  1. `(f:%function,a:%list,b:%list)`
+  2. `(f:%function,a:%list,b %if isscalar(b))`
+  3. `(f:%function,a %if isscalar(a),b:%list)`

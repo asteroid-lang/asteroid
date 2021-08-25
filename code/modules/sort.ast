@@ -10,7 +10,7 @@
 --  sort((lambda with (x,y) do return true if x<y else false),
 --       [10,5,110,50]).
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 

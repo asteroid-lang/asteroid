@@ -3,7 +3,7 @@
 --
 -- this module implements the random numbers
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
@@ -48,15 +48,13 @@ hi_val = state.symbol_table.lookup_sym('hi')
 __retval__ = ('real', random.uniform(lo_val[1], hi_val[1]))
 "
 orwith (_,_) do
-  throw Error("unsupported interval specificaton in randint").
+  throw Error("unsupported interval specification in randint").
 end
 
 ------------------------------------------------------------------
 function seed
 ------------------------------------------------------------------
--- return a random value N in the interval lo <= N <= hi.
--- The of the random value depends on the types of the
--- values specifying the interval.
+-- provide a seed value for the random number generator
 with (sd:%integer) do escape
 "
 import random
