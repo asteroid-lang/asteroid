@@ -18,11 +18,6 @@ This document was inspired by Andrew Shitov's excellent book [Using Raku: 100 Pr
   [Section: Information retrieval](#informationretrieval)<br>
   [Section: Multi-dimensional data](#multidimensionaldata)<br>
 
-[Chapter: Object-Oriented programming](#oop)<br>
-  [Section: Simple OO challenges](#simpleoochallenges)<br>
-
-# Chapter: Strings <a name="chapterstrings"></a>
-## Section: Using Strings <a name="usingstrings"></a>
 
 
 ### Challenge: Hello, World!
