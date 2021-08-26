@@ -36,21 +36,6 @@ println "Hello, World!".
     Hello, World!
 
 
-Two other print functions exists:
-- `print` - print without appending a new line character.
-- `raw_print` - print internal term structure.
-
-
-```
-load system "io".
-
-raw_print "Hello, World!".
-```
-
-    ('string', 'Hello, World!')
-
-
-Here we can see that an Asteroid string is a tuple consisting of a type field and a value field.
 
 ### Challenge: Greet a person
 
