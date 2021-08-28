@@ -259,9 +259,9 @@ end
 ------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
-    with none do
-        return readln().
-    orwith prompt do
-        write (tostring prompt).
-        return readln().
-    end
+with none do
+    return readln().
+orwith prompt do
+    write (tostring prompt).
+    return readln().
+end
