@@ -81,7 +81,7 @@ end
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function close 
+function close
 ------------------------------------------------------------------
 with none do escape
 "
@@ -99,7 +99,7 @@ end
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-function read 
+function read
 ------------------------------------------------------------------
 with none do return escape
 "
@@ -137,7 +137,7 @@ __retval__ = ('string', f_val.readline())
 end
 
 ------------------------------------------------------------------
-function write 
+function write
 ------------------------------------------------------------------
 with (what:%string) do escape
 "
@@ -173,7 +173,7 @@ let __STDERR__ = FILE("__STDERR__").
 
 -- File I/O library functions
 ------------------------------------------------------------------
-function open 
+function open
 -- Open a file given a filename and mode
 ------------------------------------------------------------------
 with (name:%string, mode:%string) do
@@ -195,7 +195,7 @@ function read
 with(file:%FILE) do
     return file @read().
 
-orwith none do 
+orwith none do
     return __STDIN__@ read().
 end
 
@@ -259,9 +259,10 @@ end
 ------------------------------------------------------------------
 function input
 ------------------------------------------------------------------
+-- input drops the trailing newline char
 with none do
-    return readln().
+    return readln() @replace("\n","").
 orwith prompt do
     write (tostring prompt).
-    return readln().
+    return readln() @replace("\n","").
 end

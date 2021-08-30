@@ -78,7 +78,7 @@ def assert_match(input, expected):
             format(expected, input))
 
 ###########################################################################################
-def promote(type1, type2, strict=True):
+def promote(type1, type2):
     '''
     type promotion table for builtin primitive types.  this table implements the
     type hierarchies
@@ -107,15 +107,13 @@ def promote(type1, type2, strict=True):
         return 'list'
     elif type1 == 'tuple' and type2 == 'tuple':
         return 'tuple'
+    elif type1 == 'none' and type2 == 'none':
+        return 'none'
     else:
-        if strict:
-            if type1 == type2:
-                raise ValueError("binary operation on type '{}' not supported".format(type1))
-            else:
-                raise ValueError("type '{}' and type '{}' are incompatible".format(type1, type2))
-
+        if type1 == type2:
+            raise ValueError("binary operation on type '{}' not supported".format(type1))
         else:
-            return ('none', None)
+            raise ValueError("type '{}' and type '{}' are incompatible".format(type1, type2))
 
 ###########################################################################################
 # Asteroid uses truth values similar to Python's Pythonic truth values:
@@ -194,7 +192,7 @@ def term2string(term):
     if TYPE == 'string':
         val = term[1]
         output_str = ""
-        match_object_list = list(re.finditer(combined_re, val))
+        match_object_list = list(re.finditer(combined_re, val, re.DOTALL))
         for mo in match_object_list:
             type = mo.lastgroup
             value = mo.group()
@@ -320,11 +318,11 @@ def term2string(term):
     elif TYPE == 'cmatch':              # Handle a conditional pattern
 
         (CMATCH,CVALUE,CEXPRESSION) = term
-        
+
         #Check for a compound condtional( ANDs and ORs )
         if (((CEXPRESSION[1])[1] == '__and__') or ((CEXPRESSION[1])[1] == '__or__')):
             return compound_relational_to_string(term)
-        
+
         try:
             (NAMED_PATTERN,ID,pattern) = CVALUE
         except:
@@ -354,7 +352,7 @@ def term2string(term):
                     term_string += ' == '
                 elif expression_type[1] == '__ne__':
                     term_string += ' =/= '
-                
+
                 term_string += term2string(expression_rhs)
 
             else:               #Handle a function with multiple args
@@ -370,22 +368,22 @@ def term2string(term):
                     term_string += ', '
                 term_string = term_string[:-2]
                 term_string += ' )'
-        
+
         elif (expressions[0] == 'none'): #Handle a function with no arguments
             term_string = term2string(ID)+ ':'
             term_string += term2string(pattern)
             term_string += " if "
             term_string += expression_type[1] + '()'
-        
+
         elif (expressions[0] in ['id','integer','real','sting','boolean']): #Handle a function with one arguments
             term_string = term2string(ID)+ ':'
             term_string += term2string(pattern)
             term_string += " if "
             term_string += expression_type[1] + '( '
             term_string += str(expressions[1]) + ' )'
-        
+
         return term_string
-        
+
     else:
         #lhh print(term)
         raise ValueError(
@@ -422,7 +420,7 @@ def walk_relational_expr(term):
         term_string += ' =/= '
     else:
         return ''
-    
+
     term_string += term2string(arg_list[1])
 
     return term_string
@@ -453,7 +451,7 @@ def compound_relational_to_string(term):
         term_string += ': if '
         term_string += compound_relational_to_string(apply_list)
         return term_string
-    
+
     # Else we just unpack the node and peek at the upcoming operation
     else:
         (APPLY,operation,apply_list) = term
@@ -489,7 +487,7 @@ def compound_relational_to_string(term):
             term_string += walk_relational_expr(expr)
     else:
         term_string += walk_relational_expr(term)
-        
+
     return term_string
 ##############################################################################################
 # Function head_tail_length determines the lenth of a head-tail node by walking to the end.

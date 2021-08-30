@@ -100,7 +100,7 @@ def unify(term, pattern, unifying = True ):
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
-    
+
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
@@ -140,7 +140,7 @@ def unify(term, pattern, unifying = True ):
 
         unifiers = unify(term, pexp, unifying)
 
-        if state.constraint_lvl: 
+        if state.constraint_lvl:
             state.symbol_table.push_scope({})
 
         # evaluate the conditional expression in the
@@ -316,7 +316,7 @@ def unify(term, pattern, unifying = True ):
             unifier = []
             unifier += unify(list_head, pattern_head, unifying)
             unifier += unify(list_tail, pattern_tail, unifying)
-            
+
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -336,7 +336,7 @@ def unify(term, pattern, unifying = True ):
             else: #Else we continue evaluating the different terms in the head-tail pattern
                 (HEAD_TAIL, patternH_head, patternH_tail) = pattern
                 (HEAD_TAIL, patternL_head, patternL_tail) = term
-                
+
                 unifier = []
                 for i in range(lengthH):
                     unifier += unify(patternL_head,patternH_head,unifying)
@@ -345,7 +345,7 @@ def unify(term, pattern, unifying = True ):
                         (RAW_HEAD_TAIL, patternL_head, patternL_tail) = patternL_tail
                     except:
                         break
-                    
+
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 return unifier
 
@@ -373,7 +373,7 @@ def unify(term, pattern, unifying = True ):
 
         # unify the args
         return unify(t_arg, p_arg, unifying)
- 
+
     elif pattern[0] == 'constraint':
         state.constraint_lvl += 1
         unifier = unify(term,pattern[1])
@@ -650,14 +650,18 @@ def handle_builtins(node):
                return ('boolean', False)
         elif opname == '__eq__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'string', 'boolean']:
+            if type in ['integer', 'real', 'list', 'tuple', 'boolean', 'none']:
                 return ('boolean', val_a[1] == val_b[1])
+            elif type == 'string':
+                return ('boolean', term2string(val_a) == term2string(val_b))
             else:
                 raise ValueError('unsupported type in ==')
         elif opname  == '__ne__':
             type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'string', 'boolean']:
+            if type in ['integer', 'real', 'list', 'tuple', 'boolean', 'none']:
                 return ('boolean', val_a[1] != val_b[1])
+            elif type == 'string':
+                return ('boolean', term2string(val_a) != term2string(val_b))
             else:
                 raise ValueError('unsupported type in =/=')
         elif opname == '__le__':
@@ -1451,12 +1455,12 @@ def deref_exp(node):
 
 #########################################################################
 def constraint_exp(node):
-    
+
     # Constraint-only pattern matches should not exist where only an
     # expression is expected. If we get here, we have come across this
-    # situation. 
+    # situation.
     # A constraint-only pattern match AST cannot be walked and therefor
-    # we raise an error. 
+    # we raise an error.
     raise ValueError(
         "constraint pattern: {} cannot be used as a constructor.".
         format(term2string(node)))
@@ -1510,7 +1514,7 @@ dispatch_dict = {
     'eval'          : eval_exp,
     # quoted code should be treated like a constant if not ignore_quote
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
-    # constraint patterns 
+    # constraint patterns
     'constraint'    : constraint_exp,
     'cmatch'        : constraint_exp,
     'typematch'     : constraint_exp,
