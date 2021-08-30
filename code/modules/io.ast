@@ -5,7 +5,7 @@
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
-function raw_print
+function __raw_print__
 ------------------------------------------------------------------
 -- dumps the AST to screen
 with item do escape
@@ -15,50 +15,6 @@ item_val = state.symbol_table.lookup_sym('item')
 pprint(item_val)
 "
 return none
-end
-
-------------------------------------------------------------------
-function println
-------------------------------------------------------------------
-with item do escape
-"
-from asteroid_support import term2string
-item_val = state.symbol_table.lookup_sym('item')
-print(term2string(item_val))
-"
-return none
-end
-
-------------------------------------------------------------------
-function print
-------------------------------------------------------------------
-with item do escape
-"
-from asteroid_support import term2string
-item_val = state.symbol_table.lookup_sym('item')
-print(term2string(item_val),end='')
-"
-return none
-end
-
-------------------------------------------------------------------
-function input
-------------------------------------------------------------------
--- mapping the Asteroid input function onto the
--- Python input function
-with prompt do return escape
-"
-global __retval__
-from asteroid_support import term2string
-prompt_val = state.symbol_table.lookup_sym('prompt')
-if prompt_val[0] == 'none':
-  __retval__ = ('string', input())
-elif prompt_val[0] != 'string':
-  raise ValueError('input function requires a string prompt')
-else:
-  # term2string is necessary here in order to process formatting specs
-  __retval__ = ('string', input(term2string(prompt_val)))
-"
 end
 
 ------------------------------------------------------------------
@@ -259,7 +215,14 @@ function write
 -- Write to a given file
 ------------------------------------------------------------------
 with what:%string do
-    __STDOUT__@ write(what).
+
+__STDOUT__@ write(what).
+
+escape "
+import sys
+sys.stdout.flush()
+"
+
 orwith(file:%FILE, what:%string) do
     file @write(what).
 end
@@ -275,3 +238,30 @@ orwith(file:%FILE, what:%string) do
     file @write(what + "\n").
 end
 ------------------------------------------------------------------
+
+-- Basic console I/O functions
+
+load system "type".
+------------------------------------------------------------------
+function println
+------------------------------------------------------------------
+with item do
+    writeln(tostring item).
+end
+
+------------------------------------------------------------------
+function print
+------------------------------------------------------------------
+with item do
+    write(tostring item).
+end
+
+------------------------------------------------------------------
+function input
+------------------------------------------------------------------
+with none do
+    return readln().
+orwith prompt do
+    write (tostring prompt).
+    return readln().
+end
