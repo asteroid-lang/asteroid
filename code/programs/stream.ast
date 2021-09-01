@@ -1,12 +1,10 @@
 load system "io".
-load system "util".
 load system "stream".
 
 let s = Stream([1,2,3,4]).
 
 while not s @eof() do
   println(s @get()).
-  s @next().
 end
 s @rewind().
 
@@ -14,7 +12,6 @@ s @map(lambda with x do return 2*x).
 
 while not s @eof() do
   println(s @get()).
-  s @next().
 end
 s @rewind().
 

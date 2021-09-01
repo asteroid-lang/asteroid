@@ -20,7 +20,7 @@ function expression
   with lexer:%Lexer do
     let val = mulexp(lexer).
     loop do
-      let token = lexer @get().
+      let token = lexer @peek().
       if not token do
         break.
       elif token @type == "add" do
@@ -39,11 +39,11 @@ function expression
 function mulexp
   with lexer:%Lexer do
     let val = rootexp(lexer).
-    if not lexer @get() do
+    if not lexer @peek() do
       return val.
     end
     loop do
-      let token = lexer @get().
+      let token = lexer @peek().
       if not token do
         break.
       elif token @type == "mul" do
@@ -62,7 +62,7 @@ function mulexp
 function rootexp
   with lexer:%Lexer do
     try
-      let Token(type,val) = lexer @get().
+      let Token(type,val) = lexer @peek().
     catch _ do
       return none.
     end

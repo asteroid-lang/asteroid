@@ -4,61 +4,59 @@
 -- how regular expression can be used during pattern matching.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load "io".
-load "util".
-load "stream".
+load system "type".
+load system "stream".
 
 structure Token with
   data type.
   data value.
   end
 
-function make_number_token
+function get_number
   with input_stream:%Stream do
-    let number = input_stream @get().
+    let number = "".
     while input_stream @peek() is "[0-9]" do
-      input_stream @next().
       let number = number + input_stream @get().
     end
-    return Token("number",tointeger(number)).
+    return tointeger(number).
   end
 
 function tokenize
   with input:%string do
     let input_stream = Stream(input @explode()).
-    let output_stream = Stream().
+    let output_stream = Stream([]).
     while not input_stream @eof() do
-      let c = input_stream @get().
+      let c = input_stream @peek().
       if c is "[0-9]" do
-        let token = make_number_token(input_stream).
-        input_stream @next().
+        let n = get_number(input_stream).
+        let token = Token("number",n).
         output_stream @append(token).
       elif c is "\+" do
+        input_stream @get().
         let token = Token("add","+").
-        input_stream @next().
         output_stream @append(token).
       elif c is "-" do
+        input_stream @get().
         let token = Token("sub","-").
-        input_stream @next().
         output_stream @append(token).
       elif c is "\*" do
+        input_stream @get().
         let token = Token("mul","*").
-        input_stream @next().
         output_stream @append(token).
       elif c is "/" do
+        input_stream @get().
         let token = Token("div","/").
-        input_stream @next().
         output_stream @append(token).
       elif c is "\(" do
+        input_stream @get().
         let token = Token("lparen","(").
-        input_stream @next().
         output_stream @append(token).
       elif c is "\)" do
+        input_stream @get().
         let token = Token("rparen",")").
-        input_stream @next().
         output_stream @append(token).
       elif c is "[\n\t ]" do
-        input_stream @next().
+        input_stream @get(). -- get and ignore
       else do
         throw Error("unknown symbol: " + c).
       end
@@ -66,5 +64,8 @@ function tokenize
     return output_stream.
   end
 
---let output_stream = tokenize("(101+1)*2").
--- println output_stream @__string__().
+-- test harness for tokenizer
+-- load system "io".
+-- let output_stream = tokenize("(101+1)*2").
+-- let output_stream = tokenize("101").
+-- println (output_stream @__string__()).

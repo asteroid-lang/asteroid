@@ -1,7 +1,9 @@
 ------------------------------------------------------------------
 -- stream.ast
 --
--- this module implements the Stream structure
+-- this module implements a Stream structure that allows the
+-- user to turn any list into a stream with supporting operations
+-- like 'peek', 'get', and 'eof'.
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
@@ -41,18 +43,15 @@ function peek
     end
   end
 
-function next
+function get
   with none do
     if this @eof() do
       return none.
     else do
+      let v = this @stream @(this @curr_ix).
       let this @curr_ix = this @curr_ix + 1.
+      return v.
     end
-  end
-
-function get
-  with none do
-    return this @peek().
   end
 
 function rewind
@@ -61,15 +60,15 @@ function rewind
   end
 
 function map
-  with f do
-    for i in 0 to this @stream @length()-1 do
+  with f:%function do
+    for i in range(this @stream @length()) do
       let this @stream @i = f(this @stream @i).
     end
   end
 
 function append
   with item do
-    this @stream @append(item).
+    this @stream @append item.
   end
 
 function __string__
