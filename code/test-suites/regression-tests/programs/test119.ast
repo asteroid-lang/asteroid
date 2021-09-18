@@ -1,0 +1,26 @@
+load system "io".
+
+let COORDINATE = pattern with (x,y).
+let COORDINATE_LIST = pattern with coordinates:%list.
+let POINTS = pattern with points:%integer.
+let COORDINATES = pattern with ( *COORDINATE_LIST , *POINTS ).
+let POINT_ONE =   pattern with p1:(x1,y1).
+let POINT_TWO =   pattern with p2:(x2,y2).
+let POINT_THREE = pattern with p3:(x3,y3).
+let TWO_POINTS =   pattern with ( *POINT_ONE , *POINT_TWO ).
+let THREE_POINTS = pattern with ( *POINT_ONE , *POINT_TWO , *POINT_THREE ). 
+
+function foo
+    with x:%pattern do
+        println("is a pattern").
+    orwith _ do
+        println("not a pattern").
+        end
+
+-- Should match as a pattern
+foo(THREE_POINTS).
+
+-- Should not match as a pattern
+foo("Asteroid").
+foo(123).
+foo((1,2,3)).

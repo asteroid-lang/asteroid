@@ -199,6 +199,14 @@ def unify(term, pattern, unifying = True ):
                     "expected typematch {} got a term of type {}"
                     .format(typematch, term[0]))
 
+        elif typematch == 'pattern':
+            if term[0] == 'quote':
+                return []
+            else:
+                raise PatternMatchFailed(
+                                    "expected typematch {} got a term of type {}"
+                                    .format(typematch, term[0]))
+
         elif term[0] == 'object':
             (OBJECT,
                 (STRUCT_ID, (ID, struct_id)),
