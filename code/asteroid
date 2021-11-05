@@ -13,17 +13,17 @@ from asteroid_version import VERSION
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))
-    print("usage: asteroid [-s][-t][-v][-w][-p][-l] <input file>")
+    print("usage: asteroid [-<switch>] <input file>")
     print("")
     print("command line flags:")
-    print(" -s    symbol table dump flag")
-    print(" -t    AST dump flag")
-    print(" -v    version flag")
-    print(" -w    disable tree walk flag")
-    print(" -z    generate pstats flag")
-    print(" -p    disable prologue flag")
-    print(" -h    display help flag")
-    print(" -r    redundant pattern dectector")
+    print(" -s    enable symbol table dump")
+    print(" -t    AST dump")
+    print(" -v    version")
+    print(" -w    disable tree walk")
+    print(" -z    generate pstats")
+    print(" -p    disable prologue")
+    print(" -h    display help")
+    print(" -r    disable redundant pattern detector")
     print(" -e    show full exceptions")
 
 
