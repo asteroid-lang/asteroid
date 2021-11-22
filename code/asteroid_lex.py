@@ -57,41 +57,41 @@ keywords = {
 # this table defines tokens whose value is defined by a
 # regular expression.
 token_specs = [
-#   value:                          type:
-    (r'([0-9]*[.])?[0-9]+',         'NUMBER'),
-    (r'"([^"]|\\"|\\)*"',           'STRING'),
-    (r'(--.*)|(\#.*)',              'COMMENT'),
-    (r'[a-zA-Z_][a-zA-Z_0-9]*',     'ID'),
-    (r'\n',                         'NEWLINE'),
-    (r'[ \t]+',                     'WHITESPACE'),
-    (r'\%[a-zA-Z_][a-zA-Z_0-9]*',   'TYPEMATCH'),
-    (r'\+',                         'PLUS'),
-    (r'-',                          'MINUS'),
-    (r'\*',                         'TIMES'),
-    (r'/',                          'DIVIDE'),
-    (r'==',                         'EQ'),
-    (r'=/=',                        'NE'),
-    (r'<=',                         'LE'),
-    (r'<',                          'LT'),
-    (r'>=',                         'GE'),
-    (r'>',                          'GT'),
-    (r'@',                          'AT'),
-    (r'\%\[',                       'LCONSTRAINT'),
-    (r'\]\%',                       'RCONSTRAINT'),
-    (r'\(',                         'LPAREN'),
-    (r'\)',                         'RPAREN'),
-    (r'\[',                         'LBRACKET'),
-    (r'\]',                         'RBRACKET'),
-    (r':',                          'COLON'),
-    (r'\|',                         'BAR'),
-    (r'\.',                         'DOT'),
-    (r',',                          'COMMA'),
-    (r'=',                          'ASSIGN'),
-    (r'\'',                         'QUOTE'),
+#   value:                                  type:
+    (r'([0-9]*[.])?[0-9]+(E\-?[0-9]+)?',    'NUMBER'),
+    (r'"([^"]|\\"|\\)*"',                   'STRING'),
+    (r'(--.*)|(\#.*)',                      'COMMENT'),
+    (r'[a-zA-Z_][a-zA-Z_0-9]*',             'ID'),
+    (r'\n',                                 'NEWLINE'),
+    (r'[ \t]+',                             'WHITESPACE'),
+    (r'\%[a-zA-Z_][a-zA-Z_0-9]*',           'TYPEMATCH'),
+    (r'\+',                                 'PLUS'),
+    (r'-',                                  'MINUS'),
+    (r'\*',                                 'TIMES'),
+    (r'/',                                  'DIVIDE'),
+    (r'==',                                 'EQ'),
+    (r'=/=',                                'NE'),
+    (r'<=',                                 'LE'),
+    (r'<',                                  'LT'),
+    (r'>=',                                 'GE'),
+    (r'>',                                  'GT'),
+    (r'@',                                  'AT'),
+    (r'\%\[',                               'LCONSTRAINT'),
+    (r'\]\%',                               'RCONSTRAINT'),
+    (r'\(',                                 'LPAREN'),
+    (r'\)',                                 'RPAREN'),
+    (r'\[',                                 'LBRACKET'),
+    (r'\]',                                 'RBRACKET'),
+    (r':',                                  'COLON'),
+    (r'\|',                                 'BAR'),
+    (r'\.',                                 'DOT'),
+    (r',',                                  'COMMA'),
+    (r'=',                                  'ASSIGN'),
+    (r'\'',                                 'QUOTE'),
     # this is the catch-all pattern, it has to be
     # here do that we can report illegal characters
     # in the input.
-    (r'.',                          'MISMATCH'),
+    (r'.',                                  'MISMATCH'),
 ]
 
 # this table specifies token types that are used in the tokenizer
@@ -133,7 +133,10 @@ def tokenize(code):
         value = mo.group()
         # some special processing of tokens
         if type == 'NUMBER':
-            if '.' in value:
+            if 'E' in value:
+                type = 'REAL'
+                value = float(value.replace('E', 'e'))
+            elif '.' in value:
                 type = 'REAL'
                 value = float(value)
             else:
