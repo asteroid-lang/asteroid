@@ -113,7 +113,7 @@ class Parser:
     #
     # stmt
     #    : '.' // NOOP
-    #    | LOAD STRING '.'?
+    #    | LOAD SYSTEM? (STRING | ID) '.'?
     #    | GLOBAL id_list '.'?
     #    | NONLOCAL id_list '.'?
     #    | ASSERT exp '.'?
@@ -144,7 +144,12 @@ class Parser:
             # using a nested parser object
             self.lexer.match('LOAD')
             sys_flag = bool(self.lexer.match_optional('SYSTEM'))
-            str_tok = self.lexer.match('STRING')
+            # allow module names without quotes
+            if self.lexer.peek().type in ['STRING', 'ID']:
+                str_tok = self.lexer.match(self.lexer.peek().type)
+            else:
+                raise SyntaxError("invalid module name '{}'"
+                                  .format(self.lexer.peek().value))
             self.lexer.match_optional('DOT')
 
             raw_pp = PurePath(str_tok.value)
