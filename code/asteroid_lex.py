@@ -133,10 +133,7 @@ def tokenize(code):
         value = mo.group()
         # some special processing of tokens
         if type == 'NUMBER':
-            if 'E' in value:
-                type = 'REAL'
-                value = float(value.replace('E', 'e'))
-            elif '.' in value:
+            if '.' in value or 'E' in value:
                 type = 'REAL'
                 value = float(value)
             else:
