@@ -10,7 +10,7 @@ pull request please read below.
 If you have a bugfix or feature implementation that you would like to submit via a pull request please do the following:
 * Send us an [email](mailto:lutzhamel@uri.edu) stating your intention and describing your bugfix or feature.
 * Add test cases to the testsuite that validate your bugfix or feature.
-* Make sure your run the **full** testsuite successfully, including the test cases for your bugfix or feature, before submitting your pull request.
+* Make sure you run the **full** testsuite successfully, including the test cases for your bugfix or feature, before submitting your pull request.
 * Submit your pull request once you hear back from us.
 
 ## Becoming a Collaborator
