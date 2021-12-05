@@ -1,6 +1,6 @@
 # Installation
 
-Download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid), or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then install with [pip](https://pip.pypa.io/en/stable/).
+Download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid), or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases), and then install with [pip](https://pip.pypa.io/en/stable/).
 
 For example, if your working directory is at the top of the repository,
 ```
