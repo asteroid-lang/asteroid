@@ -1,8 +1,15 @@
 # Installation
 
-Installation on Unix-like systems is nothing more than to either download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid) or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then add the `code` folder of the repository/release to your `PATH` environment variable. Be sure that you have Python 3.x installed. Make sure that the file `asteroid` in the `code` folder has execution privileges on your machine.
+Download or clone the [Asteroid github repository](https://github.com/lutzhamel/asteroid), or download one of the [prepackaged releases](https://github.com/lutzhamel/asteroid/releases) and then install with [pip](https://pip.pypa.io/en/stable/).
 
-On Windows 10 you will need to set the environment variable `ASTEROID_ROOT` to point to the folder where you cloned the repo or unzipped the downloaded file. Then you will need to add the following to the path environment variable: `%ASTEROID_ROOT%\code`. That's it, now you can use the `asteroid.bat` file in the `code` folder to start the asteroid interpreter.
+For example, if your working directory is at the top of the repository,
+```
+$ python -m pip install .
+```
+
+The same command should work on Unix-like and Windows systems, though you may have to run it with `python3` or some other variation.
+
+In addition, there is a cloud-based Linux virtual machine that is completely set up with an Asteroid environment and can be accessed at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md).
 
 # Running the Asteroid Interpreter
 
