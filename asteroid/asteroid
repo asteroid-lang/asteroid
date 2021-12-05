@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+###########################################################################################
+# Run Asteroid from the current directory, not the installed package
+#
+# (c) University of Rhode Island
+###########################################################################################
+
+from __init__ import main
+
+if __name__ == '__main__':
+    main()

@@ -101,7 +101,7 @@ function unzip
 with (list:%list) do return escape
 "
 global __retval__
-from asteroid_support import assert_match
+from asteroid.asteroid_support import assert_match
 
 list_val = state.symbol_table.lookup_sym('list')
 

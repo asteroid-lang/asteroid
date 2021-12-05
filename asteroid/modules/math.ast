@@ -101,7 +101,7 @@ function pow
 with (b,p:%integer) do return escape
 "
 global __retval__
-from asteroid_state import state
+from asteroid.asteroid_state import state
 
 val_b = state.symbol_table.lookup_sym('b')
 val_p = state.symbol_table.lookup_sym('p')
@@ -119,7 +119,7 @@ function sqrt
 with a do return escape
 "
 global __retval__
-from asteroid_state import state
+from asteroid.asteroid_state import state
 from math import sqrt
 
 val_a = state.symbol_table.lookup_sym('a')
@@ -186,7 +186,7 @@ function gcd
 with (a:%integer,b:%integer) do return escape
 "
 global __retval__
-from asteroid_state import state
+from asteroid.asteroid_state import state
 from math import gcd
 
 val_a = state.symbol_table.lookup_sym('a')
@@ -233,8 +233,8 @@ function mod
 with (v,d) do return escape
 "
 global __retval__
-from asteroid_state import state
-from asteroid_support import promote
+from asteroid.asteroid_state import state
+from asteroid.asteroid_support import promote
 
 val_v = state.symbol_table.lookup_sym('v')
 val_d = state.symbol_table.lookup_sym('d')

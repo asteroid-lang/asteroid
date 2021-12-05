@@ -5,7 +5,8 @@
 ###########################################################################################
 
 import re
-from asteroid_state import state
+
+from asteroid.asteroid_state import state
 
 # table that specifies the token value and type for keywords
 keywords = {
