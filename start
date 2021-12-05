@@ -1,8 +1,8 @@
 # bash script to init environment on replit.com
+python3 -m pip install .
 clear
 echo "Welcome to Asteroid!"
 echo " "
-export PATH=$PWD/code:$PATH
 cd code/programs
 echo "Available Example Programs:"
 ls *.ast
