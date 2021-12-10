@@ -8,9 +8,9 @@ import os
 import sys
 from pathlib import Path, PurePath
 
-from asteroid.asteroid_globals import asteroid_file_suffix
-from asteroid.asteroid_lex import Lexer
-from asteroid.asteroid_state import state
+from asteroid.globals import asteroid_file_suffix
+from asteroid.lex import Lexer
+from asteroid.state import state
 
 ###########################################################################################
 def dbg_print(string):

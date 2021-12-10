@@ -39,7 +39,7 @@ function len
 with item do return escape
 "
 global __retval__
-from asteroid.asteroid_support import data_only
+from asteroid.support import data_only
 
 item_val = state.symbol_table.lookup_sym('item')
 
@@ -99,7 +99,7 @@ function __do_not_use_inherit__
 with (target,source) do escape
 -- target inherits the whole structure of source
 "
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 from copy import deepcopy
 
 target_val = state.symbol_table.lookup_sym('target')
@@ -142,7 +142,7 @@ state.symbol_table.pop_scope()
 orwith (target,source,slot:%string) do escape
 -- target inherits slot from source
 "
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 from copy import deepcopy
 
 target_val = state.symbol_table.lookup_sym('target')
@@ -193,7 +193,7 @@ t_struct_memory.append(deepcopy(s_struct_memory[ix]))
 orwith (target,source,slots:%list) do escape
 -- target inherits slots from source
 "
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 from copy import deepcopy
 
 target_val = state.symbol_table.lookup_sym('target')

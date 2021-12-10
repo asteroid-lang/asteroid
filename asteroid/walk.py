@@ -7,9 +7,9 @@
 from copy import deepcopy
 from re import match as re_match
 
-from asteroid.asteroid_globals import *
-from asteroid.asteroid_support import *
-from asteroid.asteroid_state import state
+from asteroid.globals import *
+from asteroid.support import *
+from asteroid.state import state
 
 #########################################################################
 # this dictionary maps list member function names to function

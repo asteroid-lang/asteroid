@@ -6,7 +6,7 @@
 
 import re
 
-from asteroid.asteroid_state import state
+from asteroid.state import state
 
 ###########################################################################################
 def dump_AST(node):

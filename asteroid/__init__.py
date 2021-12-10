@@ -8,8 +8,8 @@
 import cProfile
 import sys
 import os
-from asteroid.asteroid_interp import interp
-from asteroid.asteroid_version import VERSION
+from asteroid.interp import interp
+from asteroid.version import VERSION
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))

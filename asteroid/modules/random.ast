@@ -28,7 +28,7 @@ function randint -- random interval
 with (lo:%integer,hi:%integer) do return escape
 "
 import random
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 global __retval__
 
 lo_val = state.symbol_table.lookup_sym('lo')
@@ -39,7 +39,7 @@ __retval__ = ('integer', random.randint(lo_val[1], hi_val[1]))
 orwith (lo:%real,hi:%real) do return escape
 "
 import random
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 global __retval__
 
 lo_val = state.symbol_table.lookup_sym('lo')
@@ -58,7 +58,7 @@ function seed
 with (sd:%integer) do escape
 "
 import random
-from asteroid.asteroid_support import assert_match
+from asteroid.support import assert_match
 
 sd_val = state.symbol_table.lookup_sym('sd')
 random.seed(sd_val[1])

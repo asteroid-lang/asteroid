@@ -10,7 +10,7 @@ import os
 # uncomment if running on SageMaker
 #sys.path[0] = '/home/ec2-user/SageMaker/asteroid/code'
 sys.path[0] = '/Users/lutz/Dropbox/URI/Projects/Asteroid/asteroid-git/code'
-from asteroid.asteroid_interp import interp
+from asteroid.interp import interp
 
 programs = os.listdir("programs")
 programs.sort()

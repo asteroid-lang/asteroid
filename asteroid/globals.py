@@ -4,7 +4,7 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-from asteroid.asteroid_support import term2string #Used by redundantPatternFound exception
+from asteroid.support import term2string #Used by redundantPatternFound exception
 
 ###########################################################################################
 # this is used to compute the filename extensions of the modules

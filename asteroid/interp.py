@@ -7,12 +7,12 @@
 import os
 import sys
 
-from asteroid.asteroid_globals import *
-from asteroid.asteroid_support import *
-from asteroid.asteroid_frontend import Parser
-from asteroid.asteroid_state import state
-from asteroid.asteroid_walk import walk
-from asteroid.asteroid_version import VERSION
+from asteroid.globals import *
+from asteroid.support import *
+from asteroid.frontend import Parser
+from asteroid.state import state
+from asteroid.walk import walk
+from asteroid.version import VERSION
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
