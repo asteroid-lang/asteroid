@@ -16,7 +16,7 @@ os.chdir(file_path)
 # Set the path to two levels above (the code directory)
 sys.path[0] = "../../"
 
-from asteroid_interp import interp
+from interp import interp
 
 programs = os.listdir("programs")
 programs.sort()
