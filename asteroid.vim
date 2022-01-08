@@ -3,6 +3,7 @@
 " Maintainer: Theo Henson <theodorehenson at protonmail dot com>
 " Last Change: 2021 Dec 10
 
+" Copy this file to ~/.vim/syntax/asteroid.vim
 " For filetype detection create ~/.vim/ftdetect/asteroid.vim containing:
 " au BufRead,BufNewFile *.ast set filetype=asteroid
 
