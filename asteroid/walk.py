@@ -4,11 +4,12 @@
 # (c) University of Rhode Island
 #########################################################################
 
-from asteroid_globals import *
-from asteroid_support import *
 from copy import deepcopy
-from asteroid_state import state
 from re import match as re_match
+
+from asteroid.globals import *
+from asteroid.support import *
+from asteroid.state import state
 
 #########################################################################
 # this dictionary maps list member function names to function

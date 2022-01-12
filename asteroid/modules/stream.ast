@@ -75,7 +75,7 @@ function __string__
 with none do return
 escape
 "
-from asteroid_state import state
+from asteroid.state import state
 global __retval__
 
 this_val = state.symbol_table.lookup_sym('this')

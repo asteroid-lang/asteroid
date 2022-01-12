@@ -120,7 +120,7 @@ orwith item do return escape
 -- default clause
 "
 global __retval__
-from asteroid_support import term2string
+from asteroid.support import term2string
 
 item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('string', term2string(item_val))

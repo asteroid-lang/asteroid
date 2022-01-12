@@ -31,7 +31,7 @@ function __init__
 ------------------------------------------------------------------
 with (name:%string, mode:%string) do escape
 "
-from asteroid_state import state
+from asteroid.state import state
 global __retval__
 
 # Get variables
@@ -54,7 +54,7 @@ __retval__ = this_val
 orwith (std:%string) do escape
 "
 import sys
-from asteroid_state import state
+from asteroid.state import state
 
 this_val = state.symbol_table.lookup_sym('this')
 std_val = state.symbol_table.lookup_sym('std')[1]
@@ -85,7 +85,7 @@ function close
 ------------------------------------------------------------------
 with none do escape
 "
-from asteroid_state import state
+from asteroid.state import state
 this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
@@ -104,7 +104,7 @@ function read
 with none do return escape
 "
 global __retval__
-from asteroid_state import state
+from asteroid.state import state
 this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
@@ -123,7 +123,7 @@ function readln
 with none do return escape
 "
 global __retval__
-from asteroid_state import state
+from asteroid.state import state
 this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
@@ -141,7 +141,7 @@ function write
 ------------------------------------------------------------------
 with (what:%string) do escape
 "
-from asteroid_state import state
+from asteroid.state import state
 this_val = state.symbol_table.lookup_sym('this')
 what_val = state.symbol_table.lookup_sym('what')
 

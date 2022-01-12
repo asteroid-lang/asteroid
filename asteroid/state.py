@@ -4,7 +4,7 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
-from asteroid_symtab import SymTab
+from asteroid.symtab import SymTab
 
 class State:
     def __init__(self):

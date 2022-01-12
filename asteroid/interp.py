@@ -4,14 +4,15 @@
 # (c) Lutz Hamel, University of Rhode Island
 ###########################################################################################
 
+import os
 import sys
-from asteroid_globals import *
-from asteroid_support import *
-from pathlib import Path
-from asteroid_frontend import Parser
-from asteroid_state import state
-from asteroid_walk import walk
-from asteroid_version import VERSION
+
+from asteroid.globals import *
+from asteroid.support import *
+from asteroid.frontend import Parser
+from asteroid.state import state
+from asteroid.walk import walk
+from asteroid.version import VERSION
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
@@ -38,17 +39,16 @@ def interp(input_stream,
 
         # read in prologue
         if prologue:
-            # load the prologue file
-            prologue_file_base = '/modules/' + prologue_name
 
-            if Path(sys.path[0] + prologue_file_base).is_file():
-                prologue_file = sys.path[0] + prologue_file_base
-                #lhh
-                #print("path[0]:"+prologue_file)
-            elif Path(sys.path[1] + prologue_file_base).is_file():
-                prologue_file = sys.path[1] + prologue_file_base
-                #lhh
-                #print("path[1]:"+prologue_file)
+            prologue_file = ''
+            prologue_file_base = os.path.join('modules', prologue_name)
+            module_path = os.path.join(os.path.split(os.path.abspath(__file__))[0], prologue_file_base)
+            working_path = os.path.join(os.getcwd(), prologue_file_base)
+
+            if os.path.isfile(module_path):
+                prologue_file = module_path
+            elif os.path.isfile(working_path):
+                prologue_file = working_path
             else:
                 raise ValueError("Asteroid prologue '{}' not found"
                                 .format(prologue_file_base))
