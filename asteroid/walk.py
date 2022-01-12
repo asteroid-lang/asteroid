@@ -718,6 +718,13 @@ def handle_builtins(node):
                 raise ValueError(
                     'unsupported type {} in unary minus'
                     .format(arg_val[0]))
+        elif opname == '__uplus__':
+            if arg_val[0] in ['integer', 'real']:
+                return (arg_val[0], + arg_val[1])
+            else:
+                raise ValueError(
+                    'unsupported type {} in unary plus'
+                    .format(arg_val[0]))
         else:
             raise ValueError('unknown builtin unary opname {}'.format(opname))
 

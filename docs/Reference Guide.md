@@ -1,3 +1,4 @@
+
 <!-- Note: functions in Asteroid can have different kinds of input
      constellations which is indicated using the `with` and `orwith` keywords.
      When writing documentation you will need to document all the different input
@@ -137,6 +138,7 @@ primary
   | '*' ID         // "dereference" a variable during pattern matching
   | NOT call_or_index
   | MINUS call_or_index
+  | PLUS call_or_index
   | ESCAPE STRING
   | EVAL primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr

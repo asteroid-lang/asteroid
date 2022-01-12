@@ -31,6 +31,7 @@ binary_operators = {
 
 unary_operators = {
     '__uminus__',
+    '__uplus__',
     '__not__',
     }
 
