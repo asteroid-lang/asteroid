@@ -24,6 +24,7 @@ ops = {
     'TIMES',
     'NOT',
     'MINUS',
+    'PLUS'
     }
 
 primary_lookahead = {
@@ -760,6 +761,7 @@ class Parser:
     #    | '*' ID         // "dereference" a variable during pattern matching
     #    | NOT call_or_index
     #    | MINUS call_or_index
+    #    | PLUS call_or_index
     #    | ESCAPE STRING
     #    | EVAL exp
     #    | '(' tuple_stuff ')' // tuple/parenthesized expr
@@ -824,6 +826,15 @@ class Parser:
                 return (v[0], - v[1])
             else:
                 return ('apply', ('id', '__uminus__'), v)
+
+        elif tt == 'PLUS':
+            self.lexer.match('PLUS')
+            v = self.call_or_index()
+            # if v is a real or integer constant we apply __uplus__
+            if v[0] in ['integer', 'real']:
+                return (v[0], + v[1])
+            else:
+                return ('apply', ('id', '__uplus__'), v)
 
         elif tt == 'ESCAPE':
             self.lexer.match('ESCAPE')

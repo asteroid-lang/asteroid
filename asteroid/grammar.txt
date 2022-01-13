@@ -122,6 +122,7 @@ primary
   | '*' ID         // "dereference" a variable during pattern matching
   | NOT call_or_index
   | MINUS call_or_index
+  | PLUS call_or_index
   | ESCAPE STRING
   | EVAL primary
   | '(' tuple_stuff ')' // tuple/parenthesized expr
