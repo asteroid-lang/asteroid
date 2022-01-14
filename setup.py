@@ -14,11 +14,11 @@ setup(
     url="https://github.com/lutzhamel/asteroid",
     packages=find_packages(),
     package_data={"asteroid": ["modules/*"]},
-    install_requires={
+    install_requires=[
         "pandas",
         "numpy",
         "matplotlib"
-    },
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
