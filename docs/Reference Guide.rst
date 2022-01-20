@@ -406,8 +406,7 @@ The `stream <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 to construct a stream call the constructor on a list, e.g., `Stream([1,2,3])`.  The following stream
 interface functions are available,
 
-* Function `eof` returns `true` if the stream
-does not contain any further elements for processing. Otherwise it returns `false`.
+* Function `eof` returns `true` if the stream does not contain any further elements for processing. Otherwise it returns `false`.
 * Function `peek` returns the next element available on the stream otherwise it returns `none`.
 * Function `next` returns the next element available on the stream and moves the implicit stream pointer forward.  If the stream is at the `eof` then it returns `none`.
 * Function `get` is synonymous to `peek`.
