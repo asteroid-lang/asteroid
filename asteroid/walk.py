@@ -1544,7 +1544,8 @@ dispatch_dict = {
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
     # constraint patterns
     'constraint'    : constraint_exp,
-    'cmatch'        : constraint_exp,
+    # the following is now handled with an if-exp
+    #'cmatch'        : constraint_exp,
     'typematch'     : constraint_exp,
     # type tag used in conjunction with escaped code in order to store
     # foreign objects in Asteroid data structures
