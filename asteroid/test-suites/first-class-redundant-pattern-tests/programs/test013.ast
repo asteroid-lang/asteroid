@@ -14,7 +14,7 @@ let ptrn1 = pattern with [ x, y ].
 function testFunction
     with *ptrn1 do  -- *** will SUBSUME [ 1, 2 ] ***
         return 1.
-    orwith [ 1, 2 ] do 
+    with [ 1, 2 ] do 
         return 2.
     end.
 

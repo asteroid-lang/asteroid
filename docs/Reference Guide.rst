@@ -518,5 +518,5 @@ The `vector <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/
 * Function `vop`  allows the developer to vectorize an function. It can be called with three different inputs:
 
   #. `(f:%function,a:%list,b:%list)`
-  #. `(f:%function,a:%list,b %if isscalar(b))`
-  #. `(f:%function,a %if isscalar(a),b:%list)`
+  #. `(f:%function,a:%list,b if isscalar(b))`
+  #. `(f:%function,a if isscalar(a),b:%list)`

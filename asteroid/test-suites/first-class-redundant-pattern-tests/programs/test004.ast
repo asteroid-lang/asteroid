@@ -16,11 +16,11 @@ let ptrn3 = pattern with ( 1, 2, ( var, "test_string" ) ).
 function testFunction
     with *ptrn1 do 
         return 1.
-    orwith *ptrn2 do --will SUBSUME ( 1, 2, ( var,"test_string"))
+    with *ptrn2 do --will SUBSUME ( 1, 2, ( var,"test_string"))
         return 2.
-    orwith ( x, y, z) do
+    with ( x, y, z) do
         return 3.
-    orwith *ptrn3 do
+    with *ptrn3 do
         return 3
     end.
     

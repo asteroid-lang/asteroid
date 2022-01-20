@@ -51,7 +51,7 @@ memory[0] = ('foreign', f)
 __retval__ = this_val
 "
 
-orwith (std:%string) do escape
+with (std:%string) do escape
 "
 import sys
 from asteroid.state import state
@@ -195,7 +195,7 @@ function read
 with(file:%FILE) do
     return file @read().
 
-orwith none do
+with none do
     return __STDIN__@ read().
 end
 
@@ -213,7 +213,7 @@ function readln
 with(file:%FILE) do
     return file @readln().
 
-orwith none do
+with none do
     return __STDIN__@ readln().
 end
 
@@ -230,7 +230,7 @@ import sys
 sys.stdout.flush()
 "
 
-orwith(file:%FILE, what:%string) do
+with(file:%FILE, what:%string) do
     file @write(what).
 end
 
@@ -241,7 +241,7 @@ function writeln
 with what:%string do
     __STDOUT__@ write(what + "\n").
 
-orwith(file:%FILE, what:%string) do
+with(file:%FILE, what:%string) do
     file @write(what + "\n").
 end
 ------------------------------------------------------------------
@@ -269,7 +269,7 @@ function input
 -- input drops the trailing newline char
 with none do
     return readln() @replace("\n","").
-orwith prompt do
+with prompt do
     write (tostring prompt).
     return readln() @replace("\n","").
 end

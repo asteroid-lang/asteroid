@@ -10,7 +10,7 @@ from pathlib import Path, PurePath
 
 from asteroid.globals import asteroid_file_suffix
 from asteroid.lex import Lexer
-from asteroid.state import state
+from asteroid.state import state, warning
 
 ###########################################################################################
 def dbg_print(string):
@@ -69,7 +69,7 @@ stmt_lookahead = {
     'THROW',
     'TRY',
     'WHILE',
-    'WITH',
+    #'WITH',
     } | primary_lookahead
 
 ###########################################################################################
@@ -175,10 +175,10 @@ class Parser:
             if not sys_flag:
                 search_list.append(str_tok.value)
                 search_list.append(str_tok.value + asteroid_file_suffix)
-            search_list.append(os.path.join(os.getcwd(), module_name))
-            search_list.append(os.path.join(os.getcwd(), module_name + asteroid_file_suffix))
-            search_list.append(os.path.join(os.getcwd(), 'modules', module_name))
-            search_list.append(os.path.join(os.getcwd(), 'modules', module_name + asteroid_file_suffix))
+                search_list.append(os.path.join(os.getcwd(), module_name))
+                search_list.append(os.path.join(os.getcwd(), module_name + asteroid_file_suffix))
+                search_list.append(os.path.join(os.getcwd(), 'modules', module_name))
+                search_list.append(os.path.join(os.getcwd(), 'modules', module_name + asteroid_file_suffix))
             search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name))
             search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name + asteroid_file_suffix))
 
@@ -497,8 +497,10 @@ class Parser:
         sl = self.stmt_list()
         body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
 
-        while self.lexer.peek().type == 'ORWITH':
-            self.lexer.match('ORWITH')
+        while self.lexer.peek().type in ['ORWITH','WITH']:
+            if self.lexer.peek().type == 'ORWITH':
+                warning("'orwith' has been deprecated, please replace with 'with'")
+            self.lexer.match(self.lexer.peek().type)
             p = self.pattern()
             self.lexer.match('DO')
             sl = self.stmt_list()
@@ -551,11 +553,14 @@ class Parser:
             return v
 
     ###########################################################################################
+    # conditional patterns are now supported via 'pattern if cond'
+    # no else part. Since this overlaps with conditional expressions
+    # we check for correct usage semantically.
+    #
     # conditional
     #    : quote_exp
     #        (
-    #           (CMATCH exp) | // CMATCH == '%'IF
-    #           (IF exp ELSE exp) # expression level if-else
+    #           (IF exp (ELSE exp)?)
     #        )?
     def conditional(self):
         dbg_print("parsing CONDITIONAL")
@@ -563,16 +568,21 @@ class Parser:
         v = self.compound()
 
         tt = self.lexer.peek().type
-        if tt == 'CMATCH':
-            self.lexer.match('CMATCH')
-            e = self.exp()
-            return ('cmatch', v, e)
+#        if tt == 'CMATCH':
+#            self.lexer.match('CMATCH')
+#            e = self.exp()
+#            return ('cmatch', v, e)
 
-        elif tt == 'IF':
+        if tt == 'IF':
             self.lexer.match('IF')
             v2 = self.exp()
-            self.lexer.match('ELSE')
-            v3 = self.exp()
+            if self.lexer.peek().type == 'ELSE':
+                self.lexer.match('ELSE')
+                v3 = self.exp()
+            else:
+                # this happens when the conditional is used in a
+                # conditional pattern
+                v3 = ('null',)
             return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
 
         else:

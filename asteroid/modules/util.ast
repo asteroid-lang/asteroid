@@ -20,7 +20,7 @@ with none do escape
 import sys
 sys.exit(1)
 "
-orwith msg:%string do escape
+with msg:%string do escape
 "
 import sys
 msg_val = state.symbol_table.lookup_sym('msg')
@@ -62,7 +62,7 @@ end
 function sleep
 ------------------------------------------------------------------
 -- program sleep for secs seconds
-with secs %if isscalar(secs) do escape
+with secs if isscalar(secs) do escape
 "
 import time
 secs_val = state.symbol_table.lookup_sym('secs')

@@ -17,7 +17,7 @@ os.chdir(file_path)
 # Set the path to the code directory
 sys.path[0] = "../"
 
-from asteroid_interp import interp
+from asteroid.interp import interp
 
 programs = glob.glob("*.ast")
 programs.sort()

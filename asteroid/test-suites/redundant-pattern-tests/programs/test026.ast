@@ -29,9 +29,9 @@ let people = [
 function testFunction
     with Person("George", 32, "M") do    -- *** will Subsume Person("George", 32, "M")
         return 1.
-    orwith Person("Sophie", 46, "F") do
+    with Person("Sophie", 46, "F") do
         return 2.
-    orwith Person("George", 32, "M") do  --duplicate structure/object
+    with Person("George", 32, "M") do  --duplicate structure/object
         return 3.
     end.
 

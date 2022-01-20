@@ -16,9 +16,9 @@ let ptrn3 = pattern with ( x, y, z).
 function testFunction
     with *ptrn1 do --will SUBSUME ( 1, y, z)
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2.
-    orwith *ptrn3 do
+    with *ptrn3 do
         return 3.
     end.
     

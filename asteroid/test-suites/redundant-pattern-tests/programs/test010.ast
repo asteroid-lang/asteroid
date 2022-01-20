@@ -12,9 +12,9 @@ load "util".
 function testFunction
     with true do       
         return 1. 
-    orwith false do -- *** will subsume false
+    with false do -- *** will subsume false
         return 2.    
-    orwith false do -- *** duplicate pattern
+    with false do -- *** duplicate pattern
         return 2.  
     end.
 

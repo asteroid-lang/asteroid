@@ -11,11 +11,11 @@ load "util".
 function testFunction
     with x:%tuple do                   -- Will render all following patterns redundant
         return 1.
-    orwith (x:%integer, y:%integer ) do
+    with (x:%integer, y:%integer ) do
         return 2.
-    orwith (n:%real, m:%real) do
+    with (n:%real, m:%real) do
         return 3.
-    orwith ( x, y, z) do
+    with ( x, y, z) do
         return 4.
     end.
     

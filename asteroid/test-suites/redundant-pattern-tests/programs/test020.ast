@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with person:[( fname, lname)| tail] do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
         return 1.
-    orwith person:( fname, lname1, lname2) do
+    with person:( fname, lname1, lname2) do
         return 2.
-    orwith person:[( fname1, lname1)|( fname2, lname2)| tail] do 
+    with person:[( fname1, lname1)|( fname2, lname2)| tail] do 
         return 3. 
-    orwith () do
+    with () do
         return 4.
     end.
 

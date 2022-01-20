@@ -83,7 +83,7 @@ val_x = state.symbol_table.lookup_sym('x')
 
 __retval__ = ('real', math.log(val_x[1]))
 "
-orwith (x,base) do return escape
+with (x,base) do return escape
 "
 global __retval__
 import math
@@ -214,7 +214,7 @@ val_b = state.symbol_table.lookup_sym('b')
 
 __retval__ = ('boolean', math.isclose(val_a[1], val_b[1]))
 "
-orwith (a,b,t) do return escape
+with (a,b,t) do return escape
 "
 global __retval__
 import math

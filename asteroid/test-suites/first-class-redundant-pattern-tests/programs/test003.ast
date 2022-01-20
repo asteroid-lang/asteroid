@@ -15,9 +15,9 @@ let ptrn2 = pattern with 2.
 function testFunction
     with *ptrn1 do --will SUBSUME 1 
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2.
-    orwith 1 do
+    with 1 do
         return 3.
     end.
     

@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with person1:( fname, lname) do  -- *** will SUBSUME location:( long, lat ) ***
         return 1.
-    orwith person2:( fname, lname1, lname2) do
+    with person2:( fname, lname1, lname2) do
         return 2.
-    orwith location:( long, lat ) do 
+    with location:( long, lat ) do 
         return 3. 
-    orwith () do
+    with () do
         return 4.
     end.
     

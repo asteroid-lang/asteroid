@@ -24,8 +24,8 @@ that recursively computes the factorial of a positive integer and uses first-cla
 in order to ensure that the domain of the function is not violated,
 ```
 -- define first-class patterns
-let POS_INT = pattern with (x:%integer) %if x > 0.
-let NEG_INT = pattern with (x:%integer) %if x < 0.
+let POS_INT = pattern with (x:%integer) if x > 0.
+let NEG_INT = pattern with (x:%integer) if x < 0.
 
 -- define our factorial function
 function fact
@@ -623,9 +623,9 @@ load system "io".
 function factorial
     with 0 do
         return 1
-    orwith (n:%integer) %if n > 0 do
+    orwith (n:%integer) if n > 0 do
         return n * factorial (n-1).
-    orwith (n:%integer) %if n < 0 do
+    orwith (n:%integer) if n < 0 do
         throw Error("factorial is not defined for "+n).
     end
 
@@ -827,7 +827,7 @@ buddy @add_trick "sit stay".
 buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     println (name+" knows how to fetch").
 end
 ```
@@ -839,13 +839,13 @@ because here we use structural, conditional, and regular expression pattern
 matching in order to only select the dogs that know how to do `fetch` from
 the list of dogs.  The pattern is,
 ```
-Dog(name,tricks) %if tostring(tricks) is ".*fetch.*"
+Dog(name,tricks) if tostring(tricks) is ".*fetch.*"
 ```
 The structural part of the pattern is `Dog(name,tricks)` which simply matches
 any dog instance on the list.  However, that match is only successful if
 the conditional part of the pattern holds,
 ```
-%if tostring(tricks) is ".*fetch.*"
+if tostring(tricks) is ".*fetch.*"
 ```
 This condition only succeeds if the `tricks` list viewed as a string matches
 the regular expression `".*fetch.*"`. That is, if the list contains the word `fetch`.
@@ -890,7 +890,7 @@ the first component of the pair is restricted to the primitive data types of
 Asteroid,
 ```
 function foo
-    with (x %if (x is %boolean) or (x is %integer) or (x is %string),y) do
+    with (x if (x is %boolean) or (x is %integer) or (x is %string),y) do
      println (x,y).
     end
 ```
@@ -901,7 +901,7 @@ difficult to read.
 We can express the same function with a first-class pattern,
 ```
 let TP = pattern
-    with q %if (q is %boolean) or
+    with q if (q is %boolean) or
                (q is %integer) or
                (q is %string).
 
@@ -924,18 +924,18 @@ spots where the patterns occurs. Consider the following program snippet,
 function fact
     with 0 do
         return 1
-    orwith (n:%integer) %if n > 0 do
+    orwith (n:%integer) if n > 0 do
         return n * fact (n-1).
-    orwith (n:%integer) %if n < 0 do
+    orwith (n:%integer) if n < 0 do
         throw Error("fact undefined for negative values").
     end
 
 function stepf
    with 0 do
         return 1
-    orwith (n:%integer) %if n > 0 do
+    orwith (n:%integer) if n > 0 do
         return 1.
-    orwith (n:%integer) %if n < 0 do
+    orwith (n:%integer) if n < 0 do
         return -1.
     end
 ```
@@ -943,8 +943,8 @@ In order to write these two functions we had to repeat the almost identical patt
 four times.  First-class patterns allow us to write the same two functions in a
 much more elegant way,
 ```
-let POS_INT = pattern with (x:%integer) %if x > 0.
-let NEG_INT = pattern with (x:%integer) %if x < 0.
+let POS_INT = pattern with (x:%integer) if x > 0.
+let NEG_INT = pattern with (x:%integer) if x < 0.
 
 function fact
     with 0 do

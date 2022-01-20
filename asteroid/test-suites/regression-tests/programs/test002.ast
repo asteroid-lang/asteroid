@@ -44,7 +44,7 @@ catch Exception("SystemError", s) do
   end.
 end.
 -----------------------------------------------------------------------
-let POS_INT = pattern with (p:%integer) %if p > 0.
+let POS_INT = pattern with (p:%integer) if p > 0.
 
 -- using the POS_INT pattern as a constraint not generating any unifiers
 function f with (x:%[*POS_INT]%,y:%[*POS_INT]%) do
@@ -60,7 +60,7 @@ assert (f(1,2) == 3).
 assert (g(1) == 2).
 -----------------------------------------------------------------------
 -- the POS_INT pattern is just a constraint, no unifiers are exported.
-let POS_INT = pattern with %[(p:%integer) %if p > 0]%.
+let POS_INT = pattern with %[(p:%integer) if p > 0]%.
 
 function f with (x:*POS_INT,y:*POS_INT) do
   return x+y.
@@ -78,10 +78,10 @@ let %[ x:%integer ]% = 1.
 let %[ ( one , %[ two ]% ) ]% = (1,2).
 -----------------------------------------------------------------------
 try
-  let v = 1 %if v == 2.
+  let v = 1 if v == 2.
   throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
-  if not isnone(s @index("constraint")) do
+  if not isnone(s @index("else clause")) do
   . -- pass
   else
     throw Error("FAIL: unexpected error "+s).
@@ -111,7 +111,7 @@ catch Exception("SystemError", s) do
 end.
 -----------------------------------------------------------------------
 try
-  let POS_INT = pattern with %[(number:%integer) %if number > 0]%.
+  let POS_INT = pattern with %[(number:%integer) if number > 0]%.
 
   function g with *POS_INT do
     return 2*number. -- error: no unifier for 'number'

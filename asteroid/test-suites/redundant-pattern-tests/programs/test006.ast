@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with "name1" do  
         return 1.
-    orwith "name2" do   -- *** will SUBSUME "name2" ***
+    with "name2" do   -- *** will SUBSUME "name2" ***
         return 2.
-    orwith "name2" do   -- duplicate pattern
+    with "name2" do   -- duplicate pattern
         return 2.
-    orwith "name4" do 
+    with "name4" do 
         return 2.
     end.
     

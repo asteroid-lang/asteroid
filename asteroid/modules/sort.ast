@@ -17,9 +17,9 @@
 function sort
     with (_,[]) do
         return [].
-    orwith (_,[a]) do
+    with (_,[a]) do
         return [a].
-    orwith (p,[pivot|rest]) do
+    with (p,[pivot|rest]) do
         let less=[].
         let more=[].
 

@@ -72,7 +72,7 @@ function hd
 -- return the first element of a list, error is list is empty
 with [] do
   throw Exception("ValueError","empty list not supported").
-orwith l:%list do
+with l:%list do
   return l@0.
 end
 
@@ -82,9 +82,9 @@ function tl
 -- return the rest of the list without the first element
 with [] do
 throw Exception("ValueError","empty list not supported").
-orwith [_] do
+with [_] do
   return [].
-orwith l:%list do
+with l:%list do
   return l@[1 to len(l)-1].
 end
 
@@ -139,7 +139,7 @@ for ix in range(len(s_member_names)):
   t_struct_memory.append(deepcopy(s_struct_memory[ix]))
 state.symbol_table.pop_scope()
 "
-orwith (target,source,slot:%string) do escape
+with (target,source,slot:%string) do escape
 -- target inherits slot from source
 "
 from asteroid.support import assert_match
@@ -190,7 +190,7 @@ state.symbol_table.pop_scope()
 t_member_names.append(slot_val[1])
 t_struct_memory.append(deepcopy(s_struct_memory[ix]))
 "
-orwith (target,source,slots:%list) do escape
+with (target,source,slots:%list) do escape
 -- target inherits slots from source
 "
 from asteroid.support import assert_match
@@ -251,9 +251,9 @@ function range
 ------------------------------------------------------------------
   with (start:%integer,stop:%integer) do
     return [start to stop-1].
-  orwith (start:%integer,stop:%integer,inc:%integer) do
+  with (start:%integer,stop:%integer,inc:%integer) do
     return [start to stop-1 step inc].
-  orwith stop:%integer do
+  with stop:%integer do
     return [0 to stop-1].
   end
 
@@ -394,7 +394,7 @@ ix_val = state.symbol_table.lookup_sym('ix')
 
 __retval__ = this_val[1].pop(ix_val[1])
 "
-orwith none do return escape
+with none do return escape
 "
 global __retval__
 
@@ -438,7 +438,7 @@ __retval__ = ('integer', this_val[1].index(item_val,
                             startix_val[1],
                             endix_val[1]))
 "
-orwith (item,startix:%integer) do return escape
+with (item,startix:%integer) do return escape
 "
 global __retval__
 
@@ -448,7 +448,7 @@ startix_val = state.symbol_table.lookup_sym('startix')
 
 __retval__ = ('integer', this_val[1].index(item_val, startix_val[1]))
 "
-orwith item do return escape
+with item do return escape
 "
 global __retval__
 
@@ -488,7 +488,7 @@ reverse_val = state.symbol_table.lookup_sym('reverse')
 this_val[1].sort(reverse=reverse_val[1])
 __retval__ = this_val
 "
-orwith none do return escape
+with none do return escape
 "
 global __retval__
 
@@ -561,7 +561,7 @@ with f:%function do
         let value = f(value,this@i).
     end
     return value.
-orwith (f:%function,init) do
+with (f:%function,init) do
     let value = init.
     for i in 0 to this@length()-1 do
         let value = f(value,this@i).
@@ -681,7 +681,7 @@ this_val = state.symbol_table.lookup_sym('this')
 what_val = state.symbol_table.lookup_sym('what')
 __retval__ = ('string', this_val[1].strip(what_val[1]))
 "
-orwith none do return escape
+with none do return escape
 "
 global __retval__
 
@@ -708,7 +708,7 @@ count_val = state.symbol_table.lookup_sym('count')
 
 __retval__ = ('string', sub(old_val[1], new_val[1], this_val[1], count_val[1]))
 "
-orwith (old:%string,new:%string) do return escape
+with (old:%string,new:%string) do return escape
 "
 global __retval__
 from re import sub
@@ -753,7 +753,7 @@ ast_list = [('string',e) for e in raw_list]
 
 __retval__ = ('list', ast_list)
 "
-orwith sep:%string do return escape
+with sep:%string do return escape
 "
 global __retval__
 
@@ -765,7 +765,7 @@ ast_list = [('string',e) for e in raw_list]
 
 __retval__ = ('list', ast_list)
 "
-orwith none do return escape
+with none do return escape
 "
 global __retval__
 
@@ -820,7 +820,7 @@ if val == -1:
 else:
     __retval__ = ('integer', val)
 "
-orwith (item:%string,startix:%integer) do return escape
+with (item:%string,startix:%integer) do return escape
 "
 global __retval__
 
@@ -834,7 +834,7 @@ if val == -1:
 else:
     __retval__ = ('integer',val)
 "
-orwith item:%string do return escape
+with item:%string do return escape
 "
 global __retval__
 

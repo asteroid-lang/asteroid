@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with x do         --will SUBSUME all other patterns
         return 0.
-    orwith ( 1, 2, z) do
+    with ( 1, 2, z) do
         return 1.
-    orwith ( 1, y, z) do
+    with ( 1, y, z) do
         return 2.
-    orwith ( x, y, z) do
+    with ( x, y, z) do
         return 3.
     end.
     

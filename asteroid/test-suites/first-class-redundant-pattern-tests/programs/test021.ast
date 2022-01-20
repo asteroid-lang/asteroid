@@ -15,9 +15,9 @@ let ptrn3 = pattern with (n:%integer).
 function fact
     with *ptrn1 do
         return 1
-    orwith *ptrn2 do   -- Will subsume pattern (n:%integer)
+    with *ptrn2 do   -- Will subsume pattern (n:%integer)
         return n * fact (n-1).
-    orwith *ptrn3 do
+    with *ptrn3 do
         throw Error("factorial is not defined for "+n).
     end.
      

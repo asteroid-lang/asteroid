@@ -15,9 +15,9 @@ structure add with
 function reduce
     with add(x,0) do      
         return reduce(x).
-    orwith add(x,S(y))  do
+    with add(x,S(y))  do
         return S(reduce(add(x,y))).
-    orwith term do     
+    with term do     
         return term.
     end 
 

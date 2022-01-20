@@ -6,7 +6,7 @@
 
 import re
 
-from asteroid.state import state
+from asteroid.state import state, warning
 
 # table that specifies the token value and type for keywords
 keywords = {
@@ -149,7 +149,8 @@ def tokenize(code):
             type = keywords.get(value,'ID')
         elif type == 'TYPEMATCH':
             if value[1:] == 'if':
-                type = 'CMATCH'
+                warning("'%if' has been deprecated, please replace with 'if'")
+                type = 'IF'
                 value = value[1:]
             else:
                 type = 'TYPEMATCH'

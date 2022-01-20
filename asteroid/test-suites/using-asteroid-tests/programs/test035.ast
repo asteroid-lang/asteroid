@@ -17,7 +17,7 @@ end
 
 function primes with x do
     let lp = [].
-    for (n %if isprime(n)) in 1 to x do
+    for (n if isprime(n)) in 1 to x do
         let lp = lp+[n].
     end
     return lp.

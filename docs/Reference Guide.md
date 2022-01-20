@@ -503,5 +503,5 @@ The [vector](https://github.com/lutzhamel/asteroid/blob/master/code/modules/vect
 * Function `dot`, given `(a,b)`, computes the dot product of the two vectors.
 * Function `vop`  allows the developer to vectorize an function. It can be called with three different inputs:
   1. `(f:%function,a:%list,b:%list)`
-  2. `(f:%function,a:%list,b %if isscalar(b))`
-  3. `(f:%function,a %if isscalar(a),b:%list)`
+  2. `(f:%function,a:%list,b if isscalar(b))`
+  3. `(f:%function,a if isscalar(a),b:%list)`

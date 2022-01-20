@@ -90,9 +90,9 @@ load system "util".
 function fact
     with 0 do
         return 1
-    orwith (n:%integer) %if n > 0 do
+    orwith (n:%integer) if n > 0 do
         return n * fact (n-1).
-    orwith (n:%integer) %if n < 0 do
+    orwith (n:%integer) if n < 0 do
         throw Error("factorial is not defined for "+n).
     end
 
@@ -134,8 +134,8 @@ One of the distinguishing features of Asteroid is the fact that it supports patt
 load system "io".
 load system "util".
 
-let POS_INT = pattern with (x:%integer) %if x > 0.
-let NEG_INT = pattern with (x:%integer) %if x < 0.
+let POS_INT = pattern with (x:%integer) if x > 0.
+let NEG_INT = pattern with (x:%integer) if x < 0.
 
 function fact
     with 0 do
@@ -184,7 +184,7 @@ buddy @add_trick "sit stay".
 buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     println (name+" knows how to fetch").
 end
 ```

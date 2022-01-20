@@ -15,11 +15,11 @@ let ptrn3 = pattern with person:[( fname1, lname1)|( fname2, lname2)| tail].
 function testFunction
     with *ptrn1 do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2.
-    orwith *ptrn3 do 
+    with *ptrn3 do 
         return 3. 
-    orwith () do
+    with () do
         return 4.
     end.
     

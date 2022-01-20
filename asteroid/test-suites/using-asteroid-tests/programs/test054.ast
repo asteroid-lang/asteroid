@@ -8,15 +8,15 @@ let names = ["zero","one","two","three","four","five","six","seven","eight","nin
              "forty","fifty","sixty","seventy","eighty","ninety"].
 
 function spell_number 
-    with (n:%integer) %if n < 20 do
+    with (n:%integer) if n < 20 do
         return names @n.
-    orwith (n:%integer) %if n < 100 do 
+    with (n:%integer) if n < 100 do 
         let r = names @(n / 10 + 18).
         let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
         return r.
-    orwith (n:%integer) %if n < 1000 do  
+    with (n:%integer) if n < 1000 do  
         return spell_part(n,100,"hundred").
-    orwith (n:%integer) %if n < 1000000 do 
+    with (n:%integer) if n < 1000000 do 
         return spell_part(n,1000,"thousand").
     end
 

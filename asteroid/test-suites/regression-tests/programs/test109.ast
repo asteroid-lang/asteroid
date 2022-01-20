@@ -63,10 +63,10 @@ assert(sum == map_sum).
 -- filter
 let arr = [0 to 10].
 function gtfive
-    with (x:%integer) %if x > 5 do
+    with (x:%integer) if x > 5 do
         return true.
 
-    orwith _ do
+    with _ do
         return false.
         end
 

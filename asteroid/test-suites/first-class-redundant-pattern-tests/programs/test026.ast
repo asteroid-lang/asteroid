@@ -28,9 +28,9 @@ let ptrn3 = pattern with Person("George", 32, "M").
 function testFunction
     with *ptrn1 do    -- *** will Subsume Person("George", 32, "M")
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2.
-    orwith *ptrn3 do  --duplicate structure/object
+    with *ptrn3 do  --duplicate structure/object
         return 3.
     end.
 

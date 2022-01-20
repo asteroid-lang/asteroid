@@ -17,10 +17,10 @@ structure Dog
       with *ptrn1 do -- Will subsume all matches for (self, name, [])
         let this@name = name.
         let this@tricks = tricks.
-      orwith *ptrn2 do  -- Redundant Constructor 
+      with *ptrn2 do  -- Redundant Constructor 
         let this@name = name.
         let this@tricks = [].
-      orwith *ptrn3 do
+      with *ptrn3 do
         let this@name = name.
         let this@tricks = [].
       end

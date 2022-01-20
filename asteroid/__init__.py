@@ -13,6 +13,7 @@ from asteroid.version import VERSION
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))
+    print("(c) University of Rhode Island")
     print("usage: asteroid [-<switch>] <input file>")
     print("")
     print("command line flags:")
@@ -86,3 +87,7 @@ def main():
         cProfile.run(interp_object, 'pstats')
     else:
         exec(interp_object)
+
+# for manual testing purposes
+if __name__ == "__main__":
+    main()

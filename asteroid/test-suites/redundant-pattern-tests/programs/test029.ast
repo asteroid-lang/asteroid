@@ -24,11 +24,11 @@ let people = [
 function test_function 
   with Person(name:".*p.*",_,_) do
     return "Found a p.".
-  orwith Person(name:".*g.*",_,_) do   -- *** The regular expression ".*g.*" will subsume ".*gg.*"
+  with Person(name:".*g.*",_,_) do   -- *** The regular expression ".*g.*" will subsume ".*gg.*"
     return "Found a g.".
-  orwith Person(name:".*v.*",_,_) do
+  with Person(name:".*v.*",_,_) do
     return "Found a v.".
-  orwith Person(name:".*gg.*",_,_) do  -- will be redundant
+  with Person(name:".*gg.*",_,_) do  -- will be redundant
     return "Found a gg.".
   end.
 

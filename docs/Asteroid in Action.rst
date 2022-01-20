@@ -304,7 +304,7 @@ w to z.
 
     let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
 
-    function encode with (v:%string) %if len(v) == 1 do
+    function encode with (v:%string) if len(v) == 1 do
         -- only lowercase letters are encoded
         if not (ascii(v) in [97 to 122]) do
             return v.
@@ -313,7 +313,7 @@ w to z.
         end
     end
 
-    function decode with (v:%string) %if len(v) == 1 do
+    function decode with (v:%string) if len(v) == 1 do
         -- only lowercase letters are decoded
         if not (ascii(v) in [97 to 122]) do
             return v.
@@ -620,7 +620,7 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
         end
     end
 
-    for ((n_gram,cnt) %if cnt > 1) in ht @aslist() do
+    for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
         println (n_gram+": "+cnt).
     end
 Output:
@@ -702,8 +702,8 @@ the predicate applied to the input is true.  The last case is of some interest b
 ::
     load system "io".
 
-    let POS_INT = pattern with (x:%integer) %if x > 0.
-    let NEG_INT = pattern with (x:%integer) %if x < 0.
+    let POS_INT = pattern with (x:%integer) if x > 0.
+    let NEG_INT = pattern with (x:%integer) if x < 0.
 
     function fact
         with 0 do
@@ -800,7 +800,7 @@ We start with printing the first ten odd numbers,
     load system "math".
 
     let odd = []
-    for (n %if mod(n,2) =/= 0) in 1 to 10 do
+    for (n if mod(n,2) =/= 0) in 1 to 10 do
         let odd = odd + [n].
     end
 
@@ -817,7 +817,7 @@ Now the even numbers,
     load system "math".
 
     let even = []
-    for (n %if mod(n,2) == 0) in 1 to 10 do
+    for (n if mod(n,2) == 0) in 1 to 10 do
         let even = even + [n].
     end
 
@@ -902,7 +902,7 @@ Challenge: List of prime numbers
     end
 
     let cnt = 0.
-    for (n %if isprime(n)) in 1 to 1000000 do
+    for (n if isprime(n)) in 1 to 1000000 do
         println n.
         let cnt = cnt+1.
         if cnt == 10 do
@@ -948,7 +948,7 @@ Prime factors are the prime numbers that divide the given integer number exactly
 
     function primes with x do
         let lp = [].
-        for (n %if isprime(n)) in 1 to x do
+        for (n if isprime(n)) in 1 to x do
             let lp = lp+[n].
         end
         return lp.
@@ -1258,17 +1258,17 @@ All these variants can be implemented by using `with`/`orwith` clauses and condi
     end
 
     function cartesian_to_psi
-        with (x,y) %if x > 0  do
+        with (x,y) if x > 0  do
             return atan(toreal(y)/x).
-        orwith (x,y) %if x < 0 and y >= 0 do
+        orwith (x,y) if x < 0 and y >= 0 do
             return atan(toreal(y)/x)+pi.
-        orwith (x,y) %if x < 0 and y < 0 do
+        orwith (x,y) if x < 0 and y < 0 do
             return atan(toreal(y)/x)-pi.
-        orwith (x,y) %if x == 0 and y > 0 do
+        orwith (x,y) if x == 0 and y > 0 do
             return pi/2.
-        orwith (x,y) %if x == 0 and y < 0 do
+        orwith (x,y) if x == 0 and y < 0 do
             return -pi/2.
-        orwith (x,y) %if x == 0 and y == 0 do
+        orwith (x,y) if x == 0 and y == 0 do
             return none.
         end
 
@@ -1520,15 +1520,15 @@ The zero name appears only in the case when the given number is zero.
                  "forty","fifty","sixty","seventy","eighty","ninety"].
 
     function spell_number
-        with (n:%integer) %if n < 20 do
+        with (n:%integer) if n < 20 do
             return names @n.
-        orwith (n:%integer) %if n < 100 do
+        orwith (n:%integer) if n < 100 do
             let r = names @(n / 10 + 18).
             let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
             return r.
-        orwith (n:%integer) %if n < 1000 do  
+        orwith (n:%integer) if n < 1000 do  
             return spell_part(n,100,"hundred").
-        orwith (n:%integer) %if n < 1000000 do
+        orwith (n:%integer) if n < 1000000 do
             return spell_part(n,1000,"thousand").
         end
 
@@ -1872,7 +1872,7 @@ Compute the moving average over 100 random values, using a window of size 7 (3 v
     end
 
     -- compute the window on lst
-    function window with (lst:%list,i:%integer) %if i >= 3 and i <= lst @length()-4 do
+    function window with (lst:%list,i:%integer) if i >= 3 and i <= lst @length()-4 do
         return lst @[i-3,i-2,i-1,i,i+1,i+2,i+3].
     end
 

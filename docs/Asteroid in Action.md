@@ -330,7 +330,7 @@ load system "util".
 
 let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
 
-function encode with (v:%string) %if len(v) == 1 do
+function encode with (v:%string) if len(v) == 1 do
     -- only lowercase letters are encoded
     if not (ascii(v) in [97 to 122]) do
         return v.
@@ -339,7 +339,7 @@ function encode with (v:%string) %if len(v) == 1 do
     end
 end
 
-function decode with (v:%string) %if len(v) == 1 do
+function decode with (v:%string) if len(v) == 1 do
     -- only lowercase letters are decoded
     if not (ascii(v) in [97 to 122]) do
         return v.
@@ -653,7 +653,7 @@ for i in 0 to word_list @length()-3 do
     end
 end
 
-for ((n_gram,cnt) %if cnt > 1) in ht @aslist() do
+for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
     println (n_gram+": "+cnt).
 end
 ```
@@ -743,8 +743,8 @@ the predicate applied to the input is true.  The last case is of some interest b
 ```
 load system "io".
 
-let POS_INT = pattern with (x:%integer) %if x > 0.
-let NEG_INT = pattern with (x:%integer) %if x < 0.
+let POS_INT = pattern with (x:%integer) if x > 0.
+let NEG_INT = pattern with (x:%integer) if x < 0.
 
 function fact
     with 0 do
@@ -848,7 +848,7 @@ load system "io".
 load system "math".
 
 let odd = []
-for (n %if mod(n,2) =/= 0) in 1 to 10 do
+for (n if mod(n,2) =/= 0) in 1 to 10 do
     let odd = odd + [n].
 end
 
@@ -867,7 +867,7 @@ load system "io".
 load system "math".
 
 let even = []
-for (n %if mod(n,2) == 0) in 1 to 10 do
+for (n if mod(n,2) == 0) in 1 to 10 do
     let even = even + [n].
 end
 
@@ -959,7 +959,7 @@ function isprime with x do
 end
 
 let cnt = 0.
-for (n %if isprime(n)) in 1 to 1000000 do
+for (n if isprime(n)) in 1 to 1000000 do
     println n.
     let cnt = cnt+1.
     if cnt == 10 do
@@ -1008,7 +1008,7 @@ end
 
 function primes with x do
     let lp = [].
-    for (n %if isprime(n)) in 1 to x do
+    for (n if isprime(n)) in 1 to x do
         let lp = lp+[n].
     end
     return lp.
@@ -1338,17 +1338,17 @@ function cartesian_to_polar with (x,y) do
 end
 
 function cartesian_to_psi
-    with (x,y) %if x > 0  do
+    with (x,y) if x > 0  do
         return atan(toreal(y)/x).
-    orwith (x,y) %if x < 0 and y >= 0 do
+    orwith (x,y) if x < 0 and y >= 0 do
         return atan(toreal(y)/x)+pi.
-    orwith (x,y) %if x < 0 and y < 0 do
+    orwith (x,y) if x < 0 and y < 0 do
         return atan(toreal(y)/x)-pi.
-    orwith (x,y) %if x == 0 and y > 0 do
+    orwith (x,y) if x == 0 and y > 0 do
         return pi/2.
-    orwith (x,y) %if x == 0 and y < 0 do
+    orwith (x,y) if x == 0 and y < 0 do
         return -pi/2.
-    orwith (x,y) %if x == 0 and y == 0 do
+    orwith (x,y) if x == 0 and y == 0 do
         return none.
     end
 
@@ -1612,15 +1612,15 @@ let names = ["zero","one","two","three","four","five","six","seven","eight","nin
              "forty","fifty","sixty","seventy","eighty","ninety"].
 
 function spell_number
-    with (n:%integer) %if n < 20 do
+    with (n:%integer) if n < 20 do
         return names @n.
-    orwith (n:%integer) %if n < 100 do
+    orwith (n:%integer) if n < 100 do
         let r = names @(n / 10 + 18).
         let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
         return r.
-    orwith (n:%integer) %if n < 1000 do  
+    orwith (n:%integer) if n < 1000 do  
         return spell_part(n,100,"hundred").
-    orwith (n:%integer) %if n < 1000000 do
+    orwith (n:%integer) if n < 1000000 do
         return spell_part(n,1000,"thousand").
     end
 
@@ -1982,7 +1982,7 @@ plt.show()
 end
 
 -- compute the window on lst
-function window with (lst:%list,i:%integer) %if i >= 3 and i <= lst @length()-4 do
+function window with (lst:%list,i:%integer) if i >= 3 and i <= lst @length()-4 do
     return lst @[i-3,i-2,i-1,i,i+1,i+2,i+3].
 end
 

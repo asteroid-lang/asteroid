@@ -36,7 +36,7 @@ hi_val = state.symbol_table.lookup_sym('hi')
 
 __retval__ = ('integer', random.randint(lo_val[1], hi_val[1]))
 "
-orwith (lo:%real,hi:%real) do return escape
+with (lo:%real,hi:%real) do return escape
 "
 import random
 from asteroid.support import assert_match
@@ -47,7 +47,7 @@ hi_val = state.symbol_table.lookup_sym('hi')
 
 __retval__ = ('real', random.uniform(lo_val[1], hi_val[1]))
 "
-orwith (_,_) do
+with (_,_) do
   throw Error("unsupported interval specification in randint").
 end
 

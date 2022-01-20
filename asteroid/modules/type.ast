@@ -20,7 +20,7 @@ item_val = state.symbol_table.lookup_sym('item')
 base_val = state.symbol_table.lookup_sym('base')
 __retval__ = ('integer', int(item_val[1], base=base_val[1]))
 "
-orwith item do return escape
+with item do return escape
 "
 global __retval__
 
@@ -57,9 +57,9 @@ end
 let TP = pattern
 ------------------------------------------------------------------
 -- pattern for selecting proper formatting body in 'tostring'
-with x %if (x is %boolean) or
-           (x is %integer) or
-           (x is %string).
+with x if (x is %boolean) or
+         (x is %integer) or
+         (x is %string).
 
 ------------------------------------------------------------------
 structure stringformat
@@ -72,7 +72,7 @@ with
     with (l:%integer,p:%integer) do
       let this @length = l.
       let this @precision = p.
-    orwith l:%integer do
+    with l:%integer do
       let this @length = l.
       let this @precision = none.
     end
@@ -95,7 +95,7 @@ with (v:*TP,stringformat(w:%integer,none)) do
   else do
     return vs.
   end
-orwith (v:%real,stringformat(w:%integer,none)) do return escape
+with (v:%real,stringformat(w:%integer,none)) do return escape
 -- floating point values with only a width spec are left justified with
 -- zero padding on the right.
 "
@@ -107,7 +107,7 @@ __retval__ = ('string', fmtstr.format(v_val))
 "
 -- floating point values with a width and precision specs
 -- are formatted according to Python formatting rules
-orwith (v:%real,stringformat(w:%integer,p:%integer)) do return escape
+with (v:%real,stringformat(w:%integer,p:%integer)) do return escape
 "
 global __retval__
 (V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
@@ -116,7 +116,7 @@ global __retval__
 fmtstr = '{:'+str(w_val)+'.'+str(p_val)+'f}'
 __retval__ = ('string', fmtstr.format(v_val))
 "
-orwith item do return escape
+with item do return escape
 -- default clause
 "
 global __retval__

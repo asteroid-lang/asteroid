@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with ( fname, lname) do  -- *** will SUBSUME (x, y) ***
         return 1.
-    orwith person2:( fname, lname1, lname2) do
+    with person2:( fname, lname1, lname2) do
         return 2.
-    orwith coord:( x, y ) do 
+    with coord:( x, y ) do 
         return 3. 
-    orwith () do
+    with () do
         return 4.
     end.
     

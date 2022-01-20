@@ -16,11 +16,11 @@ let ptrn4 = pattern with ().
 function testFunction
     with *ptrn1 do  -- *** will SUBSUME (x, y) ***
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2.
-    orwith *ptrn3 do 
+    with *ptrn3 do 
         return 3. 
-    orwith *ptrn4 do
+    with *ptrn4 do
         return 4.
     end.
     
