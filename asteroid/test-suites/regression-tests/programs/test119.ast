@@ -1,4 +1,4 @@
-load system "io".
+load system io.
 
 let COORDINATE = pattern with (x,y).
 let COORDINATE_LIST = pattern with coordinates:%list.

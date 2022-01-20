@@ -6,8 +6,8 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
-load system "util".
-load system "type".
+load system util.
+load system type.
 
 ------------------------------------------------------------------
 function vop

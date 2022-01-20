@@ -1,7 +1,7 @@
 -- testing the builtin 'len' function
 
-load system "io".
-load system "type".
+load system io.
+load system type.
 
 structure Foo with
    data one.

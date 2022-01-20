@@ -248,7 +248,7 @@ end
 
 -- Basic console I/O functions
 
-load system "type".
+load system type.
 ------------------------------------------------------------------
 function println
 ------------------------------------------------------------------

@@ -8,7 +8,7 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
-load system "util".
+load system util.
 
 ------------------------------------------------------------------
 structure Stream

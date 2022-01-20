@@ -1,7 +1,7 @@
 -- a small program that demonstrates that patterns can be used both
 -- for constructing as well as destructuring of object networks.
 
-load system "io".
+load system io.
 
 -----------------------------
 structure Family
