@@ -708,9 +708,9 @@ the predicate applied to the input is true.  The last case is of some interest b
     function fact
         with 0 do
             return 1
-        orwith n:*POS_INT do
+        with n:*POS_INT do
             return n * fact (n-1).
-        orwith n:*NEG_INT do
+        with n:*NEG_INT do
             throw Error("factorial is not defined for "+n).
         end
 
@@ -1242,7 +1242,7 @@ Output:
 
 For the **negative** `x` and `y`, the Cartesian-to-polar conversion is a bit more complicated. Depending on the quadrant of the point, the `psi` value is bigger
 or smaller than `pi`. When `x` is zero, it is either `-pi/2` or `pi/2`.
-All these variants can be implemented by using `with`/`orwith` clauses and conditional matching, as demonstrated below:
+All these variants can be implemented by using `with`/`with` clauses and conditional matching, as demonstrated below:
 ::
     load system "io".
     load system "math".
@@ -1260,15 +1260,15 @@ All these variants can be implemented by using `with`/`orwith` clauses and condi
     function cartesian_to_psi
         with (x,y) if x > 0  do
             return atan(toreal(y)/x).
-        orwith (x,y) if x < 0 and y >= 0 do
+        with (x,y) if x < 0 and y >= 0 do
             return atan(toreal(y)/x)+pi.
-        orwith (x,y) if x < 0 and y < 0 do
+        with (x,y) if x < 0 and y < 0 do
             return atan(toreal(y)/x)-pi.
-        orwith (x,y) if x == 0 and y > 0 do
+        with (x,y) if x == 0 and y > 0 do
             return pi/2.
-        orwith (x,y) if x == 0 and y < 0 do
+        with (x,y) if x == 0 and y < 0 do
             return -pi/2.
-        orwith (x,y) if x == 0 and y == 0 do
+        with (x,y) if x == 0 and y == 0 do
             return none.
         end
 
@@ -1522,13 +1522,13 @@ The zero name appears only in the case when the given number is zero.
     function spell_number
         with (n:%integer) if n < 20 do
             return names @n.
-        orwith (n:%integer) if n < 100 do
+        with (n:%integer) if n < 100 do
             let r = names @(n / 10 + 18).
             let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
             return r.
-        orwith (n:%integer) if n < 1000 do  
+        with (n:%integer) if n < 1000 do  
             return spell_part(n,100,"hundred").
-        orwith (n:%integer) if n < 1000000 do
+        with (n:%integer) if n < 1000000 do
             return spell_part(n,1000,"thousand").
         end
 

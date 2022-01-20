@@ -75,14 +75,11 @@ quote_exp
 head_tail
   : conditional ('|' exp)?
 
+// conditional patterns are now supported via 'pattern if cond'
+// no else part. Since this overlaps with conditional expressions
+// we check for correct usage semantically.
 conditional
-  : compound
-      (
-         // conditional patterns are now supported via 'pattern if cond'
-         // no else part. Since this overlaps with conditional expressions
-         // we check for correct usage semantically.
-         (IF exp (ELSE exp)?)
-      )?
+  : compound (IF exp (ELSE exp)?)?
 
 compound
   : logic_exp0

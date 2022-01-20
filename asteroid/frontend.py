@@ -518,7 +518,7 @@ class Parser:
 
     ###########################################################################################
     # exp
-    #    : conditional
+    #    : quote_exp
     def exp(self):
         dbg_print("parsing EXP")
         v = self.quote_exp()
@@ -553,44 +553,8 @@ class Parser:
             return v
 
     ###########################################################################################
-    # conditional patterns are now supported via 'pattern if cond'
-    # no else part. Since this overlaps with conditional expressions
-    # we check for correct usage semantically.
-    #
-    # conditional
-    #    : quote_exp
-    #        (
-    #           (IF exp (ELSE exp)?)
-    #        )?
-    def conditional(self):
-        dbg_print("parsing CONDITIONAL")
-
-        v = self.compound()
-
-        tt = self.lexer.peek().type
-#        if tt == 'CMATCH':
-#            self.lexer.match('CMATCH')
-#            e = self.exp()
-#            return ('cmatch', v, e)
-
-        if tt == 'IF':
-            self.lexer.match('IF')
-            v2 = self.exp()
-            if self.lexer.peek().type == 'ELSE':
-                self.lexer.match('ELSE')
-                v3 = self.exp()
-            else:
-                # this happens when the conditional is used in a
-                # conditional pattern
-                v3 = ('null',)
-            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
-
-        else:
-            return v
-
-    ###########################################################################################
     # head_tail
-    #    : compound ('|' exp)?
+    #    : conditional ('|' exp)?
     #
     # NOTE: * as a value this operator will construct a list from the semantic values of
     #         head and tail
@@ -610,6 +574,35 @@ class Parser:
             v = ('raw-head-tail', head, tail)
 
         return v
+
+    ###########################################################################################
+    # conditional patterns are now supported via 'pattern if cond'
+    # no else part. Since this overlaps with conditional expressions
+    # we check for correct usage semantically.
+    #
+    # conditional
+    #    : compound (IF exp (ELSE exp)?)?
+    def conditional(self):
+        dbg_print("parsing CONDITIONAL")
+
+        v = self.compound()
+
+        tt = self.lexer.peek().type
+
+        if tt == 'IF':
+            self.lexer.match('IF')
+            v2 = self.exp()
+            if self.lexer.peek().type == 'ELSE':
+                self.lexer.match('ELSE')
+                v3 = self.exp()
+            else:
+                # this happens when the conditional is used in a
+                # conditional pattern
+                v3 = ('null',)
+            return ('if-exp', v2, v, v3) # mapping it into standard if-then-else format
+
+        else:
+            return v
 
     ###########################################################################################
     # compound

@@ -34,9 +34,9 @@ in order to ensure that the domain of the function is not violated,
     function fact
         with 0 do
             return 1
-        orwith n:*POS_INT do            -- use first pattern
+        with n:*POS_INT do            -- use first pattern
             return n * fact (n-1).
-        orwith n:*NEG_INT do            -- use second pattern
+        with n:*NEG_INT do            -- use second pattern
             throw Error("undefined for "+n).
         end
 
@@ -46,7 +46,7 @@ dereferencing those variables with the `*` operator.  First-class patterns have
 profound implications for software development in that pattern definition and usage
 points are now separate and patterns can be reused in different contexts.
 
-These are just two examples where Asteroid differs drastically from other programming languages.  
+These are just two examples where Asteroid differs drastically from other programming languages.
 This document is an overview of Asteroid and is intended to get you started quickly
 with programming in Asteroid.
 
@@ -181,21 +181,21 @@ The output is: `[3,2,1]`.
 In Asteroid lists are considered objects with member functions that can manipulate the list
 object, e.g. `[1,2,3] @ reverse()`. We could rewrite the above example as,
 ::
-    load system "io".          
+    load system "io".
 
-    let a = [1,2,3].    
+    let a = [1,2,3].
     let b = a @reverse().
     println b.
 
 For a full list of available member functions for Asteroid lists please see the reference guide.
 
-As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.  
+As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
 a step specifier allowying you to generate integer values within that range,
 ::
-    load system "io".          
+    load system "io".
 
     -- build a list of odd values
     let a = [1 to 10 step 2].  -- list comprehension
@@ -306,7 +306,7 @@ structure definition and as they appear in the parameter list of the constructor
     -- make a list of persons
     let people = [
         -- use default constructors to construct Person instances
-        Person("George", 32, "M"),  
+        Person("George", 32, "M"),
         Person("Sophie", 46, "F"),
         Person("Oliver", 21, "X")
         ].
@@ -333,7 +333,7 @@ The `let` statement is a pattern matching statement and can be viewed as Asteroi
     let 1 = 1.
 
 where we take the term on the right side and match it to the pattern on the left side of
-the `=` operator are completely legal and highlight the fact that `let` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.  
+the `=` operator are completely legal and highlight the fact that `let` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
 
 Here is an example where we do some computations on the right side of a `let` statement and then match the result against a pattern on the left,
 ::
@@ -470,7 +470,7 @@ The output is `[6,4,2]`.  Notice how we used type patterns to make sure that thi
 function is only applied to lists of integers.
 
 In order to demonstrate multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each `with`/`orwith` clause introduces a new function body with its
+Asteroid. Each `with`/`with` clause introduces a new function body with its
 corresponding pattern,
 ::
     load system "io".
@@ -478,9 +478,9 @@ corresponding pattern,
     function qsort
         with [] do
             return [].
-        orwith [a] do
+        with [a] do
             return [a].
-        orwith [pivot|rest] do
+        with [pivot|rest] do
             let less=[].
             let more=[].
 
@@ -607,11 +607,11 @@ Here `x` and `y` are variables, `0` represents the natural number with value zer
         end
 
     function reduce
-        with add(x,0) do      
+        with add(x,0) do
             return reduce(x).
-        orwith add(x,s(y))  do
+        with add(x,s(y))  do
             return s(reduce(add(x,y))).
-        orwith term do     
+        with term do
             return term.
         end
 
@@ -638,9 +638,9 @@ the kind of values that are being passed to a particular function body,
     function factorial
         with 0 do
             return 1
-        orwith (n:%integer) if n > 0 do
+        with (n:%integer) if n > 0 do
             return n * factorial (n-1).
-        orwith (n:%integer) if n < 0 do
+        with (n:%integer) if n < 0 do
             throw Error("factorial is not defined for "+n).
         end
 
@@ -658,7 +658,7 @@ We have seen pattern matching in `for` loops earlier.  Here we show another
 example. This combines structural matching with regular expression matching
 in `for` loops
 that selects certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
-:: 
+::
     load system "io".
 
     structure Person with
@@ -678,7 +678,7 @@ that selects certain items from a list. Suppose we want to print out the names o
         println name.
     end
 
-Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is `Sophie`.  
+Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is `Sophie`.
 
 Pattern Matching in `try-catch` Statements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -748,7 +748,7 @@ can access members of the instance,
 
     let scarlett = Person("Scarlett",28,"F").
     -- access the name field of the structure instance
-    println (scarlett @name).  
+    println (scarlett @name).
 
 Asteroid allows you to attach functions to structures.  In member functions
 the object identity of the instance is available through the `this` keyword.
@@ -808,7 +808,7 @@ only on the data fields.  The output of the program is,
     Scarlett is 28 years old
 
 Here is a slightly more involved example based on the
-dog example from the `Python documentation <https://docs.python.org/3/tutorial/classes.html>`_.  
+dog example from the `Python documentation <https://docs.python.org/3/tutorial/classes.html>`_.
 The idea of the dog example is to have a structure that describes dogs by their
 names and the tricks that they can perform.  Tricks can be added to a particular
 dog instance by calling the `add_trick` function.  Rather than using the default
@@ -945,18 +945,18 @@ spots where the patterns occurs. Consider the following program snippet,
     function fact
         with 0 do
             return 1
-        orwith (n:%integer) if n > 0 do
+        with (n:%integer) if n > 0 do
             return n * fact (n-1).
-        orwith (n:%integer) if n < 0 do
+        with (n:%integer) if n < 0 do
             throw Error("fact undefined for negative values").
         end
 
     function stepf
         with 0 do
             return 1
-        orwith (n:%integer) if n > 0 do
+        with (n:%integer) if n > 0 do
             return 1.
-        orwith (n:%integer) if n < 0 do
+        with (n:%integer) if n < 0 do
             return -1.
         end
 
@@ -970,18 +970,18 @@ much more elegant way,
     function fact
         with 0 do
             return 1
-        orwith n:*POS_INT do
+        with n:*POS_INT do
             return n * fact (n-1).
-        orwith *NEG_INT do
+        with *NEG_INT do
             throw Error("fact undefined for negative values").
         end
 
     function stepf
         with 0 do
                 return 1
-            orwith *POS_INT do
+            with *POS_INT do
                 return 1.
-            orwith *NEG_INT do
+            with *NEG_INT do
                 return -1.
             end
 
@@ -1211,7 +1211,7 @@ the user is allowed to construct user level exceptions with any kind of object i
         println v.
     end
 
-The output of this program is `42`.  
+The output of this program is `42`.
 
 Now, if you don't care what kind of exception you catch, you need to use a `wildcard` or a variable because exception handlers are activated via pattern matching on the
 exception object itself.  Here is an example using a `wildcard`,
@@ -1342,12 +1342,12 @@ The Module System
 
 A module in Asteroid is a file with a set of valid Asteroid statements.  You can load this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space; symbols from a module are entered into Asteroid's global name space.
 
-The search strategy for a module to be loaded is as follows, 
+The search strategy for a module to be loaded is as follows,
 
-#. raw module name - could be an absolute path 
-#. search in current directory (path[1]) 
-#. search in directory where Asteroid is installed (path[0]) 
-#. search in subdirectory where Asteroid was started 
+#. raw module name - could be an absolute path
+#. search in current directory (path[1])
+#. search in directory where Asteroid is installed (path[0])
+#. search in subdirectory where Asteroid was started
 
 Modules defined by the Asteroid system should be loaded with the keyword `system`
 in order to avoid any clashes with locally defined modules.

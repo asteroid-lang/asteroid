@@ -57,9 +57,9 @@ load system "io".
 function qsort
     with [] do
         return [].
-    orwith [a] do
+    with [a] do
         return [a].
-    orwith [pivot|rest] do -- head-tail operator
+    with [pivot|rest] do -- head-tail operator
         let less=[].
         let more=[].
         for e in rest do  
@@ -90,9 +90,9 @@ load system "util".
 function fact
     with 0 do
         return 1
-    orwith (n:%integer) if n > 0 do
+    with (n:%integer) if n > 0 do
         return n * fact (n-1).
-    orwith (n:%integer) if n < 0 do
+    with (n:%integer) if n < 0 do
         throw Error("factorial is not defined for "+n).
     end
 
@@ -140,9 +140,9 @@ let NEG_INT = pattern with (x:%integer) if x < 0.
 function fact
     with 0 do
         return 1
-    orwith n:*POS_INT do
+    with n:*POS_INT do
         return n * fact (n-1).
-    orwith n:*NEG_INT do
+    with n:*NEG_INT do
         throw Error("factorial is not defined for "+n).
     end
 

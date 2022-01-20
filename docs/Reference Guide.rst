@@ -48,7 +48,7 @@ are written in quotes.
     : FUNCTION ID body_defs END
 
   body_defs
-    : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+    : WITH pattern DO stmt_list (with pattern DO stmt_list)*
 
   data_stmt
     : DATA ID
