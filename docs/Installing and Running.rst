@@ -51,11 +51,9 @@ On Windows 10 the same thing looks like this,
     C:\>
 
 
-    As you can see, once you have Asteroid installed on your system you can execute an
-    Asteroid program by typing,
-    ::
-        asteroid [flags] <program file>
+As you can see, once you have Asteroid installed on your system you can execute an
+Asteroid program by typing,
+::
+    asteroid [flags] <program file>
 
-    at the command prompt.
-
-    
+at the command prompt.
