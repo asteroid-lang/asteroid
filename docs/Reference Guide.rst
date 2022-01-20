@@ -386,11 +386,14 @@ The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules
 Sort
 ^^^^
 
-The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/sort.ast>`_ module defines a parameterized `sort` function over a list.  The `sort` function makes use of a user-defined order predicate on the list's elements to perform the sort. The `Quicksort` is the underlying sort algorithm. See the module for an example of it in action. Example:
-""
-  sort(
-    (lambda with (x,y) do return true if x<y else false),
-    [10,5,110,50]).
+The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/sort.ast>`_ module
+defines a parameterized `sort` function over a list.
+The `sort` function makes use of a user-defined order predicate on the list's elements to
+perform the sort. The `Quicksort` is the underlying sort algorithm.
+Here is a simple example example:
+::
+  sort((lambda with (x,y) do return true if x<y else false),
+       [10,5,110,50]).
 
 return the sorted list,
 ::
