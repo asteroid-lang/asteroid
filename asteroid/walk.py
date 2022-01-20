@@ -226,8 +226,6 @@ def unify(term, pattern, unifying = True ):
                     "expected typematch {} got an object of type {}"
                     .format(typematch, struct_id))
 
-        # ttc
-        # Should we have an else here?
         else:
             # Check if the typematch is in the symbol table
             in_symtab = state.symbol_table.find_sym(typematch)
