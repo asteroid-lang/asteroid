@@ -1346,13 +1346,17 @@ Finally, the function `read` reads from `stdin` and returns the input as a strin
 The Module System
 -----------------
 
-..
-   Comment: we need to talk about the difference of keyword module names
-   `load system io` vs `load "mypath/mymodule"`.
-
 A module in Asteroid is a file with a set of valid Asteroid statements.
-You can load this file into other Asteroid code with the `load "<filename>".` statement.
-In the current version of Asteroid modules do not have a separate name space;
+You can load this file into other Asteroid code with the statement,
+::
+   load "example_path/example_filename".
+
+or
+::
+   load example_modulename.
+
+
+In Asteroid modules do not have a separate name space;
 symbols from a module are entered into Asteroid's global name space.
 
 The search strategy for a module to be loaded is as follows,
@@ -1364,7 +1368,7 @@ The search strategy for a module to be loaded is as follows,
 
 Modules defined by the Asteroid system should be loaded with the keyword `system`
 in order to avoid any clashes with locally defined modules.  If the `system`
-keyword is used then only Asteroid only searches in Asteroid's system folders
+keyword is used then Asteroid only searches in its system folders
 rather than in user directories.
 
 Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program loads the `math` module as well as the `io`  module. Only after loading them would you be able to complete the sine function below,

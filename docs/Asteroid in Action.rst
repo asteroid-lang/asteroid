@@ -34,7 +34,7 @@ Challenge: Greet a person
 
 > Ask a user for their name and greet them by printing ‘Hello, <Name\>!’
 
-Here is our first solution using a separate function for each of the steps,   
+Here is our first solution using a separate function for each of the steps,
 ::
     load system io.
 
@@ -114,7 +114,7 @@ Output:
 
 Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator, and the second argument gets instantiated with the elements of the list to be processed.  In our function `unique`, the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is in the list.  If it is not, then it adds it to the list. Otherwise, it just returns the accumulator unchanged.
 
-Section: Modifying string data 
+Section: Modifying string data
 ------------------------------
 
 Challenge: Reverse a string
@@ -221,7 +221,7 @@ In our solution we take advantage of Asteroid's `Pick` object.  The `Pick` objec
 ::
     load system io.
     load system util.
-    load system "pick".
+    load system pick.
 
     seed(42).
 
@@ -380,7 +380,7 @@ In our solution we use a hash table to count the number of word occurances.
 ::
     load system io.
     load system util.
-    load system "hash".
+    load system hash.
 
     -- text generated at 'https://www.lipsum.com/'
     let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan magna quis risus commodo, et pellentesque dui cursus. Sed quis risus libero. Cras et mattis libero, eget varius nisi. Phasellus ultrices, augue non dictum eleifend, nunc elit blandit velit, a viverra risus enim in tellus. Maecenas quis ante eget turpis rhoncus rhoncus eget ut mauris. Suspendisse nec erat sed nunc tempus hendrerit. Nunc dictum nunc molestie eleifend tempus. Praesent cursus lorem diam, sed mattis velit vehicula scelerisque. Nunc iaculis rhoncus ante. Etiam quam nisi, fermentum et euismod a, vulputate eu elit. Suspendisse tincidunt ligula quis interdum blandit. Quisque sed aliquam tellus. Pellentesque ac lacus pulvinar, ornare purus ac, viverra ex. Donec quis pharetra dolor.
@@ -578,7 +578,7 @@ Challenge: Finding duplicate texts
 We do this by finding and hashing N-grams after the appropriate preprocessing.  We will use `N=3`.
 ::
     load system io.
-    load system "hash".
+    load system hash.
 
     -- text from "www.lipsum.com"
 
@@ -1100,7 +1100,7 @@ Challenge: Histogram of random numbers
 
 > Test the quality of the random generator by using a histogram to visualise the distribution.
 
-The quality of the built-in generator of random numbers fully depends on the algorithm the developers of the compiler used. As a user, you cannot do much to change the existing generator, but you can always test if it delivers numbers uniformly distributed across the whole interval.  
+The quality of the built-in generator of random numbers fully depends on the algorithm the developers of the compiler used. As a user, you cannot do much to change the existing generator, but you can always test if it delivers numbers uniformly distributed across the whole interval.
 
 In our solution, we generate 10 random integers between 0 and 9. We then count how many times each of the integers have been generated.  If it is a decent random number generator, all numbers should have been generated roughly an equal number of times.
 ::
@@ -1154,7 +1154,7 @@ where `.` represents the dot product. In our case `a` would be the distance vect
 ::
     load system io.
     load system math.
-    load system "vector".
+    load system vector.
 
     let x = [10, 3].
     let y = [9, 1].
@@ -1379,7 +1379,7 @@ In Asteroid this is easily done with the `tobase` function.
 
     -- make sure that conversions are correct in both directions
     assert (tointeger(tobase(val,2),2) == val).
-    assert (tointeger(tobase(val,8),8) == val).  
+    assert (tointeger(tobase(val,8),8) == val).
     assert (tointeger(tobase(val,16),16) == val).
 Output:
 ::
@@ -1464,7 +1464,7 @@ In the program below, there are four such sequences: for thousands, hundreds, te
     load system io.
     load system math.
     load system util.
-    load system "hash".
+    load system hash.
 
     let roman_hash = HashTable().
     roman_hash @insert(1000,["","M","MM","MMM"]).
@@ -1526,7 +1526,7 @@ The zero name appears only in the case when the given number is zero.
             let r = names @(n / 10 + 18).
             let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
             return r.
-        with (n:%integer) if n < 1000 do  
+        with (n:%integer) if n < 1000 do
             return spell_part(n,100,"hundred").
         with (n:%integer) if n < 1000000 do
             return spell_part(n,1000,"thousand").
@@ -1673,7 +1673,7 @@ Challenge: Incrementing array elements
 For this we use Asteroid's `vector` module, which can handle incrementing a vector with a scalar.
 ::
     load system io.
-    load system "vector".
+    load system vector.
 
     let a = [1 to 10].
     let b = vadd(a,1).
@@ -1693,7 +1693,7 @@ Challenge: Adding up two arrays
 Again, here we take advantage of Asteroid's `vector` module.  Note that the two vectors have to be of the same length in order to add them together.
 ::
     load system io.
-    load system "vector".
+    load system vector.
 
     let a = [10 to 20].
     let b = [30 to 40].
@@ -1709,7 +1709,7 @@ Output:
 The vector module defines a function called `vop` that allows you to combine two vectors using any arbitrary binary function.  Rewriting the above program using `vop`,
 ::
     load system io.
-    load system "vector".
+    load system vector.
 
     let a = [10 to 20].
     let b = [30 to 40].
@@ -1725,7 +1725,7 @@ Output:
 As I said above, any arbitrary binary function. Consider the relational operator `<` expressed as a lambda function,
 ::
     load system io.
-    load system "vector".
+    load system vector.
     load system random.
 
     seed(42).
@@ -1750,7 +1750,7 @@ appear in the second one.
 Here we use Asteroid's `set` module.
 ::
     load system io.
-    load system "set".
+    load system set.
 
     let a = [1 to 10].
     let b = [5 to 15].
@@ -1997,7 +1997,7 @@ Challenge: Finding unique elements
 Converting a list to a set will remove all duplicate elements in the list.
 ::
     load system io.
-    load system "set".
+    load system set.
 
     function unique with lst:%list do
         return toset lst @sort().
@@ -2088,7 +2088,7 @@ with its transpose,
 ::
     let m = [[1,3,5],
              [2,4,6]].
-The procedure:     
+The procedure:
 ::
     load system io.
 
@@ -2184,8 +2184,8 @@ Challenge: Sort hashes by parameter
 This task is commonly performed to sort items where the sortable parameter is one of the values in the hash. For example, sorting a list of people by age.
 ::
     load system io.
-    load system "hash".
-    load system "sort".
+    load system hash.
+    load system sort.
     load system random.
 
     seed(42).
@@ -2224,8 +2224,8 @@ Challenge: Count hash values
 For example, a hash is a collection mapping a car’s license plate to the colour of the car or a passport number to the name of the street where the person lives. In the first example, the task is to count how many cars of each colour there are. In the second example, we have to say how many people live on each street. But let’s simply count the colours of fruit.
 ::
     load system io.
-    load system "hash".
-    load system "sort".
+    load system hash.
+    load system sort.
 
     let fruit_hash = HashTable().
     fruit_hash @insert("apple","red").
@@ -2335,11 +2335,8 @@ We then add them together,
 
 The only thing that is left to do is to iterate appropiately and format the output.
 ::
-    python
-    program =\
-    '''
     load system io.
-    load system "vector".
+    load system vector.
     load system util.
 
     let triangle = [[1]].
@@ -2357,8 +2354,6 @@ The only thing that is left to do is to iterate appropiately and format the outp
     for r in triangle do
         println (r @map(lambda with v do return tostring v) @join(" ")).
     end
-    '''
-    interp(program)
 
 Output:
 ::
@@ -2373,85 +2368,3 @@ Output:
 
 The program prints the first seven rows of the Pascal triangle. The rows are not centred, and are aligned to the left side.
 As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
-
-Chapter: Object-Oriented programming
-------------------------------------
-
-Section: Simple OO challenges
------------------------------
-
-Inheritance I
-^^^^^^^^^^^^^
-
-> Using inheritance, one class can acquire the properties of others.
-
-Here we use a simple class hierarchy of traits and animals that have those traits.
-::
-    load system io.
-
-    structure Walk with
-        function walk with none do println "I'm walking" end
-        end
-
-    structure Fly with
-        function fly with none do println "I'm flying" end
-        end
-
-    structure Sing with
-        function sing with none do println "I'm singing" end
-        end
-
-
-    structure Bird with
-        -- constructor
-        function __init__ with none do println "The bird says:" end
-        end
-
-    inherit(Bird,Fly).
-    inherit(Bird,Walk).
-    inherit(Bird,Sing).
-
-    let bird = Bird().
-    bird @fly().
-    bird @walk().
-    bird @sing().
-Output:
-::
-    The bird says:
-    I'm flying
-    I'm walking
-    I'm singing
-
-
-Inheritance II
-^^^^^^^^^^^^^^
-
-> Using behavior from base classes.
-
-Write a class named `Arithmetic` with a method named `add` that takes 2 integers as parameters and returns an integer denoting their sum. Write a class named `Adder` that inherits from a superclass named `Arithmetic`. The `Adder` performs arithmetic by calling `add`.
-::
-    load system io.
-
-    structure Arithmetic with
-        function add with (a:%integer,b:%integer) do return a+b end
-        function subtract with (a:%integer,b:%integer) do return a-b end
-        end
-
-    structure Adder with
-        ...
-        end
-
-    -- Asteroid allows selective inheritance
-    inherit(Adder,Arithmetic,"add").
-
-    let adder = Adder().
-
-    let x = 1.
-    let y = 2.
-
-    println (adder @add(x,y)).
-
-    assert(adder @add(x,y) == 3).
-Output:
-::
-    3
