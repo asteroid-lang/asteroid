@@ -420,7 +420,7 @@ Type
 
 The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/type.ast>`_ module defines type related functions and structures.
 
-**Type Conversion**
+*Type Conversion*
 
 * Function `tointeger` converts a given input to an integer. It can be called with two different arguments,
 
@@ -440,7 +440,7 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function `tobase` represents the given integer `x` (*specifically* within the given input `(x:%integer,base:%integer)`) as a string in the given base.
 
 
-**Type Query Functions**
+*Type Query Functions*
 
 * Function `islist` returns `true` if given `item` is a list otherwise it will return `false`.
 * Function `isscalar` returns `true` if given `item` is either an integer or a real value.
