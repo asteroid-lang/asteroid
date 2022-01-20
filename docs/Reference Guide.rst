@@ -395,7 +395,7 @@ Here is a simple example example:
   sort((lambda with (x,y) do return true if x<y else false),
        [10,5,110,50]).
 
-return the sorted list,
+returns the sorted list,
 ::
   [5,10,50,110]
 
