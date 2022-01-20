@@ -1,4 +1,4 @@
-load system "io".
+load system io.
 load system "stream".
 
 let s = Stream([1,2,3,4]).

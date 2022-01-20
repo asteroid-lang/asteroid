@@ -11,11 +11,11 @@ load "util".
 function test_function 
   with ".*q.*" do               
     return "Found a p.".
-  orwith ".*http.*" do          -- RE ".*http.*" will match to all ".*https.*" patterns
+  with ".*http.*" do          -- RE ".*http.*" will match to all ".*https.*" patterns
     return "Found a url.".
-  orwith ".*https.*" do         --Redundant
+  with ".*https.*" do         --Redundant
     return "Found a secure url.".
-  orwith ".*z.*" do
+  with ".*z.*" do
     return "Found a z.".
   end.
 

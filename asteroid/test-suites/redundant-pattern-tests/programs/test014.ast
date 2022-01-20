@@ -13,9 +13,9 @@ load "util".
 function testFunction
     with [ x, y ] do  
         return 1.
-    orwith [ head | tail ] do  -- *** will SUBSUME [ a, b, c, d ] ***
+    with [ head | tail ] do  -- *** will SUBSUME [ a, b, c, d ] ***
         return 2.
-    orwith [ a, b, c, d ] do 
+    with [ a, b, c, d ] do 
         return 3.    
     end.
     

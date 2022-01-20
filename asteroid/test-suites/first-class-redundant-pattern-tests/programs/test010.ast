@@ -14,9 +14,9 @@ let ptrn1 = pattern with false.
 function testFunction
     with true do       
         return 1. 
-    orwith *ptrn1 do -- *** will subsume false
+    with *ptrn1 do -- *** will subsume false
         return 2.    
-    orwith false do -- *** duplicate pattern
+    with false do -- *** duplicate pattern
         return 2.  
     end.
     

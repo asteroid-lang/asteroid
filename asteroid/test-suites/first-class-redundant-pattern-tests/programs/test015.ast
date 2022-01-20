@@ -16,9 +16,9 @@ let ptrn3 = pattern with [ h1 | tail ].
 function testFunction
     with *ptrn1 do  -- *** will SUBSUME [ h1 | h2 | h3 | h4 | tail ] ***
         return 1.
-    orwith *ptrn2 do
+    with *ptrn2 do
         return 2. 
-    orwith *ptrn3 do -- ** will not catch ** can still make matches others can't! ex. [ 1, 2]
+    with *ptrn3 do -- ** will not catch ** can still make matches others can't! ex. [ 1, 2]
         return 3. 
     end.
     

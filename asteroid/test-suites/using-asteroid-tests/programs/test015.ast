@@ -4,7 +4,7 @@ load "util".
 
 let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
 
-function encode with (v:%string) %if len(v) == 1 do
+function encode with (v:%string) if len(v) == 1 do
     -- only lowercase letters are encoded
     if not (ascii(v) in [97 to 122]) do
         return v.
@@ -13,7 +13,7 @@ function encode with (v:%string) %if len(v) == 1 do
     end
 end
 
-function decode with (v:%string) %if len(v) == 1 do
+function decode with (v:%string) if len(v) == 1 do
     -- only lowercase letters are decoded
     if not (ascii(v) in [97 to 122]) do
         return v.

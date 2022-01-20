@@ -11,7 +11,7 @@ structure A with
       with (a,b) do
         let this @x = a.
         let this @y = b.
-      orwith none do
+      with none do
         let this @x = 1.
         let this @y = 2.
       end 

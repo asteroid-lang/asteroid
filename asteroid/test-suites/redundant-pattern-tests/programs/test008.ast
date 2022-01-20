@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with 1.1 do       -- *** will subsume 1.1 
         return 1. 
-    orwith 1.2 do 
+    with 1.2 do 
         return 2.
-    orwith 1.3 do 
+    with 1.3 do 
         return 3.
-    orwith 1.1 do     -- *** duplicate pattern
+    with 1.1 do     -- *** duplicate pattern
         return 4.     
     end.
 

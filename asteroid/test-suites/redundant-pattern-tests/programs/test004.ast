@@ -12,11 +12,11 @@ load "util".
 function testFunction
     with ( 1, 2, 3) do 
         return 1.
-    orwith ( 1, 2, ( x1, "test_string" ) ) do --will SUBSUME ( 1, 2, ( var,"test_string"))
+    with ( 1, 2, ( x1, "test_string" ) ) do --will SUBSUME ( 1, 2, ( var,"test_string"))
         return 2.
-    orwith ( x, y, z) do
+    with ( x, y, z) do
         return 3.
-    orwith ( 1, 2, ( var, "test_string" ) ) do
+    with ( 1, 2, ( var, "test_string" ) ) do
         return 3
     end.
     

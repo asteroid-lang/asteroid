@@ -96,7 +96,7 @@ def interp(input_stream,
     except RedundantPatternFound as e:
         print("Error:  {}".format(e))
         sys.exit(1)
-    
+
     except NonLinearPatternError as e:
         print("Error:  {}".format(e))
         sys.exit(1)

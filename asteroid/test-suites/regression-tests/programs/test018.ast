@@ -6,7 +6,7 @@ structure A with
     end
 
 let a = A(1,2).
-let (v:%A) %if v @a + 1 > 1 = a.
+let (v:%A) if v @a + 1 > 1 = a.
 let A(x:%string,_) = A("hello",2).
 println v.
 println x.

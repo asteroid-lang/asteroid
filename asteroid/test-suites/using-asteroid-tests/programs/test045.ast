@@ -14,17 +14,17 @@ function cartesian_to_polar with (x,y) do
 end
 
 function cartesian_to_psi
-    with (x,y) %if x > 0  do
+    with (x,y) if x > 0  do
         return atan(toreal(y)/x).
-    orwith (x,y) %if x < 0 and y >= 0 do
+    with (x,y) if x < 0 and y >= 0 do
         return atan(toreal(y)/x)+pi.
-    orwith (x,y) %if x < 0 and y < 0 do
+    with (x,y) if x < 0 and y < 0 do
         return atan(toreal(y)/x)-pi.
-    orwith (x,y) %if x == 0 and y > 0 do
+    with (x,y) if x == 0 and y > 0 do
         return pi/2.
-    orwith (x,y) %if x == 0 and y < 0 do
+    with (x,y) if x == 0 and y < 0 do
         return -pi/2.
-    orwith (x,y) %if x == 0 and y == 0 do
+    with (x,y) if x == 0 and y == 0 do
         return none.
     end
 

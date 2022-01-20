@@ -1,0 +1,38 @@
+-- this is the example program for multi-dispatch in wikipedia
+-- https://en.wikipedia.org/wiki/Multiple_dispatch
+
+load system io.
+
+structure Asteroid with
+    data size.  
+end
+
+structure Spaceship with
+    data size.                 
+end            
+
+-- instead of using a base class we use a first-class pattern to
+-- express that both asteroids and space ships are space objects.
+-- SpaceObject is a pure constraint pattern!
+let SpaceObject = pattern with %[x if (x is %Asteroid) or (x is %Spaceship)]%.
+
+function collide_with
+  with (a:%Asteroid, b:%Spaceship) do
+    return "a/s".
+  with (a:%Spaceship, b:%Asteroid) do
+    return "s/a".
+  with (a:%Spaceship, b:%Spaceship) do
+    return "s/s".
+  with (a:%Asteroid, b:%Asteroid) do 
+    return "a/a".
+  end
+
+-- here we use the first-class pattern SpaceObject as a 
+-- constraint on the function parameters.
+function collide with (x:*SpaceObject, y:*SpaceObject) do
+  return "Big boom!" if (x@size > 100 and y@size > 100) else collide_with(x, y).
+end
+
+assert (collide(Asteroid(101), Spaceship(300))=="Big boom!").
+assert (collide(Asteroid(10), Spaceship(10))=="a/s").
+assert (collide(Spaceship(101), Spaceship(10))=="s/s").

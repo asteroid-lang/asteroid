@@ -435,7 +435,7 @@ def walk_relational_expr(term):
 # in the nested tuple/AST form.
 #
 # Example clause:
-#               with (x) %if x <= 10 and x > 1 or x > 2 and x < 9 or x < 7 do
+#               with (x) if x <= 10 and x > 1 or x > 2 and x < 9 or x < 7 do
 # Example output:
 #               x: if x <= 10 and x > 1 or x > 2 and x < 9 or x < 7
 def compound_relational_to_string(term):

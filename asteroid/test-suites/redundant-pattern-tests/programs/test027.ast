@@ -21,11 +21,11 @@ structure add with
 function reduce
     with add(x,y) do              -- Will subsume all matches for add(x,S(y))
         return 1.
-    orwith add(x,0) do      
+    with add(x,0) do      
         return reduce(x).
-    orwith add(x,S(y)) do         -- The redundant pattern
+    with add(x,S(y)) do         -- The redundant pattern
         return S(reduce(add(x,y))).
-    orwith term do     
+    with term do     
         return term.
     end 
     

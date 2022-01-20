@@ -35,7 +35,7 @@ function_def
   : FUNCTION ID body_defs END
 
 body_defs
-  : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+  : WITH pattern DO stmt_list (WITH pattern DO stmt_list)*
 
 data_stmt
   : DATA ID
@@ -75,12 +75,11 @@ quote_exp
 head_tail
   : conditional ('|' exp)?
 
+// conditional patterns are now supported via 'pattern if cond'
+// no else part. Since this overlaps with conditional expressions
+// we check for correct usage semantically.
 conditional
-  : compound
-      (
-         (CMATCH exp) |   // CMATCH == '%'IF
-         (IF exp ELSE exp)
-      )?
+  : compound (IF exp (ELSE exp)?)?
 
 compound
   : logic_exp0

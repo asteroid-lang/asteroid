@@ -1,8 +1,8 @@
 -- tests for formatting
 
-load system "io".
-load system "type".
-load system "math".
+load system io.
+load system type.
+load system math.
 
 let b = tostring(true,stringformat(10)).
 println b.

@@ -6,9 +6,9 @@ load "io".
 function qsort
     with [] do
         return [].
-    orwith [a] do
+    with [a] do
         return [a].
-    orwith [pivot|rest] do
+    with [pivot|rest] do
         let less=[].
         let more=[].
 

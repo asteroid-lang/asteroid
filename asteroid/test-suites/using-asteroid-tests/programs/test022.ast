@@ -42,6 +42,6 @@ for i in 0 to word_list @length()-3 do
     end
 end
 
-for ((n_gram,cnt) %if cnt > 1) in ht @aslist() do
+for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
     println (n_gram+": "+cnt).
 end

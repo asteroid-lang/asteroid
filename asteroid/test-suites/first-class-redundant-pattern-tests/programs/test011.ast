@@ -13,11 +13,11 @@ let ptrn1 = pattern with ".*p.*".
 function test_function 
   with *ptrn1 do               -- RE ".*p.*"will match to all ".*http.*" and ".*https.*"
     return "Found a p.".
-  orwith ".*http.*" do          --Redundant
+  with ".*http.*" do          --Redundant
     return "Found a url.".
-  orwith ".*https.*" do         --Redundant
+  with ".*https.*" do         --Redundant
     return "Found a secure url.".
-  orwith ".*z.*" do
+  with ".*z.*" do
     return "Found a z.".
   end.
 

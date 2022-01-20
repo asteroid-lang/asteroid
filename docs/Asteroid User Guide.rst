@@ -27,16 +27,16 @@ that recursively computes the factorial of a positive integer and uses first-cla
 in order to ensure that the domain of the function is not violated,
 ::
     -- define first-class patterns
-    let POS_INT = pattern with (x:%integer) %if x > 0.
-    let NEG_INT = pattern with (x:%integer) %if x < 0.
+    let POS_INT = pattern with (x:%integer) if x > 0.
+    let NEG_INT = pattern with (x:%integer) if x < 0.
 
     -- define our factorial function
     function fact
         with 0 do
             return 1
-        orwith n:*POS_INT do            -- use first pattern
+        with n:*POS_INT do            -- use first pattern
             return n * fact (n-1).
-        orwith n:*NEG_INT do            -- use second pattern
+        with n:*NEG_INT do            -- use second pattern
             throw Error("undefined for "+n).
         end
 
@@ -46,7 +46,7 @@ dereferencing those variables with the `*` operator.  First-class patterns have
 profound implications for software development in that pattern definition and usage
 points are now separate and patterns can be reused in different contexts.
 
-These are just two examples where Asteroid differs drastically from other programming languages.  
+These are just two examples where Asteroid differs drastically from other programming languages.
 This document is an overview of Asteroid and is intended to get you started quickly
 with programming in Asteroid.
 
@@ -55,27 +55,33 @@ with programming in Asteroid.
 Installation
 ------------
 
-Download or clone the `Asteroid github repository <https://github.com/lutzhamel/asteroid>`_, or download one of the `prepackaged releases <https://github.com/lutzhamel/asteroid/releases>`_, and then install with `pip <https://pip.pypa.io/en/stable/>`_.
+Download or clone the `Asteroid github repository <https://github.com/asteroid-lang/asteroid>`_,
+or download one of the `prepackaged releases <https://github.com/asteroid-lang/asteroid/releases>`_, and then install with `pip <https://pip.pypa.io/en/stable/>`_.
 
 For example, if your working directory is at the top of the repository,
 ::
     $ python -m pip install .
 
+The same command should work on Unix-like and Windows systems,
+though you may have to run it with `python3` or some other variation.
+Don't forget to add the `bin` directory where `pip` installs programs
+to your `PATH` variable.
 
-The same command should work on Unix-like and Windows systems, though you may have to run it with `python3` or some other variation.
-
-In addition, there is a cloud-based Linux virtual machine that is completely set up with an Asteroid environment and can be accessed at `Repl.it <https://repl.it/@lutzhamel/asteroid#README.md>`_.
+In addition, there is a cloud-based Linux virtual machine that is completely
+set up with an Asteroid environment and can be accessed at
+`Repl.it <https://repl.it/@lutzhamel/asteroid#README.md>`_.
 
 Running the Asteroid Interpreter
 --------------------------------
 
-You can now run the interpreter from the command line by simply typing `asteroid`. This will work on both Windows and Unix-like systems as long as you followed the instructions above.
+You can now run the interpreter from the command line by simply typing `asteroid`.
+This will work on both Windows and Unix-like systems as long as you followed the instructions above.
 To run asteroid on Unix-like systems and on our virtual machine,
 ::
     $ cat hello.ast
     -- the obligatory hello world program
 
-    load system "io".
+    load system io.
 
     println "Hello, World!".
 
@@ -88,7 +94,7 @@ On Windows 10 the same thing looks like this,
     C:\> type hello.ast
     -- the obligatory hello world program
 
-    load system "io".
+    load system io.
 
     println "Hello, World!".
 
@@ -147,7 +153,7 @@ Lists and tuples themselves are also embedded in type hierarchies, although very
 
 That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples,
 ::
-    load system "io".
+    load system io.
     println ("this is my list: " + [1,2,3]).
 
 
@@ -170,7 +176,7 @@ Lists
 
 In Asteroid the `list` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
 ::
-    load system "io".    -- load the io module so we can print
+    load system io.    -- load the io module so we can print
 
     let a = [1,2,3].     -- construct list a
     let b = a @[2,1,0].  -- reverse list a
@@ -181,21 +187,21 @@ The output is: `[3,2,1]`.
 In Asteroid lists are considered objects with member functions that can manipulate the list
 object, e.g. `[1,2,3] @ reverse()`. We could rewrite the above example as,
 ::
-    load system "io".          
+    load system io.
 
-    let a = [1,2,3].    
+    let a = [1,2,3].
     let b = a @reverse().
     println b.
 
 For a full list of available member functions for Asteroid lists please see the reference guide.
 
-As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.  
+As we have seen, the `@` operator allows you to access either individual elements, slices, or member functions of a list.
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
 a step specifier allowying you to generate integer values within that range,
 ::
-    load system "io".          
+    load system io.
 
     -- build a list of odd values
     let a = [1 to 10 step 2].  -- list comprehension
@@ -215,8 +221,8 @@ Asteroid's simple list comprehensions in conjunction with the `map` function for
 construct virtually  any kind of list. For example, the following program constructs
 a list of alternating 1 and -1,
 ::
-    load system "io".
-    load system "math".
+    load system io.
+    load system math.
 
     let a = [1 to 10] @map(lambda with x do return mod(x,2))
                       @map(lambda with x do return 1 if x else -1).
@@ -229,7 +235,7 @@ where the output is,
 
 Higher dimensional arrays can easily be simulated with lists of lists,
 ::
-    load system "io".
+    load system io.
 
     -- build a 2-D array
     let b = [[1,2,3],
@@ -251,14 +257,14 @@ As we saw earlier, the `tuple` is another fundamental, built-in data structure t
 
 Below is an example of a tuple declaration and access.
 ::
-    load system "io".   -- load the io module so we can print
+    load system io.   -- load the io module so we can print
     let a = (1,2,3).    -- construct tuple a
     let b = a @1.       -- access the second element in tuple a
     println b.          -- print the element to the console
 
 Like `lists`, `tuples` may also be nested,
 ::
-    load system "io".
+    load system io.
     -- build a 2-D array
     let b = (("a","b","c"),
              ("d","e","f"),
@@ -268,7 +274,7 @@ Like `lists`, `tuples` may also be nested,
 
 Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new `tuple`. The following code block demonstrates this,
 ::
-    load system "io".
+    load system io.
     -- build a tuple
     let b = ("a","b","c").
     -- attempt to modify an element in the tuple
@@ -295,7 +301,7 @@ a *default constructor* for a structure.  That constructor copies the arguments 
 data member fields of the structure in the order that the data members appear in the
 structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
 ::
-    load system "io".
+    load system io.
 
     structure Person with
         data name.
@@ -306,7 +312,7 @@ structure definition and as they appear in the parameter list of the constructor
     -- make a list of persons
     let people = [
         -- use default constructors to construct Person instances
-        Person("George", 32, "M"),  
+        Person("George", 32, "M"),
         Person("Sophie", 46, "F"),
         Person("Oliver", 21, "X")
         ].
@@ -333,11 +339,11 @@ The `let` statement is a pattern matching statement and can be viewed as Asteroi
     let 1 = 1.
 
 where we take the term on the right side and match it to the pattern on the left side of
-the `=` operator are completely legal and highlight the fact that `let` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.  
+the `=` operator are completely legal and highlight the fact that `let` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
 
 Here is an example where we do some computations on the right side of a `let` statement and then match the result against a pattern on the left,
 ::
-    load system "io".
+    load system io.
 
     -- note 1+1 evaluates to 2 and is then matched
     -- the variables x and y are bound to 1 and 3, respectively,
@@ -360,7 +366,7 @@ supports something called a **named pattern** were a (sub)pattern on the left si
 of a `let` statement (or any pattern as it appears in Asteroid) can be given a name
 and that name will be instantiated with a term during pattern matching.  For example,
 ::
-    load system "io".
+    load system io.
 
     let t:(1,2) = (1,2).  -- using a named pattern on lhs
     println t.
@@ -374,9 +380,9 @@ We can combine type patterns and named patterns to give us something that looks
 like a variable declaration in other languages. In Asteroid, though, it is still just all
 about pattern matching.  Consider,
 ::
-    load system "io".
-    load system "math".
-    load system "type".
+    load system io.
+    load system math.
+    load system type.
 
     let x:%real = pi.
     println (tostring(x,stringformat(4,2))).
@@ -393,7 +399,7 @@ Control structure implementation in Asteroid is along the lines of any of the mo
 
 As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages in use today.  For example, here is a short program with a `for` loop that prints out the first six even positive integers,
 ::
-    load system "io".
+    load system io.
 
     for i in 0 to 10 step 2 do
         println i.
@@ -410,8 +416,8 @@ The output is,
 
 Here is another example that iterates over lists,
 ::
-    load system "io".
-    load system "util"
+    load system io.
+    load system util
 
     for (ix,bird) in zip(["first","second","third"],["turkey","duck","chicken"]) do
         println ("the "+ix+" bird is a "+bird).
@@ -428,8 +434,8 @@ iterate pattern matching on each of the pairs on the list with the pattern `(ix,
 
 The following is a short program that demonstrates an `if` statement,
 ::
-    load system "io".
-    load system "util".
+    load system io.
+    load system util.
 
     let x = tointeger(input("Please enter an integer: ")).
 
@@ -457,7 +463,7 @@ instantiating the formal arguments.
 Let's start with something simple.  Here is a function definition for `revdouble` that reverses a list of integers
 then doubles each value before returning the result,
 ::
-    load system "io".
+    load system io.
 
     function revdouble
         with l:%list do
@@ -470,17 +476,17 @@ The output is `[6,4,2]`.  Notice how we used type patterns to make sure that thi
 function is only applied to lists of integers.
 
 In order to demonstrate multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each `with`/`orwith` clause introduces a new function body with its
+Asteroid. Each `with`/`with` clause introduces a new function body with its
 corresponding pattern,
 ::
-    load system "io".
+    load system io.
 
     function qsort
         with [] do
             return [].
-        orwith [a] do
+        with [a] do
             return [a].
-        orwith [pivot|rest] do
+        with [pivot|rest] do
             let less=[].
             let more=[].
 
@@ -512,7 +518,7 @@ As you have seen in a couple of occasions already in the document, Asteroid also
 functions except that you declare them on-the-fly and they are declared without a
 name.  Here is an example using a `lambda` function,
 ::
-    load system "io".
+    load system io.
 
     println ((lambda with n do return n+1) 1).
 
@@ -531,7 +537,7 @@ Pattern Matching in Expressions: The `is` Predicate
 
 Consider the following example of this predicate among some patterns,
 ::
-    load system "io".
+    load system io.
 
     let p = (1,2).
 
@@ -563,7 +569,7 @@ We can also employ pattern matching in loops.
 In the following program we use the `is` predicate to test whether the list is empty or not
 while looping,
 ::
-    load system "io".
+    load system io.
 
     let list = [1,2,3].
 
@@ -595,7 +601,7 @@ Here `x` and `y` are variables, `0` represents the natural number with value zer
 `add` symbol,
 ::
     -- implements Peano addition on terms
-    load system "io".
+    load system io.
 
     structure s with
         data val.
@@ -607,11 +613,11 @@ Here `x` and `y` are variables, `0` represents the natural number with value zer
         end
 
     function reduce
-        with add(x,0) do      
+        with add(x,0) do
             return reduce(x).
-        orwith add(x,s(y))  do
+        with add(x,s(y))  do
             return s(reduce(add(x,y))).
-        orwith term do     
+        with term do
             return term.
         end
 
@@ -633,14 +639,14 @@ input values to function bodies.  Consider the following definition of the
 `factorial` function where we use conditional pattern matching to control
 the kind of values that are being passed to a particular function body,
 ::
-    load system "io".
+    load system io.
 
     function factorial
         with 0 do
             return 1
-        orwith (n:%integer) %if n > 0 do
+        with (n:%integer) if n > 0 do
             return n * factorial (n-1).
-        orwith (n:%integer) %if n < 0 do
+        with (n:%integer) if n < 0 do
             throw Error("factorial is not defined for "+n).
         end
 
@@ -658,8 +664,8 @@ We have seen pattern matching in `for` loops earlier.  Here we show another
 example. This combines structural matching with regular expression matching
 in `for` loops
 that selects certain items from a list. Suppose we want to print out the names of persons that contain a lower case 'p',
-:: 
-    load system "io".
+::
+    load system io.
 
     structure Person with
         data name.
@@ -678,16 +684,16 @@ that selects certain items from a list. Suppose we want to print out the names o
         println name.
     end
 
-Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is `Sophie`.  
+Here we pattern match the `Person` object in the `for` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is `Sophie`.
 
 Pattern Matching in `try-catch` Statements
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Exception handling in Asteroid is very similar to exception handling in many of the other modern programming languages available today.  The example below shows an Asteroid program  that throws one of two exceptions depending on the randomly generated value `i`,
 ::
-    load system "io".
-    load system "random".
-    load system "type".
+    load system io.
+    load system random.
+    load system type.
 
     structure Head with
         data val.
@@ -738,7 +744,7 @@ The right side of the `let` statement invokes the default constructor for the
 structure in order to create an instance stored in the variable `scarlett`. We
 can access members of the instance,
 ::
-    load system "io".
+    load system io.
 
     structure Person with
         data name.
@@ -748,7 +754,7 @@ can access members of the instance,
 
     let scarlett = Person("Scarlett",28,"F").
     -- access the name field of the structure instance
-    println (scarlett @name).  
+    println (scarlett @name).
 
 Asteroid allows you to attach functions to structures.  In member functions
 the object identity of the instance is available through the `this` keyword.
@@ -756,7 +762,7 @@ For example, we can
 extend our `Person` structure with the `hello` function that uses the `name` field
 of the instance,
 ::
-    load system "io".
+    load system io.
 
     structure Person with
         data name.
@@ -784,7 +790,7 @@ The only thing you need to keep in mind is that you **cannot** pattern match on 
 function field.  From a pattern matching perspective, a structure consists only of
 data fields.  So even if we declare a structure like this,
 ::
-    load system "io".
+    load system io.
 
     structure Person with
         data name.
@@ -808,31 +814,31 @@ only on the data fields.  The output of the program is,
     Scarlett is 28 years old
 
 Here is a slightly more involved example based on the
-dog example from the `Python documentation <https://docs.python.org/3/tutorial/classes.html>`_.  
+dog example from the `Python documentation <https://docs.python.org/3/tutorial/classes.html>`_.
 The idea of the dog example is to have a structure that describes dogs by their
 names and the tricks that they can perform.  Tricks can be added to a particular
 dog instance by calling the `add_trick` function.  Rather than using the default
 constructor, we define a constructor for our instances with the `__init__` function.
 Here is the program listing for the example in Asteroid,
 ::
-    load system "io".
-    load system "type".
+    load system io.
+    load system type.
 
     structure Dog with
 
-    data name.
-    data tricks.
+       data name.
+       data tricks.
 
-    function add_trick
-        with new_trick:%string do
-            this @tricks @append new_trick.
-        end
+       function add_trick
+          with new_trick:%string do
+             this @tricks @append new_trick.
+          end
 
-    function __init__
-        with name:%string do
-            let this @name = name.
-            let this @tricks = [].
-        end
+       function __init__
+          with name:%string do
+             let this @name = name.
+             let this @tricks = [].
+          end
 
     end
 
@@ -845,7 +851,7 @@ Here is the program listing for the example in Asteroid,
     buddy @add_trick "roll over".
 
     -- print out all the dogs that know how to fetch
-    for (Dog(name,tricks) %if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+    for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
         println (name+" knows how to fetch").
     end
 
@@ -857,13 +863,13 @@ because here we use structural, conditional, and regular expression pattern
 matching in order to only select the dogs that know how to do `fetch` from
 the list of dogs.  The pattern is,
 ::
-    Dog(name,tricks) %if tostring(tricks) is ".*fetch.*"
+    Dog(name,tricks) if tostring(tricks) is ".*fetch.*"
 
 The structural part of the pattern is `Dog(name,tricks)` which simply matches
 any dog instance on the list.  However, that match is only successful if
 the conditional part of the pattern holds,
 ::
-    %if tostring(tricks) is ".*fetch.*"
+    if tostring(tricks) is ".*fetch.*"
 
 This condition only succeeds if the `tricks` list viewed as a string matches
 the regular expression `".*fetch.*"`. That is, if the list contains the word `fetch`.
@@ -910,7 +916,7 @@ the first component of the pair is restricted to the primitive data types of
 Asteroid,
 ::
     function foo
-        with (x %if (x is %boolean) or (x is %integer) or (x is %string),y) do
+        with (x if (x is %boolean) or (x is %integer) or (x is %string),y) do
             println (x,y).
         end
 
@@ -921,9 +927,9 @@ difficult to read.
 We can express the same function with a first-class pattern,
 ::
     let TP = pattern
-        with q %if (q is %boolean) or
-                   (q is %integer) or
-                   (q is %string).
+        with q if (q is %boolean) or
+                  (q is %integer) or
+                  (q is %string).
 
     function foo
         with (x:*TP,y) do
@@ -945,18 +951,18 @@ spots where the patterns occurs. Consider the following program snippet,
     function fact
         with 0 do
             return 1
-        orwith (n:%integer) %if n > 0 do
+        with (n:%integer) if n > 0 do
             return n * fact (n-1).
-        orwith (n:%integer) %if n < 0 do
+        with (n:%integer) if n < 0 do
             throw Error("fact undefined for negative values").
         end
 
     function stepf
         with 0 do
             return 1
-        orwith (n:%integer) %if n > 0 do
+        with (n:%integer) if n > 0 do
             return 1.
-        orwith (n:%integer) %if n < 0 do
+        with (n:%integer) if n < 0 do
             return -1.
         end
 
@@ -964,24 +970,24 @@ In order to write these two functions we had to repeat the almost identical patt
 four times.  First-class patterns allow us to write the same two functions in a
 much more elegant way,
 ::
-    let POS_INT = pattern with (x:%integer) %if x > 0.
-    let NEG_INT = pattern with (x:%integer) %if x < 0.
+    let POS_INT = pattern with (x:%integer) if x > 0.
+    let NEG_INT = pattern with (x:%integer) if x < 0.
 
     function fact
         with 0 do
             return 1
-        orwith n:*POS_INT do
+        with n:*POS_INT do
             return n * fact (n-1).
-        orwith *NEG_INT do
+        with *NEG_INT do
             throw Error("fact undefined for negative values").
         end
 
     function stepf
         with 0 do
                 return 1
-            orwith *POS_INT do
+            with *POS_INT do
                 return 1.
-            orwith *NEG_INT do
+            with *NEG_INT do
                 return -1.
             end
 
@@ -1002,7 +1008,7 @@ In order to use a pattern as a constructor we apply the `eval` function to it wh
 turns the pattern into a value from Asteroid's point of view which can then be used
 in computations.  For example,
 ::
-    load system "io".
+    load system io.
     let P = pattern with ([a],[b]).
     let a = 1.
     let b = 2.
@@ -1018,7 +1024,7 @@ the variables `a` and `b`, and
 the first-class pattern `P`.  Of course, first-class patterns can be used
 to destructure the constructed value,
 ::
-    load system "io".
+    load system io.
     let P = pattern with ([a],[b]).
     let v = ([1],[2]).
     let *P = v.
@@ -1039,7 +1045,7 @@ uses the first-class pattern `FP` to both construct an object network representi
 a family and, since it is a pattern, can also be used to destructure a family object
 network.  Here is the program listing,
 ::
-    load system "io".
+    load system io.
 
     -----------------------------
     structure Family
@@ -1162,7 +1168,7 @@ superfluous, e.g. in a multi-dispatch function definition.
 In addition to the `kind` field, the `value` field holds a string with some further details on the exception. Specific exceptions can be caught by pattern matching on the `kind` field of the `Exception` object.  For
 example,
 ::
-    load system "io".
+    load system io.
 
     try
         let x = 1/0.
@@ -1177,7 +1183,7 @@ The output is,
 
 Asteroid also provides a predefined `Error` object for user level exceptions,
 ::
-    load system "io".
+    load system io.
 
     try
         throw Error("something worth throwing").
@@ -1188,7 +1194,7 @@ Asteroid also provides a predefined `Error` object for user level exceptions,
 Of course the user can also use the `Exception` object for their own exceptions
 by defining a `kind` that does not interfere with the predefined `kind` strings above,
 ::
-    load system "io".
+    load system io.
 
     try
         throw Exception("MyException","something worth throwing").
@@ -1203,7 +1209,7 @@ The output here is,
 In addition to the Asteroid defined exceptions,
 the user is allowed to construct user level exceptions with any kind of object including tuples and lists. Here is an example that constructs a tuple as an exception object,
 ::
-    load system "io".
+    load system io.
 
     try
         throw ("funny exception", 42).
@@ -1211,12 +1217,12 @@ the user is allowed to construct user level exceptions with any kind of object i
         println v.
     end
 
-The output of this program is `42`.  
+The output of this program is `42`.
 
 Now, if you don't care what kind of exception you catch, you need to use a `wildcard` or a variable because exception handlers are activated via pattern matching on the
 exception object itself.  Here is an example using a `wildcard`,
 ::
-    load system "io".
+    load system io.
 
     try
         let (x,y) = (1,2,3).
@@ -1226,8 +1232,8 @@ exception object itself.  Here is an example using a `wildcard`,
 
 Here is an example using a variable,
 ::
-    load system "io".
-    load system "type".
+    load system io.
+    load system type.
 
     try
         let (x,y) = (1,2,3).
@@ -1246,7 +1252,7 @@ Basic Asteroid I/O
 
 I/O functions are defined in the `io` module. The `println` function prints its argument in a readable form to the terminal.  Recall that the `+` operator also implements string concatenation.  This allows us to construct nicely formatted output strings,
 ::
-    load system "io".
+    load system io.
 
     let a = 1.
     let b = 2.
@@ -1265,9 +1271,9 @@ The width specifier tells the `tostring` function how many characters to reserve
 
 Here is a program that exercises some of the string formatting options,
 ::
-    load system "io".
-    load system "type".
-    load system "math".
+    load system io.
+    load system type.
+    load system math.
 
     -- if the width specifier is larger than the length of the value
     -- then the value will be right justified
@@ -1300,7 +1306,7 @@ except that it does not terminate print with a newline.
 
 Another useful function defined in the `io` module is the `input` function that, given an optional prompt string, will prompt the user at the terminal and return the input value as a string.  Here is a small example,
 ::
-    load system "io".
+    load system io.
 
     let name = input("What is your name? ").
     println ("Hello " + name + "!").
@@ -1314,8 +1320,8 @@ The output is,
 We can use the type casting functions such as `tointeger` or `toreal` defined in the
 `type` module to convert the string returned from `input` into a numeric value,
 ::
-    load system "io".
-    load system "type".
+    load system io.
+    load system type.
 
     let i = tointeger(input("Please enter a positive integer value: ")).
 
@@ -1340,24 +1346,38 @@ Finally, the function `read` reads from `stdin` and returns the input as a strin
 The Module System
 -----------------
 
-A module in Asteroid is a file with a set of valid Asteroid statements.  You can load this file into other Asteroid code with the `load "<filename>".` statement.  In the current version of Asteroid modules do not have a separate name space; symbols from a module are entered into Asteroid's global name space.
+A module in Asteroid is a file with a set of valid Asteroid statements.
+You can load this file into other Asteroid code with the statement,
+::
+   load "example_path/example_filename".
 
-The search strategy for a module to be loaded is as follows, 
+or
+::
+   load example_modulename.
 
-#. raw module name - could be an absolute path 
-#. search in current directory (path[1]) 
-#. search in directory where Asteroid is installed (path[0]) 
-#. search in subdirectory where Asteroid was started 
+
+In Asteroid modules do not have a separate name space;
+symbols from a module are entered into Asteroid's global name space.
+
+The search strategy for a module to be loaded is as follows,
+
+#. raw module name - could be an absolute path
+#. search in current directory
+#. search in directory where Asteroid is installed
+#. search in subdirectory where Asteroid was started
 
 Modules defined by the Asteroid system should be loaded with the keyword `system`
-in order to avoid any clashes with locally defined modules.
+in order to avoid any clashes with locally defined modules.  If the `system`
+keyword is used then Asteroid only searches in its system folders
+rather than in user directories.
 
 Say that you wanted to load the `math` module so you could execute a certain trigonometric function. The following Asteroid program loads the `math` module as well as the `io`  module. Only after loading them would you be able to complete the sine function below,
 ::
-    load system "io".
-    load system "math".
+    load system io.
+    load system math.
 
     let x = sin( pi / 2 ).
     println("The sine of pi / 2 is " + x + ".").
 
-Both the function `sin` and the constant value `pi` are defined in the `math` module. In addition, the `io` module is where all input/output functions in Asteroid (such as `println`) come from.
+Both the function `sin` and the constant value `pi` are defined in the `math` module.
+In addition, the `io` module is where all input/output functions in Asteroid (such as `println`) come from.

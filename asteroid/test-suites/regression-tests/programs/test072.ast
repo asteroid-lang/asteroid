@@ -7,7 +7,7 @@ load "util".
 function fact 
     with 0 do
         return 1
-    orwith n do
+    with n do
         return n * fact (n-1).
     end 
 

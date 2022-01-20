@@ -1,5 +1,5 @@
 
 load "io".
 
-let (x,y) %if x is y = ([1],[1]).
+let (x,y) if x is y = ([1],[1]).
 println x.

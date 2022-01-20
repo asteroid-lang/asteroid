@@ -9,7 +9,7 @@ from re import match as re_match
 
 from asteroid.globals import *
 from asteroid.support import *
-from asteroid.state import state
+from asteroid.state import state, warning
 
 #########################################################################
 # this dictionary maps list member function names to function
@@ -120,24 +120,27 @@ def unify(term, pattern, unifying = True ):
         # this is possible because all data types are subtypes of string
         return unify(term2string(term), pattern[1])
 
-    elif pattern[0] == 'cmatch':
+    elif pattern[0] == 'if-exp':
 
         # If we are evaluating subsumtion
         if not unifying:
 
             # If we are evaluating subsumption between two different conditional patterns
             # we want to 'punt' and print a warning message.
-            if term[0] == 'cmatch':
+            if term[0] == 'if-exp':
 
                 if not state.cond_warning:
-                    print("Redundant pattern detection is not supported for conditional pattern expressions.")
+                    warning("Redundant pattern detection is not supported for conditional pattern expressions.")
                     state.cond_warning = True
 
             # Otherwise if the term is not another cmatch the clauses are correctly ordered.
             raise PatternMatchFailed(
                 "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
-        (CMATCH, pexp, cond_exp) = pattern
+        (IF_EXP, cond_exp, pexp, else_exp) = pattern
+
+        if else_exp[0] != 'null':
+            raise ValueError("conditional patterns do not support else clauses")
 
         unifiers = unify(term, pexp, unifying)
 
@@ -158,13 +161,17 @@ def unify(term, pattern, unifying = True ):
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
-    elif term[0] == 'cmatch':
+    elif term[0] == 'if-exp':
         # We will only get here when evaluating subsumption
 
         # If we get here, a conditional pattern clause is placed after a non-conditonal
         # pattern clause. Therefore, we need to check if the subsume because if they do
         # the conditonal clause is redundant.
-        (CMATCH, pexp, cond_exp) = term
+        (IF_EXP, cond_exp, pexp, else_exp) = term
+
+        if else_exp[0] != 'null':
+            raise ValueError("conditional patterns do not support else clauses")
+
         return unify(pexp,pattern,False)
 
     elif pattern[0] == 'typematch':
@@ -1352,6 +1359,11 @@ def if_exp(node):
 
     (IF_EXP, cond_exp, then_exp, else_exp) = node
     assert_match(IF_EXP, 'if-exp')
+
+    # if expressions without an else clause are only allowed in
+    # conditional patterns.
+    if else_exp[0] == 'null':
+        raise ValueError("if expressions need an else clause")
 
     (BOOLEAN, cond_val) = map2boolean(walk(cond_exp))
 

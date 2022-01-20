@@ -12,9 +12,9 @@ load "util".
 function testFunction
     with ( 1, value1, value2) do --will SUBSUME ( 1, y, z)
         return 1.
-    orwith ( 1, y, z) do
+    with ( 1, y, z) do
         return 2.
-    orwith ( x, y, z) do
+    with ( x, y, z) do
         return 3.
     end.
     

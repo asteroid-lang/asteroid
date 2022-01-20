@@ -11,9 +11,9 @@ load "util".
 function fact
     with 0 do
         return 1
-    orwith (n:%integer) do   -- Will subsume pattern (n:%integer)
+    with (n:%integer) do   -- Will subsume pattern (n:%integer)
         return n * fact (n-1).
-    orwith (n:%integer) do
+    with (n:%integer) do
         throw Error("factorial is not defined for "+n).
     end.
 

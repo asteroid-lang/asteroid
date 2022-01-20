@@ -17,11 +17,11 @@ let ptrn4 = pattern with 1.1.
 function testFunction
     with *ptrn1 do       -- *** will subsume 1.1 
         return 1. 
-    orwith *ptrn2 do 
+    with *ptrn2 do 
         return 2.
-    orwith *ptrn3 do 
+    with *ptrn3 do 
         return 3.
-    orwith *ptrn4 do     -- *** duplicate pattern
+    with *ptrn4 do     -- *** duplicate pattern
         return 4.     
     end.
     

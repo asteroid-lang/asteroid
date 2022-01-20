@@ -22,3 +22,7 @@ class State:
         self.lineinfo = ("<input>", 1) # tuple: module, lineno
 
 state = State()
+
+def warning(str):
+    module, lineno = state.lineinfo
+    print("Warning: {}: {}: {}".format(module, lineno, str))

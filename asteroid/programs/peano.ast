@@ -24,7 +24,7 @@ let rule_table = [
 
 function reduce
     with term do
-        for (Rule(lhs, rhs) %if term is *lhs) in rule_table do
+        for (Rule(lhs, rhs) if term is *lhs) in rule_table do
             return eval(rhs).
         end
         return term.

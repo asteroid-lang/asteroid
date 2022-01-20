@@ -7,9 +7,9 @@ load "util".
 function fact 
     with 0 do
         return 1
-    orwith (n:%integer) %if n > 0 do
+    with (n:%integer) if n > 0 do
         return n * fact (n-1).
-    orwith (n:%integer) %if n < 0 do
+    with (n:%integer) if n < 0 do
         throw Error("factorial is not defined for "+n).
     end 
 

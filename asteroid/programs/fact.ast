@@ -6,15 +6,15 @@
 load "io".
 load "util".
 
-let POS_INT = pattern with (n:%integer) %if n > 0.
-let NEG_INT = pattern with (n:%integer) %if n < 0.
+let POS_INT = pattern with (n:%integer) if n > 0.
+let NEG_INT = pattern with (n:%integer) if n < 0.
 
 function fact
     with 0 do
         return 1
-    orwith *POS_INT do
+    with *POS_INT do
         return n * fact (n-1).
-    orwith *NEG_INT do
+    with *NEG_INT do
         throw Error("undefined for "+n).
     end
 

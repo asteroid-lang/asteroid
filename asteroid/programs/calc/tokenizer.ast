@@ -4,7 +4,7 @@
 -- how regular expression can be used during pattern matching.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load system "type".
+load system type.
 load system "stream".
 
 structure Token with
@@ -65,7 +65,7 @@ function tokenize
   end
 
 -- test harness for tokenizer
--- load system "io".
+-- load system io.
 -- let output_stream = tokenize("(101+1)*2").
 -- let output_stream = tokenize("101").
 -- println (output_stream @__string__()).

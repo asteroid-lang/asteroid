@@ -5,9 +5,9 @@ load "util".
 function postfix
     with (op, cl, cr) do 
         return (postfix cl, postfix cr, op)
-    orwith (op, c) do 
+    with (op, c) do 
         return (postfix c, op)
-    orwith (v,) do 
+    with (v,) do 
         return (v,)
 end 
 

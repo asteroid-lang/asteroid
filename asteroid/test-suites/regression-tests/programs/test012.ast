@@ -3,9 +3,9 @@
 load "io".
 
 function filter 
-    with (x:%string) %if x @explode() == x @explode() @reverse() do
+    with (x:%string) if x @explode() == x @explode() @reverse() do
         return true.
-    orwith _ do 
+    with _ do 
         return false.
     end
     

@@ -26,11 +26,11 @@ let ptrn4 = pattern with term.
 function reduce
     with *ptrn1 do              -- Will subsume all matches for add(x,S(y))
         return 1.
-    orwith *ptrn2 do      
+    with *ptrn2 do      
         return reduce(x).
-    orwith *ptrn3 do         -- The redundant pattern
+    with *ptrn3 do         -- The redundant pattern
         return S(reduce(add(x,y))).
-    orwith *ptrn4 do     
+    with *ptrn4 do     
         return term.
     end 
 

@@ -24,11 +24,11 @@ let people = [
 function test_function 
   with *ptrn1 do
     return "Found a p.".
-  orwith *ptrn2 do   -- *** The regular expression ".*g.*" will subsume ".*gg.*"
+  with *ptrn2 do   -- *** The regular expression ".*g.*" will subsume ".*gg.*"
     return "Found a g.".
-  orwith *ptrn3 do
+  with *ptrn3 do
     return "Found a v.".
-  orwith *ptrn4 do  -- will be redundant
+  with *ptrn4 do  -- will be redundant
     return "Found a gg.".
   end.
   

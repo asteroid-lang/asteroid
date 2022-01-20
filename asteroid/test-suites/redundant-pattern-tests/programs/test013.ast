@@ -12,7 +12,7 @@ load "util".
 function testFunction
     with [ x, y ] do  -- *** will SUBSUME [ 1, 2 ] ***
         return 1.
-    orwith [ 1, 2 ] do 
+    with [ 1, 2 ] do 
         return 2.
     end.
 

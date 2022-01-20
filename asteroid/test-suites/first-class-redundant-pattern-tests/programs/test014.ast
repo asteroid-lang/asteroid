@@ -17,9 +17,9 @@ let ptrn3 = pattern with [ a, b, c, d ].
 function testFunction
     with *ptrn1 do  
         return 1.
-    orwith *ptrn2 do  -- *** will SUBSUME [ a, b, c, d ] ***
+    with *ptrn2 do  -- *** will SUBSUME [ a, b, c, d ] ***
         return 2.
-    orwith *ptrn3 do 
+    with *ptrn3 do 
         return 3.    
     end.
     
