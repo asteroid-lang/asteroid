@@ -1,6 +1,0 @@
-
-load "io".
-
-for n in 0 to 5 do
-    println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
-end

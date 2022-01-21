@@ -1,9 +1,0 @@
-
-load "io".
-load "math".
-load "util".
-load "type".
-
-let array = [2, 4, 18, 9, 16, 7, 10].
-let odd = array @reduce(lambda with (acc,i) do return i if isnone(acc) and mod(i,2) else acc,none).
-println odd.

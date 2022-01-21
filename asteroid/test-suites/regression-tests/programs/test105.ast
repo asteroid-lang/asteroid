@@ -1,7 +1,0 @@
-
-load "io".
-load "util".
-
-function ident with n do return n end 
-println (ident(2)).
-assert (ident(2) is 2).

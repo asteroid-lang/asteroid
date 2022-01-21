@@ -1,5 +1,0 @@
-
-load "io".
-load "math". -- definition of pi
-
-println pi.

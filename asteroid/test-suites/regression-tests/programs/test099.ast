@@ -1,5 +1,0 @@
-
-load "io".
-
-let v = 'a@[3].
-__raw_print__ v.
