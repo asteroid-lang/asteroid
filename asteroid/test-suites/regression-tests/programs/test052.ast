@@ -1,8 +1,0 @@
-
-load "io".
-
-try
-    let -1 = -1 .
-catch e do
-    println e.
-end 

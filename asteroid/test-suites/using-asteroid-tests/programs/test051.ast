@@ -1,8 +1,0 @@
-
-load "io".
-
-let bits = "1010101" @replace("0","")
-                     @length().
-println bits.
-
-assert (bits == 4).

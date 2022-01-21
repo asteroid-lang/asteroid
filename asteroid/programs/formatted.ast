@@ -1,2 +1,0 @@
-load "io".
-println "hello world!\n".

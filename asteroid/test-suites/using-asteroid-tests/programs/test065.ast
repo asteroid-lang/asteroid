@@ -1,8 +1,0 @@
-
-load "io".
-
-let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
-let s = a @reduce(lambda with (x,y) do return x+y).
-println s.
-
-assert (s == 125).

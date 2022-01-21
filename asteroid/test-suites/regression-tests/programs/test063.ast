@@ -1,8 +1,0 @@
-
-load "util".
-structure S with
-    data x.
-    end 
-    
-let v = S(S(S(0))).
-assert(v is S(S(S(0)))).

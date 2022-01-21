@@ -1,5 +1,0 @@
--- the obligatory 'Hello, World!' program
-
-load system io.
-
-println "Hello, World!".
