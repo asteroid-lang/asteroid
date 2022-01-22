@@ -1,7 +1,7 @@
 " Vim syntax file
 " Language: Asteroid
 " Maintainer: Theo Henson <theodorehenson at protonmail dot com>
-" Last Change: 2021 Dec 10
+" Last Change: 2022 Jan 20
 
 " Copy this file to ~/.vim/syntax/asteroid.vim
 " For filetype detection create ~/.vim/ftdetect/asteroid.vim containing:
@@ -12,18 +12,19 @@ if exists("b:current_syntax")
 endif
 
 syn keyword basic with end do load let for function structure in is pattern 
-syn keyword basic orwith throw this system data global return to step if not
+syn keyword basic throw this system data global return to step if not
 syn keyword basic else or and
 
 syn keyword delimeter escape
 
 syn match pattern /%[a-zA-Z]*/
 syn match pattern /@[a-z_A-Z]*/
+syn match pattern / if /
 
 syn region string start=/\v"/ skip=/\v\\./ end=/\v"/
 syn keyword boolean true false
 syn match number '\d\+'
-syn match number '\d\+\.\d*'
+syn match number '\d\+\.?\d*'
 
 syn match delimeter '*'
 syn match delimeter '\n'
