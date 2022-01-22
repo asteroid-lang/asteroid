@@ -417,7 +417,7 @@ The output is ``[6,4,2]``.  Notice how we used type patterns to make sure that t
 function is only applied to lists of integers.
 
 In order to demonstrate functional programming like multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each ```with``clause introduces a new function body with its
+Asteroid. Each ``with``clause introduces a new function body with its
 corresponding pattern,
 ::
     load system io.
@@ -662,6 +662,47 @@ The ``Head`` and ``Tail`` exceptions are handled by their corresponding ``catch`
 It is worth noting that even though Asteroid has builtin exception objects such as ``Error``,
 you can construct any kind of object and throw it as part of an exception.
 
+Constraint Patterns
+^^^^^^^^^^^^^^^^^^^
+
+Sometimes we want to use patterns as constraints on other patterns.  Consider
+the following statement,
+::
+   let x: (v if (v is %integer) and v > 0) = some_value.
+
+Here we want to use the pattern ``v if (v is %integer) and v > 0`` purely as a constraint
+on the pattern `x` in the sense that we want this match only to succeed
+if ``some_value`` is a positive integer.  The problem is that this constraint pattern
+introduces a spurious binding of the variable ``v`` into the current environment
+which might be undesirable due to variable name clashes.  Our notion of constraint pattern
+addresses this.  We can rewrite the above statement as follows,
+::
+   let x: %[v if (v is %integer) and v > 0]% = some_value.
+
+By placing the pattern ``v if (v is %integer) and v > 0`` within the ``%[...]%``
+operators the pattern still functions as before but does not bind the variable ``v``
+into the current environment.
+
+The most common use of constraint patterns is the prevention of non-linear patterns
+in function.  Consider the following program,
+::
+   load system io.
+
+   let POS_INT = pattern with %[v if (v is %integer) and v > 0]%.
+
+   function addints with (a:*POS_INT,b:*POS_INT) do
+      return a+b.
+   end
+
+   println (addints(1,2)).
+
+Without the ``%[...]%`` operators around the pattern ``v if (v is %integer) and v > 0``
+the argument list pattern for the function
+``(a:*POS_INT,b:*POS_INT)`` would instantiate two instances of the variable ``v``
+leading to a non-linear pattern which is not supported by Asteroid.
+With the ``%[...]%`` operators in place we prevent
+the argument pattern ``v if (v is %integer) and v > 0`` from instantiating the variable ``v`` thus preventing a non-linearity
+to occur in the argument list pattern.
 
 Structures, Object-Based Programming, and Pattern Matching
 ----------------------------------------------------------
