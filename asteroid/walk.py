@@ -1100,7 +1100,9 @@ def if_stmt(node):
 
         (IF_CLAUSE,
          (COND, cond),
-         (STMT_LIST, stmts)) = if_clause
+         (STMT_LIST, stmts), line_info) = if_clause
+
+        process_lineinfo(line_info)
 
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
