@@ -267,7 +267,7 @@ See the `Prologue module <https://github.com/asteroid-lang/asteroid/blob/master/
 Asteroid Modules
 ----------------
 
-There are a variety of usmodules that can be loaded into an Asteroid program using the ``load system <module name>``.
+There are a number of predefined modules that can be loaded into an Asteroid program using ``load system <module name>``.
 
 Bitwise
 ^^^^^^^
