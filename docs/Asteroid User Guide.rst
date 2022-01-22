@@ -11,7 +11,7 @@ Asteroid is a multi-paradigm programming language heavily influenced by `Python 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
 paradigm.  Here are just two examples:
 
-**Example 1:** All statements that look like assignments are actually pattern-match statements.  For example if we state,
+**Example:** All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ::
     let [x,2,y] = [1,2,3].
 
@@ -21,7 +21,7 @@ that means the subject term ``[1,2,3]`` is matched to the pattern ``[x,2,y]`` an
 
 which is just another pattern match without any variable instantiations.
 
-**Example 2:** Patterns in Asteroid are first-class citizens of the language.
+**Example:** Patterns in Asteroid are first-class citizens of the language.
 This is best demonstrated with a program.  Here is a program
 that recursively computes the factorial of a positive integer and uses first-class patterns
 in order to ensure that the domain of the function is not violated,
@@ -50,65 +50,6 @@ These are just two examples where Asteroid differs drastically from other progra
 This document is an overview of Asteroid and is intended to get you started quickly
 with programming in Asteroid.
 
-
-
-Installation
-------------
-
-Download or clone the `Asteroid github repository <https://github.com/asteroid-lang/asteroid>`_,
-or download one of the `prepackaged releases <https://github.com/asteroid-lang/asteroid/releases>`_, and then install with `pip <https://pip.pypa.io/en/stable/>`_.
-
-For example, if your working directory is at the top of the repository,
-::
-    $ python -m pip install .
-
-The same command should work on Unix-like and Windows systems,
-though you may have to run it with ``python3`` or some other variation.
-Don't forget to add the ``bin`` directory where ``pip`` installs programs
-to your ``PATH`` variable.
-
-In addition, there is a cloud-based Linux virtual machine that is completely
-set up with an Asteroid environment and can be accessed at
-`Repl.it <https://repl.it/@lutzhamel/asteroid#README.md>`_.
-
-Running the Asteroid Interpreter
---------------------------------
-
-You can now run the interpreter from the command line by simply typing ``asteroid``.
-This will work on both Windows and Unix-like systems as long as you followed the instructions above.
-To run asteroid on Unix-like systems and on our virtual machine,
-::
-    $ cat hello.ast
-    -- the obligatory hello world program
-
-    load system io.
-
-    println "Hello, World!".
-
-    $ asteroid hello.ast
-    Hello, World!
-    $
-
-On Windows 10 the same thing looks like this,
-::
-    C:\> type hello.ast
-    -- the obligatory hello world program
-
-    load system io.
-
-    println "Hello, World!".
-
-    C:\> asteroid hello.ast
-    Hello, World!
-    C:\>
-
-
-As you can see, once you have Asteroid installed on your system you can execute an
-Asteroid program by typing,
-::
-    asteroid [flags] <program file>
-
-at the command prompt.
 
 The Basics
 ----------
@@ -475,44 +416,62 @@ then doubles each value before returning the result,
 The output is ``[6,4,2]``.  Notice how we used type patterns to make sure that this
 function is only applied to lists of integers.
 
-In order to demonstrate multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each ``with``/``with`` clause introduces a new function body with its
-corresponding pattern,
+In order to demonstrate multi-dispatch, we show the example program from the
+`multi-dispatch Wikipedia page <https://en.wikipedia.org/wiki/Multiple_dispatch>`_
+written in Asteroid
 ::
     load system io.
 
-    function qsort
-        with [] do
-            return [].
-        with [a] do
-            return [a].
-        with [pivot|rest] do
-            let less=[].
-            let more=[].
+    structure Asteroid with
+       data size.
+       function __init_
+          with v if isscalar(v) and v > 0 do
+             let this @size = v.
+          end
+    end
 
-            for e in rest do
-                if e < pivot do
-                    let less = less + [e].
-                else
-                    let more = more + [e].
-                end
-            end
+    structure Spaceship with
+        data size.
+       function __init_
+          with v if isscalar(v) and v > 0 do
+             let this @size = v.
+          end
+    end
 
-            return qsort less + [pivot] + qsort more.
-        end
+    -- instead of using a base class we use a first-class pattern to
+    -- express that both asteroids and space ships are space objects.
+    -- SpaceObject is a pure constraint pattern specified with %[...]%
+    let SpaceObject = pattern with %[x if (x is %Asteroid) or (x is %Spaceship)]%.
 
-    -- print the sorted list
-    println (qsort [3,2,1,0])
+    function collide_with
+      with (a:%Asteroid, b:%Spaceship) do
+        return "a/s".
+      with (a:%Spaceship, b:%Asteroid) do
+        return "s/a".
+      with (a:%Spaceship, b:%Spaceship) do
+        return "s/s".
+      with (a:%Asteroid, b:%Asteroid) do
+        return "a/a".
+      end
 
-The output is as expected,
+    -- here we use the first-class pattern SpaceObject as a
+    -- constraint on the function parameters.
+    function collide with (x:*SpaceObject, y:*SpaceObject) do
+      return "Big boom!" if (x@size > 100 and y@size > 100) else collide_with(x, y).
+    end
+
+    println (collide(Asteroid(101), Spaceship(300))).
+    println (collide(Asteroid(10), Spaceship(10))).
+    println (collide(Spaceship(101), Spaceship(10))).
+
+Each ``with`` clause in the function ``collide_with`` introduces a new function body with its
+corresponding pattern. The function bodies in this case are simple ``return`` statements
+but they could be arbitrary computations.  The output of the program is,
 ::
-    [0,1,2,3]
+    Big boom!
+    a/s
+    s/s
 
-Notice that we use the multi-dispatch mechanism to deal with the base cases of the
-``qsort`` recursion using separate function bodies in the first two ``with`` clauses.
-In the third ``with`` clause we use the head-tail operator ``[pivot|rest]``
-which itself is a pattern matching any non-empty list.
-Here the variable ``pivot`` matches the first element of a list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if ``foobar`` is a function then ``foobar(a)`` is a function call in Asteroid but so is ``foobar a``.  The latter form of function call is used in the last line of the function ``qsort`` below.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or ``lambda`` functions.  Lambda functions behave just like regular
 functions except that you declare them on-the-fly and they are declared without a
