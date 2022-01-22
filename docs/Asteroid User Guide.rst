@@ -592,7 +592,7 @@ Pattern Matching in Function Arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As we have seen earlier, Asteroid supports pattern matching on function arguments in the style of ML and many other functional programming languages.
-Here is an example that uses pattern matching on function arguments using custom data structures.  The program below implements [Peano addition](https://en.wikipedia.org/wiki/Peano_axioms#Addition) on terms using the two Peano axioms,
+Here is an example that uses pattern matching on function arguments using custom data structures.  The program below implements `Peano addition <https://en.wikipedia.org/wiki/Peano_axioms#Addition>`_ on terms using the two Peano axioms,
 ::
     x + 0 = x
     x + s(y) = s(x+y)
