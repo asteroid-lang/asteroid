@@ -416,62 +416,44 @@ then doubles each value before returning the result,
 The output is ``[6,4,2]``.  Notice how we used type patterns to make sure that this
 function is only applied to lists of integers.
 
-In order to demonstrate multi-dispatch, we show the example program from the
-`multi-dispatch Wikipedia page <https://en.wikipedia.org/wiki/Multiple_dispatch>`_
-written in Asteroid
+In order to demonstrate functional programming like multi-dispatch, the following is the quick sort implemented in
+Asteroid. Each ```with``clause introduces a new function body with its
+corresponding pattern,
 ::
     load system io.
 
-    structure Asteroid with
-       data size.
-       function __init_
-          with v if isscalar(v) and v > 0 do
-             let this @size = v.
-          end
-    end
+    function qsort
+        with [] do
+            return [].
+        with [a] do
+            return [a].
+        with [pivot|rest] do
+            let less=[].
+            let more=[].
 
-    structure Spaceship with
-        data size.
-       function __init_
-          with v if isscalar(v) and v > 0 do
-             let this @size = v.
-          end
-    end
+            for e in rest do
+                if e < pivot do
+                    let less = less + [e].
+                else
+                    let more = more + [e].
+                end
+            end
 
-    -- instead of using a base class we use a first-class pattern to
-    -- express that both asteroids and space ships are space objects.
-    -- SpaceObject is a pure constraint pattern specified with %[...]%
-    let SpaceObject = pattern with %[x if (x is %Asteroid) or (x is %Spaceship)]%.
+            return qsort less + [pivot] + qsort more.
+        end
 
-    function collide_with
-      with (a:%Asteroid, b:%Spaceship) do
-        return "a/s".
-      with (a:%Spaceship, b:%Asteroid) do
-        return "s/a".
-      with (a:%Spaceship, b:%Spaceship) do
-        return "s/s".
-      with (a:%Asteroid, b:%Asteroid) do
-        return "a/a".
-      end
+    -- print the sorted list
+    println (qsort [3,2,1,0])
 
-    -- here we use the first-class pattern SpaceObject as a
-    -- constraint on the function parameters.
-    function collide with (x:*SpaceObject, y:*SpaceObject) do
-      return "Big boom!" if (x@size > 100 and y@size > 100) else collide_with(x, y).
-    end
-
-    println (collide(Asteroid(101), Spaceship(300))).
-    println (collide(Asteroid(10), Spaceship(10))).
-    println (collide(Spaceship(101), Spaceship(10))).
-
-Each ``with`` clause in the function ``collide_with`` introduces a new function body with its
-corresponding pattern. The function bodies in this case are simple ``return`` statements
-but they could be arbitrary computations.  The output of the program is,
+The output is as expected,
 ::
-    Big boom!
-    a/s
-    s/s
+    [0,1,2,3]
 
+Notice that we use the multi-dispatch mechanism to deal with the base cases of the
+``qsort`` recursion using separate function bodies in the first two ``with`` clauses.
+In the third ``with`` clause we use the head-tail operator ``[pivot|rest]``
+which itself is a pattern matching any non-empty list.
+Here the variable ``pivot`` matches the first element of a list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if ``foobar`` is a function then ``foobar(a)`` is a function call in Asteroid but so is ``foobar a``.  The latter form of function call is used in the last line of the function ``qsort`` below.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or ``lambda`` functions.  Lambda functions behave just like regular
 functions except that you declare them on-the-fly and they are declared without a
@@ -1094,6 +1076,76 @@ of that pattern match and returns the values as a list. The output of the progra
 Notice that the whole program is essentially parameterized over the structure
 of the pattern.  We could easily change some internals of this pattern without
 affecting the rest of the program.
+
+More on Multi-Dispatch
+----------------------
+
+With the ``qsort`` function above we saw functional programming style dispatch
+where the ``with`` clauses represent a case analysis over a single type, namely
+the input type to the function.
+However, Asteroid has a much broader view of multi-dispatch where the ``with`` clauses
+represent a case analysis over different types.
+In order to demonstrate this type of multi-dispatch, we show the example program from the
+`multi-dispatch Wikipedia page <https://en.wikipedia.org/wiki/Multiple_dispatch>`_
+written in Asteroid,
+::
+    load system io.
+    load system type.
+
+    structure Asteroid with
+       data size.
+       function __init_
+          -- make sure that object has a positive size
+          with v if isscalar(v) and v > 0 do
+             let this @size = v.
+          end
+    end
+
+    structure Spaceship with
+        data size.
+       function __init_
+          -- make sure that object has a positive size
+          with v if isscalar(v) and v > 0 do
+             let this @size = v.
+          end
+    end
+
+    -- we use first-class pattern SpaceObject to
+    -- express that both asteroids and space ships are space objects.
+    -- Note: SpaceObject is a pure constraint pattern specified with %[...]%
+    let SpaceObject = pattern with %[x if (x is %Asteroid) or (x is %Spaceship)]%.
+
+    -- multi-dispatch function
+    function collide_with
+      with (a:%Asteroid, b:%Spaceship) do
+        return "a/s".
+      with (a:%Spaceship, b:%Asteroid) do
+        return "s/a".
+      with (a:%Spaceship, b:%Spaceship) do
+        return "s/s".
+      with (a:%Asteroid, b:%Asteroid) do
+        return "a/a".
+      end
+
+    -- here we use the first-class pattern SpaceObject as a
+    -- constraint on the function parameters.
+    function collide with (x:*SpaceObject, y:*SpaceObject) do
+      return "Big boom!" if (x@size > 100 and y@size > 100) else collide_with(x, y).
+    end
+
+    println (collide(Asteroid(101), Spaceship(300))).
+    println (collide(Asteroid(10), Spaceship(10))).
+    println (collide(Spaceship(101), Spaceship(10))).
+
+Each ``with`` clause in the function ``collide_with`` introduces a new function body with its
+corresponding pattern.
+The function bodies in this case are simple ``return`` statements
+but they could be arbitrary computations.  The output of the program is,
+::
+    Big boom!
+    a/s
+    s/s
+
 
 
 More on Exceptions
