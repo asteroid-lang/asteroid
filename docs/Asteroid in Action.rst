@@ -114,7 +114,7 @@ Output:
 
 Probably the most noteworthy characteric about this program is the `reduce` function.  The `reduce` function applies a binary function to a list.  The first argument of the binary function acts like an accumulator, and the second argument gets instantiated with the elements of the list to be processed.  In our function `unique`, the variable `x` is the accumulator with an initial value of `[]`.  The function tests whether the element `y` is in the list.  If it is not, then it adds it to the list. Otherwise, it just returns the accumulator unchanged.
 
-Section: Modifying string data
+Section: Modifying String Data
 ------------------------------
 
 Challenge: Reverse a string
@@ -345,7 +345,7 @@ Output:
 Section: Text Analysis
 ----------------------
 
-Challenge: Plural Endings
+Challenge: Plural endings
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 > Put a noun in the correct form — singular or plural — depending on the number next to it.
@@ -639,10 +639,11 @@ Output:
     sit amet condimentum: 2
 
 
-Chapter: Numbers
-----------------
+..
+  Chapter: Numbers
+  ----------------
 
-Section: Using numbers
+Section: Using Numbers
 ----------------------
 
 Challenge: Pi
@@ -1026,7 +1027,7 @@ Output:
     We are still alive...
 
 
-Section: Random numbers
+Section: Random Numbers
 -----------------------
 
 Challenge: Generating random numbers
@@ -1120,7 +1121,7 @@ Output:
     [944,1032,1015,968,981,986,1014,1058,989,1013]
 
 
-Section: Mathematical problems
+Section: Mathematical Problems
 ------------------------------
 
 Challenge: Distance between two points
@@ -1431,7 +1432,7 @@ Output:
     4
 
 
-Compose the largest number
+Challenge: Compose the largest number
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 > Given the list of integers, compose the largest possible number by concatenating them.
@@ -1550,10 +1551,11 @@ Output:
     one thousand one
 
 
-Chapter: Aggregate Data Types
------------------------------
+..
+  Chapter: Aggregate Data Types
+  -----------------------------
 
-Section: Manipulating lists and arrays
+Section: Manipulating Lists and Arrays
 --------------------------------------
 
 Challenge: Swap two values
@@ -1763,7 +1765,7 @@ Output:
     [2,3,1,4]
 
 
-Section: Information retrieval
+Section: Information Retrieval
 ------------------------------
 
 Challenge: Sum of the elements of an array
@@ -2060,7 +2062,7 @@ Output:
 ::
     true
 
-Section: Multi-dimensional data
+Section: Multi-Dimensional Data
 -------------------------------
 
 Challenge: Transpose a matrix
