@@ -231,21 +231,19 @@ data structure itself, e.g.
 ::
    "Hello there" @length()
 
-* Function ``gettype`` will get the type of ``x`` as an Asteroid string. (See the module `Type.ast <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/type.ast>`_ for more on this function.) -->
 * Function ``length`` returns the number of characters within that string.
 * Function ``explode``, turns a string into a list of characters.
 * Function ``trim``, given the input ``(what:%string)``, returns a copy of the string with the leading and trailing characters removed. The ``what`` argument is a string specifying the set of characters to be removed. If omitted or none, the ``what`` argument defaults to removing whitespace. The ``what`` argument is not a prefix or suffix; rather, all combinations of its values are stripped.
-* Function ``replace`` will return a copy of the string with all occurrences of regular expression pattern ``old`` replaced by the string ``new``. If the optional argument count is given, only the first count occurrences are replaced. It can be called with several
-different inputs:
+* Function ``replace`` will return a copy of the string with all occurrences of regular expression pattern ``old`` replaced by the string ``new``. If the optional argument count is given, only the first count occurrences are replaced. It can be called with several different inputs:
 
   * ``(old:%string,new:%string,count:%integer)``
   * ``(old:%string,new:%string)``
 
 * Function ``split`` will return a list of the words in a given string, using ``sep`` as the delimiter string. If ``maxsplit`` is given: at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
 
-  If ``sep`` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, '1,,2'.split(',') returns ['1', '', '2']). The sep argument may consist of multiple characters (for example, '1<>2<>3'.split('<>') returns ['1', '2', '3']). Splitting an empty string with a specified separator returns [''].
+  If ``sep`` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, ``"1,,2".split(",")`` returns ``["1", "", "2"]``). The ``sep`` argument may consist of multiple characters (for example, ``"1<>2<>3".split("<>")`` returns ``["1", "2", "3"]). Splitting an empty string with a specified separator returns ``[""]``.
 
-  If ``sep`` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns [].
+  If ``sep`` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns ``[]``.
 
   Function ``split`` can be called with several different inputs:
 
