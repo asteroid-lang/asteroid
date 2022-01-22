@@ -1081,12 +1081,12 @@ Constraint Patterns
 -------------------
 
 Sometimes we want to use patterns as constraints on other patterns.  Consider
-the following statement,
+the following (somewhat artificial) example,
 ::
    let x: (v if (v is %integer) and v > 0) = some_value.
 
 Here we want to use the pattern ``v if (v is %integer) and v > 0`` purely as a constraint
-on the pattern `x` in the sense that we want this match only to succeed
+on the pattern ``x`` in the sense that we want a match on ``x`` only to succeed
 if ``some_value`` is a positive integer.  The problem is that this constraint pattern
 introduces a spurious binding of the variable ``v`` into the current environment
 which might be undesirable due to variable name clashes.  Our notion of constraint pattern
@@ -1099,24 +1099,24 @@ operators the pattern still functions as before but does not bind the variable `
 into the current environment.
 
 The most common use of constraint patterns is the prevention of non-linear patterns
-in function.  Consider the following program,
+in functions.  Consider the following program,
 ::
    load system io.
 
    let POS_INT = pattern with %[v if (v is %integer) and v > 0]%.
 
-   function addints with (a:*POS_INT,b:*POS_INT) do
+   function add with (a:*POS_INT,b:*POS_INT) do
       return a+b.
    end
 
-   println (addints(1,2)).
+   println (add(1,2)).
 
 Without the ``%[...]%`` operators around the pattern ``v if (v is %integer) and v > 0``
 the argument list pattern for the function
 ``(a:*POS_INT,b:*POS_INT)`` would instantiate two instances of the variable ``v``
 leading to a non-linear pattern which is not supported by Asteroid.
 With the ``%[...]%`` operators in place we prevent
-the argument pattern ``v if (v is %integer) and v > 0`` from instantiating the variable ``v`` thus preventing a non-linearity
+the pattern ``v if (v is %integer) and v > 0`` from instantiating the variable ``v`` thus preventing a non-linearity
 to occur in the argument list pattern.
 
 
