@@ -319,7 +319,8 @@ Furthermore, the module supports the following functions,
 Math
 ^^^^
 
-The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/math.ast>`_ module implements mathematical constants and operators. It supports the following functions,
+The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/math.ast>`_ module implements mathematical constants and functions. It supports the following functions,
+
 * Function ``exp``, given ``x:%integer``, returns e raised to the power ``x``, where e = 2.718281… is the base of natural logarithms.
 * Function ``log`` can be called with two different argument setups,
 
@@ -333,8 +334,9 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``floor``, given ``x:%real``, returns the floor of x: the largest integer less than or equal to x.
 * Function ``gcd``, given ``(a:%integer,b:%integer)``, returns the greatest common denominator that both integers share.
 * Function ``isclose`` can be called with two different argument setups,
-  1. With input values ``(a,b)``, it returns returns ``true`` if the two values are close to each other and ``False`` otherwise. Default tolerance 1e-09.
-  1. With input values ``(a,b,t)``, it compares ``a`` and ``b`` with tolerance ``t``.
+
+  #. With input values ``(a,b)``, it returns returns ``true`` if the two values are close to each other and ``False`` otherwise. Default tolerance 1e-09.
+  #. With input values ``(a,b,t)``, it compares ``a`` and ``b`` with tolerance ``t``.
 
 * Function ``mod``, given ``(v,d)``, will return the remainder of the operation ``v/d``, as long as ``v`` and ``d`` are either ``real`` or ``integer`` values.
 * Function ``acos``, given ``x``, returns the arc cosine of x in radians. The result is between 0 and pi.
@@ -361,6 +363,7 @@ Random
 ^^^^^^
 
 The `random <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/random.ast>`_ module implements the ``random`` numbers. Using the functions included in this module will return a random value within a given range or interval. It supports the following functions,
+
 * Function ``random``, given the input ``none``, returns a random floating point number in the range ``[0.0, 1.0)``.
 * Function ``randint`` returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval. It can be called with two different number interval inputs:
 
@@ -374,6 +377,7 @@ Set
 ^^^
 
 The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/set.ast>`_ module implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
+
 * Function ``toset``, given ``(lst:%list)``, converts the input list into a set.
 * Function ``sdiff``, given ``(a:%list,b:%list)``, computes the difference set between the two set ``a`` and ``b``.
 * Function ``sintersection``, given ``(a:%list,b:%list)``, finds the intersection between  sets ``a`` and ``b``.
