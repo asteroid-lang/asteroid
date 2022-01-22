@@ -1,7 +1,7 @@
 .. highlight:: none
 
 Asteroid User Guide
-###################
+===================
 
 Introduction
 ------------
