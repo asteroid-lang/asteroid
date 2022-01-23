@@ -3,11 +3,9 @@
 Installation
 ============
 
-Asteroid is available from the PyPI website,
-::
-  https://pypi.org/project/asteroid-lang/
-
-and is installed using `pip <https://pip.pypa.io/en/stable/>`_,
+Asteroid is available from the PyPI project website
+`pypi.org/project/asteroid-lang <https://pypi.org/project/asteroid-lang>`_
+and is installed using,
 ::
     $ pip install asteroid
 
