@@ -12,7 +12,6 @@ from asteroid.support import *
 from asteroid.frontend import Parser
 from asteroid.state import state
 from asteroid.walk import walk
-from asteroid.version import VERSION
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'

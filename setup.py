@@ -5,13 +5,17 @@ with open("README.md", "r") as fh:
 
 setup(
     name="asteroid-lang",
-    version="0.1.0",
+    version="0.0.0",
     author="University of Rhode Island",
     author_email="lutzhamel@uri.edu",
     description="A pattern-matching oriented programming language.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/asteroid-lang/asteroid",
+    url="https://asteroid-lang.org",
+    project_urls={
+        "Documentation": "https://asteroid-lang.readthedocs.io",
+        "Bug Tracker":   "https://github.com/asteroid-lang/asteroid/issues",
+    },
     packages=find_packages(),
     package_data={"asteroid": ["modules/*"]},
     install_requires=[
