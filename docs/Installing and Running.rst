@@ -7,7 +7,7 @@ Asteroid is available from the PyPI website,
 ::
   https://pypi.org/project/asteroid/
 
-and is installed using `pip <https://pip.pypa.io/en/stable/>`_.,
+and is installed using `pip <https://pip.pypa.io/en/stable/>`_,
 ::
     $ pip install asteroid
 

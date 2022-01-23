@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-    name="asteroid",
+    name="asteroid-lang",
     version="0.1.0",
     author="University of Rhode Island",
     author_email="lutzhamel@uri.edu",
     description="A pattern-matching oriented programming language.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/lutzhamel/asteroid",
+    url="https://github.com/asteroid-lang/asteroid",
     packages=find_packages(),
     package_data={"asteroid": ["modules/*"]},
     install_requires=[
