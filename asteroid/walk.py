@@ -226,12 +226,24 @@ def unify(term, pattern, unifying = True ):
                     "expected typematch {} got an object of type {}"
                     .format(typematch, struct_id))
 
-        # ttc
-        # Should we have an else here?
         else:
-            raise PatternMatchFailed(
-                "expected typematch {} got an object of type {}"
-                .format(typematch, term[0]))
+            # Check if the typematch is in the symbol table
+            in_symtab = state.symbol_table.find_sym(typematch)
+
+            # If not, then it is not a vaid type fot typematch
+            if not in_symtab:
+                raise PatternMatchFailed( "{} is not a valid type for typematch".format(typematch))
+
+            # If it is in the symbol table but not a struct, it cannot be typematched
+            # because it is not a type
+            elif in_symtab and state.symbol_table.lookup_sym(typematch)[0] != 'struct':
+                raise PatternMatchFailed( "{} is not a type".format(typematch) )
+
+            # Otherwhise, the typematch has failed
+            else:
+                raise PatternMatchFailed(
+                    "expected typematch {} got an object of type {}"
+                    .format(typematch, term[0]))
 
 
     elif pattern[0] == 'named-pattern':
