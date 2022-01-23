@@ -15,7 +15,7 @@ though you may have to use `pip3` or some other variation.
   Don't forget to add the `bin` directory where `pip` installs programs
   to your `PATH` variable.
 
-In addition to installing Asteroid directly on you machine,
+In addition to installing Asteroid directly on your machine,
 there is also a cloud-based Linux virtual machine that is completely
 set up with an Asteroid environment and can be accessed at
 `Repl.it <https://repl.it/@lutzhamel/asteroid#README.md>`_.
