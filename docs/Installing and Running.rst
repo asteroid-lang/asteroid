@@ -3,17 +3,27 @@
 Installation
 ============
 
-Download or clone the `Asteroid github repository <https://github.com/asteroid-lang/asteroid>`_,
-or download one of the `prepackaged releases <https://github.com/asteroid-lang/asteroid/releases>`_, and then install with `pip <https://pip.pypa.io/en/stable/>`_.
-
-For example, if your working directory is at the top of the repository,
+Asteroid is available from the PyPI website,
 ::
-    $ python -m pip install .
+  https://pypi.org/project/asteroid/
+
+and is installed using `pip <https://pip.pypa.io/en/stable/>`_,
+::
+    $ pip install asteroid
+
+Alternatively you can download or clone the
+`Asteroid github repository <https://github.com/asteroid-lang/asteroid>`_,
+or download one of the `prepackaged releases <https://github.com/asteroid-lang/asteroid/releases>`_,
+and then install it with pip by setting your working directory
+to the top of the repository and then type,
+::
+    $ pip install .
 
 The same command should work on Unix-like and Windows systems,
-though you may have to run it with `python3` or some other variation.
-Don't forget to add the `bin` directory where `pip` installs programs
-to your `PATH` variable.
+though you may have to use `pip3` or some other variation.
+
+  Don't forget to add the `bin` directory where `pip` installs programs
+  to your `PATH` variable.
 
 In addition, there is a cloud-based Linux virtual machine that is completely
 set up with an Asteroid environment and can be accessed at
