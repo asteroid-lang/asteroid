@@ -22,8 +22,8 @@ to the top of the repository and then type,
 The same command should work on Unix-like and Windows systems,
 though you may have to use `pip3` or some other variation.
 
->Don't forget to add the `bin` directory where `pip` installs programs
-to your `PATH` variable.
+  Don't forget to add the `bin` directory where `pip` installs programs
+  to your `PATH` variable.
 
 In addition, there is a cloud-based Linux virtual machine that is completely
 set up with an Asteroid environment and can be accessed at
