@@ -45,6 +45,7 @@ primary_lookahead = {
 
 exp_lookahead = {
     'QUOTE',
+    'PATTERN',
     'LCONSTRAINT',} | primary_lookahead
 
 exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
