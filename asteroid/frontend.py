@@ -489,33 +489,34 @@ class Parser:
     def body_defs(self):
         dbg_print("parsing BODY_DEFS")
 
-        # a list of ('body', pattern, stmts) pairs
+        # a list of ('body', pattern, lineinfo, stmts) pairs
         body_list = []
-
+        
+        # Get the line info of the current pattern
         cur_lineinfo = state.lineinfo
+        
         self.lexer.match('WITH')
         p = self.pattern()
         self.lexer.match('DO')
         sl = self.stmt_list()
         body_list.append(
-            ('body', 
-                ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) )
-            )
+            ('body', ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) ))
         )
         
         while self.lexer.peek().type in ['ORWITH','WITH']:
             if self.lexer.peek().type == 'ORWITH':
                 warning("'orwith' has been deprecated, please replace with 'with'")
             
+            # Get the line info of the current pattern
             cur_lineinfo = state.lineinfo
+
             self.lexer.match(self.lexer.peek().type)
             p = self.pattern()
             self.lexer.match('DO')
             sl = self.stmt_list()
+            
             body_list.append(
-                ('body', 
-                    ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) )
-                )
+                ('body', ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) ))
             )
         return ('body-list', ('list', body_list))
 
