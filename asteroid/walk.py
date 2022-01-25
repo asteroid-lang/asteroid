@@ -772,7 +772,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     for body in body_list_val:
 
         (BODY,
-         (PATTERN, p, (lineinfo),
+         (PATTERN, p, lineinfo,
          (STMT_LIST, stmts))) = body
 
         process_lineinfo( lineinfo )
