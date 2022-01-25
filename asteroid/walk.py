@@ -772,9 +772,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     for body in body_list_val:
 
         (BODY,
-         (PATTERN, p),
-         (STMT_LIST, stmts)) = body
+         (PATTERN, p, (lineinfo),
+         (STMT_LIST, stmts))) = body
 
+        process_lineinfo( lineinfo )
         try:
             unifiers = unify(actual_val_args, p)
             unified = True
@@ -795,6 +796,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
+    # TODO: FIX HERE
     # Check for useless patterns
     if state.eval_redundancy:
         check_redundancy(body_list, fname)
@@ -1614,16 +1616,18 @@ def check_redundancy( body_list, f_name ):
     for i in range(len(bodies)):
 
         #get the pattern with the higher level of precedence
-        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i]
+        (BODY_H, (PTRN,ptrn_h, lineinfo, stmts_h)) = bodies[i]
         assert_match(BODY_H,'body')
         assert_match(PTRN,'pattern')
+        process_lineinfo(lineinfo)
 
         for j in range(i + 1, len(bodies)):
 
             #get the pattern with the lower level of precedence
-            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j]
+            (BODY_L, (PTRN,ptrn_l, lineinfo, stmts_l)) = bodies[j]
             assert_match(BODY_L,'body')
             assert_match(PTRN,'pattern')
+            process_lineinfo(lineinfo)
 
             #Here we get line numbers in case we throw an error
             # we have to do a little 'tree walking' to get to the

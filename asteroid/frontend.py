@@ -492,21 +492,31 @@ class Parser:
         # a list of ('body', pattern, stmts) pairs
         body_list = []
 
+        cur_lineinfo = state.lineinfo
         self.lexer.match('WITH')
         p = self.pattern()
         self.lexer.match('DO')
         sl = self.stmt_list()
-        body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
-
+        body_list.append(
+            ('body', 
+                ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) )
+            )
+        )
+        
         while self.lexer.peek().type in ['ORWITH','WITH']:
             if self.lexer.peek().type == 'ORWITH':
                 warning("'orwith' has been deprecated, please replace with 'with'")
+            
+            cur_lineinfo = state.lineinfo
             self.lexer.match(self.lexer.peek().type)
             p = self.pattern()
             self.lexer.match('DO')
             sl = self.stmt_list()
-            body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
-
+            body_list.append(
+                ('body', 
+                    ('pattern', p, ('lineinfo', cur_lineinfo), ('stmt-list', sl) )
+                )
+            )
         return ('body-list', ('list', body_list))
 
     ###########################################################################################
