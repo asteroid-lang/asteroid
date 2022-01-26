@@ -261,9 +261,10 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'named-pattern':
         # unpack pattern
-        (NAMED_PATTERN, name, p) = pattern
+        (NAMED_PATTERN, name_exp, p) = pattern
 
-        return unify(term, p, unifying) + [(name, term)]
+        # name_exp can be an id or an index expression.
+        return unify(term, p, unifying) + [(name_exp, term)]
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
