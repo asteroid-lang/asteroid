@@ -115,6 +115,19 @@ def unify(term, pattern, unifying = True ):
         return unify(term[1], pattern, unifying)
 
     ### Asteroid value level matching
+    elif pattern[0] == 'object' and term[0] == 'object':
+        # this can happen when we dereference a variable pointing
+        # to an object as a pattern, e.g.
+        #    let o = A(1,2). -- A is a structure with 2 data members
+        #    let *o = o.
+        (OBJECT, (STRUCT_ID, (ID, pid)), (OBJECT_MEMORY, (LIST, pl))) = pattern
+        (OBJECT, (STRUCT_ID, (ID, tid)), (OBJECT_MEMORY, (LIST, tl))) = term
+        if pid != tid:
+            raise PatternMatchFailed(
+                "pattern type {} and term type {} do not agree"
+                .format(pid,tid))
+        return unify(tl,pl)
+
     elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
@@ -380,6 +393,9 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'deref':  # ('deref', ('id', sym))
         (ID, sym) = pattern[1]
         p = state.symbol_table.lookup_sym(sym)
+
+        #lhh
+        #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
 
         return unify(term,p,unifying)
 
@@ -1551,6 +1567,7 @@ dispatch_dict = {
     'integer'       : lambda node : node,
     'real'          : lambda node : node,
     'boolean'       : lambda node : node,
+    'object'        : lambda node : node,
     'eval'          : eval_exp,
     # quoted code should be treated like a constant if not ignore_quote
     'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
