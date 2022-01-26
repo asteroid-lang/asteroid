@@ -189,10 +189,10 @@ Member functions on lists can be called on the data structure directly, e.g.,
 * Function ``remove``, given ``(item)``, removes the first element from the list whose value is equal to ``(item)``. It raises a ValueError if there is no such item.
 * Function ``pop``, given ``(ix:%integer)``, removes the item at the given position in the list and returns it. If no index is specified,``a@pop()`` removes and returns the last item in the list.
 * Function ``clear``, given ``(none)``, removes all items from the list.
-* Function ``index`` returns a zero-based index in the list of the first element whose value is equal to ``(item)``. It raises a ValueError exception if there is no such item. The optional arguments ``(startix)`` and ``(endix)`` are interpreted as in the slice notation, and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the ``(startix)`` argument.   This function can be called with several input configurations:
+* Function ``index`` returns a zero-based index in the list of the first element whose value is equal to ``(item)``. It raises a ValueError exception if there is no such item. The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the ``(startix)`` argument.   This function can be called with several input configurations:
 
-  #. ``(item,startix:%integer,endix:%integer)``
-  #. ``(item,startix:%integer)``
+  #. ``(item,loc(startix:%integer,endix:%integer))``
+  #. ``(item,loc(startix:%integer))``
   #. ``item``
 
 * Function ``count``, given ``(item)``, returns the number of times ``(item)`` appears in the list.
@@ -253,10 +253,10 @@ data structure itself, e.g.
 
 * Function ``toupper``, converts all the lowercase letters in a string to uppercase.
 * Function ``tolower``, converts all the uppercase letters in a string to lowercase.
-* Function ``index`` allows the user to search for a given ``item`` in a list. It returns an integer index into the string or ``none`` if ``item`` was not found.  The function can be called with several different inputs:
+* Function ``index`` allows the user to search for a given ``item`` in a list. It returns an integer index into the string or ``none`` if ``item`` was not found.  The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular substring of the string. The returned index is computed relative to the beginning of the full string rather than the ``(startix)`` argument.The function can be called with several different inputs:
 
-  #. Input ``(item:%string,startix:%integer,endix:%integer)``
-  #. Input ``(item:%string,startix:%integer)``
+  #. Input ``(item:%string,loc(startix:%integer,endix:%integer))``
+  #. Input ``(item:%string,loc(startix:%integer))``
   #. Input ``(item:%string)``
 
 * Function ``flip`` reverses a string.
