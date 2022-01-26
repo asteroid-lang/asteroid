@@ -1096,13 +1096,14 @@ def if_stmt(node):
     assert_match(IF, 'if')
     assert_match(LIST, 'list')
 
-    for if_clause in if_list:
+    for i in range(0,len(if_list),2):
+        
+        lineinfo = if_list[ i ]
+        process_lineinfo(lineinfo)
 
         (IF_CLAUSE,
          (COND, cond),
-         (STMT_LIST, stmts), line_info) = if_clause
-
-        process_lineinfo(line_info)
+         (STMT_LIST, stmts)) = if_list[ i + 1 ]
 
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
