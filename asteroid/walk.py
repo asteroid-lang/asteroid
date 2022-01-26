@@ -126,7 +126,7 @@ def unify(term, pattern, unifying = True ):
             raise PatternMatchFailed(
                 "pattern type {} and term type {} do not agree"
                 .format(pid,tid))
-        return unify(tl,pl)
+        return unify(data_only(tl),data_only(pl))
 
     elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
