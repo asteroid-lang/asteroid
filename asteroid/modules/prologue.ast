@@ -257,6 +257,24 @@ function range
     return [0 to stop-1].
   end
 
+  ------------------------------------------------------------------
+  structure loc
+  ------------------------------------------------------------------
+  -- object to identify locations for index member functions.
+  -- applies to both lists and strings.
+  with
+     data startix.
+     data endix.
+     function __init__
+        with (startval:%integer,endval:%integer) do
+           let this @startix = startval.
+           let this @endix = endval.
+        with startval:%integer do
+           let this @startix = startval.
+           let this @endix = none.
+        end
+  end
+
 ------------------------------------------------------------------
 -- List member functions
 ------------------------------------------------------------------
@@ -425,7 +443,7 @@ function __list_index__
 -- notation and are used to limit the search to a particular subsequence of
 -- the list. The returned index is computed relative to the beginning of the
 -- full sequence rather than the startix argument.
-with (item,startix:%integer,endix:%integer) do return escape
+with (item,loc(startix:%integer,endix:%integer)) do return escape
 "
 global __retval__
 
@@ -438,7 +456,7 @@ __retval__ = ('integer', this_val[1].index(item_val,
                             startix_val[1],
                             endix_val[1]))
 "
-with (item,startix:%integer) do return escape
+with (item,loc(startix:%integer,none)) do return escape
 "
 global __retval__
 
@@ -805,7 +823,7 @@ end
 ------------------------------------------------------------------
 function __string_index__
 ------------------------------------------------------------------
-with (item:%string,startix:%integer,endix:%integer) do return escape
+with (item:%string,loc(startix:%integer,endix:%integer)) do return escape
 "
 global __retval__
 
@@ -820,7 +838,7 @@ if val == -1:
 else:
     __retval__ = ('integer', val)
 "
-with (item:%string,startix:%integer) do return escape
+with (item:%string,loc(startix:%integer,none)) do return escape
 "
 global __retval__
 
