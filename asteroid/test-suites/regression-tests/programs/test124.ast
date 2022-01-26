@@ -1,0 +1,20 @@
+-- test pattern match contraints on structure members
+structure Foo with
+  data a.
+  function __init__
+     with x do
+       let this@a:%integer = x.
+     end.
+end
+
+let f = Foo(1).
+assert( f is Foo(1) ).
+
+try
+  let f = Foo("abc").
+  assert(false). -- we should never get here
+catch _ do
+  -- expected exception
+  ...
+end
+

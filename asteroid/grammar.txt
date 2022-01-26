@@ -108,7 +108,7 @@ arith_exp1
   : call_or_index (('*' | '/') call_or_index)*
 
 call_or_index
-  : primary (primary | '@' primary)*
+  : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
 
 primary
   : INTEGER
@@ -117,7 +117,7 @@ primary
   | TRUE
   | FALSE
   | NONE
-  | ID (':' pattern)?  // named pattern when ': pattern' exists
+  | ID
   | '*' ID         // "dereference" a variable during pattern matching
   | NOT call_or_index
   | MINUS call_or_index
