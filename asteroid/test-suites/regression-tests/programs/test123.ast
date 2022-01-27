@@ -1,0 +1,12 @@
+
+structure A with
+  data a.
+  data b.
+end
+
+let o = A(1,2).
+
+
+let *o = o.
+
+

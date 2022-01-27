@@ -738,7 +738,7 @@ class Parser:
 
     ###########################################################################################
     # call_or_index
-    #   : primary (primary | '@' primary)*
+    #   : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
     def call_or_index(self):
         dbg_print("parsing CALL_OR_INDEX")
 
@@ -756,6 +756,11 @@ class Parser:
                 ix = self.primary()
                 v = ('index', v, ix)
 
+        if self.lexer.peek().type == 'COLON': # if ':' exists - named pattern
+            self.lexer.match('COLON')
+            e = self.exp()
+            v = ('named-pattern', v, e)
+
         return v
 
     ###########################################################################################
@@ -766,7 +771,7 @@ class Parser:
     #    | TRUE
     #    | FALSE
     #    | NONE
-    #    | ID (':' pattern)?  // named pattern when ': pattern' exists
+    #    | ID
     #    | '*' ID         // "dereference" a variable during pattern matching
     #    | NOT call_or_index
     #    | MINUS call_or_index
@@ -808,14 +813,7 @@ class Parser:
 
         elif tt == 'ID':
             tok = self.lexer.match('ID')
-            if self.lexer.peek().type == 'COLON': # if ':' exists - named pattern
-                self.lexer.match('COLON')
-                v = self.exp()
-                return ('named-pattern',
-                        ('id', tok.value),
-                        v)
-            else:
-                return ('id', tok.value)
+            return ('id', tok.value)
 
         elif tt == 'TIMES':
             self.lexer.match('TIMES')
