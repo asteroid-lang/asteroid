@@ -786,23 +786,25 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    for node in body_list_val:
-        if node[0] == 'lineinfo':
-            process_lineinfo(node)
-        else:
-            (BODY,
-            (PATTERN, p),
-            (STMT_LIST, stmts)) = node
+    for i in range(0, len(body_list_val), 2):
+        # Process lineinfo
+        lineinfo = body_list_val[ i ]
+        process_lineinfo(lineinfo)
 
-            try:
-                unifiers = unify(actual_val_args, p)
-                unified = True
-            except PatternMatchFailed:
-                unifiers = []
-                unified = False
+        # Deconstruct function body
+        (BODY,
+        (PATTERN, p),
+        (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
-            if unified:
-                break
+        try:
+            unifiers = unify(actual_val_args, p)
+            unified = True
+        except PatternMatchFailed:
+            unifiers = []
+            unified = False
+
+        if unified:
+            break
 
     if not unified:
         raise ValueError("none of the function bodies unified with actual parameters")
@@ -1632,21 +1634,22 @@ def check_redundancy( body_list, f_name ):
     assert_match(LIST,'list')
 
     #compare every pattern with the patterns that follow it
-    for i in range(len(bodies)):
-        if (bodies[i][0] == 'lineinfo'):
-            continue
+    for i in range(0, len(bodies), 2):
+        # Process lineinfo
+        lineinfo = bodies[ i ]
+        process_lineinfo(lineinfo)
 
         #get the pattern with the higher level of precedence
-        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i]
+        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i + 1]
         assert_match(BODY_H,'body')
         assert_match(PTRN,'pattern')
 
-        for j in range(i + 1, len(bodies)):
-            if (bodies[j][0] == 'lineinfo'):
-                continue
+        for j in range(i + 2, len(bodies), 2):
+            lineinfo = bodies[ j ]
+            process_lineinfo(lineinfo)
 
             #get the pattern with the lower level of precedence
-            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j]
+            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j + 1]
             assert_match(BODY_L,'body')
             assert_match(PTRN,'pattern')
 
