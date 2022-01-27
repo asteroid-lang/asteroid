@@ -1633,7 +1633,7 @@ def check_redundancy( body_list, f_name ):
 
     #compare every pattern with the patterns that follow it
     for i in range(len(bodies)):
-        if (bodies[0] == 'lineinfo'):
+        if (bodies[i][0] == 'lineinfo'):
             continue
 
         #get the pattern with the higher level of precedence
@@ -1642,6 +1642,8 @@ def check_redundancy( body_list, f_name ):
         assert_match(PTRN,'pattern')
 
         for j in range(i + 1, len(bodies)):
+            if (bodies[j][0] == 'lineinfo'):
+                continue
 
             #get the pattern with the lower level of precedence
             (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j]
