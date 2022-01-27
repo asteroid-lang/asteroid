@@ -769,21 +769,23 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    for body in body_list_val:
+    for node in body_list_val:
+        if node[0] == 'lineinfo':
+            process_lineinfo(node)
+        else:
+            (BODY,
+            (PATTERN, p),
+            (STMT_LIST, stmts)) = node
 
-        (BODY,
-         (PATTERN, p),
-         (STMT_LIST, stmts)) = body
+            try:
+                unifiers = unify(actual_val_args, p)
+                unified = True
+            except PatternMatchFailed:
+                unifiers = []
+                unified = False
 
-        try:
-            unifiers = unify(actual_val_args, p)
-            unified = True
-        except PatternMatchFailed:
-            unifiers = []
-            unified = False
-
-        if unified:
-            break
+            if unified:
+                break
 
     if not unified:
         raise ValueError("none of the function bodies unified with actual parameters")
@@ -795,9 +797,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
+    # TODO: FIX REDUNDANCY CHECK
     # Check for useless patterns
     if state.eval_redundancy:
-        check_redundancy(body_list, fname)
+        pass #check_redundancy(body_list, fname)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
