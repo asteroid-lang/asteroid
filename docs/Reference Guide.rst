@@ -118,7 +118,7 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)*
+    : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
 
   primary
     : INTEGER
@@ -127,7 +127,7 @@ are written in quotes.
     | TRUE
     | FALSE
     | NONE
-    | ID (':' pattern)?  // named pattern when ': pattern' exists
+    | ID
     | '*' ID         // "dereference" a variable during pattern matching
     | NOT call_or_index
     | MINUS call_or_index
