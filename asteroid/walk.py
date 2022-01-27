@@ -817,7 +817,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # TODO: FIX REDUNDANCY CHECK
     # Check for useless patterns
     if state.eval_redundancy:
-        pass #check_redundancy(body_list, fname)
+        check_redundancy(body_list, fname)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
@@ -1633,6 +1633,8 @@ def check_redundancy( body_list, f_name ):
 
     #compare every pattern with the patterns that follow it
     for i in range(len(bodies)):
+        if (bodies[0] == 'lineinfo'):
+            continue
 
         #get the pattern with the higher level of precedence
         (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i]
