@@ -182,8 +182,23 @@ function gettype
 with x do return escape
 "
 global __retval__
-
-(x_type, _) = state.symbol_table.lookup_sym('x')
+val = state.symbol_table.lookup_sym('x')
+if val[0] == 'object':
+  (OBJECT, (STRUCT_ID, (ID, x_type)), OBJECT_MEMORY) = val
+else:
+  x_type = val[0]
 __retval__ = ('string', x_type)
+"
+end
+
+------------------------------------------------------------------
+function getid
+------------------------------------------------------------------
+# get the id (physical memory address) of 'x' as an Asteroid integer
+with x do return escape
+"
+global __retval__
+x_val = state.symbol_table.lookup_sym('x')
+__retval__ = ('integer', id(x_val))
 "
 end

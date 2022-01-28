@@ -445,8 +445,9 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``islist`` returns ``true`` if given ``item`` is a list otherwise it will return ``false``.
 * Function ``isscalar`` returns ``true`` if given ``item`` is either an integer or a real value.
-* Function ``isnone``, returns ``true`` if given ``item`` is equal to the value ``none``.
+* Function ``isnone`` returns ``true`` if given ``item`` is equal to the value ``none``.
 * Function ``gettype`` returns the type of a given ``item`` as an Asteroid string.
+* Function ``getid`` returns the id (physical memory address) of any Asteroid object as an Asteroid integer.
 
 Util
 ^^^^
