@@ -1,0 +1,12 @@
+-- test whether or not variable and type names are 
+-- visible in the current environment
+
+assert(isdefined("x") == false).
+
+structure A with
+  data a.
+  data b.
+end
+
+assert (isdefined("A")).
+

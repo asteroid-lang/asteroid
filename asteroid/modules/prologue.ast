@@ -89,164 +89,6 @@ with l:%list do
 end
 
 ------------------------------------------------------------------
-function __do_not_use_inherit__
-------------------------------------------------------------------
--- Note: this function modifies a given structure which is not
--- a good thing.  Left here for documentation purposes of object structure
---
--- allow the user to construct an inheritance hierachy by directly
--- manipulating the structure types.
-with (target,source) do escape
--- target inherits the whole structure of source
-"
-from asteroid.support import assert_match
-from copy import deepcopy
-
-target_val = state.symbol_table.lookup_sym('target')
-if target_val[0] == 'string':
-  target_val = state.symbol_table.lookup_sym(target_val[1])
-
-source_val = state.symbol_table.lookup_sym('source')
-if source_val[0] == 'string':
-  source_val = state.symbol_table.lookup_sym(source_val[1])
-
-# unpack target_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, t_member_names)),
-    (STRUCT_MEMORY, (LIST, t_struct_memory)),
-    (STRUCT_SCOPE, t_struct_scope)) = target_val
-
-assert_match(STRUCT, 'struct')
-target_len = len(t_member_names)
-
-# unpack source_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, s_member_names)),
-    (STRUCT_MEMORY, (LIST, s_struct_memory)),
-    (STRUCT_SCOPE, s_struct_scope)) = source_val
-
-assert_match(STRUCT, 'struct')
-
-# construct the target structure
-state.symbol_table.push_scope(t_struct_scope)
-for ix in range(len(s_member_names)):
-  if s_member_names[ix] in t_member_names:
-    raise ValueError('inherit: clash in structure on {}'
-                     .format(s_member_names[ix]))
-  state.symbol_table.enter_sym(s_member_names[ix],
-                               ('integer', ix+target_len))
-  t_member_names.append(s_member_names[ix])
-  t_struct_memory.append(deepcopy(s_struct_memory[ix]))
-state.symbol_table.pop_scope()
-"
-with (target,source,slot:%string) do escape
--- target inherits slot from source
-"
-from asteroid.support import assert_match
-from copy import deepcopy
-
-target_val = state.symbol_table.lookup_sym('target')
-if target_val[0] == 'string':
-  target_val = state.symbol_table.lookup_sym(target_val[1])
-
-source_val = state.symbol_table.lookup_sym('source')
-if source_val[0] == 'string':
-  source_val = state.symbol_table.lookup_sym(source_val[1])
-
-slot_val = state.symbol_table.lookup_sym('slot')
-
-# unpack target_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, t_member_names)),
-    (STRUCT_MEMORY, (LIST, t_struct_memory)),
-    (STRUCT_SCOPE, t_struct_scope)) = target_val
-
-assert_match(STRUCT, 'struct')
-target_len = len(t_member_names)
-
-# unpack source_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, s_member_names)),
-    (STRUCT_MEMORY, (LIST, s_struct_memory)),
-    (STRUCT_SCOPE, s_struct_scope)) = source_val
-
-assert_match(STRUCT, 'struct')
-
-# make sure the slot name is actually there
-if slot_val[1] in s_member_names:
-  ix = s_member_names.index(slot_val[1])
-else:
-  raise ValueError('inherit: member {} not found in source structure'
-                   .format(slot_val[1]))
-
-if s_member_names[ix] in t_member_names:
-  raise ValueError('inherit: clash in structure on {}'
-                   .format(s_member_names[ix]))
-
-# construct the target structure
-state.symbol_table.push_scope(t_struct_scope)
-state.symbol_table.enter_sym(slot_val[1], ('integer', ix+target_len))
-state.symbol_table.pop_scope()
-t_member_names.append(slot_val[1])
-t_struct_memory.append(deepcopy(s_struct_memory[ix]))
-"
-with (target,source,slots:%list) do escape
--- target inherits slots from source
-"
-from asteroid.support import assert_match
-from copy import deepcopy
-
-target_val = state.symbol_table.lookup_sym('target')
-if target_val[0] == 'string':
-  target_val = state.symbol_table.lookup_sym(target_val[1])
-
-source_val = state.symbol_table.lookup_sym('source')
-if source_val[0] == 'string':
-  source_val = state.symbol_table.lookup_sym(source_val[1])
-
-slots_val = state.symbol_table.lookup_sym('slots')
-
-# unpack target_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, t_member_names)),
-    (STRUCT_MEMORY, (LIST, t_struct_memory)),
-    (STRUCT_SCOPE, t_struct_scope)) = target_val
-
-assert_match(STRUCT, 'struct')
-target_len = len(t_member_names)
-
-# unpack source_val
-(STRUCT,
-    (MEMBER_NAMES, (LIST, s_member_names)),
-    (STRUCT_MEMORY, (LIST, s_struct_memory)),
-    (STRUCT_SCOPE, s_struct_scope)) = source_val
-
-assert_match(STRUCT, 'struct')
-
-# construct the target structure
-state.symbol_table.push_scope(t_struct_scope)
-
-for slot_val in slots_val[1]:
-  # make sure the slot name is actually there
-  if slot_val[1] in s_member_names:
-    ix = s_member_names.index(slot_val[1])
-  else:
-    raise ValueError('inherit: member {} not found in source structure'
-                     .format(slot_val[1]))
-
-  if s_member_names[ix] in t_member_names:
-    raise ValueError('inherit: clash in structure on {}'
-                     .format(s_member_names[ix]))
-
-  state.symbol_table.enter_sym(slot_val[1], ('integer', ix+target_len))
-  t_member_names.append(slot_val[1])
-  t_struct_memory.append(deepcopy(s_struct_memory[ix]))
-
-state.symbol_table.pop_scope()
-"
-end
-
-------------------------------------------------------------------
 function range
 ------------------------------------------------------------------
   with (start:%integer,stop:%integer) do
@@ -257,23 +99,56 @@ function range
     return [0 to stop-1].
   end
 
-  ------------------------------------------------------------------
-  structure loc
-  ------------------------------------------------------------------
-  -- object to identify locations for index member functions.
-  -- applies to both lists and strings.
-  with
-     data startix.
-     data endix.
-     function __init__
-        with (startval:%integer,endval:%integer) do
-           let this @startix = startval.
-           let this @endix = endval.
-        with startval:%integer do
-           let this @startix = startval.
-           let this @endix = none.
-        end
-  end
+------------------------------------------------------------------
+function getid
+------------------------------------------------------------------
+# get the id (physical memory address) of 'x' as an Asteroid integer
+with x do return escape
+"
+global __retval__
+x_val = state.symbol_table.lookup_sym('x')
+__retval__ = ('integer', id(x_val))
+"
+end
+
+------------------------------------------------------------------
+function isdefined
+------------------------------------------------------------------
+-- return true if a variable or type name is defined in the
+-- current environment otherwise return false
+-- the variable and type name is given as a string
+with __x__ do return escape
+"
+global __retval__
+(STRING, v)  = state.symbol_table.lookup_sym('__x__')
+if STRING != 'string':
+   raise ValueError('expected a string argument')
+try:
+   state.symbol_table.lookup_sym(v)
+except ValueError:
+    __retval__ = ('boolean', False)
+else:
+   __retval__ = ('boolean', True)
+ "
+end
+
+------------------------------------------------------------------
+structure loc
+------------------------------------------------------------------
+-- object to identify locations for index member functions.
+-- applies to both lists and strings.
+with
+   data startix.
+   data endix.
+   function __init__
+      with (startval:%integer,endval:%integer) do
+         let this @startix = startval.
+         let this @endix = endval.
+      with startval:%integer do
+         let this @startix = startval.
+         let this @endix = none.
+      end
+end
 
 ------------------------------------------------------------------
 -- List member functions
