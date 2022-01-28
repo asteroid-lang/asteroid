@@ -786,11 +786,15 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    for body in body_list_val:
+    for i in range(0, len(body_list_val), 2):
+        # Process lineinfo
+        lineinfo = body_list_val[ i ]
+        process_lineinfo(lineinfo)
 
+        # Deconstruct function body
         (BODY,
-         (PATTERN, p),
-         (STMT_LIST, stmts)) = body
+        (PATTERN, p),
+        (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         try:
             unifiers = unify(actual_val_args, p)
@@ -812,6 +816,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
+    # TODO: FIX REDUNDANCY CHECK
     # Check for useless patterns
     if state.eval_redundancy:
         check_redundancy(body_list, fname)
@@ -1629,17 +1634,22 @@ def check_redundancy( body_list, f_name ):
     assert_match(LIST,'list')
 
     #compare every pattern with the patterns that follow it
-    for i in range(len(bodies)):
+    for i in range(0, len(bodies), 2):
+        # Process lineinfo
+        lineinfo = bodies[ i ]
+        process_lineinfo(lineinfo)
 
         #get the pattern with the higher level of precedence
-        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i]
+        (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i + 1]
         assert_match(BODY_H,'body')
         assert_match(PTRN,'pattern')
 
-        for j in range(i + 1, len(bodies)):
+        for j in range(i + 2, len(bodies), 2):
+            lineinfo = bodies[ j ]
+            process_lineinfo(lineinfo)
 
             #get the pattern with the lower level of precedence
-            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j]
+            (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j + 1]
             assert_match(BODY_L,'body')
             assert_match(PTRN,'pattern')
 
