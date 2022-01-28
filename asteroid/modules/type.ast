@@ -190,15 +190,3 @@ else:
 __retval__ = ('string', x_type)
 "
 end
-
-------------------------------------------------------------------
-function getid
-------------------------------------------------------------------
-# get the id (physical memory address) of 'x' as an Asteroid integer
-with x do return escape
-"
-global __retval__
-x_val = state.symbol_table.lookup_sym('x')
-__retval__ = ('integer', id(x_val))
-"
-end
