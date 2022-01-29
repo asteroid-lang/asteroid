@@ -18,11 +18,11 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Asteroid'
-copyright = '2022, University of Rhode Island'
+copyright = '2021- University of Rhode Island'
 author = 'Lutz Hamel, Tim Colaneri, Oliver McLaughlin, Ariel Finkel, Theodore Henson, Calvin Higgins'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.0'
+release = '0.1.0'
 
 
 # -- General configuration ---------------------------------------------------
