@@ -7,7 +7,7 @@ Asteroid is available from the PyPI project website
 `pypi.org/project/asteroid-lang <https://pypi.org/project/asteroid-lang>`_
 and is installed using,
 ::
-    $ pip install asteroid
+    $ pip install asteroid-lang
 
 The should work on Unix-like and Windows systems,
 though you may have to use `pip3` or some other variation.
