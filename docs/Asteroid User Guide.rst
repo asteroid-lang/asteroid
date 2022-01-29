@@ -6,7 +6,9 @@ Asteroid User Guide
 Introduction
 ------------
 
-Asteroid is a multi-paradigm programming language heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, that makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*.
+Asteroid is a multi-paradigm programming language supporting first-class patterns.
+The language is heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, and makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*. When we talk about pattern matching we mean structural pattern matching
+as well as regular expression matching.
 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
 paradigm.  Here are just two examples:
