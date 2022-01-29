@@ -2,7 +2,7 @@
 -- This tests is for ELIF line number reporting
 
 
-function lineNumberTest with none do escape
+escape
 " 
 from asteroid.interp import interp
 from asteroid.state import state
@@ -18,7 +18,7 @@ program += '    ...\n'
 program += 'end\n'
 
 try:
-    interp(program)
+    interp(program,exceptions=True)
 except:
     pass
 
@@ -40,7 +40,7 @@ program += '\n'
 program += 'foo().\n'
 
 try:
-    interp(program)
+    interp(program,exceptions=True)
 except:
     pass
 
@@ -68,7 +68,7 @@ program += '\n'
 program += 'foo().\n'
 
 try:
-    interp(program)
+    interp(program,exceptions=True)
 except:
     pass
 
@@ -97,13 +97,9 @@ program += '    end\n'
 program += 'end\n'
 
 try:
-    interp(program)
+    interp(program,exceptions=True)
 except:
     pass
 
-assert( state.lineinfo[1] == 13 )
+assert( state.lineinfo[1] == 14 )
 "
-end
-
--- run the test
-lineNumberTest().
