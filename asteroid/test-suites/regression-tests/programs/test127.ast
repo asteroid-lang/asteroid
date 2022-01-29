@@ -101,5 +101,5 @@ try:
 except:
     pass
 
-assert( state.lineinfo[1] == 14 )
+assert( state.lineinfo[1] == 13 )
 "
