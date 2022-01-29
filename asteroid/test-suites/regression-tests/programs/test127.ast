@@ -1,0 +1,109 @@
+
+-- This tests is for ELIF line number reporting
+
+
+function lineNumberTest with none do escape
+" 
+from asteroid.interp import interp
+from asteroid.state import state
+
+program = ''
+program += 'let x = 1.\n'
+program += 'let y = 0.\n'
+program += '\n'
+program += 'if ( x < 0) do\n'
+program += '    ...\n'
+program += 'elif ( x / y < 1 ) do-- division by zero \n'
+program += '    ...\n'
+program += 'end\n'
+
+try:
+    interp(program)
+except:
+    pass
+
+assert( state.lineinfo[1] == 6)
+
+program = ''
+program += 'let x = 1.\n'
+program += 'let y = 0.\n'
+program += '\n'
+program += 'function foo\n'
+program += '    with none do\n'
+program += '        if ( x < 0) do\n'
+program += '            ...\n'
+program += '        elif ( x / y < 1 ) do-- division by zero \n'
+program += '            ...\n'
+program += '        end\n'
+program += '    end\n'
+program += '\n'
+program += 'foo().\n'
+
+try:
+    interp(program)
+except:
+    pass
+
+assert( state.lineinfo[1] == 8)
+
+program = ''
+program += 'let x = 1.\n'
+program += 'let y = 0.\n'
+program += '\n'
+program += 'function foo\n'
+program += '    with none do\n'
+program += '        if ( x < 0) do\n'
+program += '            ...\n'
+program += '        elif ( x < 0 ) do\n'
+program += '            ...\n'
+program += '        elif ( x < -1 ) do\n'
+program += '            ...\n'
+program += '        elif ( x / y < 1 ) do-- division by zero \n'
+program += '            ...\n'
+program += '        elif ( x < 10 ) do\n'
+program += '            ...\n'
+program += '        end\n'
+program += '    end\n'
+program += '\n'
+program += 'foo().\n'
+
+try:
+    interp(program)
+except:
+    pass
+
+assert( state.lineinfo[1] == 12)
+
+program = ''
+program += 'let x = 1.\n'
+program += 'let y = 0.\n'
+program += '\n'
+program += 'while (1) do\n'
+program += '    if ( x < 0) do\n'
+program += '        ...\n'
+program += '    elif ( x < 1 ) do\n'
+program += '        ...\n'
+program += '    elif ( x < -1 ) do\n'
+program += '        ...\n'
+program += '    elif ( x < -2 ) do\n'
+program += '        ...\n'
+program += '    elif ( x / y < 1 ) do -- error\n'
+program += '        ...\n'
+program += '    elif ( x < -11 ) do\n'
+program += '        ...\n'
+program += '    elif ( x < 11 ) do\n'
+program += '        ...\n'
+program += '    end\n'
+program += 'end\n'
+
+try:
+    interp(program)
+except:
+    pass
+
+assert( state.lineinfo[1] == 13 )
+"
+end
+
+-- run the test
+lineNumberTest().
