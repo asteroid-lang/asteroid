@@ -315,25 +315,31 @@ class Parser:
             if_list = []
 
             dbg_print("parsing IF")
+            old_lineinfo = state.lineinfo
             self.lexer.match('IF')
             cond = self.exp()
             self.lexer.match('DO')
             stmts = self.stmt_list()
+            if_list.append(('lineinfo',old_lineinfo))
             if_list.append(('if-clause', ('cond', cond), ('stmt-list', stmts)))
 
             while self.lexer.peek().type == 'ELIF':
                 dbg_print("parsing ELIF")
+                old_lineinfo = state.lineinfo
                 self.lexer.match('ELIF')
                 cond = self.exp()
                 self.lexer.match('DO')
                 stmts = self.stmt_list()
+                if_list.append(('lineinfo',old_lineinfo))
                 if_list.append(('if-clause', ('cond', cond), ('stmt-list', stmts)))
 
             if self.lexer.peek().type == 'ELSE':
                 dbg_print("parsing ELSE")
+                old_lineinfo = state.lineinfo
                 self.lexer.match('ELSE')
                 self.lexer.match_optional('DO')
                 stmts = self.stmt_list()
+                if_list.append(('lineinfo',old_lineinfo))
                 # make the else look like another elif with the condition set to 'true'
                 if_list.append(('if-clause', ('cond', ('boolean', True)), ('stmt-list', stmts)))
 
