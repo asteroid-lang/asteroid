@@ -3,8 +3,7 @@
 Asteroid in Action
 ##################
 
-This document was inspired by Andrew Shitov's excellent book `Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language <https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf>`_.  Here of course we use Asteroid to solve these programming challenges. The OO challenges are lifted from the `hackerrank.com <https://www.hackerrank.com/domains/java/oop/difficulty/all/page/1>`_ website.
-
+This document was inspired by Andrew Shitov's excellent book `Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language <https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf>`_.  Here we use Asteroid to solve these programming challenges. 
 ..
   Chapter: Strings
   ----------------
