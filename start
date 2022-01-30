@@ -3,10 +3,9 @@ pip3 install asteroid-lang
 clear
 echo "Welcome to Asteroid!"
 echo " "
-cd asteroid/programs
-echo "Example programs are available in"
-echo "folder: asteroid/programs"
-echo " "
-echo "To run a program: asteroid <prog name>.ast"
-echo " "
 asteroid
+echo " "
+echo "Example programs are available in folder:"
+echo " "
+echo "   asteroid/programs"
+echo " "
