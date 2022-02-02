@@ -635,6 +635,7 @@ def store_at_ix(structure_val, ix, value):
         return
 
     elif ix_val[0] == 'list':
+        # TODO: https://github.com/asteroid-lang/asteroid/issues/39
         raise ValueError("slicing in patterns not supported")
 
     else:
