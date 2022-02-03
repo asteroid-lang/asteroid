@@ -636,6 +636,24 @@ def store_at_ix(structure_val, ix, value):
 
     elif ix_val[0] == 'list':
         # TODO: https://github.com/asteroid-lang/asteroid/issues/39
+        # This branch only triggers when
+        # a @ [XXX]. When the index is a list
+        # therefore, we have to do all the computing similarly to the
+        # single integer ones
+
+        # Something like
+        """
+            (LIST, vals) = ix_val
+            if pattern insn't a list OR their lengths arent the same:
+                raise ValueError()
+
+            for i in range(len(vals)):
+                #walk each value_index
+                cur_val = walk(vals[i])
+
+                #set each memory location to index
+                memory[ix_val[1][i]] = cur_val
+        """
         raise ValueError("slicing in patterns not supported")
 
     else:
