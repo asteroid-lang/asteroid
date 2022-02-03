@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 structure MyException with 
     data e.
@@ -8,5 +8,5 @@ structure MyException with
 try
     throw MyException("Hello There!").
 catch MyException(v) do
-    println v.
+    io @println v.
 end 

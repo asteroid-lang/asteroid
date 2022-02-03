@@ -1,10 +1,10 @@
 
-load "io".
+load system io.
 load "util".
 
 let x = 1.
 while x <= 10 do
-    println x.
+    io @println x.
     let x = x + 1.
 end 
 assert (x == 11).

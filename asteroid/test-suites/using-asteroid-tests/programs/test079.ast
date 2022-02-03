@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "hash".
 load "sort".
 load "random".
@@ -24,6 +24,6 @@ function pairs with ((_,x),(_,y)) do
 end
 
 -- print out the sorted list
-println (sort(pairs,lst)).
+io @println (sort(pairs,lst)).
 
 assert (sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])

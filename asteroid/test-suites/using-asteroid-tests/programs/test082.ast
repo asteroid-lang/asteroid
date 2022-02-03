@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "vector".
 load "util".
 load "type".
@@ -17,5 +17,5 @@ for i in 1 to 6 do
 end
 
 for r in triangle do
-    println (r @map(lambda with v do return tostring v) @join(" ")).
+    io @println (r @map(lambda with v do return tostring v) @join(" ")).
 end

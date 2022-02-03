@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "random".
 
 seed(42).

@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 load "util".
 load "type".
@@ -31,7 +31,7 @@ function cartesian_to_psi
 let (r,psi) = cartesian_to_polar(-3,5).
 let (x,y) = polar_to_cartesian(r,psi).
 
-println (x,y).
+io @println (x,y).
 
 -- show that the recovered coordinates are the same
 -- we started with

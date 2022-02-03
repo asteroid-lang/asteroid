@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let v = 'a@[3].
-__raw_print__ v.
+io @__raw_print__ v.

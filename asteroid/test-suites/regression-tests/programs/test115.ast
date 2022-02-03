@@ -9,7 +9,7 @@ structure Foo with
    data three.
    function hello
       with none do
-        println (tostring(this @one)+
+        io @println (tostring(this @one)+
                  tostring(this @two)+
                  tostring(this @three)).
       end
@@ -17,15 +17,15 @@ structure Foo with
 
 let ll = len [1,2,3].
 assert (ll == 3).
-println ll.
+io @println ll.
 
 let lt = len (1,2,3).
 assert (lt == 3).
-println lt.
+io @println lt.
 
 let ls = len "123".
 assert (ls == 3).
-println ls.
+io @println ls.
 
 let f = Foo(1,2,3).
 f @hello().

@@ -5,7 +5,7 @@
 -- subsumption detection in Asteroid.
 --------------------------------------
 --------------------------------------
-load "io".
+load system io.
 load "util".
 
 structure Person with
@@ -42,11 +42,11 @@ let loopCounter = 0.
 -- print names that contain 'p'
 for Person(_,_,_) in people do
   try
-    println (test_function( people @loopCounter )).
+    io @println (test_function( people @loopCounter )).
   catch Exception("RedundantPatternFound",s) do
-    println("PASS.").
+    io @println("PASS.").
   catch e do
-    println("FAIL.").
+    io @println("FAIL.").
     throw Error("FAIL: unexpected error "+e).
   end.
   let loopCounter = loopCounter + 1.

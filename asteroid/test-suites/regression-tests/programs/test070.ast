@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 function ident 
@@ -9,5 +9,5 @@ function ident
 
 let y = ident ident  0.
 
-println y.
+io @println y.
 assert (y is 0).

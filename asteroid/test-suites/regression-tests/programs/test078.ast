@@ -1,11 +1,11 @@
 
-load "io".
+load system io.
 
 for (x,y) in [(1,1), (2,2), (3,3)]  do
-    println (x,y).
+    io @println (x,y).
 end 
 
 -- use unification as a filter
 for (2,y) in [(1,11), (1,12), (1,13), (2,21), (2,22), (2,23)]  do
-    println y.
+    io @println y.
 end 

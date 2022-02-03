@@ -1,19 +1,19 @@
 
 -- show off our overloaded '+' operator
-load "io".
+load system io.
 load "util".
 
-println (1 + 1).
+io @println (1 + 1).
 assert ((1+1) == 2).
 
 let s1 = "hello".
 let s2 = "world".
 let s3 = s1 + " " + s2 +"!".
-println s3.
+io @println s3.
 assert (s3 == "hello world!").
 
 let l1 = [1,2,3].
 let l2 = [4,5,6].
 let l3 = l1 + l2.
-println l3.
+io @println l3.
 assert (l3 == [1,2,3,4,5,6]).

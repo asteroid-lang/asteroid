@@ -5,17 +5,17 @@ load system type.
 load system math.
 
 let b = tostring(true,stringformat(10)).
-println b.
+io @println b.
 assert(b is "      true").
 
 let i = tostring(5,stringformat(5)).
-println i.
+io @println i.
 assert(i is "    5").
 
 let s = tostring("hello there!",stringformat(30)).
-println s.
+io @println s.
 assert(s is "                  hello there!").
 
 let r = tostring(pi,stringformat(6,3)).
-println r.
+io @println r.
 assert(r is " 3.142").

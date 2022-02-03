@@ -1,11 +1,11 @@
 
-load "io".
+load system io.
 
 let 2 = 1 + 1. -- (*@\label{patternmatching-models:let1a}@*)
 
 try 
     let 1 + 1 = 1 + 1. -- throws an exception (*@\label{patternmatching-models:let3}@*)
 catch _ do
-    println "pattern match failed".
+    io @println "pattern match failed".
 end 
 

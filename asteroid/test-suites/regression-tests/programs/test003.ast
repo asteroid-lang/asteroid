@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let digits = "332211" @explode() @sort().
-println digits.
+io @println digits.

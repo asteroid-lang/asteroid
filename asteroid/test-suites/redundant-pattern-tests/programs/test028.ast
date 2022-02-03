@@ -5,7 +5,7 @@
 -- subsumption detection in Asteroid.
 --------------------------------------
 --------------------------------------
-load "io".
+load system io.
 load "util".
 
 structure Dog
@@ -36,8 +36,8 @@ try
   -- Fido the dog
   let fido = Dog("Fido").
 catch Exception("RedundantPatternFound",s) do
-    println("PASS.").
+    io @println("PASS.").
 catch e do
-    println("FAIL.").
+    io @println("FAIL.").
     throw Error("FAIL: unexpected error "+e).
 end.

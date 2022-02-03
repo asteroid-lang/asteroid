@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure A with
@@ -8,7 +8,7 @@ structure A with
     end 
 
 let a = A(999, (lambda with (self) do return "Hello World!")).
-println (a@1()).
+io @println (a@1()).
 
 assert(a@1() is "Hello World!").
 

@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 function unique with (x,y) do
     if not (x @member(y)) do
@@ -12,5 +12,5 @@ end
 let digits = "332211" @explode() 
                       @sort() 
                       @reduce(unique,[]).
-println digits.
+io @println digits.
 assert(digits == ["1","2","3"]).

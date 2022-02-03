@@ -1,7 +1,7 @@
 
 -- Factorial
 
-load "io".
+load system io.
 load "util".
 
 function fact 
@@ -11,5 +11,5 @@ function fact
         return n * fact (n-1).
     end 
 
-println ("The factorial of 3 is: " + fact (3)).
+io @println ("The factorial of 3 is: " + fact (3)).
 assert (fact(3) == 6).

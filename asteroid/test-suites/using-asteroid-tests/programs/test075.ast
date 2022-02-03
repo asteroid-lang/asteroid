@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "set".
 
 function unique with lst:%list do
@@ -8,6 +8,6 @@ end
 
 let a = unique([2, 3, 7, 4, 5, 5, 6, 2, 10, 7]).
 
-println a.
+io @println a.
 
 assert (a == [2,3,4,5,6,7,10])

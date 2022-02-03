@@ -6,7 +6,7 @@
 --------------------------------------
 --------------------------------------
 -- implements Peano addition on terms
-load "io".
+load system io.
 load "util".
 
 structure S with
@@ -35,10 +35,10 @@ function reduce
     end 
 
 try      
-    println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
+    io @println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
 catch Exception("RedundantPatternFound",s) do
-    println("PASS.").
+    io @println("PASS.").
 catch e do
-    println("FAIL.").
+    io @println("FAIL.").
     throw Error("FAIL: unexpected error "+e).
 end.

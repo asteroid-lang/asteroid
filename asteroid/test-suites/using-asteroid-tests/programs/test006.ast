@@ -1,4 +1,4 @@
 
-load "io".
+load system io.
 load "util".
-println (len("Hello!")).
+io @println (len("Hello!")).

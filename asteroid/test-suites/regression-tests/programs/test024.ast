@@ -1,11 +1,11 @@
 
-load "io".
+load system io.
 
 function ident with i do return i end
 
 try
     let p = not ident(1).
-    println p.
+    io @println p.
 catch e do
-    println e.
+    io @println e.
 end

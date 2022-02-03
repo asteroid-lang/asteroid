@@ -128,5 +128,5 @@ catch Exception("SystemError", s) do
 end.
 -----------------------------------------------------------------------
 
-println("PASSED.").
+io @println("PASSED.").
 

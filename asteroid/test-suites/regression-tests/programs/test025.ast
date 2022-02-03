@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let q:%integer = 3.
-println q.
+io @println q.

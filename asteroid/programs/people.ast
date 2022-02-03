@@ -1,4 +1,4 @@
-load "io".
+load system io.
 load "util".
 
 structure Person with
@@ -16,5 +16,5 @@ let people = [
 
 -- print names that contain 'p'
 for Person(name:".*p.*",_,_) in people do
-  println name.
+  io @println name.
   end

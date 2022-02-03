@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 let r = [1,2,3] @reduce (lambda with (x,y) do return x*y).
-println r.
+io @println r.
 assert (r == 6).

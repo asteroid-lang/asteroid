@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let str1 = "cinema".
 let str2 = "iceman".
@@ -11,9 +11,9 @@ function normalize with str do
 end
 
 if normalize(str1) == normalize(str2) do
-    println "Anagrams".
+    io @println "Anagrams".
 else do
-    println "Not anagrams".
+    io @println "Not anagrams".
 end
 
 assert (normalize(str1) == normalize(str2)).

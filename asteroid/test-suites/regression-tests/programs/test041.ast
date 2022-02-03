@@ -1,16 +1,16 @@
 
-load "io".
+load system io.
 
 structure A with
     data x.
-    function dump with none do println (this@x) end .
+    function dump with none do io @println (this@x) end .
     end 
 
 let obj = A(2).
 obj @dump().
 
 let A(x) = obj.
-println x.
+io @println x.
 
 assert(x is 2).
 

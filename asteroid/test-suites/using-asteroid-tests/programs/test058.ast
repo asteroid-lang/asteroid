@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 function rotate with (l:%list,i:%integer) do 
@@ -12,8 +12,8 @@ end
 let a = [1, 3, 5, 7, 9, 11, 13, 15].
 let b = rotate(a,3).
 let c = rotate(a,-3).
-println a.
-println b.
-println c.
+io @println a.
+io @println b.
+io @println c.
 
 assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).

@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 structure A with
     data a.
@@ -13,6 +13,6 @@ structure B with
 let q = B([1,2,3]).
 let p = B(A(1)).
 
-println (q @ b).
-println (q @b @length()). 
-println (p @b @hello()).
+io @println (q @ b).
+io @println (q @b @length()). 
+io @println (p @b @hello()).

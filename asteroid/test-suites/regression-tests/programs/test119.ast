@@ -12,9 +12,9 @@ let THREE_POINTS = pattern with ( *POINT_ONE , *POINT_TWO , *POINT_THREE ).
 
 function foo
     with x:%pattern do
-        println("is a pattern").
+        io @println("is a pattern").
     with _ do
-        println("not a pattern").
+        io @println("not a pattern").
         end
 
 -- Should match as a pattern

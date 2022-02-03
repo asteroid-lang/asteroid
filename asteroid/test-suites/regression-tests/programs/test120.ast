@@ -1,4 +1,4 @@
-load "io".
+load system io.
 
 let x = +2.
 assert(x == 2).

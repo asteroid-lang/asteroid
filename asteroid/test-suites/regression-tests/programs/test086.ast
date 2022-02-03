@@ -1,4 +1,4 @@
 
-load "io".
+load system io.
 
-println (1,2,3).
+io @println (1,2,3).

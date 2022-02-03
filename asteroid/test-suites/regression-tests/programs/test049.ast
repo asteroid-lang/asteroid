@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 let (f,g) = (1,2).
 
@@ -10,6 +10,6 @@ function foobar
     end 
     
 foobar(none).
-println (f,g).
+io @println (f,g).
 
 assert((f,g) is (2,2)).

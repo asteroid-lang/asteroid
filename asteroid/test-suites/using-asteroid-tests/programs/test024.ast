@@ -1,6 +1,6 @@
 
-load "io".
+load system io.
 load "math". 
 
-println e.
-println tau. -- tau=2*pi
+io @println e.
+io @println tau. -- tau=2*pi

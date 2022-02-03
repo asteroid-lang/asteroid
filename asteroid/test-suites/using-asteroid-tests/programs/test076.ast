@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 function max with lst:%list do
     return lst @sort(true) @0.
@@ -13,7 +13,7 @@ let a = max [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
 let b = min [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
 
 
-println a.
-println b.
+io @println a.
+io @println b.
 
 assert (a == 15 and b == 2).

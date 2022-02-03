@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 -- fraction a/b
@@ -10,8 +10,8 @@ let b = 280.
 let gcd_val = gcd(a,b).
 let numerator = a/gcd_val.
 let denominator = b/gcd_val.
-println numerator.
-println denominator.
+io @println numerator.
+io @println denominator.
 
 -- show that original and reduced fraction are the same value
 assert (a/b == numerator/denominator).

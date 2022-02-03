@@ -1,10 +1,10 @@
 
 load "type".
-load "io".
+load system io.
 
-let cnt = tointeger(input("Please enter an integer value: ")).
+let cnt = tointeger(io @input("Please enter an integer value: ")).
 
 for i in 1 to cnt do
-    println i.
+    io @println i.
 end
 assert (i is cnt).

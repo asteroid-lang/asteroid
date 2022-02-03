@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure A with
@@ -8,5 +8,5 @@ structure A with
     
 let a = A([1,2,3]).
 let a@0@1 = 0.
-println a.
+io @println a.
 assert (a is A([1,0,3])).

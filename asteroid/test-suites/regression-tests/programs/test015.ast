@@ -1,44 +1,44 @@
 
-load "io".
+load system io.
 load "util".
 
 -- UPDATED 6-28-21 to reflect issue #27 resolution
 --------------------------------------------------TEST1--
 try
     let (x,x) = (1,1).
-    println x.
+    io @println x.
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST2--
 try
     let [x,w,y,[a,b,x]] = [1,2,3,[1,2,1]].
-    println x.
+    io @println x.
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST3--
 try
     let (name:%string,name:%string) = ("a","a").
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST4--
@@ -48,24 +48,24 @@ try
     let p3 = pattern with (*p1,*p2).
     let *p3 = ("a","a").
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST5--
 try
     let false = ((1,1) is (x,x)).
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST6--
@@ -81,12 +81,12 @@ try
 
     foo( (1,1) ).
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST7--
@@ -106,12 +106,12 @@ try
 
     assert(counter == 3).
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST8--
@@ -127,24 +127,24 @@ try
 
     foo( [1,1,1,1] ).
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------TEST9--
 try
     let (x,x:%integer) = (1,1).
 
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: no error").
 catch Exception("NonLinearPatternError", s) do
-    println("PASSED.").
+    io @println("PASSED.").
 catch _ do
-    println("FAILED.").
+    io @println("FAILED.").
     throw Error("FAIL: unexpected error").
 end.
 --------------------------------------------------END----

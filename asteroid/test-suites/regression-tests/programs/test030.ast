@@ -1,6 +1,6 @@
 
-load "io".
+load system io.
 
 let name:"a.*" = "abc".
-println name.
+io @println name.
 assert (name is "abc")

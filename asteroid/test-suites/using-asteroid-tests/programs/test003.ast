@@ -1,5 +1,5 @@
 
-load "io".
-print ("Enter your name: ").
-let name = input().
-print ("Hello, "+name+"!").
+load system io.
+io @print ("Enter your name: ").
+let name = io @input().
+io @print ("Hello, "+name+"!").

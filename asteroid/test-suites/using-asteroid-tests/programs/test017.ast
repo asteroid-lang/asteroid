@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 load "hash".
 
@@ -32,6 +32,6 @@ let (keys,values) = unzip(ht@aslist()).
 let values_sorted = values @copy()
                            @sort(true).
 let most_frequent_word = keys @(values @index(values_sorted @0)).
-println most_frequent_word.
+io @println most_frequent_word.
 
 assert (most_frequent_word == "sed").

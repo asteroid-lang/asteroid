@@ -1,5 +1,5 @@
 
--- load "io".
+-- load system io.
 structure A with
     data a.
     data b.

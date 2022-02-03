@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 function match
@@ -7,5 +7,5 @@ function match
         return subject is *p.
     end 
     
-println (match('1+1, '_+_)).
+io @println (match('1+1, '_+_)).
 assert (match('1+1, '_+_) is true).

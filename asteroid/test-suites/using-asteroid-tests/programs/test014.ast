@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let dna2rna_table = 
     [
@@ -22,6 +22,6 @@ let dna_seq = "ACCATCAGTC".
 let rna_seq = dna_seq @explode() 
                       @map(dna2rna) 
                       @join("").
-println rna_seq.
+io @println rna_seq.
 
 assert(rna_seq == "UGGUAGUCAG").

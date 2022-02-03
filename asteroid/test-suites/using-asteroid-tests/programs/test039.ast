@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 load "type".
 
@@ -13,6 +13,6 @@ if sq_str @length() < 8 do
 end
 let rstr = sq_str @[2 to 5].
 let rval = tointeger(rstr).
-println rval.
+io @println rval.
 
 assert (rval == 5227)

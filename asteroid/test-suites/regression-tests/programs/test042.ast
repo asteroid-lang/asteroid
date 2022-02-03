@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure A with
@@ -18,9 +18,9 @@ structure A with
     end 
 
 let obj1 = A("hello","world").
-println obj1.
+io @println obj1.
 let obj2 = A().
-println obj2.
+io @println obj2.
 
 assert((obj1 @x is "hello") and (obj1 @y is "world")).
 assert((obj2 @x is 1) and (obj2 @y is 2)).

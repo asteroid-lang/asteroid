@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 let names = ["zero","one","two","three","four","five","six","seven","eight","nine",
@@ -26,7 +26,7 @@ function spell_part
         return r + " " + spell_number(mod(n,base)) if mod(n,base) else r.
     end
 
-println (spell_number 15).
-println (spell_number 75).
-println (spell_number 987654).
-println (spell_number 1001).
+io @println (spell_number 15).
+io @println (spell_number 75).
+io @println (spell_number 987654).
+io @println (spell_number 1001).

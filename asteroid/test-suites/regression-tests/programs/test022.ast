@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 structure A with
     data a.
     data b.
@@ -7,4 +7,4 @@ structure A with
 
 let a = A(1,2).
 let v:%A = a.
-println v.
+io @println v.

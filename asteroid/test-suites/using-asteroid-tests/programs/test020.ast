@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let str = "Was it a rat I saw?".
 
@@ -13,9 +13,9 @@ let clean_str = clean(str).
 
 -- check if it is palidromic
 if clean_str == clean_str @flip() do
-    println "Palindromic".
+    io @println "Palindromic".
 else do
-    println "Not palindromic".
+    io @println "Not palindromic".
 end
 
 assert (clean_str == clean_str @flip()).

@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "vector".
 load "random".
 
@@ -8,6 +8,6 @@ seed(42).
 let a = [1 to 10] @shuffle().
 let b = [1 to 10] @shuffle().
 let c = vop((lambda with (x,y) do return x<y),a,b).
-println c.
+io @println c.
 
 assert(c == [false,true,false,false,false,true,false,false,true,true]).

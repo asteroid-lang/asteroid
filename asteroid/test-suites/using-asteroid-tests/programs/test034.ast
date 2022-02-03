@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 function isprime with x do
@@ -17,7 +17,7 @@ end
 
 let cnt = 0.
 for (n if isprime(n)) in 1 to 1000000 do
-    println n.
+    io @println n.
     let cnt = cnt+1.
     if cnt == 10 do
         break.

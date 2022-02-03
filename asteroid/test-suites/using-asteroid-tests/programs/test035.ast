@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 function isprime with x do
@@ -37,6 +37,6 @@ while n > 1 do
         let factors = factors+[factor].
     end
 end
-println factors.
+io @println factors.
 
 assert (factors == [3,5,11])

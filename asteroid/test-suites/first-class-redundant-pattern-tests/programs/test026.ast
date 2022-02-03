@@ -5,7 +5,7 @@
 -- subsumption detection in Asteroid.
 --------------------------------------
 --------------------------------------
-load "io".
+load system io.
 load "util".
 
 structure Person with
@@ -37,10 +37,10 @@ function testFunction
 try 
     
     let x = testFunction( Person("George", 32, "M") ).
-    println ( x ).
+    io @println ( x ).
 catch Exception("RedundantPatternFound",s) do
-    println("PASS.").
+    io @println("PASS.").
 catch e do
-    println("FAIL.").
+    io @println("FAIL.").
     throw Error("FAIL: unexpected error "+e).
 end.

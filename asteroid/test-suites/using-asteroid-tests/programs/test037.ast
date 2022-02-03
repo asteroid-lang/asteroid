@@ -1,9 +1,9 @@
 
-load "io".
+load system io.
 
 try
-    println (42/0).
+    io @println (42/0).
 catch Exception(_,m) do
-    println m.
+    io @println m.
 end
-println "We are still alive...".
+io @println "We are still alive...".

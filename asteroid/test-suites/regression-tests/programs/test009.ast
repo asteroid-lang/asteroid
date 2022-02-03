@@ -1,8 +1,8 @@
 
-load "io".
+load system io.
 structure A with
     data a.
     end
 
 let A(x:%string) = A("hello").
-println x.
+io @println x.

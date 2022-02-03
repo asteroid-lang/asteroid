@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 structure Dog with
 
@@ -38,5 +38,5 @@ fifi @add_trick("sit stay").
 let dogs = [fido, buddy, fifi].
 
 for Dog(name, ["roll over"|_]) in dogs do
-    println (name + " does roll over").
+    io @println (name + " does roll over").
 end

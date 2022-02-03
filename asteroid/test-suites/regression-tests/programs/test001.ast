@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let x = 1.
-println x.
+io @println x.

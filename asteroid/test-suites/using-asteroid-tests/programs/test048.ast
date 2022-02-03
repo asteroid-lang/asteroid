@@ -1,10 +1,10 @@
 
-load "io".
+load system io.
 load "util".
 load "type".
 
 let bin = "101101".
 let int = tointeger(bin,2).
-println int.
+io @println int.
 
 assert (int == 45).

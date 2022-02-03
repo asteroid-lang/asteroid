@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "hash".
 
 -- text from "www.lipsum.com"
@@ -43,5 +43,5 @@ for i in 0 to word_list @length()-3 do
 end
 
 for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
-    println (n_gram+": "+cnt).
+    io @println (n_gram+": "+cnt).
 end

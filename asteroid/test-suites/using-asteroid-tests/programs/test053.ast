@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 load "util".
 load "hash".
@@ -17,11 +17,11 @@ let p10 = range(tostring n @length()) @map(lambda with x do return pow(10,x))
 let digits = tostring n @explode()
                         @map(tointeger).
 let z = zip(digits, p10).
-println z.
+io @println z.
 let roman = "".
 for (d,p) in z do
     let roman = roman + roman_hash @get(p) @d.
 end
-println roman.
+io @println roman.
 
 assert (roman == "MMXVIII")

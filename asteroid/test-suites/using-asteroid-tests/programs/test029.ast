@@ -1,9 +1,9 @@
 
-load "io".
+load system io.
 load "math".
 
 let p2 = [0 to 9] @map(lambda with x do return pow(2,x)).
 
-println p2.
+io @println p2.
 
 assert (p2 == [1,2,4,8,16,32,64,128,256,512])

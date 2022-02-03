@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "type".
 load "util".
 load "pick".
@@ -17,6 +17,6 @@ let pick_list = int_list+lc_list+uc_list+sp_list.
 -- generate the password and print it.
 let pwd = Pick pick_list @pick(15)
                          @join("").
-println pwd.
+io @println pwd.
 
 assert (pwd == "e3zvshdbS43brt#")

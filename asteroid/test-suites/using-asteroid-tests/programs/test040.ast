@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "random".
 
 let hist = [0 to 9] @map(lambda with _ do return 0).
@@ -9,5 +9,5 @@ for _ in range(10000) do
     let hist @ix = hist @ix +1
 end
 
-println hist.
+io @println hist.
 

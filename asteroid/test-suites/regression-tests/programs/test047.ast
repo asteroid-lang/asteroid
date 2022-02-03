@@ -1,9 +1,9 @@
 
 load "random".
-load "io".
+load system io.
 
 let v = random().
 
-println v.
+io @println v.
 assert(v <= 1.0 and v >= 0.0).
 

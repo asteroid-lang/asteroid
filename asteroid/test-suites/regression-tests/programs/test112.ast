@@ -1,7 +1,7 @@
-load "io".
+load system io.
 
 let array = [1,2,3].
 
 array @extend((4,5,6)). 
-println(array).
+io @println(array).
 

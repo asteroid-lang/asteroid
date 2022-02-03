@@ -1,8 +1,8 @@
 
-load "io".
+load system io.
 
 try
     let -1 = -1 .
 catch e do
-    println e.
+    io @println e.
 end 

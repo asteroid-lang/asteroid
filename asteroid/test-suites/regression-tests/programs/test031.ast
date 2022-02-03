@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure Person with
@@ -15,6 +15,6 @@ let people = [
     ].
 
 for Person(name:".*p.*",_,_) in people do
-  println name.
+  io @println name.
 end
 assert(name is "Sophie")

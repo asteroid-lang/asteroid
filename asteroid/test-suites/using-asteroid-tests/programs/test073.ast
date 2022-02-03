@@ -1,9 +1,9 @@
 
-load "io".
+load system io.
 load "math".
 
 let a = [20 to 30].
 let array = a @[1 to a @length()-1 step 2] .
-println array.
+io @println array.
 
 assert (array == [21,23,25,27,29]).

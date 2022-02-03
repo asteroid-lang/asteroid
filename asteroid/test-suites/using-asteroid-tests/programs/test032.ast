@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math".
 
 -- not equal under the default tolerance of 1E-09

@@ -4,27 +4,17 @@
 -- this module implements the I/O system for Asteroid
 --
 -- (c) University of Rhode Island
-------------------------------------------------------------------
-function __raw_print__
-------------------------------------------------------------------
--- dumps the AST to screen
-with item do escape
-"
-from pprint import pprint
-item_val = state.symbol_table.lookup_sym('item')
-pprint(item_val)
-"
-return none
-end
+
+
+load system type.
 
 ------------------------------------------------------------------
 -- Basic file i/o
 ------------------------------------------------------------------
-structure FILE with
+structure __IO_FILE__ with
+------------------------------------------------------------------
 
-------------------------------------------------------------------
 data fd.
-------------------------------------------------------------------
 
 ------------------------------------------------------------------
 function __init__
@@ -156,20 +146,26 @@ f_val.write(what_val[1])
 end
 
 ------------------------------------------------------------------
-end -- FILE
+end -- __IO_FILE__
 ------------------------------------------------------------------
 
 
 
-
-
+-- define the io module object.
+------------------------------------------------------------------
+structure __IO__ with
 ------------------------------------------------------------------
 
 -- Predefined standard stream constants
+data __STDIN__.
+data __STDOUT__.
+data __STDERR__.
 
-let __STDIN__ = FILE("__STDIN__").
-let __STDOUT__ = FILE("__STDOUT__").
-let __STDERR__ = FILE("__STDERR__").
+function __init__ with none do
+   let this @__STDIN__ = __IO_FILE__("__STDIN__").
+   let this @__STDOUT__ = __IO_FILE__("__STDOUT__").
+   let this @__STDERR__ = __IO_FILE__("__STDERR__").
+end
 
 -- File I/O library functions
 ------------------------------------------------------------------
@@ -177,14 +173,14 @@ function open
 -- Open a file given a filename and mode
 ------------------------------------------------------------------
 with (name:%string, mode:%string) do
-   return FILE(name, mode).
+   return __IO_FILE__(name, mode).
 end
 
 ------------------------------------------------------------------
 function close
 -- Close a given file
 ------------------------------------------------------------------
-with(file:%FILE) do
+with(file:%__IO_FILE__) do
     file @close().
 end
 
@@ -192,11 +188,11 @@ end
 function read
 -- Return the contents of a given file
 ------------------------------------------------------------------
-with(file:%FILE) do
+with(file:%__IO_FILE__) do
     return file @read().
 
 with none do
-    return __STDIN__@ read().
+    return this @__STDIN__ @ read().
 end
 
 ------------------------------------------------------------------
@@ -210,11 +206,11 @@ function readln
 -- been reached, while a blank line is represented by '\n',
 -- a string containing only a single newline.
 ------------------------------------------------------------------
-with(file:%FILE) do
+with(file:%__IO_FILE__) do
     return file @readln().
 
 with none do
-    return __STDIN__@ readln().
+    return this @__STDIN__ @readln().
 end
 
 ------------------------------------------------------------------
@@ -222,15 +218,14 @@ function write
 -- Write to a given file
 ------------------------------------------------------------------
 with what:%string do
-
-__STDOUT__@ write(what).
+this @__STDOUT__ @write(what).
 
 escape "
 import sys
 sys.stdout.flush()
 "
 
-with(file:%FILE, what:%string) do
+with(file:%__IO_FILE__, what:%string) do
     file @write(what).
 end
 
@@ -239,29 +234,27 @@ function writeln
 -- Write a complete line to a given file
 ------------------------------------------------------------------
 with what:%string do
-    __STDOUT__@ write(what + "\n").
+    this @__STDOUT__ @write(what + "\n").
 
-with(file:%FILE, what:%string) do
+with(file:%__IO_FILE__, what:%string) do
     file @write(what + "\n").
 end
 ------------------------------------------------------------------
 
 -- Basic console I/O functions
 
-load system type.
-
 ------------------------------------------------------------------
 function println
 ------------------------------------------------------------------
 with item do
-    writeln(tostring item).
+    this @writeln(tostring item).
 end
 
 ------------------------------------------------------------------
 function print
 ------------------------------------------------------------------
 with item do
-    write(tostring item).
+    this @write(tostring item).
 end
 
 ------------------------------------------------------------------
@@ -269,8 +262,28 @@ function input
 ------------------------------------------------------------------
 -- input drops the trailing newline char
 with none do
-    return readln() @replace("\n","").
+    return this @readln() @replace("\n","").
 with prompt do
-    write (tostring prompt).
-    return readln() @replace("\n","").
+    this @write (tostring prompt).
+    return this @readln() @replace("\n","").
 end
+
+------------------------------------------------------------------
+function __raw_print__
+------------------------------------------------------------------
+-- dumps the AST to screen
+with item do escape
+"
+from pprint import pprint
+item_val = state.symbol_table.lookup_sym('item')
+pprint(item_val)
+"
+return none
+end
+
+------------------------------------------------------------------
+end -- __IO__
+------------------------------------------------------------------
+
+-- instantiate the io module object
+let io = __IO__().

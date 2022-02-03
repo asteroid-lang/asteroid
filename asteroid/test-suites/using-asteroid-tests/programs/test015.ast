@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
@@ -26,13 +26,13 @@ let message = "hello, world!"
 let secret = message @explode() 
                      @map(encode) 
                      @join("").
-println secret.
+io @println secret.
 
 assert (secret == "dahhk, sknhz!")
 
 let decoded_msg = secret @explode()
                          @map(decode)
                          @join("").
-println decoded_msg.
+io @println decoded_msg.
 
 assert (decoded_msg == "hello, world!")

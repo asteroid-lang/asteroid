@@ -1,13 +1,13 @@
 
-load "io".
+load system io.
 load "util".
 load "type".
 
 let val = 42.
 
-println (tobase(val,2)).  -- bin
-println (tobase(val,8)).  -- oct
-println (tobase(val,16)). -- hex
+io @println (tobase(val,2)).  -- bin
+io @println (tobase(val,8)).  -- oct
+io @println (tobase(val,16)). -- hex
 
 -- make sure that conversions are correct in both directions
 assert (tointeger(tobase(val,2),2) == val).

@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "math". -- definition of pi
 
-println pi.
+io @println pi.

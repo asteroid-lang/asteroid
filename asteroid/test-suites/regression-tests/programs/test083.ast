@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 let x = 1.
@@ -7,7 +7,7 @@ loop
     if x > 10 do
         break.
     end
-    println x.
+    io @println x.
     let x = x + 1.
 end 
 assert (x == 11).

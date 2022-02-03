@@ -1,9 +1,9 @@
 
-load "io".
+load system io.
 
 let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
 let f = (lambda with (x,y) do return x+(y if y > 10 else 0)).
 let s = a @reduce(f,0).
-println s.
+io @println s.
 
 assert (s == 92).

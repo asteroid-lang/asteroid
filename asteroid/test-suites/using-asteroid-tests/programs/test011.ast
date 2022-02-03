@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 function title with w do
     let letter_list = w @tolower() 
@@ -18,5 +18,5 @@ let str = "once upon a time".
 let camel_str = str @split() 
                     @map(title) 
                     @join("").
-println camel_str.
+io @println camel_str.
 assert(camel_str == "OnceUponATime").

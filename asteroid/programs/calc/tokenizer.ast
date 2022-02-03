@@ -5,7 +5,7 @@
 -- Lutz Hamel, (c) University of Rhode Island
 
 load system type.
-load system "stream".
+load system stream.
 
 structure Token with
   data type.

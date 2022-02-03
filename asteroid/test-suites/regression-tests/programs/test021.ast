@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let a:%list = [1,2] .
-println a.
+io @println a.

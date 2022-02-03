@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let str = "Hello, World!".
 
@@ -30,5 +30,5 @@ for i in 0 to str @length()-2 do
     end
 end
 
-println longest_palindrome.
+io @println longest_palindrome.
 

@@ -1,10 +1,10 @@
 
-load "io".
+load system io.
 load "util".
 
 try
     let 1 = 1.0 .
 catch Exception(_,v) do
-    println v.
+    io @println v.
     assert(v is "pattern match failed: nodes 'real' and 'integer' are not the same").
 end

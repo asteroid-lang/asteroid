@@ -1,4 +1,4 @@
 
-load "io".
+load system io.
 let fst = (1,2)@0.
-println fst.
+io @println fst.

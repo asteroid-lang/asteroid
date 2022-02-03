@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure Dog with
@@ -32,9 +32,9 @@ let buddy = Dog("Buddy").
 buddy @add_trick("roll over").
 buddy @add_trick("sit stay").
 
--- println out the tricks
-println ("Fido: " + fido @tricks).
-println ("Buddy: " + buddy @tricks).
+-- io @println out the tricks
+io @println ("Fido: " + fido @tricks).
+io @println ("Buddy: " + buddy @tricks).
 
 assert(fido @tricks is ["roll over", "play dead"]).
 assert(buddy @tricks is ["roll over", "sit stay"]).

@@ -1,11 +1,11 @@
 
 -- TODO: should this work similar to Rust?
-load "io".
+load system io.
 load "util".
 try
     let [1 to 3] = [1,2,3].
 catch Exception(_, v) do
-    println v.
+    io @println v.
     assert (v is "pattern match failed: pattern of type 'to-list' not allowed in pattern matching").
 end
 

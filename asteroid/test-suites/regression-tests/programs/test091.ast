@@ -1,8 +1,8 @@
 
-load "io".
+load system io.
 load "util".
 
 let y = [0 to 10 step 2].
 let z = 4 in y.
-println z.
+io @println z.
 assert z.

@@ -1,7 +1,7 @@
-load "io".
+load system io.
 load "hash".
 
 let h = HashTable().
 h@insert("hello","there").
-println (h@get("hello")).
+io @println (h@get("hello")).
 

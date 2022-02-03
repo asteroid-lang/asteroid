@@ -1,4 +1,4 @@
-load "io".
+load system io.
 
 structure A with
 	data x.

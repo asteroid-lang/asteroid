@@ -1,10 +1,10 @@
 
-load "io".
+load system io.
 load "util".
 let p = -1.
 let w = p - 1.
 let q = [-1].
-println (p,w,q).
+io @println (p,w,q).
 
 -- NOTE: workaround, pattern matching does not work on negative constants.
 assert(p == -1).

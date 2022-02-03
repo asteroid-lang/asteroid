@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "util".
 
 structure Person with
@@ -16,5 +16,5 @@ let people = [
     
 let Person(name,age,sex) = people @1.
 let output_str = name + " is " + age + " years old and is " + ("male" if sex is "M" else "female") + ".".
-println output_str.
+io @println output_str.
 assert(output_str is "Sophie is 46 years old and is female.")

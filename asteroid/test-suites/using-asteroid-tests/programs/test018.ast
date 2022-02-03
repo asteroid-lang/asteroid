@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 let stra = "the quick brown fox jumps over the lazy dog".
 let strb = "what does the fox say?".
@@ -15,9 +15,9 @@ for startix in 0 to stra @length()-1 do
 end
 
 if common do
-    println ("The longest common substring is '"+common+"'.").
+    io @println ("The longest common substring is '"+common+"'.").
 else do
-    println ("There are no common substrings.").
+    io @println ("There are no common substrings.").
 end
 
 assert (common == " fox ").

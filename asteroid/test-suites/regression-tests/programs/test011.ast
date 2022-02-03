@@ -1,6 +1,6 @@
 
-load "io".
+load system io.
 
 let foo = "abc".
 let l = foo @explode() @reverse() @join("").
-println l.
+io @println l.

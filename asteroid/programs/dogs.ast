@@ -29,5 +29,5 @@ buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
 for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
-    println (name+" knows how to fetch").
+    io @println (name+" knows how to fetch").
 end

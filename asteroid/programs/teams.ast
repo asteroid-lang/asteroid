@@ -2,7 +2,7 @@
 -- and print teams of three
 
 load "util".
-load "io".
+load system io.
 load "dataframe".
 
 -- team participants
@@ -31,5 +31,5 @@ for (i,team) in zip(1 to len(teams),teams) do
     let [name|team] = team.
     let team_str = team_str + name + ("" if team is [] else ", ").
   until team is [].
-  println team_str.
+  io @println team_str.
 end

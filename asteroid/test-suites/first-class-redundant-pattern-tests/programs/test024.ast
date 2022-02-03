@@ -5,7 +5,7 @@
 -- subsumption detection in Asteroid.
 --------------------------------------
 --------------------------------------
-load "io".
+load system io.
 load "util".
 
 let ptrn1 = pattern with x:%tuple.
@@ -30,10 +30,10 @@ try
     let x = testFunction( (5,1) ).
 
     -- If the function test worked, print the output we got.
-    println( "The value returned is: " + x  ). 
+    io @println( "The value returned is: " + x  ). 
 catch Exception("RedundantPatternFound",s) do
-    println("PASS.").
+    io @println("PASS.").
 catch e do
-    println("FAIL.").
+    io @println("FAIL.").
     throw Error("FAIL: unexpected error "+e).
 end.

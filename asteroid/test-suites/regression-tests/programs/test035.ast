@@ -1,7 +1,7 @@
 
-load "io".
+load system io.
 let a = [].
 
 if a is [b|rest] do
-    println "yes".
+    io @println "yes".
 end

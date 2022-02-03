@@ -1,9 +1,9 @@
 
-load "io".
+load system io.
 
 try
     let i = 10/0.
-    println i.
+    io @println i.
 catch Exception(_, v) do
-    println v.
+    io @println v.
 end 

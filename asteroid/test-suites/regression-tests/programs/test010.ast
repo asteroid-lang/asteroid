@@ -1,6 +1,6 @@
 
 -- load modules
-load "io".
+load system io.
 
 structure Family with
   data parent1.
@@ -18,4 +18,4 @@ structure Parent with
   end
 
 let family = Family(Parent("Harry")).
-println (family @members()).
+io @println (family @members()).

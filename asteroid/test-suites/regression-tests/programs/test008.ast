@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 
 structure Family with
   data parent1.
@@ -23,5 +23,5 @@ let PARENT1 = pattern with Parent(p1).
 let p1 = "Harry".
 let family = eval(FAMILY).
 --__raw_print__(family).
-println (family @members()).
+io @println (family @members()).
 

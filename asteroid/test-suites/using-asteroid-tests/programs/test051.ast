@@ -1,8 +1,8 @@
 
-load "io".
+load system io.
 
 let bits = "1010101" @replace("0","")
                      @length().
-println bits.
+io @println bits.
 
 assert (bits == 4).

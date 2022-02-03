@@ -1,6 +1,6 @@
 
 -- Palindrome list filter
-load "io".
+load io.
 
 function filter 
     with (x:%string) if x @explode() == x @explode() @reverse() do
@@ -9,4 +9,4 @@ function filter
         return false.
     end
     
-print (filter "radar").
+io @print (filter "radar").

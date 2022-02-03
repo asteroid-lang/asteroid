@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
 load "hash".
 load "sort".
 
@@ -31,4 +31,4 @@ function pairs with ((_,x),(_,y)) do
     return true if x < y else false.
 end
 
-println (sort(pairs,color_lst)).
+io @println (sort(pairs,color_lst)).

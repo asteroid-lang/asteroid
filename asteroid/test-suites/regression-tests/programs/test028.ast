@@ -1,5 +1,5 @@
 
-load "io".
+load system io.
     
 structure B with
     data b.
@@ -8,4 +8,4 @@ structure B with
     
 let q = B([1,2,3]).
 
-println (q @get() @length()). 
+io @println (q @get() @length()). 

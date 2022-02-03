@@ -1,11 +1,11 @@
 
-load "io".
+load system io.
 let a = "abcde".
 let i = a @1.
-println i.
+io @println i.
 let b = a @[0,2,4].
-println b.
+io @println b.
 let i = a @length().
-println i.
+io @println i.
 let e = a @explode().
-println e.
+io @println e.
