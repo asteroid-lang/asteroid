@@ -634,20 +634,27 @@ def store_at_ix(structure_val, ix, value):
         return
 
     elif ix_val[0] == 'list':
-        # TODO: https://github.com/asteroid-lang/asteroid/issues/39
-        
-        (LIST_l, lhs_vals) = ix_val
+        # Destructure the ix val
+        (LIST_l, lval) = ix_val
         assert_match(LIST_l, 'list')
 
-        rhs_vals = walk(value)
+        # Walk the rval
+        rval = walk(value)
 
-        if rhs_vals[0] != 'list':
-            raise ValueError('Slicing needs RHS to be list #FIX')
-        else:
-            rhs_vals = rhs_vals[1]
+        # Make sure the rval is a list
+        if rval[0] != 'list':
+            raise ValueError('Pattern slicing needs values to be a list')
+        elif rval[0] == 'list' and len(lval) != len(rval[1]):
+            raise ValueError('Pattern slicing needs indexes and values of equal length')
 
-        for i in range(len(lhs_vals)):
-            memory[lhs_vals[i][1]] = rhs_vals[i]
+        # Get the raw rval values
+        rval = rval[1]
+
+        # For each lval
+        for i in range(len(lval)):
+            # Get the memory location of the lval and set it to the
+            # corresponding rval value
+            memory[lval[i][1]] = rval[i]
 
         return
 
