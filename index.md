@@ -2,7 +2,7 @@
 
 # Asteroid: The Programming Language
 
-[Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Homepage](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
+[Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
 
 Asteroid is an open source, dynamically typed, multi-paradigm programming language heavily influenced by [Python](https://www.python.org), [Rust](https://www.rust-lang.org), [ML](https://www.smlnj.org), and [Prolog](http://www.swi-prolog.org) currently under development at the University of Rhode Island.  Asteroid implements a new programming paradigm called *pattern-matching oriented programming*.  In this new programming paradigm patterns and pattern matching are supported by all major programming language constructs making programs succinct and robust.  Furthermore, patterns themselves are first-class citizens and as such can be passed to and returned from functions as well as manipulated computationally.
 
@@ -195,4 +195,4 @@ The output is,
 Fido knows how to fetch
 ```
 
-[Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Homepage](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
+[Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
