@@ -600,7 +600,6 @@ def read_at_ix(structure_val, ix):
 # we are indexing into the memory of either a list or an object to
 # write into the memory.
 def store_at_ix(structure_val, ix, value):
-
     # find the actual memory we need to access
     # for lists it is just the python list
     if structure_val[0] == 'list':
@@ -654,7 +653,14 @@ def store_at_ix(structure_val, ix, value):
                 #set each memory location to index
                 memory[ix_val[1][i]] = cur_val
         """
-        raise ValueError("slicing in patterns not supported")
+        (LIST, lhs_vals) = ix_val
+        (LIST, rhs_vals) = walk(value)
+
+        for i in range(len(lhs_vals)):
+            memory[lhs_vals[i][1]] = rhs_vals[i]
+
+        return
+#        raise ValueError("slicing in patterns not supported")
 
     else:
         raise ValueError("index op '{}' in patterns not supported"
