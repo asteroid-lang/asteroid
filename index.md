@@ -195,8 +195,4 @@ The output is,
 Fido knows how to fetch
 ```
 
-## For more Information...
-
-Take a look at the [Asteroid Documentation](https://asteroid-lang.readthedocs.io) for a more detailed discussion of the language.
-
-Try Asteroid online without anything to install at [Repl.it](https://repl.it/@lutzhamel/asteroid#README.md)
+[Documentation](https://https://asteroid-lang.readthedocs.io) | [PyPI Homepage](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
