@@ -627,30 +627,27 @@ def store_at_ix(structure_val, ix, value):
     else:
         raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
 
+    # Next, we do the actual memory storage operation
 
-    # index into memory and set the value
+    # If it's just an integer, index into that location and
+    # set the value
     if ix_val[0] == 'integer':
         memory[ix_val[1]] = value
         return
 
+    # otherwhise, if the index is a list
     elif ix_val[0] == 'list':
-        # Destructure the ix val
-        (LIST_l, lval) = ix_val
-        assert_match(LIST_l, 'list')
-
-        # Walk the rval
-        rval = walk(value)
+        # Get the l/rval
+        (LIST, lval) = ix_val
+        (LIST_r, rval) = value
 
         # Make sure the rval is a list
-        if rval[0] != 'list':
+        if LIST_r != 'list':
             raise ValueError('Pattern slicing needs values to be a list')
-        elif rval[0] == 'list' and len(lval) != len(rval[1]):
+        elif LIST_r == 'list' and (len(lval) != len(rval)):
             raise ValueError('Pattern slicing needs indexes and values of equal length')
 
-        # Get the raw rval values
-        rval = rval[1]
-
-        # For each lval
+        # For each index
         for i in range(len(lval)):
             # Get the memory location of the lval and set it to the
             # corresponding rval value
