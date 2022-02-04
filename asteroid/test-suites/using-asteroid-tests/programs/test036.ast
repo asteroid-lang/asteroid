@@ -1,13 +1,13 @@
 
 load system io.
-load "math".
+load system math.
 
 -- fraction a/b
 let a = 16.
 let b = 280.
 
 -- reduce fraction
-let gcd_val = gcd(a,b).
+let gcd_val = math @gcd(a,b).
 let numerator = a/gcd_val.
 let denominator = b/gcd_val.
 io @println numerator.

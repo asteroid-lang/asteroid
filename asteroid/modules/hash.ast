@@ -7,7 +7,7 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-structure HashTable
+structure __HASHTABLE__
 ------------------------------------------------------------------
 -- Asteroid hash table implementation using Python dictionaries
 with
@@ -106,4 +106,18 @@ __retval__ = ('list', out_list)
 "
 end
 
-end -- HashTable
+end -- __HASHTABLE__
+
+------------------------------------------------------------------
+structure __HASH_MODULE__
+------------------------------------------------------------------
+with
+
+function hash with none do
+   return __HASHTABLE__().
+end
+
+end -- __HASH_MODULE__
+
+------------------------------------------------------------------
+let hash = __HASH_MODULE__().

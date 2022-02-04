@@ -1,12 +1,12 @@
 -- given a list of names generate
 -- and print teams of three
 
-load "util".
+load system util.
 load system io.
-load "dataframe".
+load system dataframe.
 
 -- team participants
-let df = DataFrame().
+let df = dataframe @dataframe().
 df @read_csv("names.csv",true).
 let names = df @col(0).
 
@@ -25,7 +25,7 @@ repeat do
 until names is [].
 
 -- print teams
-for (i,team) in zip(1 to len(teams),teams) do
+for (i,team) in util @zip(1 to len(teams),teams) do
   let team_str = "team " + i + (":  " if i < 10 else ": ").
   repeat do
     let [name|team] = team.

@@ -28,7 +28,7 @@ Donec malesuada iaculis laoreet. Nunc ut volutpat ante, ut consequat tortor. Pha
 let word_list = str @tolower()
                     @replace("[^a-z0-9_]"," ")
                     @split().
-let ht = HashTable().
+let ht = hash @hash().
 
 -- create N-grams
 for i in 0 to word_list @length()-3 do

@@ -1,8 +1,8 @@
 
 load system io.
-load "math".
+load system math.
 
-let p2 = [0 to 9] @map(lambda with x do return pow(2,x)).
+let p2 = [0 to 9] @map(lambda with x do return math @pow(2,x)).
 
 io @println p2.
 

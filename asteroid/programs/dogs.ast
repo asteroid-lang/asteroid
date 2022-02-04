@@ -28,6 +28,6 @@ buddy @add_trick "sit stay".
 buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+for (Dog(name,tricks) if type @tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     io @println (name+" knows how to fetch").
 end

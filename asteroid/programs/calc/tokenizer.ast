@@ -13,18 +13,18 @@ structure Token with
   end
 
 function get_number
-  with input_stream:%Stream do
+  with input_stream do
     let number = "".
     while input_stream @peek() is "[0-9]" do
       let number = number + input_stream @get().
     end
-    return tointeger(number).
+    return type @tointeger(number).
   end
 
 function tokenize
   with input:%string do
-    let input_stream = Stream(input @explode()).
-    let output_stream = Stream([]).
+    let input_stream = stream @stream(input @explode()).
+    let output_stream = stream @stream([]).
     while not input_stream @eof() do
       let c = input_stream @peek().
       if c is "[0-9]" do

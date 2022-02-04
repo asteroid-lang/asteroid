@@ -9,6 +9,9 @@
 load system type.
 
 ------------------------------------------------------------------
+structure __UTIL_MODULE__ with
+
+------------------------------------------------------------------
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
@@ -62,7 +65,7 @@ end
 function sleep
 ------------------------------------------------------------------
 -- program sleep for secs seconds
-with secs if isscalar(secs) do escape
+with secs if type @isscalar(secs) do escape
 "
 import time
 secs_val = state.symbol_table.lookup_sym('secs')
@@ -138,3 +141,8 @@ item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('string', str(chr(item_val[1])))
 "
 end
+
+end -- __UTIL_MODULE__
+
+------------------------------------------------------------------
+let util = __UTIL_MODULE__().

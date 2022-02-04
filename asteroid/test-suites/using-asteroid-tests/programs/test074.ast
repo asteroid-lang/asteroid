@@ -1,6 +1,6 @@
 
 load system io.
-load "math".
+load system math.
 
 let dt = ["apple","pear","grape","lemon","peach","apple","banana","grape","pineapple","avocado"].
 let cnt = dt @count("grape").

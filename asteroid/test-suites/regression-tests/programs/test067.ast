@@ -1,8 +1,8 @@
 
-load "type".
+load system type.
 load system io.
 
-let cnt = tointeger(io @input("Please enter an integer value: ")).
+let cnt = type @tointeger(io @input("Please enter an integer value: ")).
 
 for i in 1 to cnt do
     io @println i.

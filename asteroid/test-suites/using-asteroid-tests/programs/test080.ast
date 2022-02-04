@@ -1,9 +1,9 @@
 
 load system io.
-load "hash".
-load "sort".
+load system hash.
+load system sort.
 
-let fruit_hash = HashTable().
+let fruit_hash = hash @hash().
 fruit_hash @insert("apple","red").
 fruit_hash @insert("avocado","green").
 fruit_hash @insert("banana","yellow").
@@ -17,7 +17,7 @@ fruit_hash @insert("plum","purple").
 
 let fruit_lst = fruit_hash @aslist().
 
-let color_hash = HashTable().
+let color_hash = hash @hash().
 for (_,color) in fruit_lst do
     if not color_hash @get(color) do
         color_hash @insert(color,1).
@@ -31,4 +31,4 @@ function pairs with ((_,x),(_,y)) do
     return true if x < y else false.
 end
 
-io @println (sort(pairs,color_lst)).
+io @println (sort @sort(pairs,color_lst)).

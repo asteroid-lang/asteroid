@@ -1,17 +1,17 @@
 
 load system io.
-load "random".
-load "util".
-load "type".
+load system random.
+load system util.
+load system type.
 
-let n = randint(0,10).
-let guess = tointeger(io @input("Guess my number between 0 and 10: ")).
+let n = random @randint(0,10).
+let guess = type @tointeger(io @input("Guess my number between 0 and 10: ")).
 while guess =/= n do
     if guess < n do
         io @println "Too small.".
     elif guess > n  do
          io @println "Too big.".
     end
-    let guess = tointeger(io @input("Try again: ")).
+    let guess = type @tointeger(io @input("Try again: ")).
 end
 io @println "Yes, this is it!".

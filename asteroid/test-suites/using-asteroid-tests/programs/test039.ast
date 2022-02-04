@@ -1,18 +1,18 @@
 
 load system io.
-load "util".
-load "type".
+load system util.
+load system type.
 
 let n = 1234.
 let sq = n*n.
-let sq_str = tostring(sq).
+let sq_str = type @tostring(sq).
 if sq_str @length() < 8 do
     let prefix = [1 to 8-sq_str@length()] @map(lambda with _ do return "0")
                                           @join("").
     let sq_str = prefix + sq_str.
 end
 let rstr = sq_str @[2 to 5].
-let rval = tointeger(rstr).
+let rval = type @tointeger(rstr).
 io @println rval.
 
 assert (rval == 5227)

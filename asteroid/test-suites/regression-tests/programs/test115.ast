@@ -3,6 +3,8 @@
 load system io.
 load system type.
 
+let tostring = type @tostring.
+
 structure Foo with
    data one.
    data two.

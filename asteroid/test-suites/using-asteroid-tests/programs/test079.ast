@@ -1,13 +1,15 @@
 
 load system io.
-load "hash".
-load "sort".
-load "random".
+load system hash.
+load system sort.
+load system random.
 
-seed(42).
+let randint = random @randint.
+
+random @seed(42).
 
 -- hash of names with ages
-let ht = HashTable().
+let ht = hash @hash().
 ht @insert("Billie",randint(20,50)).
 ht @insert("Joe",randint(20,50)).
 ht @insert("Pete",randint(20,50)).
@@ -16,14 +18,14 @@ ht @insert("Brandi",randint(20,50)).
 -- export the hash as a list of pairs
 let lst = ht @aslist().
 
--- define our order predicate on a 
--- list of pairs where the second 
+-- define our order predicate on a
+-- list of pairs where the second
 -- component holds the order info
 function pairs with ((_,x),(_,y)) do
     return true if x < y else false.
 end
 
 -- print out the sorted list
-io @println (sort(pairs,lst)).
+io @println (sort @sort(pairs,lst)).
 
-assert (sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
+assert (sort @sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])

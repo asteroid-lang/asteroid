@@ -1,16 +1,18 @@
 
 load system io.
-load "random".
-load "util".
-load "type".
+load system random.
+load system util.
+load system type.
 
-seed(42).
+let randint = random @randint.
 
-io @println (random()).          -- random value in [0.0,1.0)
+random @seed(42).
+
+io @println (random @random()).          -- random value in [0.0,1.0)
 io @println (randint(0.0,1.0)).  -- random value in [0.0,1.0]
 io @println (randint(0,1)).      -- always 0 or 1
 
 -- generating a random number in the appropriate interval
 let n = 10.
-io @println (randint(0.0,toreal(n))).
+io @println (randint(0.0,type @toreal(n))).
 io @println (randint(0,n)).

@@ -1,11 +1,11 @@
 
 load system io.
-load "math".
+load system math.
 
 function isprime with x do
     if x >= 2 do
         for y in range(2,x) do
-            if not mod(x,y) do
+            if not math @mod(x,y) do
                 return false.
             end
         end
@@ -23,4 +23,3 @@ for (n if isprime(n)) in 1 to 1000000 do
         break.
     end
 end
-    

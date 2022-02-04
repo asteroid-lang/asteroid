@@ -1,10 +1,10 @@
 
 load system io.
-load "math".
+load system math.
 
-function rotate with (l:%list,i:%integer) do 
+function rotate with (l:%list,i:%integer) do
     let n = l @length().
-    let vix = range n @map(lambda with x do return mod(x+i,n)).
+    let vix = range n @map(lambda with x do return math @mod(x+i,n)).
     return l @vix.
 end
 

@@ -1,10 +1,10 @@
 
 load system io.
-load "math".
+load system math.
 
 let x = [10, 3].
 let y = [9, 1].
-let d = (sqrt(pow(x@0-y@0,2) + pow(x@1-y@1,2))).
+let d = (math @sqrt(math @pow(x@0-y@0,2) + math @pow(x@1-y@1,2))).
 io @println d.
 
 assert (d == 2.23606797749979)

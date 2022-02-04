@@ -9,6 +9,11 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
+structure __SET_MODULE__
+------------------------------------------------------------------
+with
+
+------------------------------------------------------------------
 function toset
 ------------------------------------------------------------------
 with (lst:%list) do return escape
@@ -20,7 +25,7 @@ __retval__ = ('list', list(set(lst_val[1])))
 end
 
 ------------------------------------------------------------------
-function sdiff
+function diff
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
 "
@@ -32,7 +37,7 @@ __retval__ = ('list', list(set(a_val[1]) - set(b_val[1])))
 end
 
 ------------------------------------------------------------------
-function sunion
+function union
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
 "
@@ -44,7 +49,7 @@ __retval__ = ('list', list(set(a_val[1]) | set(b_val[1])))
 end
 
 ------------------------------------------------------------------
-function sintersection
+function intersection
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
 "
@@ -56,7 +61,7 @@ __retval__ = ('list', list(set(a_val[1]) & set(b_val[1])))
 end
 
 ------------------------------------------------------------------
-function sxunion
+function xunion
 -- elements in a or b but not both
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
@@ -67,3 +72,8 @@ b_val = state.symbol_table.lookup_sym('b')
 __retval__ = ('list', list(set(a_val[1]) ^ set(b_val[1])))
 "
 end
+
+end -- __SET_MODULE__
+
+------------------------------------------------------------------
+let set = __SET_MODULE__().

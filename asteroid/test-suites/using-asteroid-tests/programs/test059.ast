@@ -1,8 +1,8 @@
 
 load system io.
-load "random".
+load system random.
 
-seed(42).
+random @seed(42).
 let b = [1 to 20] @shuffle().
 io @println b.
 

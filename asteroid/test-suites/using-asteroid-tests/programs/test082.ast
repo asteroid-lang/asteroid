@@ -1,8 +1,8 @@
 
 load system io.
-load "vector".
-load "util".
-load "type".
+load system vector.
+load system util.
+load system type.
 
 let triangle = [[1]].
 let ix = 0.
@@ -11,11 +11,11 @@ for i in 1 to 6 do
     let v = triangle @ix.
     let v1 = [0] + v.
     let v2 = v + [0].
-    let new_v = vadd(v1,v2).
+    let new_v = vector @add(v1,v2).
     let triangle = triangle + [new_v].
     let ix = ix + 1.
 end
 
 for r in triangle do
-    io @println (r @map(lambda with v do return tostring v) @join(" ")).
+    io @println (r @map(lambda with v do return type @tostring v) @join(" ")).
 end

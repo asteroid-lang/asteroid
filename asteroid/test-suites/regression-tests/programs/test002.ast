@@ -1,6 +1,10 @@
 
 load system io.
 load system util.
+load system type.
+
+let isnone = type @isnone.
+
 -----------------------------------------------------------------------
 let x = [1,2].
 let %[ x ]% = (2,1).
@@ -97,7 +101,7 @@ catch Exception("SystemError", s) do
   else
     throw Error("FAIL: unexpected error "+s).
   end.
-end.  
+end.
 -----------------------------------------------------------------------
 try
   let v = %[ 1 ]%.
@@ -117,7 +121,7 @@ try
     return 2*number. -- error: no unifier for 'number'
   end.
   assert(20 == g(10)).
-  
+
   throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
   if not isnone(s @index("not defined")) do
@@ -129,4 +133,3 @@ end.
 -----------------------------------------------------------------------
 
 io @println("PASSED.").
-

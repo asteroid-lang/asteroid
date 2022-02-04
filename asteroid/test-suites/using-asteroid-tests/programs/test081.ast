@@ -1,11 +1,10 @@
 
 load system io.
-load "util".
-load "type".
+load system type.
 
 function format with v do
     let maxlen = 3.
-    let vstr = tostring v.
+    let vstr = type @tostring v.
     return [1 to maxlen-len(vstr)] @map(lambda with _ do return " ") @join("") + vstr.
 end
 

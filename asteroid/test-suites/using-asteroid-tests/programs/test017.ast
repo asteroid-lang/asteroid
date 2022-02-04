@@ -1,7 +1,7 @@
 
 load system io.
-load "util".
-load "hash".
+load system util.
+load system hash.
 
 -- text generated at 'https://www.lipsum.com/'
 let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan magna quis risus commodo, et pellentesque dui cursus. Sed quis risus libero. Cras et mattis libero, eget varius nisi. Phasellus ultrices, augue non dictum eleifend, nunc elit blandit velit, a viverra risus enim in tellus. Maecenas quis ante eget turpis rhoncus rhoncus eget ut mauris. Suspendisse nec erat sed nunc tempus hendrerit. Nunc dictum nunc molestie eleifend tempus. Praesent cursus lorem diam, sed mattis velit vehicula scelerisque. Nunc iaculis rhoncus ante. Etiam quam nisi, fermentum et euismod a, vulputate eu elit. Suspendisse tincidunt ligula quis interdum blandit. Quisque sed aliquam tellus. Pellentesque ac lacus pulvinar, ornare purus ac, viverra ex. Donec quis pharetra dolor.
@@ -18,7 +18,7 @@ let wl = text @replace("\.","")
               @split().
 
 -- put the words into a hash table, the value is the count of the words
-let ht = HashTable().
+let ht = hash @hash().
 for w in wl do
     if not ht @get(w) do
         ht @insert(w,1).
@@ -28,7 +28,7 @@ for w in wl do
 end
 
 -- get the contents of hash table and find the most frequent word
-let (keys,values) = unzip(ht@aslist()).
+let (keys,values) = util @unzip(ht@aslist()).
 let values_sorted = values @copy()
                            @sort(true).
 let most_frequent_word = keys @(values @index(values_sorted @0)).

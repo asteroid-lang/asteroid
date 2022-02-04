@@ -2,9 +2,11 @@
 -- written by Lutz Hamel, (c) University of Rhode Island
 
 load system io.
-load "util".
-load "random".
-load "type".
+load system util.
+load system random.
+load system type.
+
+random @seed(42). -- make it predictable
 
 io @println "".
 io @println "     \||||||||||||||||||/".
@@ -15,12 +17,12 @@ io @println "".
 
 let name = io @input("Hello! What is your name? ").
 let guesses_made = 0.
-let number = randint(1, 20).
+let number = random @randint(1, 20).
 
 io @println (name + ", I am thinking of a number between 1 and 20, can you guess it?").
 
 while guesses_made < 6 do
-    let guess = tointeger(io @input("Take a guess: ")).
+    let guess = type @tointeger(io @input("Take a guess: ")).
     let guesses_made = guesses_made + 1.
 
     if guess < number do

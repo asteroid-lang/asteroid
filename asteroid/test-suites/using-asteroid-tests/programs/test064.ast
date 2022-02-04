@@ -1,10 +1,10 @@
 
 load system io.
-load "set".
+load system set.
 
 let a = [1 to 10].
 let b = [5 to 15].
-let c = sdiff(a,b).
+let c = set @diff(a,b).
 io @println c.
 
 assert(c @sort() == [1,2,3,4]).

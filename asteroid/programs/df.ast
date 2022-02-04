@@ -1,7 +1,7 @@
-load "dataframe".
+load system dataframe.
 load system io.
 
-let df = DataFrame().
+let df = dataframe @dataframe().
 df@read_csv("tennis.csv",true).
 
 let r = df@row(3).

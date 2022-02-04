@@ -1,8 +1,17 @@
 
 load system io.
-load "math".
-load "util".
-load "type".
+load system math.
+load system util.
+load system type.
+
+-- define common functions locally
+let cos = math @cos.
+let sin = math @sin.
+let sqrt = math @sqrt.
+let pow = math @pow.
+let atan = math @atan.
+let pi = math @pi.
+let toreal = type @toreal.
 
 function polar_to_cartesian with (r,psi) do
     -- return a tuple: (x,y)
@@ -35,4 +44,4 @@ io @println (x,y).
 
 -- show that the recovered coordinates are the same
 -- we started with
-assert (isclose(-3,x,0.0001) and isclose(5,y,0.0001)).
+assert (math @isclose(-3,x,0.0001) and math @isclose(5,y,0.0001)).

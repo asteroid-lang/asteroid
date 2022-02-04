@@ -1,8 +1,8 @@
 
 load system io.
-load "hash".
+load system hash.
 
-let h = HashTable().
+let h = hash @hash().
 h @insert("hello","there").
 let result = h @get("hello").
 io @println (result).

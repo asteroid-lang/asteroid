@@ -21,5 +21,5 @@ for pname in programs:
     print("**********"+pname+"************")
     print(p)
     print("**********output***********")
-    interp(p, exceptions=True)
+    interp(p, exceptions=False)
     f.close()

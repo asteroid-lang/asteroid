@@ -1,10 +1,10 @@
 
 load system io.
-load "random".
+load system random.
 
-seed(42).
+random @seed(42).
 
--- Asteroid allows the user to escape to the Python 
+-- Asteroid allows the user to escape to the Python
 -- ecosystem.  Here we use this to construct a
 -- plot of the moving average
 function plot with (dt,avg) do escape
@@ -58,7 +58,7 @@ function sum with lst:%list do
     return lst @reduce(lambda with (x,y) do return x+y).
 end
 
-let dt = [1 to 100] @map(lambda with _ do return random()).
+let dt = [1 to 100] @map(lambda with _ do return random @random()).
 let mavg = [3 to 96] @map(lambda with i do return sum(window(dt,i))/7).
 
 plot(dt @[3 to 96],mavg).

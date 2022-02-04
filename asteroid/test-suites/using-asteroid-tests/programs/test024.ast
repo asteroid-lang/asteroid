@@ -1,6 +1,8 @@
 
 load system io.
-load "math". 
+load system math.
 
-io @println e.
-io @println tau. -- tau=2*pi
+io @println (math @e).
+io @println (math @tau). -- tau=2*pi
+
+assert (math @tau == 2 * math @pi)

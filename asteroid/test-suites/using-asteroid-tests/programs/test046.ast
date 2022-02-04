@@ -1,13 +1,17 @@
 
 load system io.
-load "math".
-load "random".
+load system math.
+load system random.
 
-seed(42).
+let sqrt = math @sqrt.
+let pow = math @pow.
+let randint = random @randint.
 
-let inside = 0. 
+random @seed(42).
+
+let inside = 0.
 let n = 10000.
-for _ in 1 to n do 
+for _ in 1 to n do
     let point = (randint(-1.0,1.0),randint(-1.0,1.0)).
     if sqrt(pow(point@0,2)+pow(point@1,2)) <= 1.0 do
         let inside = inside+1.
