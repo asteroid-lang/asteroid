@@ -651,7 +651,8 @@ def store_at_ix(structure_val, ix, value):
         for i in range(len(lval)):
             # Get the memory location of the lval and set it to the
             # corresponding rval value
-            memory[lval[i][1]] = rval[i]
+            (INTEGER, location) = lval[i]
+            memory[location] = rval[i]
 
         return
 
