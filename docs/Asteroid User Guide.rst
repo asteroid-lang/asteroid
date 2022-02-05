@@ -1,3 +1,14 @@
+
+
+
+
+
+
+
+
+
+
+
 .. highlight:: none
 
 Asteroid User Guide
@@ -15,11 +26,15 @@ paradigm.  Here are just two examples:
 
 **Example:** All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ::
+
     let [x,2,y] = [1,2,3].
+
 
 that means the subject term ``[1,2,3]`` is matched to the pattern ``[x,2,y]`` and ``x`` and ``y`` are bound to the values 1 and 3, respectively.  By the way, there is nothing wrong with the following statement,
 ::
+
     let [1,2,3] = [1,2,3].
+
 
 which is just another pattern match without any variable instantiations.
 
@@ -28,6 +43,7 @@ This is best demonstrated with a program.  Here is a program
 that recursively computes the factorial of a positive integer and uses first-class patterns
 in order to ensure that the domain of the function is not violated,
 ::
+
     -- define first-class patterns
     let POS_INT = pattern with (x:%integer) if x > 0.
     let NEG_INT = pattern with (x:%integer) if x < 0.
@@ -41,6 +57,7 @@ in order to ensure that the domain of the function is not violated,
         with n:*NEG_INT do            -- use second pattern
             throw Error("undefined for "+n).
         end
+
 
 As you can see, the program first creates patterns and stores them in the variables
 ``POS_INT`` and ``NEG_INT`` and it uses those patterns later in the code by
@@ -70,7 +87,9 @@ Asteroid arranges these data types in a **type hierarchy**,
 Type hierarchies facilitate automatic type promotion.  Here is an example
 where automatic type promotion is used to put together a string from different data types,
 ::
+
     let x:%string = "value: " + 1.
+
 
 Here we associate the string ``"value: 1"`` with the variable ``x`` by first promoting the integer value ``1`` to the string ``"1"`` using the fact that ``integer`` < ``string``  according to our type hierarchy  and then interpreting the ``+`` operator as a string concatenation operator.
 
@@ -82,12 +101,16 @@ Asteroid supports two more data types:
 These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.``(3,)``.
 Here are some examples,
 ::
+
     let a = [1,2,3].  -- this is a list
     let c = (1,2,3).  -- this is a tuple
 
+
 As we said above, in order to distinguish it from a parenthesized value the single element in a 1-tuple has to be followed by a comma, like so,
 ::
+
     let one_tuple = (1,).  -- this is a 1-tuple
+
 
 Lists and tuples themselves are also embedded in type hierarchies, although very simple ones:
 
@@ -96,15 +119,19 @@ Lists and tuples themselves are also embedded in type hierarchies, although very
 
 That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples,
 ::
+
     load system io.
-    println ("this is my list: " + [1,2,3]).
+    io @println ("this is my list: " + [1,2,3]).
+
 
 
 Finally, Asteroid supports one more type, namely the ``none`` type.  The ``none`` type has
 only one member: A constant named conveniently ``none``.  The null-tuple belongs to this type (rather than the tuple type discussed earlier) and therefore the constant ``()`` can often be used as a convenient short hand for the constant ``none``.  That is, the following ``let`` statements will succeed,
 ::
+
     let none = ().
     let () = none.
+
 
 meaning that the constants ``()`` and ``none`` are equivalent and pattern-match each other.
 The ``none`` data type itself does not belong to any type hierarchy.
@@ -119,22 +146,26 @@ Lists
 
 In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
 ::
+
     load system io.    -- load the io module so we can print
 
     let a = [1,2,3].     -- construct list a
     let b = a @[2,1,0].  -- reverse list a
-    println b.
+    io @println b.
+
 
 The output is: ``[3,2,1]``.
 
 In Asteroid lists are considered objects with member functions that can manipulate the list
 object, e.g. ``[1,2,3] @ reverse()``. We could rewrite the above example as,
 ::
+
     load system io.
 
     let a = [1,2,3].
     let b = a @reverse().
-    println b.
+    io @println b.
+
 
 For a full list of available member functions for Asteroid lists please see the reference guide.
 
@@ -144,16 +175,18 @@ Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
 a step specifier allowying you to generate integer values within that range,
 ::
+
     load system io.
 
     -- build a list of odd values
     let a = [1 to 10 step 2].  -- list comprehension
-    println ("list: " + a).
+    io @println ("list: " + a).
 
     -- reverse the list using a slice computed as comprehension
     let slice = [4 to 0 step -1]. -- list comprehension
     let b = a @slice.
-    println ("reversed list: " + b).
+    io @println ("reversed list: " + b).
+
 
 The output is,
 ::
@@ -1405,23 +1438,25 @@ The Module System
 A module in Asteroid is a file with a set of valid Asteroid statements.
 You can load this file into other Asteroid code with the statement,
 ::
+
    load "example_path/example_filename".
 
 or
 
 ::
+
    load example_modulename.
 
 
-In Asteroid modules do not have a separate name space;
+Asteroid modules do not have a separate name space;
 symbols from a module are entered into Asteroid's global name space.
 
 The search strategy for a module to be loaded is as follows,
 
-#. raw module name - could be an absolute path
-#. search in current directory
-#. search in directory where Asteroid is installed
-#. search in subdirectory where Asteroid was started
+1. raw module name - could be an absolute path
+2. search in current directory
+3. search in directory where Asteroid is installed
+4. search in subdirectory where Asteroid was started
 
 Modules defined by the Asteroid system should be loaded with the keyword ``system``
 in order to avoid any clashes with locally defined modules.  If the ``system``
@@ -1438,3 +1473,4 @@ Say that you wanted to load the ``math`` module so you could execute a certain t
 
 Both the function ``sin`` and the constant value ``pi`` are defined in the ``math`` module.
 In addition, the ``io`` module is where all input/output functions in Asteroid (such as ``println``) come from.
+
