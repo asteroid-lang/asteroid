@@ -637,15 +637,16 @@ def store_at_ix(structure_val, ix, value):
 
     # otherwhise, if the index is a list
     elif ix_val[0] == 'list':
+
+        # Make sure the rval is a list
+        if value[0] != 'list':
+            raise ValueError('Pattern slicing needs values to be a list')
+        elif value[0] == 'list' and (len(ix_val[1]) != len(value[1])):
+            raise ValueError('Pattern slicing needs indexes and values of equal length')
+
         # Get the l/rval
         (LIST, lval) = ix_val
         (LIST_r, rval) = value
-
-        # Make sure the rval is a list
-        if LIST_r != 'list':
-            raise ValueError('Pattern slicing needs values to be a list')
-        elif LIST_r == 'list' and (len(lval) != len(rval)):
-            raise ValueError('Pattern slicing needs indexes and values of equal length')
 
         # For each index
         for i in range(len(lval)):
