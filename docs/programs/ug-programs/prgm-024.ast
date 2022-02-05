@@ -1,0 +1,15 @@
+    load system io.
+    load system type.
+
+    let x = type @tointeger(io @input("Please enter an integer: ")).
+
+    if x < 0 do
+        let x = 0.
+        io @println("Negative, changed to zero").
+    elif x == 0 do
+        io @println("Zero").
+    elif x == 1 do
+        io @println("Single")
+    else do
+        io @println("More").
+    end

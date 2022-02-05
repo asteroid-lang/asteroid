@@ -1,0 +1,8 @@
+    load system io.
+    load system type.
+
+    let i if i > 0  = type @tointeger(io @input("Please enter a positive integer value: ")).
+
+    for k in 1 to i do
+        io @println k.
+    end

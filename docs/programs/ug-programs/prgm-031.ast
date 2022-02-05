@@ -1,0 +1,12 @@
+    load system io.
+
+    function factorial
+        with 0 do
+            return 1
+        with (n:%integer) if n > 0 do
+            return n * factorial (n-1).
+        with (n:%integer) if n < 0 do
+            throw Error("factorial is not defined for "+n).
+        end
+
+    io @println ("The factorial of 3 is: " + factorial 3).

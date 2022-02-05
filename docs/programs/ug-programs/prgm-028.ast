@@ -1,0 +1,11 @@
+    load system io.
+
+    let p = (1,2).
+
+    if p is (x,y,z) do
+        io @println ("it's a triple with: "+x+","+y+","+z)
+    elif p is (x,y) do
+        io @println ("it's a pair with: "+x+","+y).
+    else do
+        io @println "it's something else".
+    end

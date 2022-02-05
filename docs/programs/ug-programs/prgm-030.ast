@@ -1,0 +1,23 @@
+    -- implements Peano addition on terms
+    load system io.
+
+    structure s with
+        data val.
+        end
+
+    structure add with
+        data left.
+        data right.
+        end
+
+    function reduce
+        with add(x,0) do
+            return reduce(x).
+        with add(x,s(y))  do
+            return s(reduce(add(x,y))).
+        with term do
+            return term.
+        end
+
+    -- add 2 3
+    io @println (reduce(add(s(s(0)),s(s(s(0)))))).
