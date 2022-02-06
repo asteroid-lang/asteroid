@@ -600,7 +600,6 @@ def read_at_ix(structure_val, ix):
 # we are indexing into the memory of either a list or an object to
 # write into the memory.
 def store_at_ix(structure_val, ix, value):
-
     # find the actual memory we need to access
     # for lists it is just the python list
     if structure_val[0] == 'list':
@@ -628,14 +627,35 @@ def store_at_ix(structure_val, ix, value):
     else:
         raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
 
+    # Next, we do the actual memory storage operation
 
-    # index into memory and set the value
+    # If it's just an integer, index into that location and
+    # set the value
     if ix_val[0] == 'integer':
         memory[ix_val[1]] = value
         return
 
+    # otherwhise, if the index is a list
     elif ix_val[0] == 'list':
-        raise ValueError("slicing in patterns not supported")
+
+        # Make sure the rval is a list
+        if value[0] != 'list':
+            raise ValueError('Pattern slicing needs values to be a list')
+        elif value[0] == 'list' and (len(ix_val[1]) != len(value[1])):
+            raise ValueError('Pattern slicing needs indexes and values of equal length')
+
+        # Get the l/rval
+        (LIST, lval) = ix_val
+        (LIST_r, rval) = value
+
+        # For each index
+        for i in range(len(lval)):
+            # Get the memory location of the lval and set it to the
+            # corresponding rval value
+            (INTEGER, location) = lval[i]
+            memory[location] = rval[i]
+
+        return
 
     else:
         raise ValueError("index op '{}' in patterns not supported"
