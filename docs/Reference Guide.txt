@@ -1,18 +1,13 @@
+/******************************************************************
+  This is the source file from which the reference guide is generated.
+  We use cpp to insert live code snippets into the document.
+  In order to generate the reference guide run the following command
+  on a Unix-like system:
 
+  cpp -w -P "Reference Guide.txt" > "Reference Guide.rst"
 
-
-
-
-
-
-
-
-
-
-
-..
-   *** DO NOT EDIT; MACHINE GENERATED ***
-
+ ******************************************************************/
+#include "programs/header.txt"
 
 .. highlight:: none
 
@@ -30,149 +25,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // Grammar for Asteroid written in EBNF/PEG format.
-  // (c) University of Rhode Island
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // statements
-
-  prog
-    : stmt_list
-
-  stmt_list
-    : stmt*
-
-  stmt
-    : '.' // NOOP
-    | LOAD SYSTEM? (STRING | ID) '.'?
-    | GLOBAL id_list '.'?
-    | NONLOCAL id_list '.'?
-    | ASSERT exp '.'?
-    | STRUCTURE ID WITH struct_stmts END
-    | LET pattern '=' exp '.'?
-    | LOOP DO? stmt_list END
-    | FOR pattern IN exp DO stmt_list END
-    | WHILE exp DO stmt_list END
-    | REPEAT DO? stmt_list UNTIL exp '.'?
-    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-    | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
-    | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
-    | THROW exp '.'?
-    | BREAK '.'?
-    | RETURN exp? '.'?
-    | function_def
-    | call_or_index '.'?
-
-  function_def
-    : FUNCTION ID body_defs END
-
-  body_defs
-    : WITH pattern DO stmt_list (WITH pattern DO stmt_list)*
-
-  data_stmt
-    : DATA ID
-
-  struct_stmt
-    : data_stmt  '.'?
-    | function_def '.'?
-    | '.'
-
-  struct_stmts
-    : struct_stmt*
-
-  id_list
-    : ID (',' ID)*
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // expressions/patterns
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // NOTE: There is no syntactic difference between a pattern
-  // and an expression. We introduce the 'pattern' nonterminal
-  // to highlight the SEMANTIC difference between patterns and
-  // expressions.
-
-  pattern
-    : exp
-
-  exp
-    : quote_exp
-
-  quote_exp
-    : QUOTE exp
-    | PATTERN WITH? exp
-    | '%[' exp ']%'      // constraint-only pattern match
-    | head_tail
-
-  head_tail
-    : conditional ('|' exp)?
-
-  // conditional patterns are now supported via 'pattern if cond'
-  // no else part. Since this overlaps with conditional expressions
-  // we check for correct usage semantically.
-  conditional
-    : compound (IF exp (ELSE exp)?)?
-
-  compound
-    : logic_exp0
-        (
-           (IS pattern) |
-           (IN exp) |               // exp has to be a list
-           (TO exp (STEP exp)?) |   // list comprehension
-        )?
-
-  logic_exp0
-    : logic_exp1 (OR logic_exp1)*
-
-  logic_exp1
-    : rel_exp0 (AND rel_exp0)*
-
-  rel_exp0
-    : rel_exp1 (('==' | '=/=' ) rel_exp1)*
-
-  rel_exp1
-    : arith_exp0 (('<=' | '<'  | '>=' | '>') arith_exp0)*
-
-  arith_exp0
-    : arith_exp1 (('+' | '-') arith_exp1)*
-
-  arith_exp1
-    : call_or_index (('*' | '/') call_or_index)*
-
-  call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
-
-  primary
-    : INTEGER
-    | REAL
-    | STRING
-    | TRUE
-    | FALSE
-    | NONE
-    | ID
-    | '*' ID         // "dereference" a variable during pattern matching
-    | NOT call_or_index
-    | MINUS call_or_index
-    | PLUS call_or_index
-    | ESCAPE STRING
-    | EVAL primary
-    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    | '[' list_stuff ']'  // list or list access
-    | function_const
-    | TYPEMATCH           // TYPEMATCH == '%'<typename>
-
-  tuple_stuff
-    : exp (',' exp?)*
-    | empty
-
-  list_stuff
-    : exp (',' exp)*
-    | empty
-
-  function_const
-    : LAMBDA body_defs
-
+#include "../asteroid/grammar.txt"
 
 
 Builtin Functions
@@ -403,14 +256,7 @@ pick objects that allow a user to randomly pick items from a list using the ``pi
 The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
 Here is a simple use case
 ::
-
-   load system io.
-   load system pick.
-
-   let po = pick @pick([1 to 10]).
-   let objects = po @pick(3).
-   io @println objects.
-   
+#include "programs/ref-programs/pick.ast"
 
 
 Random
@@ -447,13 +293,7 @@ The ``sort`` function makes use of a user-defined order predicate on the list's 
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
 Here is a simple example,
 ::
-
-   load system io.
-   load system sort.
-   let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
-                       [10,5,110,50]).
-    io @println sl.
-
+#include "programs/ref-programs/sort.ast"
 
 prints the sorted list::
 
@@ -476,16 +316,7 @@ The following stream interface functions are available,
 
 Here is a simple use case.
 ::
-
-   load system io.
-   load system stream.
-
-   let s = stream @stream([1 to 10]).
-   while not s @ eof() do
-      io @ print (s @get()+" ").
-   end
-   io @println ("").
-   
+#include "programs/ref-programs/stream.ast"
 
 which outputs::
 
@@ -560,15 +391,6 @@ The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 
 Here is a simple example program for the ``vector`` module,
 ::
-
-   load system io.
-   load system vector.
-
-   let a = [1,0].
-   let b = [0,1].
-
-   io @println (vector @dot (a,b)).
-   
+#include "programs/ref-programs/vector.ast"
 
 which prints the value ``0``.
-

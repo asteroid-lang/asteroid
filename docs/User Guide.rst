@@ -50,8 +50,8 @@ in order to ensure that the domain of the function is not violated,
 ::
 
     -- define first-class patterns
-    let POS_INT = pattern with (x:%integer) if x > 0.
-    let NEG_INT = pattern with (x:%integer) if x < 0.
+    let POS_INT = pattern (x:%integer) if x > 0.
+    let NEG_INT = pattern (x:%integer) if x < 0.
 
     -- define our factorial function
     function fact

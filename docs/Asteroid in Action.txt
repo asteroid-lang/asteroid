@@ -1,7 +1,18 @@
+/******************************************************************
+  This is the source file from which the action doc is generated.
+  We use cpp to insert live code snippets into the document.
+  In order to generate the action doc run the following command
+  on a Unix-like system:
+
+  cpp -w -P "Asteroid in Action.txt" > "Asteroid in Action.rst"
+
+ ******************************************************************/
+#include "programs/header.txt"
+
 .. highlight:: none
 
 Asteroid in Action
-##################
+==================
 
 This document was inspired by Andrew Shitov's excellent book `Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language <https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf>`_.  Here we use Asteroid to solve these programming challenges.
 

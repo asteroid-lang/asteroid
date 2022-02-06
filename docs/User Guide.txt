@@ -1,10 +1,10 @@
 /******************************************************************
   This is the source file from which the user guide is generated.
-  We use cpp to insert code snippets into the document.
+  We use cpp to insert live code snippets into the document.
   In order to generate the user guide run the following command
   on a Unix-like system:
 
-  cpp -w -P "Asteroid User Guide.txt" > "Asteroid User Guide.rst"
+  cpp -w -P "User Guide.txt" > "User Guide.rst"
 
  ******************************************************************/
 #include "programs/header.txt"

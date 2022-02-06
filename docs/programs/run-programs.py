@@ -15,7 +15,7 @@ os.chdir(file_path)
 
 from asteroid.interp import interp
 
-dirs = ['ug-programs']
+dirs = ['ug-programs','ref-programs']
 
 for d in dirs:
     programs = os.listdir(d)

@@ -1,0 +1,7 @@
+   load system io.
+   load system pick.
+
+   let po = pick @pick([1 to 10]).
+   let objects = po @pick(3).
+   io @println objects.
+   
