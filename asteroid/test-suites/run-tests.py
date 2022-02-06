@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf-8
-
+################################
 # general testsuite driver
+################################
+
 # the following is a list of directories of test cases the script will run
 
 dirs = ['action-tests',
@@ -12,6 +14,9 @@ dirs = ['action-tests',
         'ug-programs',
          ]
 
+# set the following to True if you encounter failed test cases. It will
+# give you details and a stack dump.
+verbose_failure = False
 
 # if your test case needs input from stdin please provide
 # a file named,
@@ -36,10 +41,10 @@ os.chdir(file_path)
 from asteroid.interp import interp
 
 for d in dirs:
-    programs = os.listdir(d)
-    programs.sort()
+    tests = os.listdir(d)
+    tests.sort()
 
-    for testname in programs:
+    for testname in tests:
         # check that we are actually looking at test case
         if testname[-3:] == "ast":
             # if a <testname>-io.txt file exists map stdin to it
@@ -51,5 +56,5 @@ for d in dirs:
             print("**********"+d+"/"+testname+"************")
             print(p)
             print("**********output***********")
-            interp(p)
+            interp(p,exceptions=verbose_failure)
             f.close()
