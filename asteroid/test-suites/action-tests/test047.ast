@@ -4,6 +4,8 @@ load system random.
 load system util.
 load system type.
 
+random @seed(42).
+
 let n = random @randint(0,10).
 let guess = type @tointeger(io @input("Guess my number between 0 and 10: ")).
 while guess =/= n do

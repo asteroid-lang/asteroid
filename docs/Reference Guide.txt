@@ -251,7 +251,7 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 An example,
 ::
-#include "programs/ref-programs/math.ast"
+#include "../asteroid/test-suites/ref-programs/math.ast"
 
 Pick
 ^^^^
@@ -261,7 +261,7 @@ pick objects that allow a user to randomly pick items from a list using the ``pi
 The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
 Here is a simple use case
 ::
-#include "programs/ref-programs/pick.ast"
+#include "../asteroid/test-suites/ref-programs/pick.ast"
 
 
 Random
@@ -298,7 +298,7 @@ The ``sort`` function makes use of a user-defined order predicate on the list's 
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
 The following is a simple example,
 ::
-#include "programs/ref-programs/sort.ast"
+#include "../asteroid/test-suites/ref-programs/sort.ast"
 
 prints the sorted list::
 
@@ -321,7 +321,7 @@ The following stream interface functions are available,
 
 A simple use case.
 ::
-#include "programs/ref-programs/stream.ast"
+#include "../asteroid/test-suites/ref-programs/stream.ast"
 
 which outputs::
 
@@ -354,7 +354,7 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 Here is a program that exercises some of the string formatting options,
 ::
-#include "programs/ref-programs/format.ast"
+#include "../asteroid/test-suites/ref-programs/format.ast"
 
 The output of the program is,
 ::
@@ -376,7 +376,7 @@ Notice the right justification of the various values within the given string len
 
 A simple example program using the ``gettype`` function,
 ::
-#include "programs/ref-programs/type.ast"
+#include "../asteroid/test-suites/ref-programs/type.ast"
 
 Util
 ^^^^
@@ -413,6 +413,6 @@ The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 
 Here is a simple example program for the ``vector`` module,
 ::
-#include "programs/ref-programs/vector.ast"
+#include "../asteroid/test-suites/ref-programs/vector.ast"
 
 which prints the value ``0``.

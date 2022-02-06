@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+# coding: utf-8
+
+# general testsuite driver
+# the following is a list of directories of test cases the script will run
+
+dirs = ['action-tests',
+        'first-class-redundant-pattern-tests',
+        'redundant-pattern-test',
+        'ref-programs',
+        'regression-tests',
+        'ug-programs',
+         ]
+
+
+# if your test case needs input from stdin please provide
+# a file named,
+#
+#    <testname>-io.txt
+#
+# For example, if your test case file is test-024.ast and it
+# requires input on stdin then provide a file test-024-io.txt
+# with one line of input for each require input.
+
+# TODO: capture stdout and compare it to a given
+# output file.
+
+import sys
+import os
+
+# Get the path of this file and temporarly change
+# the working directory to that path
+file_path = os.path.dirname(os.path.abspath( __file__ ))
+os.chdir(file_path)
+
+from asteroid.interp import interp
+
+for d in dirs:
+    programs = os.listdir(d)
+    programs.sort()
+
+    for testname in programs:
+        # check that we are actually looking at test case
+        if testname[-3:] == "ast":
+            # if a <testname>-io.txt file exists map stdin to it
+            stdin_file = file_path+'/'+d+'/'+testname[0:-4]+"-io.txt"
+            if os.path.exists(stdin_file):
+                sys.stdin = open(stdin_file, "r")
+            f = open(d+"/"+testname,"r")
+            p = f.read()
+            print("**********"+d+"/"+testname+"************")
+            print(p)
+            print("**********output***********")
+            interp(p)
+            f.close()
