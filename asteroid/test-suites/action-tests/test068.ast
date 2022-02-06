@@ -44,7 +44,8 @@ plt.legend(labels =['Data', 'Moving Average'], fontsize=14)
 plt.title('Moving Average', fontsize=20)
 plt.xlabel('Instance', fontsize=16)
 plt.ylabel('Value', fontsize=16)
-plt.show()
+#plt.show()
+plt.savefig('action-test68.png')
 "
 end
 
