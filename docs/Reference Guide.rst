@@ -395,6 +395,16 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``degrees``, given ``x``, converts angle ``x`` from radians to degrees.
 * Function ``radians``,  given ``x``, converts angle ``x`` from degrees to radians.
 
+An example,
+::
+
+    load system io.
+    load system math.
+
+    let x = math @sin( math @pi / 2 ).
+    io @println("The sine of pi / 2 is " + x + ".").
+
+
 Pick
 ^^^^
 
@@ -445,7 +455,7 @@ The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 defines a parameterized ``sort`` function over a list.
 The ``sort`` function makes use of a user-defined order predicate on the list's elements to
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
-Here is a simple example,
+The following is a simple example,
 ::
 
    load system io.
@@ -474,7 +484,7 @@ The following stream interface functions are available,
 * Function ``append``, given ``item``, adds item to the end of the stream.
 * Function ``__string__`` maps a the stream to a string representation.
 
-Here is a simple use case.
+A simple use case.
 ::
 
    load system io.
@@ -516,6 +526,41 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``tobase`` represents the given integer ``x`` (*specifically* within the given input ``(x:%integer,base:%integer)``) as a string in the given base.
 
+Here is a program that exercises some of the string formatting options,
+::
+
+    load system io.
+    load system type.
+    load system math.
+
+    -- if the width specifier is larger than the length of the value
+    -- then the value will be right justified
+    let b = type @tostring(true,type @stringformat(10)).
+    io @println b.
+
+    let i = type @tostring(5,type @stringformat(5)).
+    io @println i.
+
+    -- we can format a string by applying tostring to the string
+    let s = type @tostring("hello there!",type @stringformat(30)).
+    io @println s.
+
+    -- for floating point values: first value is width, second value precision.
+    -- if precision is missing then value is left justified and zero padded on right.
+    let r = type @tostring(math @pi,type @stringformat(6,3)).
+    io @println r.
+
+
+The output of the program is,
+::
+
+          true
+        5
+                      hello there!
+     3.142
+
+Notice the right justification of the various values within the given string length.
+
 
 *Type Query Functions*
 
@@ -524,6 +569,14 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``isnone`` returns ``true`` if given ``item`` is equal to the value ``none``.
 * Function ``gettype`` returns the type of a given ``item`` as an Asteroid string.
 
+A simple example program using the ``gettype`` function,
+::
+
+   load system type.
+
+   let i = 1.
+   assert(type @gettype(i) == "integer").
+   
 
 Util
 ^^^^

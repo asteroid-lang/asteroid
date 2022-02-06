@@ -33,7 +33,7 @@ To run asteroid on Unix-like systems and on our virtual machine,
 
     load system io.
 
-    println "Hello, World!".
+    io @println "Hello, World!".
 
     $ asteroid hello.ast
     Hello, World!
@@ -47,7 +47,7 @@ On Windows 10 the same thing looks like this,
 
     load system io.
 
-    println "Hello, World!".
+    io @println "Hello, World!".
 
     C:\> asteroid hello.ast
     Hello, World!
