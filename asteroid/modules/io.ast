@@ -11,7 +11,7 @@ load system type.
 ------------------------------------------------------------------
 -- Basic file i/o
 ------------------------------------------------------------------
-structure __IO_FILE__ with
+structure __FILE__ with
 ------------------------------------------------------------------
 
 data fd.
@@ -146,7 +146,7 @@ f_val.write(what_val[1])
 end
 
 ------------------------------------------------------------------
-end -- __IO_FILE__
+end -- __FILE__
 ------------------------------------------------------------------
 
 
@@ -162,9 +162,9 @@ data __STDOUT__.
 data __STDERR__.
 
 function __init__ with none do
-   let this @__STDIN__ = __IO_FILE__("__STDIN__").
-   let this @__STDOUT__ = __IO_FILE__("__STDOUT__").
-   let this @__STDERR__ = __IO_FILE__("__STDERR__").
+   let this @__STDIN__ = __FILE__("__STDIN__").
+   let this @__STDOUT__ = __FILE__("__STDOUT__").
+   let this @__STDERR__ = __FILE__("__STDERR__").
 end
 
 -- File I/O library functions
@@ -173,14 +173,14 @@ function open
 -- Open a file given a filename and mode
 ------------------------------------------------------------------
 with (name:%string, mode:%string) do
-   return __IO_FILE__(name, mode).
+   return __FILE__(name, mode).
 end
 
 ------------------------------------------------------------------
 function close
 -- Close a given file
 ------------------------------------------------------------------
-with(file:%__IO_FILE__) do
+with(file:%__FILE__) do
     file @close().
 end
 
@@ -188,7 +188,7 @@ end
 function read
 -- Return the contents of a given file
 ------------------------------------------------------------------
-with(file:%__IO_FILE__) do
+with(file:%__FILE__) do
     return file @read().
 
 with none do
@@ -206,7 +206,7 @@ function readln
 -- been reached, while a blank line is represented by '\n',
 -- a string containing only a single newline.
 ------------------------------------------------------------------
-with(file:%__IO_FILE__) do
+with(file:%__FILE__) do
     return file @readln().
 with none do
     return this @__STDIN__ @readln().
@@ -224,7 +224,7 @@ import sys
 sys.stdout.flush()
 "
 
-with(file:%__IO_FILE__, what:%string) do
+with(file:%__FILE__, what:%string) do
     file @write(what).
 end
 
@@ -235,7 +235,7 @@ function writeln
 with what:%string do
     this @__STDOUT__ @write(what + "\n").
 
-with(file:%__IO_FILE__, what:%string) do
+with(file:%__FILE__, what:%string) do
     file @write(what + "\n").
 end
 ------------------------------------------------------------------

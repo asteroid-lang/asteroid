@@ -2,14 +2,6 @@
 
 
 
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
 
@@ -31,9 +23,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 are written in quotes.
 ::
 
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // Grammar for Asteroid written in EBNF/PEG format.
-  // (c) University of Rhode Island
+
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -86,13 +76,7 @@ are written in quotes.
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // NOTE: There is no syntactic difference between a pattern
-  // and an expression. We introduce the 'pattern' nonterminal
-  // to highlight the SEMANTIC difference between patterns and
-  // expressions.
-
+  
   pattern
     : exp
 
@@ -102,15 +86,13 @@ are written in quotes.
   quote_exp
     : QUOTE exp
     | PATTERN WITH? exp
-    | '%[' exp ']%'      // constraint-only pattern match
+    | '%[' exp ']%'      
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  // conditional patterns are now supported via 'pattern if cond'
-  // no else part. Since this overlaps with conditional expressions
-  // we check for correct usage semantically.
+  
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -118,8 +100,8 @@ are written in quotes.
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               // exp has to be a list
-           (TO exp (STEP exp)?) |   // list comprehension
+           (IN exp) |               
+           (TO exp (STEP exp)?) |   
         )?
 
   logic_exp0
@@ -141,8 +123,11 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
+    : primary (primary | '@' primary)* (':' pattern)?  
 
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // primary expressions/patterns
+  
   primary
     : INTEGER
     | REAL
@@ -151,14 +136,14 @@ are written in quotes.
     | FALSE
     | NONE
     | ID
-    | '*' ID         // "dereference" a variable during pattern matching
+    | '*' ID         
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    | '[' list_stuff ']'  // list or list access
+    | '(' tuple_stuff ')' 
+    | '[' list_stuff ']'  
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 

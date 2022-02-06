@@ -1,6 +1,16 @@
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // Grammar for Asteroid written in EBNF/PEG format.
-  // (c) University of Rhode Island
+/**************************************************************************************
+ Grammar for Asteroid written in EBNF/PEG format.
+ (c) University of Rhode Island
+
+ Notes:
+ - We generate documentation directly from this grammar file.  In order to
+   be properly formatted in the target documentation please respect the
+   indentation given below.
+ - Use C++ style comments for any comments that you DO want to be displayed
+   in the target documentation.
+ - C style comments for any comments that you DO NOT want to be displayed
+   in the target documentation.
+ **************************************************************************************/
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -53,13 +63,12 @@
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // NOTE: There is no syntactic difference between a pattern
-  // and an expression. We introduce the 'pattern' nonterminal
-  // to highlight the SEMANTIC difference between patterns and
-  // expressions.
-
+  /*
+   NOTE: There is no syntactic difference between a pattern
+   and an expression. We introduce the 'pattern' nonterminal
+   to highlight the SEMANTIC difference between patterns and
+   expressions.
+  */
   pattern
     : exp
 
@@ -69,15 +78,17 @@
   quote_exp
     : QUOTE exp
     | PATTERN WITH? exp
-    | '%[' exp ']%'      // constraint-only pattern match
+    | '%[' exp ']%'      /* constraint-only pattern match */
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  // conditional patterns are now supported via 'pattern if cond'
-  // no else part. Since this overlaps with conditional expressions
-  // we check for correct usage semantically.
+  /*
+   conditional patterns are now supported via 'pattern if cond'
+   no else part. Since this overlaps with conditional expressions
+   we check for correct usage semantically.
+  */
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -85,8 +96,8 @@
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               // exp has to be a list
-           (TO exp (STEP exp)?) |   // list comprehension
+           (IN exp) |               /* exp has to be a list */
+           (TO exp (STEP exp)?) |   /* list comprehension */
         )?
 
   logic_exp0
@@ -108,8 +119,11 @@
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
+    : primary (primary | '@' primary)* (':' pattern)?  /* named pattern when ': pattern' exists */
 
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // primary expressions/patterns
+  
   primary
     : INTEGER
     | REAL
@@ -118,14 +132,14 @@
     | FALSE
     | NONE
     | ID
-    | '*' ID         // "dereference" a variable during pattern matching
+    | '*' ID         /* "dereference" a variable during pattern matching */
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    | '[' list_stuff ']'  // list or list access
+    | '(' tuple_stuff ')' /* tuple/parenthesized expr */
+    | '[' list_stuff ']'  /* list or list access */
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 

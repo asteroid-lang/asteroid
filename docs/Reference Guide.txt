@@ -1,13 +1,14 @@
 /******************************************************************
-  This is the source file from which the reference guide is generated.
-  We use cpp to insert live code snippets into the document.
-  In order to generate the reference guide run the following command
-  on a Unix-like system:
+  This is the source file from which the reference guide is
+  generated.  We use cpp to insert live code snippets into the
+  document. In order to generate the reference guide run the
+  following command on a Unix-like system in the directory of
+  this doc:
 
-  cpp -w -P "Reference Guide.txt" > "Reference Guide.rst"
+  bash generate_docs
 
  ******************************************************************/
-#include "programs/header.txt"
+#include "header.txt"
 
 .. highlight:: none
 
@@ -25,7 +26,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-#include "../asteroid/grammar.txt"
+#include "/tmp/grammar.tmp"
 
 
 Builtin Functions

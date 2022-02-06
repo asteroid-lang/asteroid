@@ -4,4 +4,7 @@ echo "generating User Guide.rst"
 cpp -w -P "User Guide.txt" > "User Guide.rst"
 
 echo "generating Reference Guide.rst"
+# note: we need to strip multiline C comments manually
+#       because cpp likes to preserve newlines of multiline comments...
+bash strip ../asteroid/grammar.txt >/tmp/grammar.tmp
 cpp -w -P "Reference Guide.txt" > "Reference Guide.rst"
