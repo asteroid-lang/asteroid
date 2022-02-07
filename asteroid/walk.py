@@ -1465,11 +1465,16 @@ def to_list_exp(node):
         # Change the direction of the step value based on the 
         # ends of the range. I.e. 5->1 has an implicit direction
         # of -1, 1->5 has a direction of +1
-        direction = (-1 if ix > ex else 1)
+        direction = (1 if ix < ex else -1)
         step_val *= direction
 
-        # Add the values
-        for i in range(ix, ex + direction, step_val):
+        # We need to modify the ending index to acccount for python
+        # ranges. For example, for 1->10 we want range(1, 10 + 1).
+        # Or, for the opposite, we want range(10, 1 - 1) to give 
+        # us the full inclusive range. Thus, we can just add our
+        # direction
+        new_ex = ex + direction
+        for i in range(ix, new_ex, step_val):
             out_list_val.append( ('integer', i) )
 
     elif int(step_val) == 0: # error
