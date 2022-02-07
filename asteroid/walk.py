@@ -1453,22 +1453,26 @@ def to_list_exp(node):
 
     out_list_val = []
 
-    # TODO: check out the behavior with step -1 -- is this what we want?
-    # the behavior is start and stop included
+    # If our step val is > 0
     if int(step_val) > 0: # generate the list
+        # Get the [i]nitial inde[x] and [e]nd inde[x]
         ix = int(start_val)
-        while ix <= int(stop_val):
-            out_list_val.append(('integer', ix))
-            ix += int(step_val)
+        ex = int(stop_val)
+
+        # Change the direction of the step value based on the 
+        # ends of the range. I.e. 5->1 has an implicit direction
+        # of -1, 1->5 has a direction of +1
+        step_val = int(step_val) * (-1 if ix > ex else 1)
+
+        # Add the values
+        for i in range(ix, ex - 1, step_val):
+            out_list_val.append( ('integer', i) )
 
     elif int(step_val) == 0: # error
         raise ValueError("step size of 0 not supported")
 
     elif int(step_val) < 0: # generate the list
-        ix = int(start_val)
-        while ix >= int(stop_val):
-            out_list_val.append(('integer', ix))
-            ix += int(step_val)
+        raise ValueError("negative step sizes are not supported")
 
     else:
         raise ValueError("{} not a valid step value".format(step_val))
