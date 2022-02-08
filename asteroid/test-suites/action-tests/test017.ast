@@ -1,37 +1,58 @@
 
-load system io.
-load system util.
-load system hash.
+  load system io.
+  load system util.
+  load system hash.
 
--- text generated at 'https://www.lipsum.com/'
-let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed accumsan magna quis risus commodo, et pellentesque dui cursus. Sed quis risus libero. Cras et mattis libero, eget varius nisi. Phasellus ultrices, augue non dictum eleifend, nunc elit blandit velit, a viverra risus enim in tellus. Maecenas quis ante eget turpis rhoncus rhoncus eget ut mauris. Suspendisse nec erat sed nunc tempus hendrerit. Nunc dictum nunc molestie eleifend tempus. Praesent cursus lorem diam, sed mattis velit vehicula scelerisque. Nunc iaculis rhoncus ante. Etiam quam nisi, fermentum et euismod a, vulputate eu elit. Suspendisse tincidunt ligula quis interdum blandit. Quisque sed aliquam tellus. Pellentesque ac lacus pulvinar, ornare purus ac, viverra ex. Donec quis pharetra dolor.
+  -- text generated at 'https://www.lipsum.com/'
+  let text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+  accumsan magna quis risus commodo, et pellentesque dui cursus. Sed quis risus
+  libero. Cras et mattis libero, eget varius nisi. Phasellus ultrices, augue non
+  dictum eleifend, nunc elit blandit velit, a viverra risus enim in tellus.
+  Maecenas quis ante eget turpis rhoncus rhoncus eget ut mauris. Suspendisse nec
+  erat sed nunc tempus hendrerit. Nunc dictum nunc molestie eleifend tempus.
+  Praesent cursus lorem diam, sed mattis velit vehicula scelerisque. Nunc iaculis
+  rhoncus ante. Etiam quam nisi, fermentum et euismod a, vulputate eu elit.
+  Suspendisse tincidunt ligula quis interdum blandit. Quisque sed aliquam tellus.
+  Pellentesque ac lacus pulvinar, ornare purus ac, viverra ex. Donec quis pharetra
+  dolor.
 
-In ac massa tortor. Cras sagittis luctus scelerisque. Morbi a neque sed tortor ultrices dapibus. Mauris pretium vitae massa non auctor. Cras egestas ex ante, ac ullamcorper ante dignissim eget. Fusce bibendum justo ut enim luctus, id volutpat diam lacinia. Mauris sit amet ante risus.
+  In ac massa tortor. Cras sagittis luctus scelerisque. Morbi a neque sed tortor
+  ultrices dapibus. Mauris pretium vitae massa non auctor. Cras egestas ex ante,
+  ac ullamcorper ante dignissim eget. Fusce bibendum justo ut enim luctus, id
+  volutpat diam lacinia. Mauris sit amet ante risus.
 
-Nullam rhoncus ultricies dui. Etiam vel metus vehicula, pellentesque felis ut, suscipit nunc. Sed nec interdum lorem. Maecenas odio erat, vestibulum nec dapibus id, commodo vitae libero. Nulla sed urna sit amet nunc commodo finibus sed vel elit. Aliquam euismod feugiat nisi quis placerat. Aliquam libero nisl, ultrices non est at, sagittis hendrerit dui. Quisque id sem lorem. Nam ultricies metus id ultrices molestie. Pellentesque elementum consequat nibh, nec convallis lorem ullamcorper in. Etiam vitae mi tellus. Etiam accumsan massa sit amet dolor tincidunt iaculis. Nam ullamcorper blandit sem id bibendum. Quisque elementum ipsum ac sapien blandit vehicula."
+  Nullam rhoncus ultricies dui. Etiam vel metus vehicula, pellentesque felis ut,
+  suscipit nunc. Sed nec interdum lorem. Maecenas odio erat, vestibulum nec
+  dapibus id, commodo vitae libero. Nulla sed urna sit amet nunc commodo finibus
+  sed vel elit. Aliquam euismod feugiat nisi quis placerat. Aliquam libero nisl,
+  ultrices non est at, sagittis hendrerit dui. Quisque id sem lorem. Nam ultricies
+  metus id ultrices molestie. Pellentesque elementum consequat nibh, nec convallis
+  lorem ullamcorper in. Etiam vitae mi tellus. Etiam accumsan massa sit amet dolor
+  tincidunt iaculis. Nam ullamcorper blandit sem id bibendum. Quisque elementum
+  ipsum ac sapien blandit vehicula."
 
--- get rid of punctuation, turn to lower case, and split into words.
--- Note: we could have employed richer regular expressions to clean up the text here
-let wl = text @replace("\.","")
-              @replace(",","")
-              @tolower()
-              @split().
+  -- get rid of punctuation, turn to lower case, and split into words.
+  -- Note: we could have employed richer regular expressions to clean up the text here
+  let wl = text @replace("\.","")
+                @replace(",","")
+                @tolower()
+                @split().
 
--- put the words into a hash table, the value is the count of the words
-let ht = hash @hash().
-for w in wl do
-    if not ht @get(w) do
-        ht @insert(w,1).
-    else do
-        ht @insert(w,ht @get(w)+1).
-    end
-end
+  -- put the words into a hash table, the value is the count of the words
+  let ht = hash @hash().
+  for w in wl do
+      if not ht @get(w) do
+          ht @insert(w,1).
+      else do
+          ht @insert(w,ht @get(w)+1).
+      end
+  end
 
--- get the contents of hash table and find the most frequent word
-let (keys,values) = util @unzip(ht@aslist()).
-let values_sorted = values @copy()
-                           @sort(true).
-let most_frequent_word = keys @(values @index(values_sorted @0)).
-io @println most_frequent_word.
+  -- get the contents of hash table and find the most frequent word
+  let (keys,values) = util @unzip(ht@aslist()).
+  let values_sorted = values @copy()
+                             @sort(true).
+  let most_frequent_word = keys @(values @index(values_sorted @0)).
+  io @println most_frequent_word.
 
-assert (most_frequent_word == "sed").
+  assert (most_frequent_word == "sed").

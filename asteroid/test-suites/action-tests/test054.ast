@@ -1,34 +1,33 @@
+  load system io.
+  load system math.
 
-load system io.
-load system math.
+  let mod = math @mod.
 
-let mod = math @mod.
+  let names = ["zero","one","two","three","four","five","six","seven","eight","nine",
+               "ten","eleven","twelve","thirteen","fourteen","fifteen",
+               "sixteen","seventeen","eighteen","nineteen","twenty","thirty",
+               "forty","fifty","sixty","seventy","eighty","ninety"].
 
-let names = ["zero","one","two","three","four","five","six","seven","eight","nine",
-             "ten","eleven","twelve","thirteen","fourteen","fifteen",
-             "sixteen","seventeen","eighteen","nineteen","twenty","thirty",
-             "forty","fifty","sixty","seventy","eighty","ninety"].
+  function spell_number
+      with (n:%integer) if n < 20 do
+          return names @n.
+      with (n:%integer) if n < 100 do
+          let r = names @(n / 10 + 18).
+          let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
+          return r.
+      with (n:%integer) if n < 1000 do
+          return spell_part(n,100,"hundred").
+      with (n:%integer) if n < 1000000 do
+          return spell_part(n,1000,"thousand").
+      end
 
-function spell_number
-    with (n:%integer) if n < 20 do
-        return names @n.
-    with (n:%integer) if n < 100 do
-        let r = names @(n / 10 + 18).
-        let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
-        return r.
-    with (n:%integer) if n < 1000 do
-        return spell_part(n,100,"hundred").
-    with (n:%integer) if n < 1000000 do
-        return spell_part(n,1000,"thousand").
-    end
+  function spell_part
+      with (n:%integer,base:%integer,name:%string) do
+          let r = spell_number(n/base) + " " + name.
+          return r + " " + spell_number(mod(n,base)) if mod(n,base) else r.
+      end
 
-function spell_part
-    with (n:%integer,base:%integer,name:%string) do
-        let r = spell_number(n/base) + " " + name.
-        return r + " " + spell_number(mod(n,base)) if mod(n,base) else r.
-    end
-
-io @println (spell_number 15).
-io @println (spell_number 75).
-io @println (spell_number 987654).
-io @println (spell_number 1001).
+  io @println (spell_number 15).
+  io @println (spell_number 75).
+  io @println (spell_number 987654).
+  io @println (spell_number 1001).

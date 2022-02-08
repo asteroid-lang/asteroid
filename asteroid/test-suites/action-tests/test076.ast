@@ -1,19 +1,19 @@
+  load system io.
 
-load system io.
+  function max with lst:%list do
+      return lst @sort(true) @0.
+  end
 
-function max with lst:%list do
-    return lst @sort(true) @0.
-end
+  function min with lst:%list do
+      return lst @sort() @0.
+  end
 
-function min with lst:%list do
-    return lst @sort() @0.
-end
+  let v = [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
+  
+  let a = max v.
+  let b = min v.
 
-let a = max [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
-let b = min [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
+  io @println a.
+  io @println b.
 
-
-io @println a.
-io @println b.
-
-assert (a == 15 and b == 2).
+  assert (a == 15 and b == 2).

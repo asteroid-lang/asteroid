@@ -1,13 +1,12 @@
+  load system io.
+  load system set.
 
-load system io.
-load system set.
+  function unique with lst:%list do
+      return set @toset lst @sort().
+  end
 
-function unique with lst:%list do
-    return set @toset lst @sort().
-end
+  let a = unique([2, 3, 7, 4, 5, 5, 6, 2, 10, 7]).
 
-let a = unique([2, 3, 7, 4, 5, 5, 6, 2, 10, 7]).
+  io @println a.
 
-io @println a.
-
-assert (a == [2,3,4,5,6,7,10])
+  assert (a == [2,3,4,5,6,7,10])

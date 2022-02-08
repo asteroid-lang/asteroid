@@ -1,18 +1,17 @@
+  load system io.
+  load system random.
+  load system util.
+  load system type.
 
-load system io.
-load system random.
-load system util.
-load system type.
+  let randint = random @randint.
 
-let randint = random @randint.
+  random @seed(42).
 
-random @seed(42).
+  io @println (random @random()).          -- random value in [0.0,1.0)
+  io @println (randint(0.0,1.0)).  -- random value in [0.0,1.0]
+  io @println (randint(0,1)).      -- always 0 or 1
 
-io @println (random @random()).          -- random value in [0.0,1.0)
-io @println (randint(0.0,1.0)).  -- random value in [0.0,1.0]
-io @println (randint(0,1)).      -- always 0 or 1
-
--- generating a random number in the appropriate interval
-let n = 10.
-io @println (randint(0.0,type @toreal(n))).
-io @println (randint(0,n)).
+  -- generating a random number in the appropriate interval
+  let n = 10.
+  io @println (randint(0.0,type @toreal(n))).
+  io @println (randint(0,n)).

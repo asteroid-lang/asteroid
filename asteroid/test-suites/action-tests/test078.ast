@@ -1,60 +1,59 @@
+  load system io.
 
-load system io.
+  function transpose with m do
+      -- figure out the dimensions
+      let xdim = m @0 @length().
+      let ydim = m @length().
 
-function transpose with m do
-    -- figure out the dimensions
-    let xdim = m @0 @length().
-    let ydim = m @length().
-    
-    -- reserve space for the transpose
-    -- first we do the ydim of new matrix
-    let mt = range(xdim).
-    for y in mt do
-        let mt @y = range(ydim).
-    end
-    
-    -- swap the elements
-    for x in range(xdim) do
-        for y in range(ydim) do
-            let mt @x @y = m @y @x.
-        end
-    end
-    
-    return mt.
-end
+      -- reserve space for the transpose
+      -- first we do the ydim of new matrix
+      let mt = range(xdim).
+      for y in mt do
+          let mt @y = range(ydim).
+      end
 
-function print_matrix with m do
-    io @println "".
-    for r in m do
-        for e in r do
-            io @print (e + " ").
-        end
-        io @println ("").
-    end
-    io @println "".
-end
+      -- swap the elements
+      for x in range(xdim) do
+          for y in range(ydim) do
+              let mt @x @y = m @y @x.
+          end
+      end
 
-let m = [[1,2],
-         [3,4]].
+      return mt.
+  end
 
-let mt = transpose(m).
+  function print_matrix with m do
+      io @println "".
+      for r in m do
+          for e in r do
+              io @print (e + " ").
+          end
+          io @println ("").
+      end
+      io @println "".
+  end
 
-io @println ("The transpose of:").
-print_matrix m.
-io @println ("is:").
-print_matrix mt.
-io @println ("").
+  let m = [[1,2],
+           [3,4]].
 
-let m = [[1,2],
-         [3,4],
-         [5,6]].
-         
-let mt = transpose(m).
+  let mt = transpose(m).
 
-io @println ("The transpose of:").
-print_matrix m.
-io @println ("is:").
-print_matrix mt.
-io @println ("").
+  io @println ("The transpose of:").
+  print_matrix m.
+  io @println ("is:").
+  print_matrix mt.
+  io @println ("").
 
-assert(mt == [[1,3,5],[2,4,6]]).
+  let m = [[1,2],
+           [3,4],
+           [5,6]].
+
+  let mt = transpose(m).
+
+  io @println ("The transpose of:").
+  print_matrix m.
+  io @println ("is:").
+  print_matrix mt.
+  io @println ("").
+
+  assert(mt == [[1,3,5],[2,4,6]]).

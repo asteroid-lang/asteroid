@@ -1,10 +1,9 @@
+  load system io.
+  load system type.
 
-load system io.
-load system type.
+  let a = [3, 7, 19, 20, 34].
+  let b = type @toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
 
-let a = [3, 7, 19, 20, 34].
-let b = type @toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
+  io @println b.
 
-io @println b.
-
-assert (b).
+  assert (b).

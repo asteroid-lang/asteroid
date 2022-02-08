@@ -33,7 +33,7 @@ verbose_failure = False
 import sys
 import os
 
-# Get the path of this file and temporarly change
+# Get the path of this file and temporarily change
 # the working directory to that path
 file_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(file_path)

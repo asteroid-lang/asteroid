@@ -1,11 +1,10 @@
+  load system io.
 
-load system io.
+  let array = [10, 14, 0, 15, 17, 20, 30, 35].
+  let x = 17.
 
-let array = [10, 14, 0, 15, 17, 20, 30, 35].
-let x = 17.
-
-if array @reduce(lambda with (acc,i) do return true if i==x else acc,false) do
-    io @println (x+" is in the list"). 
-else 
-    io @println (x+" is not in the list").
-end
+  if array @reduce(lambda with (acc,i) do return true if i==x else acc,false) do
+      io @println (x+" is in the list").
+  else
+      io @println (x+" is not in the list").
+  end

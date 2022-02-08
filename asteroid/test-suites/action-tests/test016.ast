@@ -1,6 +1,5 @@
+  load system io.
 
-load system io.
-
-for n in 0 to 5 do
-    io @println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
-end
+  for n in 0 to 5 do
+      io @println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
+  end

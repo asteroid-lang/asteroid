@@ -1,5 +1,4 @@
+  load system io.
+  load system math. -- definition of pi
 
-load system io.
-load system math. -- definition of pi
-
-io @println (math @pi).
+  io @println (math @pi).

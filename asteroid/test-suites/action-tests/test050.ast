@@ -1,13 +1,12 @@
+  load system io.
+  load system type.
 
-load system io.
-load system type.
-
-let number = 139487854.
+  let number = 139487854.
 
 
-let s = type @tostring number @explode()
-                              @map(type @tointeger)
-                              @reduce(lambda with (x,y) do return x+y).
-io @println s.
+  let s = type @tostring number @explode()
+                                @map(type @tointeger)
+                                @reduce(lambda with (x,y) do return x+y).
+  io @println s.
 
-assert (s == 49).
+  assert (s == 49).

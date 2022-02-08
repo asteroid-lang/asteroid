@@ -1,6 +1,5 @@
+  load system io.
 
-load system io.
-
-let array = [10, 14, 0, 15, 17, 20, 30, 35].
-let x = 17.
-io @println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).
+  let array = [10, 14, 0, 15, 17, 20, 30, 35].
+  let x = 17.
+  io @println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).

@@ -1,7 +1,6 @@
+  load system io.
 
-load system io.
-
-let n = 3.
-let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
-io @println fact.
-assert (fact == 6).
+  let n = 3.
+  let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
+  io @println fact.
+  assert (fact == 6).

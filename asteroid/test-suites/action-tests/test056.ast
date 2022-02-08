@@ -1,8 +1,7 @@
+  load system io.
 
-load system io.
+  let a = [3,5,7,4].
+  let (a@2,a@3) = (a@3,a@2).
+  io @println a.
 
-let a = [3,5,7,4].
-let (a@2,a@3) = (a@3,a@2).
-io @println a. 
-
-assert (a is [3,5,4,7]).
+  assert (a is [3,5,4,7]).

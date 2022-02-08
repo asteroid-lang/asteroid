@@ -1,9 +1,18 @@
+  load system io.
+  load system math.
 
-load system io.
-load system math.
+  let dt = ["apple",
+            "pear",
+            "grape",
+            "lemon",
+            "peach",
+            "apple",
+            "banana",
+            "grape",
+            "pineapple",
+            "avocado"].
+            
+  let cnt = dt @count("grape").
+  io @println cnt.
 
-let dt = ["apple","pear","grape","lemon","peach","apple","banana","grape","pineapple","avocado"].
-let cnt = dt @count("grape").
-io @println cnt.
-
-assert (cnt == 2).
+  assert (cnt == 2).

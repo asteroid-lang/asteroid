@@ -8,3 +8,6 @@ echo "generating Reference Guide.rst"
 #       because cpp likes to preserve newlines of multiline comments...
 bash strip ../asteroid/grammar.txt >/tmp/grammar.tmp
 cpp -w -P "Reference Guide.txt" > "Reference Guide.rst"
+
+echo "generating Asteroid in Action.rst"
+cpp -w -P "Asteroid in Action.txt" > "Asteroid in Action.rst"

@@ -1,12 +1,11 @@
+  load system io.
+  load system random.
 
-load system io.
-load system random.
+  let hist = [0 to 9] @map(lambda with _ do return 0).
 
-let hist = [0 to 9] @map(lambda with _ do return 0).
+  for _ in range(10000) do
+      let ix = random @randint(0,9).
+      let hist @ix = hist @ix +1
+  end
 
-for _ in range(10000) do
-    let ix = random @randint(0,9).
-    let hist @ix = hist @ix +1
-end
-
-io @println hist.
+  io @println hist.

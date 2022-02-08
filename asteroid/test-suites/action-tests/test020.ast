@@ -1,21 +1,20 @@
+  load system io.
 
-load system io.
+  let str = "Was it a rat I saw?".
 
-let str = "Was it a rat I saw?".
+  function clean with str:%string do
+      return str @tolower()
+                 @replace("[^a-z]","").
+  end
 
-function clean with str:%string do
-    return str @tolower()
-               @replace("[^a-z]","").
-end
+  -- only keep lower case letters
+  let clean_str = clean(str).
 
--- only keep lower case letters
-let clean_str = clean(str).
+  -- check if it is palidromic
+  if clean_str == clean_str @flip() do
+      io @println "Palindromic".
+  else do
+      io @println "Not palindromic".
+  end
 
--- check if it is palidromic
-if clean_str == clean_str @flip() do
-    io @println "Palindromic".
-else do
-    io @println "Not palindromic".
-end
-
-assert (clean_str == clean_str @flip()).
+  assert (clean_str == clean_str @flip()).

@@ -1,8 +1,7 @@
+  load system io.
 
-load system io.
+  let bits = "1010101" @replace("0","")
+                       @length().
+  io @println bits.
 
-let bits = "1010101" @replace("0","")
-                     @length().
-io @println bits.
-
-assert (bits == 4).
+  assert (bits == 4).

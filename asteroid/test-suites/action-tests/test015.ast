@@ -1,41 +1,40 @@
+  load system io.
+  load system util.
 
-load system io.
-load system util.
+  let achar = util @achar.
+  let ascii = util @ascii.
 
-let achar = util @achar.
-let ascii = util @ascii.
+  let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
 
-let encode_table = [119 to 122] @map(achar) + [97 to 118] @map(achar).
+  function encode with (v:%string) if len(v) == 1 do
+      -- only lowercase letters are encoded
+      if not (ascii(v) in [97 to 122]) do
+          return v.
+      else
+          return encode_table @(ascii(v)-ascii("a")).
+      end
+  end
 
-function encode with (v:%string) if len(v) == 1 do
-    -- only lowercase letters are encoded
-    if not (ascii(v) in [97 to 122]) do
-        return v.
-    else
-        return encode_table @(ascii(v)-ascii("a")).
-    end
-end
+  function decode with (v:%string) if len(v) == 1 do
+      -- only lowercase letters are decoded
+      if not (ascii(v) in [97 to 122]) do
+          return v.
+      else
+          return encode_table @(ascii(v)-ascii("w")+4).
+      end
+  end
 
-function decode with (v:%string) if len(v) == 1 do
-    -- only lowercase letters are decoded
-    if not (ascii(v) in [97 to 122]) do
-        return v.
-    else
-        return encode_table @(ascii(v)-ascii("w")+4).
-    end
-end
+  let message = "hello, world!"
+  let secret = message @explode()
+                       @map(encode)
+                       @join("").
+  io @println secret.
 
-let message = "hello, world!"
-let secret = message @explode()
-                     @map(encode)
-                     @join("").
-io @println secret.
+  assert (secret == "dahhk, sknhz!")
 
-assert (secret == "dahhk, sknhz!")
+  let decoded_msg = secret @explode()
+                           @map(decode)
+                           @join("").
+  io @println decoded_msg.
 
-let decoded_msg = secret @explode()
-                         @map(decode)
-                         @join("").
-io @println decoded_msg.
-
-assert (decoded_msg == "hello, world!")
+  assert (decoded_msg == "hello, world!")

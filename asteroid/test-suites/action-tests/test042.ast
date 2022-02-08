@@ -1,12 +1,11 @@
+  load system io.
+  load system math.
+  load system vector.
 
-load system io.
-load system math.
-load system vector.
+  let x = [10, 3].
+  let y = [9, 1].
+  let a = vector @sub(x,y).
+  let d = math @sqrt(vector @dot(a,a)).
+  io @println d.
 
-let x = [10, 3].
-let y = [9, 1].
-let a = vector @sub(x,y).
-let d = math @sqrt(vector @dot(a,a)).
-io @println d.
-
-assert (d == 2.23606797749979)
+  assert (d == 2.23606797749979)

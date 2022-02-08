@@ -1,3 +1,3 @@
+  load system io.
 
-load system io.
-io @println "Hello, World!".
+  io @println "Hello, World!".

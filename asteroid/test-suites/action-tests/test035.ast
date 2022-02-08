@@ -1,42 +1,41 @@
+  load system io.
+  load system math.
 
-load system io.
-load system math.
+  function isprime with x do
+      if x >= 2 do
+          for y in range(2,x) do
+              if not math @mod(x,y) do
+                  return false.
+              end
+          end
+      else do
+          return false.
+      end
+      return true.
+  end
 
-function isprime with x do
-    if x >= 2 do
-        for y in range(2,x) do
-            if not math @mod(x,y) do
-                return false.
-            end
-        end
-    else do
-        return false.
-    end
-    return true.
-end
+  function primes with x do
+      let lp = [].
+      for (n if isprime(n)) in 1 to x do
+          let lp = lp+[n].
+      end
+      return lp.
+  end
 
-function primes with x do
-    let lp = [].
-    for (n if isprime(n)) in 1 to x do
-        let lp = lp+[n].
-    end
-    return lp.
-end
+  let n = 165.
+  let factors = [].
+  let primes_list =  primes(n).
+  let ix = 0.
 
-let n = 165.
-let factors = [].
-let primes_list =  primes(n).
-let ix = 0.
+  while n > 1 do
+      let factor = primes_list @ix.
+      let ix = ix+1.
+      if not math @mod(n,factor) do
+          let ix = 0.
+          let n = n/factor.
+          let factors = factors+[factor].
+      end
+  end
+  io @println factors.
 
-while n > 1 do
-    let factor = primes_list @ix.
-    let ix = ix+1.
-    if not math @mod(n,factor) do
-        let ix = 0.
-        let n = n/factor.
-        let factors = factors+[factor].
-    end
-end
-io @println factors.
-
-assert (factors == [3,5,11])
+  assert (factors == [3,5,11])

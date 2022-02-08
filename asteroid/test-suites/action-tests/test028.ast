@@ -1,8 +1,7 @@
+  load system io.
 
-load system io.
+  let sq = [1 to 10] @map(lambda with x do return x*x).
 
-let sq = [1 to 10] @map(lambda with x do return x*x).
+  io @println sq.
 
-io @println sq.
-
-assert (sq == [1,4,9,16,25,36,49,64,81,100])
+  assert (sq == [1,4,9,16,25,36,49,64,81,100])
