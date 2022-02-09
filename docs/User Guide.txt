@@ -130,7 +130,7 @@ As we have seen, the ``@`` operator allows you to access either individual eleme
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
-a step specifier allowying you to generate integer values within that range,
+a stride specifier allowying you to generate integer values within that range,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-011.ast"
 
