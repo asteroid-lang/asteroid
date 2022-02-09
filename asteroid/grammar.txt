@@ -97,7 +97,7 @@
         (
            (IS pattern) |
            (IN exp) |               /* exp has to be a list */
-           (TO exp (STEP exp)?) |   /* list comprehension */
+           (TO exp (STRIDE exp)?) |   /* list comprehension */
         )?
 
   logic_exp0
