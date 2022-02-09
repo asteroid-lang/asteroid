@@ -1,0 +1,14 @@
+load system io.
+
+let p = (pattern with (x, y)).
+
+function foo
+	with *p do
+		io @println("matched").
+		assert(true).
+	with _ do
+		io @println("did not match").
+		assert(false).
+end
+
+foo(1, 2)

@@ -1,0 +1,11 @@
+
+load system io.
+load "util".
+
+let a = [10,20,30].
+let x = a @(1).
+let y = a @[1].
+
+io @println x. -- prints out a scalar 
+io @println y. -- prints out a list
+assert((x is 20) and (y is [20])).

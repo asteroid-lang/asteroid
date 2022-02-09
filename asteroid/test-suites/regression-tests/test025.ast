@@ -1,0 +1,5 @@
+
+load system io.
+
+let q:%integer = 3.
+io @println q.

@@ -7,6 +7,35 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
+let __TP__ = pattern
+------------------------------------------------------------------
+-- pattern for selecting proper formatting body in 'tostring'
+with x if (x is %boolean) or
+         (x is %integer) or
+         (x is %string).
+
+------------------------------------------------------------------
+structure __STRINGFORMAT__
+------------------------------------------------------------------
+-- formatting object for 'tostring'
+with
+  data length.
+  data precision.
+  function __init__
+    with (l:%integer,p:%integer) do
+      let this @length = l.
+      let this @precision = p.
+    with l:%integer do
+      let this @length = l.
+      let this @precision = none.
+    end
+end
+
+
+------------------------------------------------------------------
+structure __TYPE_MODULE__ with
+
+------------------------------------------------------------------
 -- TYPE CONVERSION FUNCTIONS --
 ------------------------------------------------------------------
 
@@ -54,48 +83,23 @@ __retval__ = ('boolean', bool(item_val[1]))
 end
 
 ------------------------------------------------------------------
-let TP = pattern
-------------------------------------------------------------------
--- pattern for selecting proper formatting body in 'tostring'
-with x if (x is %boolean) or
-         (x is %integer) or
-         (x is %string).
-
-------------------------------------------------------------------
-structure stringformat
-------------------------------------------------------------------
--- formatting object for 'tostring'
-with
-  data length.
-  data precision.
-  function __init__
-    with (l:%integer,p:%integer) do
-      let this @length = l.
-      let this @precision = p.
-    with l:%integer do
-      let this @length = l.
-      let this @precision = none.
-    end
-end
-
-------------------------------------------------------------------
 function tostring
 ------------------------------------------------------------------
 -- convert an asteroid object to string.
 -- if format values are given apply the
 -- formatting to the object.
 
-with (v:*TP,stringformat(w:%integer,none)) do
+with (v:*__TP__,__STRINGFORMAT__(w:%integer,none)) do
   -- booleans, integers, and strings (see TP pattern) with width spec are
   -- right justified. if width spec is too narrow it is ignored.
-  let vs = tostring(v).
+  let vs = this @tostring(v).
   let padl = w - vs @length().
   if padl > 0 do
     return [1 to padl] @map(lambda with _ do return " ") @join("") + vs.
   else do
     return vs.
   end
-with (v:%real,stringformat(w:%integer,none)) do return escape
+with (v:%real,__STRINGFORMAT__(w:%integer,none)) do return escape
 -- floating point values with only a width spec are left justified with
 -- zero padding on the right.
 "
@@ -107,7 +111,7 @@ __retval__ = ('string', fmtstr.format(v_val))
 "
 -- floating point values with a width and precision specs
 -- are formatted according to Python formatting rules
-with (v:%real,stringformat(w:%integer,p:%integer)) do return escape
+with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer)) do return escape
 "
 global __retval__
 (V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
@@ -125,6 +129,17 @@ from asteroid.support import term2string
 item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('string', term2string(item_val))
 "
+end
+
+------------------------------------------------------------------
+function stringformat
+------------------------------------------------------------------
+-- a wrapper around our __STRINGFORMAT__ object as a member
+-- of our module.
+with (l:%integer,p:%integer) do
+  return __STRINGFORMAT__(l,p).
+with l:%integer do
+  return __STRINGFORMAT__(l).
 end
 
 ------------------------------------------------------------------
@@ -190,3 +205,8 @@ else:
 __retval__ = ('string', x_type)
 "
 end
+
+end -- __TYPE_MODULE__
+
+------------------------------------------------------------------
+let type = __TYPE_MODULE__().

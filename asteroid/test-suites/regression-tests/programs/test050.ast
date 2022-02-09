@@ -1,9 +1,0 @@
-
-load "io".
-
-try 
-    let 2 = 1 + 1. 
-catch _ do
-    println "pattern match failed".
-end 
-

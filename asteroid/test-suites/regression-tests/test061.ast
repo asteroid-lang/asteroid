@@ -1,0 +1,9 @@
+
+load system io.
+
+let l = [1,2,3].
+
+repeat do
+    let [head|l] = l.
+    io @println head.
+until l is [].

@@ -1,0 +1,29 @@
+
+load system io.
+load "util".
+
+structure Person with
+    data name.
+    data age.
+    data sex.
+    end 
+    
+let people = [
+    Person("George", 32, "M"),
+    Person("Sophie", 46, "F"),
+    Person("Oliver", 21, "M")
+    ].
+    
+let n = people @length().
+let sum = 0.
+
+for Person(_,age,_) in people do
+    let sum = sum + age.
+end 
+
+io @println ("Average Age: " + (sum/n)).
+assert ((sum/n) == 33).
+
+for Person(name,_,"M") in people do
+    io @println name.
+end 

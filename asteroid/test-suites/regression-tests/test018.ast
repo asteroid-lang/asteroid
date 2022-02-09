@@ -1,0 +1,12 @@
+
+load system io.
+structure A with
+    data a.
+    data b.
+    end
+
+let a = A(1,2).
+let (v:%A) if v @a + 1 > 1 = a.
+let A(x:%string,_) = A("hello",2).
+io @println v.
+io @println x.

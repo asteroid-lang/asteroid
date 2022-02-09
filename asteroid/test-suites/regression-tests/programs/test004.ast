@@ -1,4 +1,0 @@
-
-load "io".
-let l:"\[.*\]" = [1,2,3].
-println l.

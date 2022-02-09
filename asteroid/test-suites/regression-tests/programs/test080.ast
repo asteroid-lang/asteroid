@@ -1,6 +1,0 @@
-
-load "io".
-
-for bird in ["turkey","duck","chicken"] do
-    println bird.
-end 

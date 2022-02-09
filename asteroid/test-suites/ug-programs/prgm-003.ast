@@ -1,0 +1,13 @@
+    -- define first-class patterns
+    let POS_INT = pattern (x:%integer) if x > 0.
+    let NEG_INT = pattern (x:%integer) if x < 0.
+
+    -- define our factorial function
+    function fact
+        with 0 do
+            return 1
+        with n:*POS_INT do            -- use first pattern
+            return n * fact (n-1).
+        with n:*NEG_INT do            -- use second pattern
+            throw Error("undefined for "+n).
+        end

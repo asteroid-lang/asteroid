@@ -1,0 +1,16 @@
+  load system io.
+  load system math.
+
+  -- fraction a/b
+  let a = 16.
+  let b = 280.
+
+  -- reduce fraction
+  let gcd_val = math @gcd(a,b).
+  let numerator = a/gcd_val.
+  let denominator = b/gcd_val.
+  io @println numerator.
+  io @println denominator.
+
+  -- show that original and reduced fraction are the same value
+  assert (a/b == numerator/denominator).

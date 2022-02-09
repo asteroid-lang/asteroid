@@ -1,0 +1,46 @@
+    load system io.
+    load system type.
+
+    let pos_num = pattern %[x if type @isscalar(x) and x > 0]%.
+   
+    structure Asteroid with
+       data size.
+       function __init_
+          with v:*pos_num do
+             let this @size = v.
+          end
+    end
+
+    structure Spaceship with
+        data size.
+       function __init_
+          with v:*pos_num do
+             let this @size = v.
+          end
+    end
+
+    -- we use first-class pattern SpaceObject to
+    -- express that both asteroids and space ships are space objects.
+    let SpaceObject = pattern %[x if (x is %Asteroid) or (x is %Spaceship)]%.
+
+    -- multi-dispatch function
+    function collide_with
+      with (a:%Asteroid, b:%Spaceship) do
+        return "a/s".
+      with (a:%Spaceship, b:%Asteroid) do
+        return "s/a".
+      with (a:%Spaceship, b:%Spaceship) do
+        return "s/s".
+      with (a:%Asteroid, b:%Asteroid) do
+        return "a/a".
+      end
+
+    -- here we use the first-class pattern SpaceObject as a
+    -- constraint on the function parameters.
+    function collide with (x:*SpaceObject, y:*SpaceObject) do
+      return "Big boom!" if (x@size > 100 and y@size > 100) else collide_with(x, y).
+    end
+
+    io @println (collide(Asteroid(101), Spaceship(300))).
+    io @println (collide(Asteroid(10), Spaceship(10))).
+    io @println (collide(Spaceship(101), Spaceship(10))).

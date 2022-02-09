@@ -1,10 +1,17 @@
 ------------------------------------------------------------------
 -- bitwise.ast
 --
--- this module defines bitwise operations
+-- Defines bitwise operations
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
+
+-- define the bitwise module object
+
+------------------------------------------------------------------
+structure __BITWISE_MODULE__
+------------------------------------------------------------------
+with
 
 ------------------------------------------------------------------
  -- Bitwise AND
@@ -172,3 +179,9 @@ x_val = state.symbol_table.lookup_sym('x')[1]
 __retval__ = ('integer', x_val.bit_length())
 "
 end
+
+end -- __BITWISE__
+
+------------------------------------------------------------------
+-- instantiate the bitwise module object
+let bitwise = __BITWISE_MODULE__().

@@ -1,0 +1,17 @@
+    function fact
+        with 0 do
+            return 1
+        with (n:%integer) if n > 0 do
+            return n * fact (n-1).
+        with (n:%integer) if n < 0 do
+            throw Error("fact undefined for negative values").
+        end
+
+    function sign
+        with 0 do
+            return 1
+        with (n:%integer) if n > 0 do
+            return 1.
+        with (n:%integer) if n < 0 do
+            return -1.
+        end

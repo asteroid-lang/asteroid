@@ -1,6 +1,0 @@
-
-load "io".
-
-let name:"a.*" = "abc".
-println name.
-assert (name is "abc")

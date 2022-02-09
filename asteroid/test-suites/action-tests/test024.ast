@@ -1,0 +1,7 @@
+  load system io.
+  load system math.
+
+  io @println (math @e).
+  io @println (math @tau). -- tau=2*pi
+
+  assert (math @tau == 2 * math @pi)

@@ -1,0 +1,4 @@
+    load system io.
+
+    let t:(1,2) = (1,2).  -- using a named pattern on lhs
+    io @println t.

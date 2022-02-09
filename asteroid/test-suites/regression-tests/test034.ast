@@ -1,0 +1,9 @@
+
+load system io.
+let a = [1,2,3].
+io @println (a @length()).
+a @append(3).
+a @insert(2,4).
+io @println a.
+a @sort(true).
+io @println a.

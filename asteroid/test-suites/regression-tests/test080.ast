@@ -1,0 +1,6 @@
+
+load system io.
+
+for bird in ["turkey","duck","chicken"] do
+    io @println bird.
+end 

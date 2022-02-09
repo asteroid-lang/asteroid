@@ -6,7 +6,7 @@
 -- provided input you will have to type <CR><Cntrl-D>
 -- Lutz Hamel, (c) University of Rhode Island
 
-load "io".
+load system io.
 load "lexer".
 
 -------------------------------------------------------------------------
@@ -86,7 +86,7 @@ function rootexp
 -- driver part of the script
 
 -- tokenize input
-let input = read().
+let input = io @read().
 let lexer = Lexer(tokenize(input)).
 #println lexer.
 
@@ -97,4 +97,4 @@ if not (lexer @eof()) do
 end
 
 -- print out the final value of the parsed and interpreted expression
-println val.
+io @println val.

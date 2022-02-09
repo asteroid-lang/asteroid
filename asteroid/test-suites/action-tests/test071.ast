@@ -1,0 +1,10 @@
+  load system io.
+  load system math.
+  load system util.
+  load system type.
+
+  let mod = math @mod.
+
+  let array = [2, 4, 18, 9, 16, 7, 10].
+  let odd = array @reduce(lambda with (acc,i) do return i if type @isnone(acc) and mod(i,2) else acc,none).
+  io @println odd.

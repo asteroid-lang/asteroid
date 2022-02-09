@@ -1,0 +1,6 @@
+
+load system io.
+load "util".
+
+io @println ((lambda with n do return n+1) 1).
+assert ((lambda with n do return n+1) 1 is 2).

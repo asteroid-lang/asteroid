@@ -1,0 +1,15 @@
+    load system io.
+
+    structure Person with
+        data name.
+        data age.
+        data gender.
+        function hello
+            with none do
+                io @println ("Hello, my name is "+this @name).
+            end
+        end
+
+    let scarlett = Person("Scarlett",28,"F").
+    -- call the member function
+    scarlett @hello().

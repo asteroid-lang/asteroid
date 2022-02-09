@@ -11,7 +11,7 @@
 load system util.
 
 ------------------------------------------------------------------
-structure Stream
+structure __STREAM__
 ------------------------------------------------------------------
 -- Asteroid stream implementation based on lists
 with
@@ -89,4 +89,19 @@ __retval__ = ('string', term2string(memory[0]))
 "
 end
 
-end -- Stream
+end -- __STREAM__
+
+
+------------------------------------------------------------------
+structure __STREAM_MODULE__
+------------------------------------------------------------------
+with
+
+function stream with l:%list do
+   return __STREAM__(l).
+end
+
+end -- __STREAM_MODULE__
+
+------------------------------------------------------------------
+let stream = __STREAM_MODULE__().

@@ -1,0 +1,10 @@
+
+load system io.
+load "util".
+
+function inc with n do return n+1 end 
+
+let v = inc(inc(0)).
+let q = 1 + 1 + 1.
+io @println (v, q).
+assert ((v, q) is (2,3)).

@@ -1,7 +1,7 @@
 -- implements Peano addition using a lookup table for the rewrite rules
 
 load "util".
-load "io".
+load system io.
 
 structure s with -- successor function constructor
   data x.
@@ -30,4 +30,4 @@ function reduce
         return term.
     end
 
-println (reduce(add(s(s(0)),s(s(s(0)))))).
+io @println (reduce(add(s(s(0)),s(s(s(0)))))).

@@ -1,0 +1,25 @@
+
+-- implements Peano addition on terms
+load system io.
+load "util".
+
+structure S with
+    data x.
+    end 
+    
+structure add with
+    data left.
+    data right.
+    end
+
+function reduce
+    with add(x,0) do      
+        return reduce(x).
+    with add(x,S(y))  do
+        return S(reduce(add(x,y))).
+    with term do     
+        return term.
+    end 
+
+io @println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
+assert(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0))) is S(S(S(S(S(S(S(0)))))))).

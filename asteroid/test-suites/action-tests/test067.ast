@@ -1,0 +1,7 @@
+  load system io.
+
+  let a = [7, 11, 34, 50, 200].
+  let avg = a @reduce(lambda with (x,y) do return x+y)/a @length().
+  io @println avg.
+
+  assert (avg == 60).

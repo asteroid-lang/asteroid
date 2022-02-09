@@ -4,48 +4,42 @@
 -- this module implements the mathematical operators
 -- and constants.
 --
--- (c) Lutz Hamel, University of Rhode Island
+-- (c) University of Rhode Island
 ------------------------------------------------------------------
--- NOTE: escaped Python code can return a value to the parent
---       Asteroid code via the __retval__ return value register.
---       For examples see code below.
---
--- NOTE: 'promote' is the type promotion table for primitive
---       builtin types which implements the type hierarchy:
---
---             integer < real < string and list
-------------------------------------------------------------------
+
+structure __MATH_MODULE__ with
 
 ------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------
+data pi.
+data e.
+data tau.
 
-------------------------------------------------------------------
-let pi = escape
-------------------------------------------------------------------
+function __init__ with none do
+
+let this @pi = escape
 "
 from math import pi
 global __retval__
 __retval__ = ('real',pi)
 "
 
-------------------------------------------------------------------
-let e = escape
-------------------------------------------------------------------
+let this @e = escape
 "
 from math import e
 global __retval__
 __retval__ = ('real',e)
 "
 
-------------------------------------------------------------------
-let tau = escape
-------------------------------------------------------------------
+let this @tau = escape
 "
 from math import tau
 global __retval__
 __retval__ = ('real',tau)
 "
+
+end -- __init__
 
 ------------------------------------------------------------------
 -- Power and logarithmic functions
@@ -466,3 +460,7 @@ x_val = state.symbol_table.lookup_sym('x')
 __retval__ = ('real', math.radians(x_val[1]))
 "
 end
+
+end -- __MATH_MODULE__
+
+let math = __MATH_MODULE__()

@@ -1,0 +1,15 @@
+
+load system io.
+load "util".
+let (f,g) = (1,2).
+
+function foobar 
+    with none do
+        global f, g.
+        let f = 2.
+    end 
+    
+foobar(none).
+io @println (f,g).
+
+assert((f,g) is (2,2)).

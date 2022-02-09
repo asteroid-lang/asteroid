@@ -1,0 +1,33 @@
+
+--------------------------------------
+-- patterns_test20.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+function fact
+    with 0 do
+        return 1
+    with (n:%integer) do   -- Will subsume pattern (n:%integer)
+        return n * fact (n-1).
+    with (n:%integer) do
+        throw Error("factorial is not defined for "+n).
+    end.
+
+try
+    
+    -- Evaluate the function with a test input.
+    let x = fact( 5 ).
+
+    -- If the function test worked, print the output we got.
+    io @println( "The value returned is: " + x ). 
+
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

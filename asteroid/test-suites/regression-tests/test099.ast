@@ -1,0 +1,5 @@
+
+load system io.
+
+let v = 'a@[3].
+io @__raw_print__ v.

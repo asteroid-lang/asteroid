@@ -1,0 +1,72 @@
+    load system io.
+
+    -----------------------------
+    structure Family
+    -----------------------------
+        with
+            data parent1.
+            data parent2.
+            data children.
+
+            function __init__
+                with (p1:%Parent,p2:%Parent,c:%Children) do
+                    let this @parent1 = p1.
+                    let this @parent2 = p2.
+                    let this @children = c.
+                end
+        end
+
+    -----------------------------
+    structure Parent
+    -----------------------------
+        with
+            data name.
+            function __init__
+                with name:%string do
+                    let this @name = name
+                end
+        end
+
+    -----------------------------
+    structure Children
+    -----------------------------
+        with
+            data list.
+
+            function __init__
+                with list:%list do
+                    let this @list = list.
+                end
+        end
+
+    -----------------------------
+    let FP = pattern
+    -----------------------------
+        with Family (Parent p1, Parent p2, Children c).
+
+    -----------------------------
+    function construct_family
+    -----------------------------
+        with (P,p1,p2,c) do
+            return eval P.  -- run pattern in reverse, construct object network.
+        end
+
+    -----------------------------
+    function destructure_family
+    -----------------------------
+        with (P,term) do
+            let *P = term.   -- pattern match, destructure object network.
+            return [p1,p2]+c.
+        end
+
+    -----------------------------
+    -- construct families
+    -----------------------------
+    let f1 = construct_family (FP,"Harry","Bridget",["Sue","Peter"]).
+    let f2 = construct_family (FP,"Margot","Selma",["Latisha","Rudolf"]).
+
+    -----------------------------
+    -- destructure families
+    -----------------------------
+    io @println (destructure_family (FP,f1)).
+    io @println (destructure_family (FP,f2)).

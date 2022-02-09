@@ -1,0 +1,10 @@
+load system io.
+
+structure A with
+	data x.
+	end
+
+assert(A(0) is %A).
+assert(3 is %integer).
+assert(not(3 is %A)).
+assert(not(A(0) is %integer)).

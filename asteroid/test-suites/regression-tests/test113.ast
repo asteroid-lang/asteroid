@@ -1,0 +1,14 @@
+-- Bitwise operations regression test
+load system bitwise.
+
+assert(bitwise @band(2,4) == 0).
+assert(bitwise @bor(2,4)  == 6).
+assert(bitwise @bnot(2)   == -3).
+assert(bitwise @bxor(15,3) == 12).
+assert(bitwise @brshift(32,2) == 8).
+assert(bitwise @blshift(2,4)   == 32).
+assert(bitwise @blrotate(242, 1) == 229).
+assert(bitwise @brrotate(242, 1) == 121).
+assert(bitwise @bsetbit(10,2) == 14).
+assert(bitwise @bclearbit(5,1) == 4).
+assert(bitwise @bsize(8) == 4).

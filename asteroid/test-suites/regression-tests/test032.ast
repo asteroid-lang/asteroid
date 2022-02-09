@@ -1,0 +1,7 @@
+
+load system io.
+
+function addc with x do return lambda with y do return x + y end
+let a = (addc 1) 1.
+io @println a.
+assert(a is 2).

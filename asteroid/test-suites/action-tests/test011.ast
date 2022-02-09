@@ -1,0 +1,21 @@
+  load system io.
+
+  function title with w do
+      let letter_list = w @tolower()
+                          @explode().
+      let first_letter = letter_list @0
+                                     @toupper().
+      if letter_list @length() > 1 do
+          let title_case = ([first_letter] + letter_list @[1 to letter_list@length()-1]) @join("").
+      else
+          let title_case = first_letter.
+      end
+      return title_case.
+  end
+
+  let str = "once upon a time".
+  let camel_str = str @split()
+                      @map(title)
+                      @join("").
+  io @println camel_str.
+  assert(camel_str == "OnceUponATime").

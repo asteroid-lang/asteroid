@@ -1,0 +1,7 @@
+    load system io.
+
+    try
+        throw Exception("MyException","something worth throwing").
+    catch Exception("MyException",s) do
+        io @println s.
+    end

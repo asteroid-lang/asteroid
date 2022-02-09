@@ -1,0 +1,7 @@
+    load system io.
+    -- build a 2-D array
+    let b = (("a","b","c"),
+             ("d","e","f"),
+             ("g","h","i")).
+    -- Access an element in the nested structure.
+    io @println(b @1 @1).

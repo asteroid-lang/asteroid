@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="asteroid-lang",
-    version="0.1.0",
+    version="1.x.x",
     author="University of Rhode Island",
     author_email="lutzhamel@uri.edu",
     description="A pattern-matching oriented programming language.",
