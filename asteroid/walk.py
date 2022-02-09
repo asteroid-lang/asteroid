@@ -1437,36 +1437,36 @@ def to_list_exp(node):
     (TOLIST,
      (START, start),
      (STOP, stop),
-     (STEP, step)) = node
+     (STRIDE, stride)) = node
 
     assert_match(TOLIST, 'to-list')
     assert_match(START, 'start')
     assert_match(STOP, 'stop')
-    assert_match(STEP, 'step')
+    assert_match(STRIDE, 'stride')
 
     (START_TYPE, start_val, *_) = walk(start)
     (STOP_TYPE, stop_val, *_) = walk(stop)
-    (STEP_TYPE, step_val, *_) = walk(step)
+    (STRIDE_TYPE, stride_val, *_) = walk(stride)
 
-    if START_TYPE != 'integer' or STOP_TYPE != 'integer' or STEP_TYPE != 'integer':
-        raise ValueError("only integer values allowed in start, stop, or step")
+    if START_TYPE != 'integer' or STOP_TYPE != 'integer' or STRIDE_TYPE != 'integer':
+        raise ValueError("only integer values allowed in start, stop, or stride")
 
     out_list_val = []
 
-    # If our step val is > 0
-    if int(step_val) > 0: # generate the list
+    # If our stride val is > 0
+    if int(stride_val) > 0: # generate the list
         # Get the [i]nitial inde[x] and [e]nd inde[x]
         ix = int(start_val)
         ex = int(stop_val)
 
-        # Get the step_val
-        step_val = int(step_val)
+        # Get the stride_val
+        stride_val = int(stride_val)
 
-        # Change the direction of the step value based on the 
+        # Change the direction of the stride value based on the 
         # ends of the range. I.e. 5->1 has an implicit direction
         # of -1, 1->5 has a direction of +1
         direction = (1 if ix < ex else -1)
-        step_val *= direction
+        stride_val *= direction
 
         # We need to modify the ending index to acccount for python
         # ranges. For example, for 1->10 we want range(1, 10 + 1).
@@ -1474,17 +1474,17 @@ def to_list_exp(node):
         # us the full inclusive range. Thus, we can just add our
         # direction
         new_ex = ex + direction
-        for i in range(ix, new_ex, step_val):
+        for i in range(ix, new_ex, stride_val):
             out_list_val.append( ('integer', i) )
 
-    elif int(step_val) == 0: # error
-        raise ValueError("step size of 0 not supported")
+    elif int(stride_val) == 0: # error
+        raise ValueError("stride size of 0 not supported")
 
-    elif int(step_val) < 0: # generate the list
-        raise ValueError("negative step sizes are not supported")
+    elif int(stride_val) < 0: # generate the list
+        raise ValueError("negative stride sizes are not supported")
 
     else:
-        raise ValueError("{} not a valid step value".format(step_val))
+        raise ValueError("{} not a valid stride value".format(stride_val))
 
     return ('list', out_list_val)
 
