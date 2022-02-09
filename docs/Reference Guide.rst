@@ -1,3 +1,11 @@
+
+
+
+
+..
+   *** DO NOT EDIT; MACHINE GENERATED ***
+
+
 .. highlight:: none
 
 Asteroid Reference Guide
@@ -7,13 +15,15 @@ Language Syntax
 ---------------
 
 The following is the complete grammar for the Asteroid language. Capitalized
-words are either keywords or tokens such as ``STRING`` or ``ID``.  Non-terminals
+words are either keywords such as ``FOR`` and ``END`` or tokens such as ``STRING`` and ``ID``.  Non-terminals
 are written in all lowercase letters.  The grammar utilizes an extended BNF notation
 where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit and
 ``<syntactic unit>+`` means one or more occurrences of the syntactic unit. Furthermore,
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
+
+
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -25,7 +35,7 @@ are written in quotes.
 
   stmt
     : '.' // NOOP
-    | LOAD SYSTEM? STRING '.'?
+    | LOAD SYSTEM? (STRING | ID) '.'?
     | GLOBAL id_list '.'?
     | NONLOCAL id_list '.'?
     | ASSERT exp '.'?
@@ -66,13 +76,7 @@ are written in quotes.
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-
-  ////////////////////////////////////////////////////////////////////////////////////////
-  // NOTE: There is no syntactic difference between a pattern
-  // and an expression. We introduce the 'pattern' nonterminal
-  // to highlight the SEMANTIC difference between patterns and
-  // expressions.
-
+  
   pattern
     : exp
 
@@ -82,21 +86,22 @@ are written in quotes.
   quote_exp
     : QUOTE exp
     | PATTERN WITH? exp
-    | '%[' exp ']%'      // constraint-only pattern match
+    | '%[' exp ']%'      
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
+  
   conditional
     : compound (IF exp (ELSE exp)?)?
 
   compound
     : logic_exp0
         (
-          (IS pattern) |
-          (IN exp) |               // exp has to be a list
-          (TO exp (STEP exp)?) |   // list comprehension
+           (IS pattern) |
+           (IN exp) |               
+           (TO exp (STEP exp)?) |   
         )?
 
   logic_exp0
@@ -118,8 +123,11 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  // named pattern when ': pattern' exists
+    : primary (primary | '@' primary)* (':' pattern)?  
 
+  ////////////////////////////////////////////////////////////////////////////////////////
+  // primary expressions/patterns
+  
   primary
     : INTEGER
     | REAL
@@ -128,14 +136,14 @@ are written in quotes.
     | FALSE
     | NONE
     | ID
-    | '*' ID         // "dereference" a variable during pattern matching
+    | '*' ID         
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    | '[' list_stuff ']'  // list or list access
+    | '(' tuple_stuff ')' 
+    | '[' list_stuff ']'  
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
@@ -150,11 +158,13 @@ are written in quotes.
   function_const
     : LAMBDA body_defs
 
+
+
 Builtin Functions
 -----------------
 
 * Function ``len``, when given an input value, returns the length of that input. The
-function can only be applied to lists, strings, tuples, or structures.
+  function can only be applied to lists, strings, tuples, or structures.
 
 * Function ``hd``, when given a list as input returns the first element of that list.
   It is an error to apply this function to an empty list.
@@ -164,14 +174,14 @@ function can only be applied to lists, strings, tuples, or structures.
 
 * Function ``range`` will compute a list of values depending on the input values:
 
-  #. ``(start:%integer,stop:%integer)`` returns list ``[start to stop-1]``.
-  #. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 step inc]``.
-  #. ``(stop:%integer)`` returns list ``[0 to stop-1]``.
+  1. ``(start:%integer,stop:%integer)`` returns list ``[start to stop-1]``.
+  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 step inc]``.
+  3. ``(stop:%integer)`` returns list ``[0 to stop-1]``.
 
 * Function ``getid`` returns the id (physical memory address) of any Asteroid object as an Asteroid integer.
 
 * Function ``isdefined`` returns true if a variable or type name is defined in the
-current environment otherwise it returns false. The variable or type name must be given as a string.
+  current environment otherwise it returns false. The variable or type name must be given as a string.
 
 List and String Objects
 -----------------------
@@ -182,9 +192,9 @@ Lists
 ^^^^^
 
 A **list** is a structured data type that consists of square brackets enclosing
-comma-separated values. Lists can be modified after their creation.
-Member functions on lists can be called on the data structure directly, e.g.,
-::
+comma-separated values.
+Member functions on lists can be called on the data structure directly, e.g.::
+
    [1,2,3] @length()
 
 * Function ``length`` returns the number of elements within that list.
@@ -196,15 +206,15 @@ Member functions on lists can be called on the data structure directly, e.g.,
 * Function ``clear``, given ``(none)``, removes all items from the list.
 * Function ``index`` returns a zero-based index in the list of the first element whose value is equal to ``(item)``. It raises a ValueError exception if there is no such item. The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the ``(startix)`` argument.   This function can be called with several input configurations:
 
-  #. ``(item,loc(startix:%integer,endix:%integer))``
-  #. ``(item,loc(startix:%integer))``
-  #. ``item``
+  1. ``(item,loc(startix:%integer,endix:%integer))``
+  2. ``(item,loc(startix:%integer))``
+  3. ``item``
 
 * Function ``count``, given ``(item)``, returns the number of times ``(item)`` appears in the list.
 * Function ``sort`` sorts the items of the list in place. It can be called with several different inputs:
 
-  #. ``(reverse:%boolean)`` if the boolean is set to true then the sorted list is reversed.
-  #. ``none`` returns the reverse list.
+  1. ``(reverse:%boolean)`` if the boolean is set to true then the sorted list is reversed.
+  2. ``none`` returns the reverse list.
 
 * Function ``reverse``, reverses the elements of the list in place.
 * Function ``copy``, makes a shallow copy of the list.
@@ -213,15 +223,15 @@ Member functions on lists can be called on the data structure directly, e.g.,
 * Function ``reduce`` reduces the value of elements in a list. This
   function can be called with several different inputs:
 
-  #. Input ``(f:%function)`` returns ``value``, such that ``value = f(value,this@i)``.
-  #. Input ``(f:%function,init)`` returns the same format but uses ``init`` as an initial value.
+  1. Input ``(f:%function)`` returns ``value``, such that ``value = f(value,this@i)``.
+  2. Input ``(f:%function,init)`` returns the same format but uses ``init`` as an initial value.
 
   The first argument to ``f`` is the accumulator.
 
 * Function ``filter``, given ``(f:%function)``, constructs an output list from those elements of the list for which ``f`` returns true. If ``f`` is none, the identity function is assumed, that is, all elements of the input list that are false are removed.
 * Function ``member``, given ``(item)``, returns true only if ``item`` exists on the list.
 * Function ``join``, given ``(join:%string)``, turns the list into a string using ``join`` between the elements.  The string is returned
-as the return value from this function.
+  as the return value from this function.
 
 
 See the `Prologue module <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/prologue.ast>`_ for more on all the functions above.
@@ -232,8 +242,8 @@ Strings
 
 A string is a sequence of characters that can be used as a variable or a literal constant.
 Similar to lists the member functions of strings can be called directly on the
-data structure itself, e.g.
-::
+data structure itself, e.g.::
+
    "Hello there" @length()
 
 * Function ``length`` returns the number of characters within that string.
@@ -245,24 +255,21 @@ data structure itself, e.g.
   * ``(old:%string,new:%string)``
 
 * Function ``split`` will return a list of the words in a given string, using ``sep`` as the delimiter string. If ``maxsplit`` is given: at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
-
   If ``sep`` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, ``"1,,2"@split(",")`` returns ``["1", "", "2"]``). The ``sep`` argument may consist of multiple characters (for example, ``"1<>2<>3"@split("<>")`` returns ``["1", "2", "3"]``). Splitting an empty string with a specified separator returns ``[""]``.
-
   If ``sep`` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns ``[]``.
-
   Function ``split`` can be called with several different inputs:
 
-  #. Input ``(sep:%string,count:%integer)``
-  #. Input ``(sep:%string)``
-  #. Input ``(none)``
+  1. Input ``(sep:%string,count:%integer)``
+  2. Input ``(sep:%string)``
+  3. Input ``(none)``
 
 * Function ``toupper``, converts all the lowercase letters in a string to uppercase.
 * Function ``tolower``, converts all the uppercase letters in a string to lowercase.
 * Function ``index`` allows the user to search for a given ``item`` in a list. It returns an integer index into the string or ``none`` if ``item`` was not found.  The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular substring of the string. The returned index is computed relative to the beginning of the full string rather than the ``(startix)`` argument.The function can be called with several different inputs:
 
-  #. Input ``(item:%string,loc(startix:%integer,endix:%integer))``
-  #. Input ``(item:%string,loc(startix:%integer))``
-  #. Input ``(item:%string)``
+  1. Input ``(item:%string,loc(startix:%integer,endix:%integer))``
+  2. Input ``(item:%string,loc(startix:%integer))``
+  3. Input ``(item:%string)``
 
 * Function ``flip`` reverses a string.
 
@@ -272,7 +279,13 @@ See the `Prologue module <https://github.com/asteroid-lang/asteroid/blob/master/
 Asteroid Modules
 ----------------
 
-There are a number of predefined modules that can be loaded into an Asteroid program using ``load system <module name>``.
+There are a number of system modules that can be loaded into an Asteroid program using ``load system <module name>``.
+The modules are implemented as objects where all the functions of that module are
+member functions of that module object. For example, in the case of the ``io`` module
+we have ``println`` as one of the member functions.  To call that function::
+
+   load system io.
+   io @println "Hello there!".  -- println is a member function of the io module
 
 Bitwise
 ^^^^^^^
@@ -305,9 +318,9 @@ IO
 
 The `io <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/io.ast>`_ module implements Asteroid's I/O system. The module defines three default streams,
 
-#. ``__STDIN__`` - the standard input stream.
-#. ``__STDOUT__`` - the standard output stream.
-#. ``__STDERR__`` - the standard error stream.
+1. ``__STDIN__`` - the standard input stream.
+2. ``__STDOUT__`` - the standard output stream.
+3. ``__STDERR__`` - the standard error stream.
 
 Furthermore, the module supports the following functions,
 
@@ -326,24 +339,32 @@ Math
 
 The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/math.ast>`_ module implements mathematical constants and functions. It supports the following functions,
 
+*Power and logarithmic functions*
+
 * Function ``exp``, given ``x:%integer``, returns e raised to the power ``x``, where e = 2.718281… is the base of natural logarithms.
 * Function ``log`` can be called with two different argument setups,
 
-  #. If only one argument, ``(x)``, is input, this returns the natural logarithm of x (to base e).
-  #. If two arguments, ``(x,base)``, are input, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
+  1. If only one argument, ``(x)``, is input, this returns the natural logarithm of x (to base e).
+  2. If two arguments, ``(x,base)``, are input, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
 
 * Function ``pow``, given ``(b,p:%integer)``, returns "b <sup>p</sup>" as long as b is either ``real`` or ``integer``.
 * Function ``sqrt``, given ``a``, returns its square root as long as ``a`` is either ``real`` or ``integer``.
+
+*Number-theoretic and representation functions*
+
 * Function ``abs``, given ``x``, returns its absolute value.
 * Function ``ceil``, given ``x:%real``, returns the ceiling of x: the smallest integer greater than or equal to x.
 * Function ``floor``, given ``x:%real``, returns the floor of x: the largest integer less than or equal to x.
 * Function ``gcd``, given ``(a:%integer,b:%integer)``, returns the greatest common denominator that both integers share.
 * Function ``isclose`` can be called with two different argument setups,
 
-  #. With input values ``(a,b)``, it returns returns ``true`` if the two values are close to each other and ``False`` otherwise. Default tolerance 1e-09.
-  #. With input values ``(a,b,t)``, it compares ``a`` and ``b`` with tolerance ``t``.
+  1. With input values ``(a,b)``, it returns returns ``true`` if the two values are close to each other and ``False`` otherwise. Default tolerance 1e-09.
+  2. With input values ``(a,b,t)``, it compares ``a`` and ``b`` with tolerance ``t``.
 
 * Function ``mod``, given ``(v,d)``, will return the remainder of the operation ``v/d``, as long as ``v`` and ``d`` are either ``real`` or ``integer`` values.
+
+*Trigonometric functions*
+
 * Function ``acos``, given ``x``, returns the arc cosine of x in radians. The result is between 0 and pi.
 * Function ``asin``, given ``x``, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
 * Function ``atan``, ,given ``x``, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
@@ -359,10 +380,33 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``degrees``, given ``x``, converts angle ``x`` from radians to degrees.
 * Function ``radians``,  given ``x``, converts angle ``x`` from degrees to radians.
 
+An example,
+::
+
+    load system io.
+    load system math.
+
+    let x = math @sin( math @pi / 2 ).
+    io @println("The sine of pi / 2 is " + x + ".").
+
+
 Pick
 ^^^^
 
-The `pick <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/pick.ast>`_ module implements the to randomly pick objects from a list of objects. A ``Pick`` object contains a list of items that can be randomly picked from using the ``pick`` member function. The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
+The `pick <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/pick.ast>`_ module implements
+pick objects that allow a user to randomly pick items from a list using the ``pick`` function.
+The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
+Here is a simple use case
+::
+
+   load system io.
+   load system pick.
+
+   let po = pick @pick([1 to 10]).
+   let objects = po @pick(3).
+   io @println objects.
+   
+
 
 Random
 ^^^^^^
@@ -372,9 +416,9 @@ The `random <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/
 * Function ``random``, given the input ``none``, returns a random floating point number in the range ``[0.0, 1.0)``.
 * Function ``randint`` returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval. It can be called with two different number interval inputs:
 
-  #. ``(lo:%integer,hi:%integer)``
-  #. ``(lo:%real,hi:%real)``
-  #. Note: any other interval specification will instead output an error message for "unsupported interval specification in randint."
+  1. ``(lo:%integer,hi:%integer)``
+  2. ``(lo:%real,hi:%real)``
+  3. Note: any other interval specification will instead output an error message for "unsupported interval specification in randint."
 
 * Function ``seed``, given ``(sd:%integer)``, provides a seed value for the random number generator.
 
@@ -384,10 +428,10 @@ Set
 The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/set.ast>`_ module implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
 
 * Function ``toset``, given ``(lst:%list)``, converts the input list into a set.
-* Function ``sdiff``, given ``(a:%list,b:%list)``, computes the difference set between the two set ``a`` and ``b``.
-* Function ``sintersection``, given ``(a:%list,b:%list)``, finds the intersection between  sets ``a`` and ``b``.
-* Function ``sunion``, given ``(a:%list,b:%list)``, computes the union of sets ``a`` and ``b``.
-* Function ``sxunion``, given ``(a:%list,b:%list)``, returns all elements in ``a`` or ``b``, but not in both.
+* Function ``diff``, given ``(a:%list,b:%list)``, computes the difference set between the two set ``a`` and ``b``.
+* Function ``intersection``, given ``(a:%list,b:%list)``, finds the intersection between  sets ``a`` and ``b``.
+* Function ``union``, given ``(a:%list,b:%list)``, computes the union of sets ``a`` and ``b``.
+* Function ``xunion``, given ``(a:%list,b:%list)``, returns all elements in ``a`` or ``b``, but not in both.
 
 Sort
 ^^^^
@@ -396,30 +440,52 @@ The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 defines a parameterized ``sort`` function over a list.
 The ``sort`` function makes use of a user-defined order predicate on the list's elements to
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
-Here is a simple example example:
+The following is a simple example,
 ::
-  sort((lambda with (x,y) do return true if x<y else false),
-       [10,5,110,50]).
 
-returns the sorted list,
-::
+   load system io.
+   load system sort.
+   let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
+                       [10,5,110,50]).
+    io @println sl.
+
+
+prints the sorted list::
+
   [5,10,50,110]
 
 Stream
 ^^^^^^
 
-The `stream <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/stream.ast>`_ module implements a ``Stream`` structure. The ``Stream`` structure allows the developer to turn any list into a stream supporting interface functions like ``peeking`` ahead or ``rewinding`` the stream.  In order
-to construct a stream call the constructor on a list, e.g., ``Stream([1,2,3])``.  The following stream
-interface functions are available,
+The `stream <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/stream.ast>`_ module implements streams that allow
+the developer to turn any list into a stream supporting interface functions like ``peeking`` ahead or ``rewinding`` the stream.
+The following stream interface functions are available,
 
 * Function ``eof`` returns ``true`` if the stream does not contain any further elements for processing. Otherwise it returns ``false``.
-* Function ``peek`` returns the next element available on the stream otherwise it returns ``none``.
-* Function ``next`` returns the next element available on the stream and moves the implicit stream pointer forward.  If the stream is at the ``eof`` then it returns ``none``.
-* Function ``get`` is synonymous to ``peek``.
+* Function ``peek`` returns the current element available on the stream otherwise it returns ``none``.
+* Function ``get`` returns the current element and moves the stream pointer one ahead.
 * Function ``rewind`` resets the stream pointer to the first element of the stream.
 * Function ``map`` applies a given function to each element in the stream.
 * Function ``append``, given ``item``, adds item to the end of the stream.
 * Function ``__string__`` maps a the stream to a string representation.
+
+A simple use case.
+::
+
+   load system io.
+   load system stream.
+
+   let s = stream @stream([1 to 10]).
+   while not s @ eof() do
+      io @ print (s @get()+" ").
+   end
+   io @println ("").
+   
+
+which outputs::
+
+   1 2 3 4 5 6 7 8 9 10
+
 
 Type
 ^^^^
@@ -430,20 +496,55 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``tointeger`` converts a given input to an integer. It can be called with two different arguments,
 
-  #. ``(item:%string,base:%integer)`` where ``base`` is a valid base for integer conversion
-  #. ``item`` where ``item`` is converted to a base 10 integer.
+  1. ``(item:%string,base:%integer)`` where ``base`` is a valid base for integer conversion
+  2. ``item`` where ``item`` is converted to a base 10 integer.
 
 
 * Function ``toreal``, given ``item``, returns the input as a real number data type.
 * Function ``toboolean``, given ``item``, returns the input as a Boolean value of either true or false.
 * Function ``tostring`` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs where ``*TP`` indicates a``boolean``, ``integer``, or ``string`` type and ``w`` is the width specification and ``p`` is the precision specification.  When no formatting information is provided a default string conversion occurs,
 
-  #. ``(v:*TP,stringformat(w:%integer))``
-  #. ``(v:%real,stringformat(w:%integer))``
-  #. ``(v:%real,stringformat(w:%integer,p:%integer))``
-  #. ``item`` - default conversion
+  1. ``(v:*TP,type @stringformat(w:%integer))``
+  2. ``(v:%real,type @stringformat(w:%integer))``
+  3. ``(v:%real,type @stringformat(w:%integer,p:%integer))``
+  4. ``item`` - default conversion
 
 * Function ``tobase`` represents the given integer ``x`` (*specifically* within the given input ``(x:%integer,base:%integer)``) as a string in the given base.
+
+Here is a program that exercises some of the string formatting options,
+::
+
+    load system io.
+    load system type.
+    load system math.
+
+    -- if the width specifier is larger than the length of the value
+    -- then the value will be right justified
+    let b = type @tostring(true,type @stringformat(10)).
+    io @println b.
+
+    let i = type @tostring(5,type @stringformat(5)).
+    io @println i.
+
+    -- we can format a string by applying tostring to the string
+    let s = type @tostring("hello there!",type @stringformat(30)).
+    io @println s.
+
+    -- for floating point values: first value is width, second value precision.
+    -- if precision is missing then value is left justified and zero padded on right.
+    let r = type @tostring(math @pi,type @stringformat(6,3)).
+    io @println r.
+
+
+The output of the program is,
+::
+
+          true
+        5
+                      hello there!
+     3.142
+
+Notice the right justification of the various values within the given string length.
 
 
 *Type Query Functions*
@@ -453,6 +554,14 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``isnone`` returns ``true`` if given ``item`` is equal to the value ``none``.
 * Function ``gettype`` returns the type of a given ``item`` as an Asteroid string.
 
+A simple example program using the ``gettype`` function,
+::
+
+   load system type.
+
+   let i = 1.
+   assert(type @gettype(i) == "integer").
+   
 
 Util
 ^^^^
@@ -461,8 +570,8 @@ The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``exit`` exits the program. It can be called with two inputs,
 
-  #. ``none``
-  #. ``msg:%string``
+  1. ``none``
+  2. ``msg:%string``
 
 * Function ``copy``, given Asteroid object ``obj``, makes a deep copy of it.
 * Function ``cls`` clears the terminal screen.
@@ -477,12 +586,27 @@ Vector
 
 The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/vector.ast>`_ defines functions useful for vector arithmetic. It supports the following functions.  Here ``a`` and ``b`` are vectors implemented as lists,
 
-* Function ``vadd``, given the input ``(a,b)``, returns a vector that contains the element by element sum of the input vectors.
-* Function ``vsub``, given the input ``(a,b)``, returns the element by element difference vector.
-* Function ``vmult``, given the input ``(a,b)``, returns the element by element vector multiplication.
+* Function ``add``, given the input ``(a,b)``, returns a vector that contains the element by element sum of the input vectors.
+* Function ``sub``, given the input ``(a,b)``, returns the element by element difference vector.
+* Function ``mult``, given the input ``(a,b)``, returns the element by element vector multiplication.
 * Function ``dot``, given ``(a,b)``, computes the dot product of the two vectors.
-* Function ``vop``  allows the developer to vectorize an function. It can be called with three different inputs:
+* Function ``op``  allows the developer to vectorize any function. It can be called with three different inputs:
 
-  #. ``(f:%function,a:%list,b:%list)``
-  #. ``(f:%function,a:%list,b if isscalar(b))``
-  #. ``(f:%function,a if isscalar(a),b:%list)``
+  1. ``(f:%function,a:%list,b:%list)``
+  2. ``(f:%function,a:%list,b if type @isscalar(b))``
+  3. ``(f:%function,a if type @isscalar(a),b:%list)``
+
+Here is a simple example program for the ``vector`` module,
+::
+
+   load system io.
+   load system vector.
+
+   let a = [1,0].
+   let b = [0,1].
+
+   io @println (vector @dot (a,b)).
+   
+
+which prints the value ``0``.
+

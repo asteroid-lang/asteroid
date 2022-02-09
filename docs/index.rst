@@ -17,6 +17,6 @@ Contents
    :maxdepth: 1
 
    Installing and Running
-   Asteroid User Guide
+   User Guide
    Reference Guide
    Asteroid in Action

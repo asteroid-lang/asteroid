@@ -1,0 +1,27 @@
+
+load system io.
+load "util".
+
+structure A with
+
+    data x.
+    data y.
+
+    function __init__
+      with (a,b) do
+        let this @x = a.
+        let this @y = b.
+      with none do
+        let this @x = 1.
+        let this @y = 2.
+      end 
+    end 
+
+let obj1 = A("hello","world").
+io @println obj1.
+let obj2 = A().
+io @println obj2.
+
+assert((obj1 @x is "hello") and (obj1 @y is "world")).
+assert((obj2 @x is 1) and (obj2 @y is 2)).
+

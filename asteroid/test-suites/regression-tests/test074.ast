@@ -1,0 +1,17 @@
+
+load "util".
+load system io.
+
+structure MyError with 
+    data e.
+    end 
+
+try
+
+    throw Error "--- error ---".
+    
+catch Error(msg) do
+    io @println msg.
+    assert (msg == "--- error ---")
+end 
+

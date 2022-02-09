@@ -1,0 +1,13 @@
+
+load system io.
+load "util".
+
+function ident 
+    with n do 
+        return n 
+    end  
+
+let y = ident ident  0.
+
+io @println y.
+assert (y is 0).

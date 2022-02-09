@@ -1,0 +1,9 @@
+   load system io.
+
+   let POS_INT = pattern %[v if (v is %integer) and v > 0]%.
+
+   function add with (a:*POS_INT,b:*POS_INT) do
+      return a+b.
+   end
+
+   io @println (add(1,2)).

@@ -1,0 +1,11 @@
+
+load system io.
+let a = "abcde".
+let i = a @1.
+io @println i.
+let b = a @[0,2,4].
+io @println b.
+let i = a @length().
+io @println i.
+let e = a @explode().
+io @println e.

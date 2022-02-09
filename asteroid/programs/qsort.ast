@@ -1,7 +1,7 @@
 -- the quick sort
 -- (c) Lutz Hamel, University of Rhode Island
 
-load "io".
+load system io.
 
 function qsort
     with [] do
@@ -24,4 +24,4 @@ function qsort
     end
 
 -- print the sorted list
-println (qsort [3,2,1,0])
+io @println (qsort [3,2,1,0])

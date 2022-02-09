@@ -1,0 +1,7 @@
+
+load system io.
+load "util".
+
+let true = ('1 + 2) is x + y.
+io @println (x,y).
+assert ((x,y) is (1,2)).

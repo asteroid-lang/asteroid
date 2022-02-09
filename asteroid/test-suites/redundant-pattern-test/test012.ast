@@ -1,0 +1,31 @@
+
+--------------------------------------
+-- patterns_test11.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+function test_function 
+  with ".*q.*" do               
+    return "Found a p.".
+  with ".*http.*" do          -- RE ".*http.*" will match to all ".*https.*" patterns
+    return "Found a url.".
+  with ".*https.*" do         --Redundant
+    return "Found a secure url.".
+  with ".*z.*" do
+    return "Found a z.".
+  end.
+
+try
+    
+  let var = test_function( "test string z" ).
+  io @println ( var ).
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

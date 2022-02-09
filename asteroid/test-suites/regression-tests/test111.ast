@@ -1,0 +1,10 @@
+load system io.
+
+let entries = [(1,2), (3,4),(5,6)].
+
+function foo
+	with (x,y) do
+		return (y,x).
+		end
+
+io @println(entries @map(foo)). 

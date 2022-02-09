@@ -1,12 +1,15 @@
 ------------------------------------------------------------------
--- Asteroid DataFrames implemented using Python's Pandas lib.
+-- Defines the Asteroid DataFrames structure.
 --
 -- TODO: this is more of a proof of concept implementation
 -- demonstrating that we can have objects with escaped
 -- implementations.  DataFrames needs lots more functionality.
 ------------------------------------------------------------------
 
-structure DataFrame with
+------------------------------------------------------------------
+structure __DATAFRAME__
+------------------------------------------------------------------
+with
 
 ------------------------------------------------------------------
 data df.
@@ -156,4 +159,18 @@ this_val = state.symbol_table.lookup_sym('this')
 __retval__ = ('integer', df_val.shape[1])
 "
 end
-end -- structure
+end -- __DATAFRAME__
+
+------------------------------------------------------------------
+structure __DATAFRAME_MODULE__
+------------------------------------------------------------------
+with
+
+function dataframe with none do
+  return __DATAFRAME__().
+end
+
+end -- __DATAFRAME_MODULE__
+
+------------------------------------------------------------------
+let dataframe = __DATAFRAME_MODULE__().

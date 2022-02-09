@@ -1,0 +1,8 @@
+
+load system io.
+structure A with
+    data a.
+    end
+
+let A(x:%string) = A("hello").
+io @println x.

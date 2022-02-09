@@ -1,0 +1,4 @@
+
+load system io.
+let fst = (1,2)@0.
+io @println fst.

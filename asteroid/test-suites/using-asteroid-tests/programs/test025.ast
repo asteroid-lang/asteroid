@@ -1,7 +1,0 @@
-
-load "io".
-
-let n = 3.
-let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
-println fact.
-assert (fact == 6).

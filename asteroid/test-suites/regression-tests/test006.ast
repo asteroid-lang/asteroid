@@ -1,0 +1,5 @@
+
+load system io.
+let r = [1,2,3] @map (lambda with x do return x+1).
+io @println r.
+assert (r == [2,3,4]).

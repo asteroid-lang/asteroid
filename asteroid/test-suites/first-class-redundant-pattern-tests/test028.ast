@@ -1,0 +1,47 @@
+
+--------------------------------------
+-- patterns_test27.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+structure Dog
+  with
+    data name.
+    data tricks.
+
+    function __init__
+      with *ptrn1 do -- Will subsume all matches for (self, name, [])
+        let this@name = name.
+        let this@tricks = tricks.
+      with *ptrn2 do  -- Redundant Constructor 
+        let this@name = name.
+        let this@tricks = [].
+      with *ptrn3 do
+        let this@name = name.
+        let this@tricks = [].
+      end
+
+    function add_trick
+      with new_trick do
+        let this@tricks = this@tricks + [new_trick].
+      end
+  end
+
+let ptrn1 = pattern with (name, tricks).
+let ptrn2 = pattern with (name, []).
+let ptrn3 = pattern with name.
+
+try      
+    
+  -- Fido the dog
+  let fido = Dog("Fido").
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

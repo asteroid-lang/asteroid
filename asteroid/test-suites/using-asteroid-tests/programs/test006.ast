@@ -1,4 +1,0 @@
-
-load "io".
-load "util".
-println (len("Hello!")).

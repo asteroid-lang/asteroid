@@ -1,41 +1,43 @@
 -- guess that number game from http://inventwithpython.com/invent4thed/
 -- written by Lutz Hamel, (c) University of Rhode Island
 
-load "io".
-load "util".
-load "random".
-load "type".
+load system io.
+load system util.
+load system random.
+load system type.
 
-println "".
-println "     \||||||||||||||||||/".
-println "    - Guess that Number -".
-println "     /||||||||||||||||||\".
-println "".
+random @seed(42). -- make it predictable
+
+io @println "".
+io @println "     \||||||||||||||||||/".
+io @println "    - Guess that Number -".
+io @println "     /||||||||||||||||||\".
+io @println "".
 
 
-let name = input("Hello! What is your name? ").
+let name = io @input("Hello! What is your name? ").
 let guesses_made = 0.
-let number = randint(1, 20).
+let number = random @randint(1, 20).
 
-println (name + ", I am thinking of a number between 1 and 20, can you guess it?").
+io @println (name + ", I am thinking of a number between 1 and 20, can you guess it?").
 
 while guesses_made < 6 do
-    let guess = tointeger(input("Take a guess: ")).
+    let guess = type @tointeger(io @input("Take a guess: ")).
     let guesses_made = guesses_made + 1.
 
     if guess < number do
-        println "Your guess is too low."
+        io @println "Your guess is too low."
     elif guess > number do
-        println "Your guess is too high."
+        io @println "Your guess is too high."
     elif guess == number do
         break.
     end
 end
 
 if guess == number do
-    println ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
+    io @println ("Good job, " + name + "! You guessed my number in " + guesses_made + " guesses!").
 else do
-    println ("Nope. The number I was thinking of was " + number).
+    io @println ("Nope. The number I was thinking of was " + number).
 end
 
-println "".
+io @println "".

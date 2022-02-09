@@ -1,0 +1,7 @@
+    load system io.
+
+    -- note 1+1 evaluates to 2 and is then matched
+    -- the variables x and y are bound to 1 and 3, respectively,
+    -- via pattern matching
+    let [x,2,y] = [1+0,1+1,1+2].
+    io @println (x,y).

@@ -1,0 +1,16 @@
+
+load system io.
+
+structure A with
+    data x.
+    function dump with none do io @println (this@x) end .
+    end 
+
+let obj = A(2).
+obj @dump().
+
+let A(x) = obj.
+io @println x.
+
+assert(x is 2).
+

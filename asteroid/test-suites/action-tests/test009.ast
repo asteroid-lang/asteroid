@@ -1,0 +1,7 @@
+  load system io.
+
+  let str = "Hello, World!" @explode()
+                            @reverse()
+                            @join("").
+  io @println str.
+  assert(str == "!dlroW ,olleH").

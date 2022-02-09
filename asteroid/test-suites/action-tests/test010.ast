@@ -1,0 +1,5 @@
+  load system io.
+  let str = "   Hello  ,   World    !   " @trim()
+                                          @replace("  ","").
+  io @println str.
+  assert(str == "Hello, World!").

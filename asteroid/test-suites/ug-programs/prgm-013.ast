@@ -1,0 +1,10 @@
+    load system io.
+
+    -- build a 2-D array
+    let b = [[1,2,3],
+             [4,5,6],
+             [7,8,9]].
+
+    -- modify an element in the array
+    let b @1 @1 = 0.
+    io @println b.

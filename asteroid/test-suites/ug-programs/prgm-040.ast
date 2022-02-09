@@ -1,0 +1,6 @@
+    load system io.
+    let P = pattern ([a],[b]).
+    let a = 1.
+    let b = 2.
+    let v = eval P. -- use pattern to construct a value
+    io @println v.

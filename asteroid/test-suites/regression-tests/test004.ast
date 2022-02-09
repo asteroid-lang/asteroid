@@ -1,0 +1,4 @@
+
+load system io.
+let l:"\[.*\]" = [1,2,3].
+io @println l.

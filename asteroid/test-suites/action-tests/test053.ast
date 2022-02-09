@@ -1,0 +1,26 @@
+  load system io.
+  load system math.
+  load system util.
+  load system hash.
+  load system type.
+
+  let roman_hash = hash @hash().
+  roman_hash @insert(1000,["","M","MM","MMM"]).
+  roman_hash @insert(100,["","C","CC","CCC","CD","D","DC","DCC","DCCC","CM"]).
+  roman_hash @insert(10,["","X","XX","XXX","XL","L","LX","LXX","LXXX","XC"]).
+  roman_hash @insert(1,["","I","II","III","IV","V","VI","VII","VIII","IX"]).
+
+  let n = 2018.
+  let p10 = range(type @tostring n @length()) @map(lambda with x do return math @pow(10,x))
+                                              @reverse().
+  let digits = type @tostring n @explode()
+                                @map(type @tointeger).
+  let z = util @zip(digits, p10).
+  io @println z.
+  let roman = "".
+  for (d,p) in z do
+      let roman = roman + roman_hash @get(p) @d.
+  end
+  io @println roman.
+
+  assert (roman == "MMXVIII")

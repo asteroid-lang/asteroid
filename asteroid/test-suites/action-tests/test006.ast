@@ -1,0 +1,4 @@
+  load system io.
+
+  load "util".
+  io @println (len("Hello!")).

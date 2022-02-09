@@ -1,0 +1,8 @@
+  load system io.
+
+  try
+      io @println (42/0).
+  catch Exception(_,m) do
+      io @println m.
+  end
+  io @println "We are still alive...".

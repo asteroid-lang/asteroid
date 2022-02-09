@@ -1,0 +1,24 @@
+-- tests for formatting
+
+load system io.
+load system type.
+load system math.
+
+let tostring = type @tostring.
+let stringformat = type @stringformat.
+
+let b = tostring(true,stringformat(10)).
+io @println b.
+assert(b is "      true").
+
+let i = tostring(5,stringformat(5)).
+io @println i.
+assert(i is "    5").
+
+let s = tostring("hello there!",stringformat(30)).
+io @println s.
+assert(s is "                  hello there!").
+
+let r = tostring(math @pi,stringformat(6,3)).
+io @println r.
+assert(r is " 3.142").

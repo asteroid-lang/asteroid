@@ -1,0 +1,10 @@
+
+load system io.
+load "util".
+
+let inc = (lambda with n do return n+1).
+
+
+io @println (eval ('inc 1)).
+
+assert(eval ('inc 1) is 2).

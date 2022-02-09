@@ -1,0 +1,24 @@
+    load system io.
+    load system random.
+    load system type.
+
+    structure Head with
+        data val.
+        end
+
+    structure Tail with
+        data val.
+        end
+
+    try
+        let i = random @random().
+        if i >= .5 do
+            throw Head(i).
+        else do
+            throw Tail(i).
+        end
+    catch Head(v) do
+        io @println("you win with "+type @tostring(v,type @stringformat(4,2))).
+    catch Tail(v) do
+        io @println("you loose with "+type @tostring(v,type @stringformat(4,2))).
+    end

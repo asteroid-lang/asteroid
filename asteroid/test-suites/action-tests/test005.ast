@@ -1,0 +1,3 @@
+  load system io.
+
+  io @println ("Hello, "+io @input("Enter your name: ")+"!").

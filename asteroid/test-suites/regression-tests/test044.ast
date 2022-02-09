@@ -1,0 +1,6 @@
+
+load system io.      
+load "util".
+let slice = [4 to 0 step -1].
+io @println slice.
+assert(slice is [4,3,2,1,0]).

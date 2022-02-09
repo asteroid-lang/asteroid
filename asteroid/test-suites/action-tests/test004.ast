@@ -1,0 +1,4 @@
+  load system io.
+
+  let name = io @input("Enter your name: ").
+  io @println ("Hello, "+name+"!").

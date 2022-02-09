@@ -25,7 +25,7 @@ function display_array
             for j in 0 to (ncols-1) do
                 let row_str = row_str + ar@i@j.
             end
-            println row_str.
+            io @println row_str.
         end
     end
 
@@ -83,7 +83,7 @@ function show_map
         let (xdim,ydim) = array_shape map.
 
         -- need to do a deep copy because we are modifying the map
-        let display_map = copy map.
+        let display_map = util @copy map.
 
         for x in 0 to (xdim-1) do
             for y in 0 to (ydim-1) do
@@ -111,7 +111,7 @@ function init_map
         for x in 0 to (xdim-1) do
             let row = [].
             for y in 0 to (ydim-1) do
-                let v = 1 if random() > thresh else 0.
+                let v = 1 if random @random() > thresh else 0.
                 let row = row + [v]
             end
             let map = map + [row]
@@ -129,14 +129,14 @@ function life
         let map2 = init_map(xdim, ydim).
 
         -- show the initial map
-        cls().
-        println "initial map".
+        util @cls().
+        io @println "initial map".
         show_map map1.
 
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).
-            cls().
-            println("map @ generation " + gen).
+            util @cls().
+            io @println("map @ generation " + gen).
             show_map(map2).
             -- implement double buffering
             let (map1,map2) = (map2,map1). -- swap the maps

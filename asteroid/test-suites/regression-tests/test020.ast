@@ -1,0 +1,5 @@
+
+load system io.
+
+let (x:%integer) if x > 0 = 2.
+io @println x.

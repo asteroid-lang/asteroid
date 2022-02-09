@@ -1,0 +1,6 @@
+
+load system io.
+load "util".
+let nl = [[1 to 5]].
+io @println nl.
+assert (nl is [[1,2,3,4,5]]).

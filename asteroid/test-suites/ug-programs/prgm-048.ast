@@ -1,0 +1,7 @@
+    load system io.
+
+    try
+        throw ("funny exception", 42).
+    catch ("funny exception", v) do
+        io @println v.
+    end

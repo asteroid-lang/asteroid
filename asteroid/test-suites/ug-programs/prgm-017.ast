@@ -1,0 +1,19 @@
+    load system io.
+
+    structure Person with
+        data name.
+        data age.
+        data gender.
+        end
+
+    -- make a list of persons
+    let people = [
+        -- use default constructors to construct Person instances
+        Person("George", 32, "M"),
+        Person("Sophie", 46, "F"),
+        Person("Oliver", 21, "X")
+        ].
+
+    -- retrieve the second person on the list and print
+    let Person(name,age,gender) = people @1. -- pattern match against the structure
+    io @println (name + " is " + age + " years old and is " +  gender + ".").

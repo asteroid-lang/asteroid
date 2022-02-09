@@ -1,0 +1,35 @@
+
+--------------------------------------
+-- patterns_test19.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+-- A testing function with multiple patterns
+function testFunction
+    with person:[( fname, lname)| tail] do  -- *** will SUBSUME [( fname1, lname1)|( fname2, lname2)| tail] ***
+        return 1.
+    with person:( fname, lname1, lname2) do
+        return 2.
+    with person:[( fname1, lname1)|( fname2, lname2)| tail] do 
+        return 3. 
+    with () do
+        return 4.
+    end.
+
+    
+try
+    -- Evaluate the function with a test input.
+    let x = testFunction[ ("test","name") ].
+
+    -- If the function test worked, print the output we got.
+    io @println( "The value returned is: " + x ).
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

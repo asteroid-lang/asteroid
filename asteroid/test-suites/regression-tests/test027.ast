@@ -1,0 +1,18 @@
+
+load system io.
+
+structure A with
+    data a.
+    function hello with none do return "hello: "+ this @a end.
+    end
+    
+structure B with
+    data b.
+    end
+    
+let q = B([1,2,3]).
+let p = B(A(1)).
+
+io @println (q @ b).
+io @println (q @b @length()). 
+io @println (p @b @hello()).

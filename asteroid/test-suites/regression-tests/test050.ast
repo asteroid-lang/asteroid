@@ -1,0 +1,9 @@
+
+load system io.
+
+try 
+    let 2 = 1 + 1. 
+catch _ do
+    io @println "pattern match failed".
+end 
+

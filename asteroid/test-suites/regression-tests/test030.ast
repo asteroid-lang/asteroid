@@ -1,0 +1,6 @@
+
+load system io.
+
+let name:"a.*" = "abc".
+io @println name.
+assert (name is "abc")
