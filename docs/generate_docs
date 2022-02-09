@@ -1,13 +1,13 @@
 #!/bin/bash
 
 echo "generating User Guide.rst"
-cpp -w -P "User Guide.txt" > "User Guide.rst"
+cpp -w -P -traditional "User Guide.txt" > "User Guide.rst"
 
 echo "generating Reference Guide.rst"
 # note: we need to strip multiline C comments manually
 #       because cpp likes to preserve newlines of multiline comments...
 bash strip ../asteroid/grammar.txt >/tmp/grammar.tmp
-cpp -w -P "Reference Guide.txt" > "Reference Guide.rst"
+cpp -w -P -traditional "Reference Guide.txt" > "Reference Guide.rst"
 
 echo "generating Asteroid in Action.rst"
-cpp -w -P "Asteroid in Action.txt" > "Asteroid in Action.rst"
+cpp -w -P -traditional "Asteroid in Action.txt" > "Asteroid in Action.rst"
