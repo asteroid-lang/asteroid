@@ -40,7 +40,7 @@ keywords = {
     'pattern'       : 'PATTERN',
     'repeat'        : 'REPEAT',
     'return'        : 'RETURN',
-    'step'          : 'STEP',
+    'stride'        : 'STRIDE',
     'structure'     : 'STRUCTURE',
     'system'        : 'SYSTEM',
     'throw'         : 'THROW',

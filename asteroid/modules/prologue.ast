@@ -94,7 +94,7 @@ function range
   with (start:%integer,stop:%integer) do
     return [start to stop-1].
   with (start:%integer,stop:%integer,inc:%integer) do
-    return [start to stop-1 step inc].
+    return [start to stop-1 stride inc].
   with stop:%integer do
     return [0 to stop-1].
   end

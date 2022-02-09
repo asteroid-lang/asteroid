@@ -44,7 +44,7 @@ Builtin Functions
 * Function ``range`` will compute a list of values depending on the input values:
 
   1. ``(start:%integer,stop:%integer)`` returns list ``[start to stop-1]``.
-  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 step inc]``.
+  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 stride inc]``.
   3. ``(stop:%integer)`` returns list ``[0 to stop-1]``.
 
 * Function ``getid`` returns the id (physical memory address) of any Asteroid object as an Asteroid integer.
