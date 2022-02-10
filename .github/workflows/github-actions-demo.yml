@@ -12,5 +12,8 @@ jobs:
       - name: Run tests
         run: |
             pip install -r requirements.txt
-            python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
+            python asteroid/test-suites/run-tests.py
 
+      - name: Generate documentation
+        run: |
+            bash docs/run_docs
