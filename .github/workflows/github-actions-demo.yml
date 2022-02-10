@@ -10,5 +10,6 @@ jobs:
         
       - name: List asteroid dir
         run: |
+          echo ${{ github.workspace }}/asteroid/ >> $GITHUB_PATH
           python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
 
