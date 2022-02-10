@@ -9,12 +9,29 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
         
-      - name: Run tests
-        run: |
-            pip install -r requirements.txt
-            python asteroid/test-suites/run-tests.py
-
+#  This will be on PR
+#      - name: Run tests
+#        run: |
+#            pip install -r requirements.txt
+#            python asteroid/test-suites/run-tests.py
+#
       - name: Generate documentation
         run: |
             cd docs
             bash generate_docs
+
+      - name: Commit files
+        run: |
+          echo ${{ github.ref }}
+          git add .
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit -m "CI: Automated docs generation" -a | exit 0
+
+      - name: Push changes
+        if: github.ref == 'refs/heads/master'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      
