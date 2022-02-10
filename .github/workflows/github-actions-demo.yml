@@ -18,6 +18,7 @@ jobs:
           cd docs
           bash generate_docs
           cd ..
+          git diff workflow
 
       - name: Commit files
         run: |
