@@ -1,6 +1,7 @@
 name: Main Job
 on: [push]
-
+env:
+    PYTHONPATH: ${{ github.workspace }}
 jobs:
   run-tests:
     runs-on: ubuntu-latest
@@ -10,6 +11,5 @@ jobs:
         
       - name: Run tests
         run: |
-          pip install -e .
           python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
 
