@@ -19,12 +19,9 @@ jobs:
         run: |
             cd docs
             bash generate_docs
-
-      - name: Commit files
-        run: |
-          echo ${{ github.ref }}
-          git add .
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "CI: Automated docs generation" -a | exit 0
-          git push
+            echo ${{ github.ref }}
+            git add .
+            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git commit -m "CI: Automated docs generation" -a | exit 0
+            git push
