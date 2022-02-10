@@ -11,5 +11,5 @@ jobs:
         steps:
             - name: Run Tests
               run: |
-                  pip install -r requirements.txt
+                  pip install -r pandas numpy matplotlib
                   python asteroid/test-suites/run-tests.py
