@@ -1,0 +1,14 @@
+name: Tests
+
+on:
+    pull_request:
+        branches [dev-1.0.0]
+
+jobs:
+    run_tests:
+        runs-on: ubuntu-latest
+
+        - name: Run Tests
+          run: |
+              pip install -r requirements.txt
+              python asteroid/test-suites/run-tests.py

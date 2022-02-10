@@ -1,5 +1,7 @@
-name: Main Job
-on: [push]
+name: Documentation Generation
+on:
+    push:
+        branches: [dev-1.0.0]
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
@@ -13,12 +15,11 @@ jobs:
         with:
           persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
           fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
-      - name: Create local changes
+      - name: Regenerate documentation
         run: |
           cd docs
           bash generate_docs
           cd ..
-          touch test.txt
 
       - name: Commit files
         run: |
@@ -33,8 +34,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
 
-#  This will be on PR
-#      - name: Run tests
-#        run: |
-#            pip install -r requirements.txt
-#            python asteroid/test-suites/run-tests.py
+
