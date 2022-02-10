@@ -5,4 +5,4 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - run: echo "Running tests:"
-            - run: python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
+            - run: python ${{ github.workspace }}/test-suites/run-tests.py
