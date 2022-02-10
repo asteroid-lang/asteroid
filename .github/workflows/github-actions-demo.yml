@@ -5,4 +5,6 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - run: echo "Running tests:"
-            - run: python ${{ github.workspace }}/test-suites/run-tests.py
+            - name: List files in repository
+              run: |
+                  ls ${{ github.workspace }}
