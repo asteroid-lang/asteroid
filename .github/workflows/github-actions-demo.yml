@@ -1,0 +1,9 @@
+name: Testing Github Actions
+on: [push]
+jobs:
+    Test:
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "This is a test!"
+            - run: echo "Another test!"
+            - run: ls ${{ github.workspace }}
