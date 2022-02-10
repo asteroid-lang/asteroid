@@ -10,5 +10,5 @@ jobs:
         
       - name: List asteroid dir
         run: |
-          ls ${{ github.workspace }}/asteroid/
+          python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
 
