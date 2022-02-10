@@ -1,15 +1,15 @@
-name: Tests
-
-on:
-    pull_request:
-        branches: [dev-1.0.0]
-
+name: Run Tests
+on: [push]
+env:
+    PYTHONPATH: ${{ github.workspace }}
 jobs:
-    run_tests:
-        runs-on: ubuntu-latest
-
-        steps:
-            - name: Run Tests
-              run: |
-                  pip install pandas numpy matplotlib
-                  python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        
+      - name: Run tests
+        run: |
+            pip install -r requirements.txt
+            python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
