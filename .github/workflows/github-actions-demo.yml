@@ -16,4 +16,4 @@ jobs:
 
       - name: Generate documentation
         run: |
-            bash docs/run_docs
+            bash docs/generate_docs
