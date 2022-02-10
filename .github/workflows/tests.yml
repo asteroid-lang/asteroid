@@ -6,7 +6,7 @@ on:
 
 jobs:
     run_tests:
-        runs-on: ubuntu-latest
+        - runs-on: ubuntu-latest
 
         - name: Run Tests
           run: |
