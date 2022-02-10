@@ -12,5 +12,6 @@ jobs:
             - name: Run Tests
               run: |
                   pip install pandas numpy matplotlib
-                  ls .
                   #python asteroid/test-suites/run-tests.py
+
+            - run: ls
