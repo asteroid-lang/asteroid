@@ -6,9 +6,10 @@ on:
 
 jobs:
     run_tests:
-        - runs-on: ubuntu-latest
+        runs-on: ubuntu-latest
 
-        - name: Run Tests
-          run: |
-              pip install -r requirements.txt
-              python asteroid/test-suites/run-tests.py
+        steps:
+            - name: Run Tests
+              run: |
+                  pip install -r requirements.txt
+                  python asteroid/test-suites/run-tests.py
