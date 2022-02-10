@@ -778,14 +778,14 @@ class Parser:
     #    | FALSE
     #    | NONE
     #    | ID
-    #    | '*' ID         // "dereference" a variable during pattern matching
+    #    | '*' call_or_index /* pattern dereferencing */
     #    | NOT call_or_index
     #    | MINUS call_or_index
     #    | PLUS call_or_index
     #    | ESCAPE STRING
     #    | EVAL exp
-    #    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    #    | '[' list_stuff ']'  // list or list access
+    #    | '(' tuple_stuff ')' /* tuple/parenthesized expr */
+    #    | '[' list_stuff ']'  /* list or list access */
     #    | function_const
     #    | TYPEMATCH // TYPEMATCH == '%'<typename>
     def primary(self):
@@ -823,8 +823,8 @@ class Parser:
 
         elif tt == 'TIMES':
             self.lexer.match('TIMES')
-            id_tok = self.lexer.match('ID')
-            return ('deref', ('id', id_tok.value))
+            v = self.call_or_index()
+            return ('deref', v)
 
         elif tt == 'NOT':
             self.lexer.match('NOT')

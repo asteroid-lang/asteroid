@@ -1,0 +1,9 @@
+-- testing function calls within patterns
+
+function goo with none do
+  return pattern x.
+end
+
+let *goo() = 4.
+assert (x==4).
+
