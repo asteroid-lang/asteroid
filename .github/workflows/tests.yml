@@ -16,4 +16,5 @@ jobs:
 
             - name: List files
               run: |
+                echo $(pwd)
                 ls ${{ github.workspace }}
