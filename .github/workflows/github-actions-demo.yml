@@ -19,7 +19,6 @@ jobs:
           bash generate_docs
           cd ..
           touch test.txt
-          git diff workflow
 
       - name: Commit files
         run: |
