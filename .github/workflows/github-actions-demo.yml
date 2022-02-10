@@ -9,20 +9,30 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
         
+    - uses: actions/checkout@v2
+      with:
+        persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+        fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+    - name: Create local changes
+      run: |
+        ...
+    - name: Commit files
+      run: |
+        cd docs
+        bash generate_docs
+        cd ..
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git commit -m "Updated documentation" -a
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
+
 #  This will be on PR
 #      - name: Run tests
 #        run: |
 #            pip install -r requirements.txt
 #            python asteroid/test-suites/run-tests.py
-#
-      - name: Generate documentation
-        run: |
-            cd docs
-            bash generate_docs
-            echo ${{ github.ref }}
-            cd ..
-            git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git config --local user.name "github-actions[bot]"
-            git add .
-            git commit -m "CI: Automated docs generation" -a | exit 0
-            git push
