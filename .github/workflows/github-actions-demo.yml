@@ -8,8 +8,8 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v2
         
-      - name: List asteroid dir
+      - name: Run tests
         run: |
-          echo ${{ github.workspace }}/asteroid/ >> $GITHUB_PATH
+          pip install -e .
           python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
 
