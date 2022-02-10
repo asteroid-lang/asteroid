@@ -13,8 +13,4 @@ jobs:
               run: |
                   pip install pandas numpy matplotlib
                   #python asteroid/test-suites/run-tests.py
-
-            - name: List files
-              run: |
-                echo $(pwd)
-                ls ${{ github.workspace }}
+                  python ${{ github.workspace }}/test-suites/run-tests.py
