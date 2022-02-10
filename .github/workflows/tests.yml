@@ -12,5 +12,4 @@ jobs:
             - name: Run Tests
               run: |
                   pip install pandas numpy matplotlib
-                  #python asteroid/test-suites/run-tests.py
-                  python ${{ github.workspace }}/test-suites/run-tests.py
+                  python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
