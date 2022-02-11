@@ -1,0 +1,19 @@
+name: Run Tests
+on:
+    pull_request:
+        branches:
+            - master
+            - dev-1.0.0
+env:
+    PYTHONPATH: ${{ github.workspace }}
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        
+      - name: Run tests
+        run: |
+            pip install -r requirements.txt
+            python ${{ github.workspace }}/asteroid/test-suites/run-tests.py
