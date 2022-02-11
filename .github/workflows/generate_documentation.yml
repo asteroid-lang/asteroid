@@ -1,8 +1,9 @@
 name: Documentation Generation
-on: [push]
-    branches:
-        - master
-        - dev-1.0.0
+on:
+    push:
+        branches:
+            - master
+            - dev-1.0.0
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
