@@ -17,7 +17,7 @@
 
 .. highlight:: none
 
-Asteroid in Action!
+Asteroid in Action
 ==================
 
 This document was inspired by Andrew Shitov's excellent book `Using Raku: 100 Programming Challenges Solved with the Brand-New Raku Programming Language <https://andrewshitov.com/wp-content/uploads/2020/01/Using-Raku.pdf>`_.  Here we use Asteroid to solve these programming challenges.
