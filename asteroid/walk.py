@@ -391,9 +391,10 @@ def unify(term, pattern, unifying = True ):
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 return unifier
 
-    elif pattern[0] == 'deref':  # ('deref', ('id', sym))
-        (ID, sym) = pattern[1]
-        p = state.symbol_table.lookup_sym(sym)
+    elif pattern[0] == 'deref':  # ('deref', v)
+        # v can be an AST representing any computation
+        # that produces a pattern.
+        p = walk(pattern[1])
 
         #lhh
         #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
@@ -1150,7 +1151,7 @@ def if_stmt(node):
     assert_match(LIST, 'list')
 
     for i in range(0,len(if_list),2):
-        
+
         lineinfo = if_list[ i ]
         process_lineinfo(lineinfo)
 
@@ -1462,7 +1463,7 @@ def to_list_exp(node):
         # Get the stride_val
         stride_val = int(stride_val)
 
-        # Change the direction of the stride value based on the 
+        # Change the direction of the stride value based on the
         # ends of the range. I.e. 5->1 has an implicit direction
         # of -1, 1->5 has a direction of +1
         direction = (1 if ix < ex else -1)
@@ -1470,7 +1471,7 @@ def to_list_exp(node):
 
         # We need to modify the ending index to acccount for python
         # ranges. For example, for 1->10 we want range(1, 10 + 1).
-        # Or, for the opposite, we want range(10, 1 - 1) to give 
+        # Or, for the opposite, we want range(10, 1 - 1) to give
         # us the full inclusive range. Thus, we can just add our
         # direction
         new_ex = ex + direction

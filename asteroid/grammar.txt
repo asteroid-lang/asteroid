@@ -123,7 +123,7 @@
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // primary expressions/patterns
-  
+
   primary
     : INTEGER
     | REAL
@@ -132,7 +132,7 @@
     | FALSE
     | NONE
     | ID
-    | '*' ID         /* "dereference" a variable during pattern matching */
+    | '*' call_or_index   /* pattern dereferencing */
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
