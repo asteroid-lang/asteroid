@@ -1,0 +1,23 @@
+load system io.
+
+let E = 10.3e-12.
+let e = -3E+1.
+let n = E + e - 4.00e01 + 0.1.
+println(n).
+assert(n == -69.8999999999897).
+
+let s = tostring(n,stringformat(10,10,true)).
+println(s).
+assert(s == "-6.9900000000e+01").
+
+let s = tostring(n,stringformat(10,10,false)).
+println(s).
+assert(s == "-69.9000000000").
+
+let y = 1.
+println(gettype(y)).
+assert(gettype(y) == "integer").
+
+let z = 1.0.
+println(gettype(z)).
+assert(gettype(z) == "real").
