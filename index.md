@@ -4,7 +4,7 @@
 
 [Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
 
-Asteroid is a modern, general-purpose programming language designed from the ground up with the user in mind. Its expressive syntax seamlessly supports procedural, functional, and object-based programming.  Its novel approach to pattern matching provides new solutions to old programming problems.
+Asteroid is a modern, general-purpose programming language designed from the ground up with the user in mind. Its expressive syntax is easy to learn and seamlessly supports procedural, functional, and object-based programming.  Its novel approach to pattern matching provides new solutions to old programming problems.
 
 ### Hello, World!
 
