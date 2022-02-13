@@ -6,9 +6,11 @@
 
 Asteroid is a modern, general-purpose programming language designed from the ground up with the user in mind. Its expressive syntax is easy to learn and seamlessly supports procedural, functional, and object-based programming.  Its novel approach to pattern matching provides new solutions to old programming problems.
 
+Here are some example programs that highlight various aspects of Asteroid.
+
 ### Hello, World!
 
-Here is the obligatory ''Hello, World!'' program written in Asteroid,
+Simple things are simple. Here is the ''Hello, World!'' program written in Asteroid,
 ```
 load system io.
 println "Hello, World!".
@@ -16,7 +18,9 @@ println "Hello, World!".
 
 ### Procedural Programming is Straightforward
 
-Consider the following program that prints out the names of persons whose name contains a lower case 'p',
+Procedural programming in Asteroid should seem familiar to anybody who has some programming experience.
+Intuitive  structure definitions and standard list notation makes it easy to create the data structures your
+program needs.  Here is a  program that prints out the names of persons whose name contains a lower case 'p',
 ```
 load system io.
 
@@ -97,7 +101,7 @@ let a = [1 to 10] @map(lambda with x do return mod(x,2))
 println a.
 ```
 The list constructor `[1 to 10]` constructs a list of values `[1, 2,...,10]`.  The first `map`turns this list into the list
-`[1,0,1,...0]` and the second call to `map` turns that list into the list `[1,-1,1,-1,...,1]`.
+`[1,0,1,...0]` and the second call to `map` turns that list into the list `[1,-1,1,-1,...,-1]`.
 
 ### Pattern Reuse
 
@@ -169,7 +173,8 @@ for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     println (name+" knows how to fetch").
 end
 ```
-Rather than searching through the list of tricks for a "fetch" trick for each dog, we cast the list of tricks as a string
+What is perhaps striking in the for loop is that rather than searching through the list of tricks for a "fetch" trick for each dog
+match at a loop iteration, we cast the list of tricks as a string
 and then use regular expression matching on it to see if it contains a "fetch" trick. The output is,
 ```
 Fido knows how to fetch
