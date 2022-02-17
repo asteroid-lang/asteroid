@@ -54,8 +54,7 @@ elif item_val[0] == 'object':
 elif item_val[0] == 'struct':
     (STRUCT,
         (MEMBER_NAMES, (LIST, member_names)),
-        (STRUCT_MEMORY, (LIST, struct_memory)),
-        (STRUCT_SCOPE, t_struct_scope)) = item_val
+        (STRUCT_MEMORY, (LIST, struct_memory))) = item_val
     l = len(data_only(struct_memory))
     __retval__ = ('integer', l)
 
