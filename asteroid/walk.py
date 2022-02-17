@@ -554,11 +554,12 @@ def read_at_ix(structure_val, ix):
         # unpack the struct value
         (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory)),
-         (STRUCT_SCOPE, struct_scope)) = struct_val
-        state.symbol_table.push_scope(struct_scope)
-        ix_val = walk(ix)
-        state.symbol_table.pop_scope()
+         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
+
+        if ix[0] == 'id' and ix[1] in member_names:
+            ix_val = ('integer', member_names.index(ix[1]))
+        else:
+            ix_val = walk(ix)
 
     else:
         raise ValueError("'{}' is not indexable".format(structure_val[0]))
@@ -619,11 +620,12 @@ def store_at_ix(structure_val, ix, value):
         # unpack the struct value
         (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory)),
-         (STRUCT_SCOPE, struct_scope)) = struct_val
-        state.symbol_table.push_scope(struct_scope)
-        ix_val = walk(ix)
-        state.symbol_table.pop_scope()
+         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
+
+        if ix[0] == 'id' and ix[1] in member_names:
+            ix_val = ('integer', member_names.index(ix[1]))
+        else:
+            ix_val = walk(ix)
 
     else:
         raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
@@ -1179,19 +1181,15 @@ def struct_def_stmt(node):
     # in a struct object
     struct_memory = [] # this will serve as a template for instanciating objects
     member_names = []
-    struct_scope = {}
-    state.symbol_table.push_scope(struct_scope)
 
     for member_ix in range(len(member_list)):
         member = member_list[member_ix]
         if member[0] == 'data':
             (DATA, (ID, member_id)) = member
-            state.symbol_table.enter_sym(member_id, ('integer', member_ix))
             struct_memory.append(('none', None))
             member_names.append(member_id)
         elif member[0] == 'unify':
             (UNIFY, (ID, member_id), function_exp) = member
-            state.symbol_table.enter_sym(member_id, ('integer', member_ix))
             # Note: we have to bind a function VALUE into the structure memory
             function_val = walk(function_exp)
             struct_memory.append(function_val)
@@ -1201,12 +1199,9 @@ def struct_def_stmt(node):
         else:
             raise ValueError("unsupported struct member '{}'".format(member[0]))
 
-    state.symbol_table.pop_scope()
-
     struct_type = ('struct',
                   ('member-names', ('list', member_names)),
-                  ('struct-memory', ('list', struct_memory)),
-                  ('struct-scope', struct_scope))
+                  ('struct-memory', ('list', struct_memory)))
 
     state.symbol_table.enter_sym(struct_id, struct_type)
 
@@ -1256,7 +1251,7 @@ def apply_exp(node):
     # NOTE: object member functions are passed an object reference.
     if f_val[0] == 'member-function-val':
         (MEMBER_FUNCTION_VAL, obj_ref, function_val) = f_val
-        # Note: lists and tuples are objects/mutable data structures, they
+        # Note: lists and strings are objects/mutable data structures, they
         # have member functions defined in the Asteroid prologue.
         result = handle_call(obj_ref,
                              function_val,
@@ -1272,28 +1267,25 @@ def apply_exp(node):
         (ID, struct_id) = f
         (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory)),
-         (STRUCT_SCOPE, struct_scope)) = f_val
+         (STRUCT_MEMORY, (LIST, struct_memory))) = f_val
 
         # create our object memory - memory cells now have initial values
-        # TODO: why is this not shared among objects?
+        # we use structure memory as an init template
         object_memory = struct_memory.copy()
         # create our object
         obj_ref = ('object',
-                  ('struct-id', ('id', struct_id)),
-                  ('object-memory', ('list', object_memory)))
+                   ('struct-id', ('id', struct_id)),
+                   ('object-memory', ('list', object_memory)))
         # if the struct has an __init__ function call it on the object
         # NOTE: constructor functions do not have return values.
         if '__init__' in member_names:
             slot_ix = member_names.index('__init__')
             init_fval = struct_memory[slot_ix]
             # calling a member function - push struct scope
-            state.symbol_table.push_scope(struct_scope)
             handle_call(obj_ref,
                         init_fval,
                         arg_val,
                         f_name)
-            state.symbol_table.pop_scope()
         # the struct does not have an __init__ function but
         # we have a constructor call with args, e.g. Foo(1,2)
         # try to apply a default constructor by copying the
