@@ -99,7 +99,10 @@ def return_stmt(node):
 
     e_str = "{}".format(e)
 
-    code = "{}return walk({})\n".format(indent(),e_str)
+    code = ""
+    code += "{}val = walk({})\n".format(indent(),e_str)
+    code += "{}state.symbol_table.pop_scope()\n".format(indent())
+    code += "{}return val\n".format(indent())
 
     return code
 
@@ -339,35 +342,34 @@ def struct_def_stmt(node):
     assert_match(ID, 'id')
     assert_match(MEMBER_LIST, 'member-list')
     assert_match(LIST, 'list')
+    code = "{}# structure def for {}\n".format(indent(),struct_id)
 
-    # declare members
-    # member names are declared as variables whose value is the slot
-    # in a struct object
-    struct_memory = [] # this will serve as a template for instanciating objects
-    member_names = []
+    code += "{}member_list = {}\n".format(indent(),member_list)
 
-    for member_ix in range(len(member_list)):
-        member = member_list[member_ix]
-        if member[0] == 'data':
-            (DATA, (ID, member_id)) = member
-            struct_memory.append(('none', None))
-            member_names.append(member_id)
-        elif member[0] == 'unify':
-            (UNIFY, (ID, member_id), function_exp) = member
-            # Note: we have to bind a function VALUE into the structure memory
-            function_val = walk(function_exp)
-            struct_memory.append(function_val)
-            member_names.append(member_id)
-        elif member[0] == 'noop':
-            pass
-        else:
-            raise ValueError("unsupported struct member '{}'".format(member[0]))
+    code += "{}struct_memory = []\n".format(indent())
+    code += "{}member_names = []\n".format(indent())
 
-    struct_type = ('struct',
-                  ('member-names', ('list', member_names)),
-                  ('struct-memory', ('list', struct_memory)))
+    code += "{}for member_ix in range(len(member_list)):\n".format(indent())
+    code += "{}    member = member_list[member_ix]\n".format(indent())
+    code += "{}    if member[0] == 'data':\n".format(indent())
+    code += "{}        (DATA, (ID, member_id)) = member\n".format(indent())
+    code += "{}        struct_memory.append(('none', None))\n".format(indent())
+    code += "{}        member_names.append(member_id)\n".format(indent())
+    code += "{}    elif member[0] == 'unify':\n".format(indent())
+    code += "{}        (UNIFY, (ID, member_id), function_exp) = member\n".format(indent())
+    code += "{}        function_val = walk(function_exp)\n".format(indent())
+    code += "{}        struct_memory.append(function_val)\n".format(indent())
+    code += "{}        member_names.append(member_id)\n".format(indent())
+    code += "{}    elif member[0] == 'noop':\n".format(indent())
+    code += "{}        pass\n".format(indent())
+    code += "{}    else:\n".format(indent())
+    code += indent()+"        raise ValueError('unsupported struct member {}'.format(member[0]))\n"
 
-    state.symbol_table.enter_sym(struct_id, struct_type)
+    code += "{}struct_type = ('struct',('member-names', ('list', member_names)),('struct-memory', ('list', struct_memory)))\n".format(indent())
+    code += "{}state.symbol_table.enter_sym('{}', struct_type)\n".format(indent(),struct_id)
+    code += newline()
+
+    return code
 
 #########################################################################
 def process_lineinfo(node):
@@ -379,7 +381,6 @@ def process_lineinfo(node):
     #print("lineinfo: {}".format(lineinfo_val))
 
     code = "{}set_lineinfo('{}',{})\n".format(indent(),module_name,lineno)
-    code += newline()
 
     return code
 
@@ -444,41 +445,8 @@ dispatch_dict = {
     'struct-def'    : struct_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    'tuple'         : None,
-    'to-list'       : None,
-    'head-tail'     : None,
-    'raw-to-list'   : None,
-    'raw-head-tail' : None,
-    'seq'           : None,
-    'none'          : None,
-    'nil'           : None,
-    'function-exp'  : None,
-    'string'        : None,
-    'integer'       : None,
-    'real'          : None,
-    'boolean'       : None,
-    'object'        : None,
-    'eval'          :None,
-    # quoted code should be treated like a constant if not ignore_quote
-    'quote'         : None,
-    # constraint patterns
-    'constraint'    : None,
-    # the following is now handled with an if-exp
-    #'cmatch'        : constraint_exp,
-    'typematch'     : None,
-    # type tag used in conjunction with escaped code in order to store
-    # foreign objects in Asteroid data structures
-    'foreign'       : None,
-    'id'            : None,
     'apply'         : apply_stmt,
-    'index'         : None,
     'escape'        : escape_stmt,
-    'is'            : None,
-    'in'            : None,
-    'if-exp'        : None,
-    'named-pattern' : None,
-    'member-function-val' : None,
-    'deref'         : None,
 }
 
 #########################################################################
@@ -524,15 +492,17 @@ def gen_function(def_pair):
 
     elif implementation[0] == 'escape':
         import io
-        code = ""
-        code += "{}def {}():".format(indent(),name)
-        inc_indent()
         (ESCAPE, program_string) = implementation
         buf = io.StringIO(program_string)
+
+        code = ""
+        code += "{}def {}():\n".format(indent(),name)
+        inc_indent()
         s = buf.readline()
         while s:
             code += "{}{}".format(indent(),s)
             s = buf.readline()
+        code += "{}avm.avm.__retval__ = __retval__\n".format(indent())
         code += newline()
         dec_indent()
         return code

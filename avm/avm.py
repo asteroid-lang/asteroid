@@ -808,17 +808,13 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # think conditional pattern matching.
     save_symtab = state.symbol_table.get_config()
     state.symbol_table.set_config(closure)
-    state.symbol_table.push_scope({})
+    #state.symbol_table.push_scope({})
 
 
     # if we have an obj reference bind it to the
     # variable 'this'
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
-
-    # Check for useless patterns
-    #if redundant_clause_detector_flags[0]:
-    #    check_redundancy(body_list, fname)
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo

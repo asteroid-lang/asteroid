@@ -71,9 +71,12 @@ def main():
     # execute compiler
     begin_code = "### Asteroid Compiler Version {} ###\n\n".format(VERSION)
     begin_code += "from avm.avm import *\n"
+    begin_code += "import avm.avm\n" # in order to support __retval__ properly
     begin_code += "from asteroid.globals import *\n"
     begin_code += "from asteroid.support import *\n"
     begin_code += "from asteroid.state import state\n"
+    begin_code += "\n"
+    begin_code += "__retval__ = ('none', None)\n"
     begin_code += "\n"
     begin_code += "try:\n"
 
