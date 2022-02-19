@@ -11,7 +11,8 @@ from asteroid.globals import *
 from asteroid.support import *
 from asteroid.state import state
 from compiler.frontend import Parser
-from compiler.gen import walk as generate_code
+from compiler.gen import walk as generate_code, gen_function_list, gen_dispatch
+from asteroid.version import VERSION
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
@@ -20,7 +21,6 @@ prologue_name = 'prologue.ast'
 def compile(input_stream,
            input_name = "<input>",
            tree_dump=False,
-           do_walk=True,
            exceptions=False,
            prologue=True):
     try:
@@ -30,11 +30,12 @@ def compile(input_stream,
 
         # read in prologue
         if prologue:
-
-            prologue_file = ''
-            prologue_file_base = os.path.join('modules', prologue_name)
+            prologue_file_base = os.path.join('../asteroid/modules', prologue_name)
             module_path = os.path.join(os.path.split(os.path.abspath(__file__))[0], prologue_file_base)
             working_path = os.path.join(os.getcwd(), prologue_file_base)
+
+            #print(module_path)
+            #print(working_path)
 
             if os.path.isfile(module_path):
                 prologue_file = module_path
@@ -61,21 +62,35 @@ def compile(input_stream,
         # walk the AST
         if tree_dump:
             dump_AST(state.AST)
-        if do_walk:
-            code = generate_code(state.AST)
-            return code
 
-    except ThrowValue as throw_val:
-        # handle exceptions using the standard Error constructor
-        module, lineno = state.lineinfo
-        if throw_val.value[0] == 'apply' and throw_val.value[1][1] == 'Error':
-            (APPLY, (ID, id), (APPLY, error_obj, rest)) = throw_val.value
-            print("Error: {}: {}: {}".format(module, lineno, term2string(error_obj)))
-        else:
-            print("Error: {}: {}: unhandled Asteroid exception: {}"
-                  .format(module, lineno, term2string(throw_val.value)))
+        begin_code = "### Asteroid Compiler Version {} ###\n\n".format(VERSION)
+        begin_code += "from avm.avm import *\n"
+        begin_code += "import avm.avm\n" # in order to support __retval__ properly
+        begin_code += "from asteroid.globals import *\n"
+        begin_code += "from asteroid.support import *\n"
+        begin_code += "from asteroid.state import state\n"
+        begin_code += "\n"
+        begin_code += "__retval__ = ('none', None)\n"
+        begin_code += "\n"
+        begin_code += "try:\n"
 
-        sys.exit(1)
+        compiled_code = generate_code(state.AST)
+        flist_code = gen_function_list()
+        dispatch_code = gen_dispatch()
+
+        end_code = "except Exception as e:\n"
+        end_code += "   module, lineno = state.lineinfo\n"
+        end_code += "   print('Error: {}: {}: {}'.format(module, lineno, e))\n"
+
+        # assemble the code
+        code = ""
+        code += begin_code
+        code += flist_code
+        code += dispatch_code
+        code += compiled_code
+        code += end_code
+
+        return code
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace

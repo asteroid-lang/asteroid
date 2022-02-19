@@ -189,10 +189,10 @@ class Parser:
                 search_list.append(str_tok.value + asteroid_file_suffix)
                 search_list.append(os.path.join(os.getcwd(), module_name))
                 search_list.append(os.path.join(os.getcwd(), module_name + asteroid_file_suffix))
-                search_list.append(os.path.join(os.getcwd(), 'modules', module_name))
-                search_list.append(os.path.join(os.getcwd(), 'modules', module_name + asteroid_file_suffix))
-            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name))
-            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name + asteroid_file_suffix))
+                search_list.append(os.path.join(os.getcwd(), '../asteroid/modules', module_name))
+                search_list.append(os.path.join(os.getcwd(), '../asteroid/modules', module_name + asteroid_file_suffix))
+            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], '../asteroid/modules', module_name))
+            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], '../asteroid/modules', module_name + asteroid_file_suffix))
 
             file_found = False
 
