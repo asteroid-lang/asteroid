@@ -708,7 +708,7 @@ endix_val = state.symbol_table.lookup_sym('endix')
 
 val = this_val[1].find(item_val[1], startix_val[1], endix_val[1])
 if val == -1:
-    __retval__ = ('none', None')
+    __retval__ = ('none', None)
 else:
     __retval__ = ('integer', val)
 "
