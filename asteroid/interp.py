@@ -24,10 +24,12 @@ def interp(input_stream,
            symtab_dump=False,
            exceptions=False,
            redundancy=True,
-           prologue=True):
+           prologue=True,
+           initialize_state = True):
     try:
         # initialize state
-        state.initialize()
+        if initialize_state:
+            state.initialize()
 
         #lhh
         #print("path[0]: {}".format(sys.path[0]))
