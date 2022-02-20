@@ -55,7 +55,7 @@ Sophie
 
 Asteroid supports functional programming style pattern matching on the arguments of a function.   
 When a pattern matches the corresponding function body is executed.  Here is a  Quicksort implementation 
-That demonstrates this functionality.  We see three distinct patterns (indicated by the `with` keyword) each with their own implementation of the corresponding function body,  
+that demonstrates this functionality.  We see three distinct patterns (indicated by the `with` keyword) each with their own implementation of the corresponding function body,  
 ```
 -- Quicksort
 
@@ -110,17 +110,17 @@ with values over the same domains.  We can define patterns that describe these i
 patterns in both functions,
 ```
 -- patterns that define both positive and negative integers
-let POS_INT = pattern (x:%integer) if x > 0.
-let NEG_INT = pattern (x:%integer) if x < 0.
+let Pos_Int = pattern (x:%integer) if x > 0.
+let Neg_Int = pattern (x:%integer) if x < 0.
 
 -- define a function that computes the factorial recursively
 -- Note: factorial is not defined over negative values
 function fact
     with 0 do
         return 1
-    with n:*POS_INT do
+    with n:*Pos_Int do
         return n * fact (n-1).
-    with *NEG_INT do
+    with *Neg_Int do
         throw Error("factorial undefined for negative values").
     end
 
@@ -129,9 +129,9 @@ function fact
 function sign
     with 0 do
         return 1
-    with *POS_INT do
+    with *Pos_Int do
         return 1.
-    with *NEG_INT do
+    with *Neg_Int do
         return -1.
     end
 ```
