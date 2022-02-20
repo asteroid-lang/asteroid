@@ -27,7 +27,7 @@ def run_repl():
 
     line = ""
     while True:
-        line += " " + input(current_prompt)
+        line += "\n" + input(current_prompt)
 
 #        print("#######DEBUG#########")
 #        print(line)
