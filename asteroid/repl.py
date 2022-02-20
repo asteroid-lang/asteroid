@@ -31,7 +31,7 @@ def run_repl():
     line = ""
     while True:
         """
-        This exception block handles line input, breaking, and exiting
+        Line input, breaking, and exiting
         """
         try:
             # Get the new input and append it to the previous line (Possibly empty)
@@ -50,7 +50,7 @@ def run_repl():
 
         
         """
-        This block handles interpretation, multiline input, and exception handling
+        Interpretation, multiline input, and exception handling
         """
         try:
             # Try to interpret the new statement

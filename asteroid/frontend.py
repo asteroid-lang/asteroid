@@ -887,9 +887,9 @@ class Parser:
             return ('typematch', tok.value)
 
         else:
-            raise SyntaxError(
-                "syntax error at '{}'"
-                .format(self.lexer.peek().value))
+            raise ExpectationError( ('primary expression', 'EOF') )
+            #raise SyntaxError("syntax error at '{}'"
+                # .format(self.lexer.peek().value))
 
     ###########################################################################################
     # tuple_stuff
