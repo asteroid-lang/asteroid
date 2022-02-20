@@ -173,7 +173,11 @@ def tokenize(code):
         elif type == 'WHITESPACE':
             continue
         elif type == 'MISMATCH':
-            raise ValueError("unexpected character '{}'".format(value))
+            if value == '\"':
+                raise ExpectationError( ('\"', 'EOF') )
+
+            else:
+                raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
         tokens.append(Token(type, value, module, line_num))
     # always append an EOF token so we never run out of tokens
