@@ -30,6 +30,9 @@ def run_repl():
     # Our line to be interpreted
     line = ""
     while True:
+        """
+        This exception block handles line input, breaking, and exiting
+        """
         try:
             # Get the new input and append it to the previous line (Possibly empty)
             # with a newline in between
@@ -45,6 +48,10 @@ def run_repl():
             print()
             break
 
+        
+        """
+        This block handles interpretation, multiline input, and exception handling
+        """
         try:
             # Try to interpret the new statement
             interp(line, initialize_state=False, prologue=False, exceptions=True)
@@ -59,6 +66,7 @@ def run_repl():
             else:
                 print(e)
                 line = ""
+                current_prompt = arrow_prompt
 
         except Exception as e:
             # FIX THIS
