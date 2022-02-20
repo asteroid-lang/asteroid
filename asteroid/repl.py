@@ -1,6 +1,8 @@
 from asteroid.interp import interp
 from asteroid.version import VERSION
 from asteroid.state import state
+from asteroid.globals import ExpectationError
+
 from sys import stdin
 import readline
 
@@ -20,12 +22,35 @@ def print_repl_menu():
 
 
 def run_repl():
-    while True:
-        line = input("> ")
+    arrow_prompt, continue_prompt = ("> ", ". ")
+    current_prompt = arrow_prompt
 
+    line = ""
+    while True:
+        line += " " + input(current_prompt)
+
+#        print("#######DEBUG#########")
+#        print(line)
+#        print("#####################")
         try:
-            interp(line, initialize_state=False, prologue=False)
+            interp(line, initialize_state=False, prologue=False, exceptions=True)
+            line = ""
+
+        except ExpectationError as e:
+            # If we expected something but found EOF, it's a continue
+            if e.found_EOF:
+                current_prompt = continue_prompt
+            else:
+                print(e)
+                line = ""
+
         except EOFError:
             break
-        except:
-            pass
+
+        except Exception as e:
+            # FIX THIS
+            print(e)
+            line = ""
+        else:
+            if current_prompt == continue_prompt:
+                current_prompt = arrow_prompt

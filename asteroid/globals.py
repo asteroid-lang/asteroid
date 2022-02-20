@@ -80,7 +80,14 @@ class NonLinearPatternError(Exception):
 
     def __str__(self):
         return(repr(self.value))
+#########################################################################
+class ExpectationError(Exception):
+    def __init__(self, value):
+        self.found_EOF = (value[1] == 'EOF')
+        self.value = "expected '{}' found '{}'.".format(value[0], value[1])
 
+    def __str__(self):
+        return(repr(self.value))
 ##############################################################################################
 # *** Part of the Redundant Pattern Detector ***
 #

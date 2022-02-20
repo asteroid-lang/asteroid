@@ -7,6 +7,7 @@
 import re
 
 from asteroid.state import state, warning
+from asteroid.globals import ExpectationError
 
 # table that specifies the token value and type for keywords
 keywords = {
@@ -226,8 +227,7 @@ class Lexer:
         if token_type not in self.token_types:
             raise ValueError("unknown token type '{}'".format(token_type))
         elif token_type != self.curr_token.type:
-            raise ValueError("expected '{}' found '{}'."
-                             .format(token_type, self.curr_token.type))
+            raise ExpectationError( (token_type, self.curr_token.type) )
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token
