@@ -22,18 +22,34 @@ def print_repl_menu():
 
 
 def run_repl():
+    # The two different prompt types either > for a new statement
+    # or . for continuing one
     arrow_prompt, continue_prompt = ("> ", ". ")
     current_prompt = arrow_prompt
 
+    # Our line to be interpreted
     line = ""
     while True:
-        line += "\n" + input(current_prompt)
-
-#        print("#######DEBUG#########")
-#        print(line)
-#        print("#####################")
         try:
+            # Get the new input and append it to the previous line (Possibly empty)
+            # with a newline in between
+            line += "\n" + input(current_prompt)
+
+        except KeyboardInterrupt:
+            line = ""
+            current_prompt = arrow_prompt
+            print()
+            continue
+
+        except EOFError:
+            print()
+            break
+
+        try:
+            # Try to interpret the new statement
             interp(line, initialize_state=False, prologue=False, exceptions=True)
+
+            # Try to 
             line = ""
 
         except ExpectationError as e:
@@ -44,13 +60,11 @@ def run_repl():
                 print(e)
                 line = ""
 
-        except EOFError:
-            break
-
         except Exception as e:
             # FIX THIS
             print(e)
             line = ""
+            current_prompt = arrow_prompt
+
         else:
-            if current_prompt == continue_prompt:
-                current_prompt = arrow_prompt
+            current_prompt = arrow_prompt
