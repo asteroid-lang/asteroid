@@ -174,7 +174,7 @@ def tokenize(code):
             continue
         elif type == 'MISMATCH':
             if value == '\"':
-                raise ExpectationError( ('\"', 'EOF') )
+                raise ExpectationError(expected='\"', found='EOF')
 
             else:
                 raise ValueError("unexpected character '{}'".format(value))
@@ -231,7 +231,7 @@ class Lexer:
         if token_type not in self.token_types:
             raise ValueError("unknown token type '{}'".format(token_type))
         elif token_type != self.curr_token.type:
-            raise ExpectationError( (token_type, self.curr_token.type) )
+            raise ExpectationError( found=self.curr_token.type, expected=token_type)
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token

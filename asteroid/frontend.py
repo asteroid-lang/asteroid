@@ -152,7 +152,7 @@ class Parser:
             if self.lexer.peek().type in ['STRING', 'ID']:
                 str_tok = self.lexer.match(self.lexer.peek().type)
             elif self.lexer.peek().type == 'EOF':
-                raise ExpectationError( ('module name', 'EOF') )
+                raise ExpectationError( msg="Expected valid module name, found EOF", found='EOF' )
             else:
                 raise SyntaxError("invalid module name '{}'"
                                   .format(self.lexer.peek().value))
@@ -274,7 +274,7 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise ExpectationError( ('in expression in for loop', 'EOF') )
+                raise ExpectationError(msg="Expected 'in' expression in for loop", found="EOF")
 
             self.lexer.match('DO')
             sl = self.stmt_list()
@@ -887,7 +887,10 @@ class Parser:
             return ('typematch', tok.value)
 
         else:
-            raise ExpectationError( ('primary expression', 'EOF') )
+            raise ExpectationError(
+                expected='primary expression',
+                found=self.lexer.peek().type)
+
             #raise SyntaxError("syntax error at '{}'"
                 # .format(self.lexer.peek().value))
 
