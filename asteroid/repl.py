@@ -8,7 +8,6 @@ import readline
 
 def repl():
     state.initialize()
-
     print_repl_menu()
     try:
         run_repl()
@@ -22,6 +21,7 @@ def print_repl_menu():
 
 
 def run_repl():
+
     # The two different prompt types either > for a new statement
     # or . for continuing one
     arrow_prompt, continue_prompt = ("> ", ". ")
@@ -47,14 +47,13 @@ def run_repl():
         except EOFError:
             print()
             break
-
         
         """
         Interpretation, multiline input, and exception handling
         """
         try:
             # Try to interpret the new statement
-            interp(line, initialize_state=False, prologue=False, exceptions=True)
+            interp(line, initialize_state=False, exceptions=True)
 
             # Try to 
             line = ""
