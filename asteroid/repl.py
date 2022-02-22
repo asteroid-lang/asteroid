@@ -17,6 +17,7 @@ def repl():
 
 def print_repl_menu():
     print("Asteroid Version", VERSION)
+    print("Run \"asteroid -h\" for help")
     print("Press CTRL+D to exit")
 
 
