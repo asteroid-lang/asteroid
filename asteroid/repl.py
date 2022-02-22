@@ -36,7 +36,14 @@ def run_repl():
         try:
             # Get the new input and append it to the previous line (Possibly empty)
             # with a newline in between
-            line += "\n" + input(current_prompt)
+
+            # If the line is empty, just set the line
+            if line == "":
+                line = input(current_prompt)
+
+            # Otherwhise append a new line
+            else:
+                line += "\n" + input(current_prompt)
 
         except KeyboardInterrupt:
             line = ""

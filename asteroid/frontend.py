@@ -274,7 +274,8 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise ExpectationError(msg="Expected 'in' expression in for loop", found="EOF")
+                raise ExpectationError(msg="Expected 'in' expression in for loop",
+                        found=self.lexer.peek().type)
 
             self.lexer.match('DO')
             sl = self.stmt_list()
