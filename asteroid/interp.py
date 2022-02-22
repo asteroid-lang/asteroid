@@ -24,10 +24,12 @@ def interp(input_stream,
            symtab_dump=False,
            exceptions=False,
            redundancy=True,
-           prologue=True):
+           prologue=True,
+           initialize_state = True):
     try:
         # initialize state
-        state.initialize()
+        if initialize_state:
+            state.initialize()
 
         #lhh
         #print("path[0]: {}".format(sys.path[0]))
@@ -84,21 +86,28 @@ def interp(input_stream,
             print("Error: {}: {}: unhandled Asteroid exception: {}"
                   .format(module, lineno, term2string(throw_val.value)))
 
-        sys.exit(1)
+        if not exceptions:
+            sys.exit(1)
 
     except ReturnValue as inst:
         module, lineno = state.lineinfo
         print("Error: {}: {}: return statement used outside a function environment"
               .format(module, lineno))
-        sys.exit(1)
+
+        if not exceptions:
+            sys.exit(1)
 
     except RedundantPatternFound as e:
         print("Error:  {}".format(e))
-        sys.exit(1)
+
+        if not exceptions:
+            sys.exit(1)
 
     except NonLinearPatternError as e:
         print("Error:  {}".format(e))
-        sys.exit(1)
+
+        if not exceptions:
+            sys.exit(1)
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
@@ -108,12 +117,17 @@ def interp(input_stream,
         else:
             module, lineno = state.lineinfo
             print("Error: {}: {}: {}".format(module, lineno, e))
-            sys.exit(1)
+
+            if not exceptions:
+                sys.exit(1)
 
     except  KeyboardInterrupt as e:
-            print("Error: keyboard interrupt")
+        print("Error: keyboard interrupt")
+        if not exceptions:
             sys.exit(1)
+            
 
     except  BaseException as e:
-            print("Error: {}".format(e))
+        print("Error: {}".format(e))
+        if not exceptions:
             sys.exit(1)

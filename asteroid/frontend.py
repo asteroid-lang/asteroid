@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path, PurePath
 
-from asteroid.globals import asteroid_file_suffix
+from asteroid.globals import asteroid_file_suffix, ExpectationError
 from asteroid.lex import Lexer
 from asteroid.state import state, warning
 
@@ -151,6 +151,8 @@ class Parser:
             # allow module names without quotes
             if self.lexer.peek().type in ['STRING', 'ID']:
                 str_tok = self.lexer.match(self.lexer.peek().type)
+            elif self.lexer.peek().type == 'EOF':
+                raise ExpectationError( msg="Expected valid module name, found EOF", found='EOF' )
             else:
                 raise SyntaxError("invalid module name '{}'"
                                   .format(self.lexer.peek().value))
@@ -272,7 +274,9 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise SyntaxError("expected 'in' expression in for loop")
+                raise ExpectationError(msg="Expected 'in' expression in for loop",
+                        found=self.lexer.peek().type)
+
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
@@ -884,9 +888,12 @@ class Parser:
             return ('typematch', tok.value)
 
         else:
-            raise SyntaxError(
-                "syntax error at '{}'"
-                .format(self.lexer.peek().value))
+            raise ExpectationError(
+                expected='primary expression',
+                found=self.lexer.peek().type)
+
+            #raise SyntaxError("syntax error at '{}'"
+                # .format(self.lexer.peek().value))
 
     ###########################################################################################
     # tuple_stuff

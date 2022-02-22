@@ -7,6 +7,7 @@
 import re
 
 from asteroid.state import state, warning
+from asteroid.globals import ExpectationError
 
 # table that specifies the token value and type for keywords
 keywords = {
@@ -172,7 +173,11 @@ def tokenize(code):
         elif type == 'WHITESPACE':
             continue
         elif type == 'MISMATCH':
-            raise ValueError("unexpected character '{}'".format(value))
+            if value == '\"':
+                raise ExpectationError(expected='\"', found='EOF')
+
+            else:
+                raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
         tokens.append(Token(type, value, module, line_num))
     # always append an EOF token so we never run out of tokens
@@ -226,8 +231,7 @@ class Lexer:
         if token_type not in self.token_types:
             raise ValueError("unknown token type '{}'".format(token_type))
         elif token_type != self.curr_token.type:
-            raise ValueError("expected '{}' found '{}'."
-                             .format(token_type, self.curr_token.type))
+            raise ExpectationError( found=self.curr_token.type, expected=token_type)
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token
