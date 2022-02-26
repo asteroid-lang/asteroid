@@ -503,12 +503,13 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``toreal``, given ``item``, returns the input as a real number data type.
 * Function ``toboolean``, given ``item``, returns the input as a Boolean value of either true or false.
-* Function ``tostring`` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs where ``*TP`` indicates a``boolean``, ``integer``, or ``string`` type and ``w`` is the width specification and ``p`` is the precision specification.  When no formatting information is provided a default string conversion occurs,
+* Function ``tostring`` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs where ``*TP`` indicates a``boolean``, ``integer``, or ``string`` type and ``w`` is the width specification, ``p`` is the precision specification and ``s`` is the scientific notation flag.  When no formatting information is provided a default string conversion occurs,
 
   1. ``(v:*TP,type @stringformat(w:%integer))``
   2. ``(v:%real,type @stringformat(w:%integer))``
   3. ``(v:%real,type @stringformat(w:%integer,p:%integer))``
-  4. ``item`` - default conversion
+  4. ``(v:%real,type @stringformat(w:%integer,p:%integer,s:%boolean))``
+  5. ``item`` - default conversion
 
 * Function ``tobase`` represents the given integer ``x`` (*specifically* within the given input ``(x:%integer,base:%integer)``) as a string in the given base.
 

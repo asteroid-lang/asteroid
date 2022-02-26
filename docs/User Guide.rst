@@ -679,7 +679,7 @@ Exception handling in Asteroid is very similar to exception handling in many of 
 
     try
         let i = random @random().
-        if i >= .5 do
+        if i >= 0.5 do
             throw Head(i).
         else do
             throw Tail(i).
