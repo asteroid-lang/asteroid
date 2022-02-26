@@ -21,13 +21,20 @@ structure __STRINGFORMAT__
 with
   data length.
   data precision.
+  data scientific.
   function __init__
+    with (l:%integer,p:%integer,s:%boolean) do
+      let this @length = l.
+      let this @precision = p.
+      let this @scientific = s.
     with (l:%integer,p:%integer) do
       let this @length = l.
       let this @precision = p.
+      let this @scientific = none.
     with l:%integer do
       let this @length = l.
       let this @precision = none.
+      let this @scientific = none.
     end
 end
 
@@ -89,7 +96,7 @@ function tostring
 -- if format values are given apply the
 -- formatting to the object.
 
-with (v:*__TP__,__STRINGFORMAT__(w:%integer,none)) do
+with (v:*__TP__,__STRINGFORMAT__(w:%integer,none,none)) do
   -- booleans, integers, and strings (see TP pattern) with width spec are
   -- right justified. if width spec is too narrow it is ignored.
   let vs = this @tostring(v).
@@ -99,25 +106,40 @@ with (v:*__TP__,__STRINGFORMAT__(w:%integer,none)) do
   else do
     return vs.
   end
-with (v:%real,__STRINGFORMAT__(w:%integer,none)) do return escape
+with (v:%real,__STRINGFORMAT__(w:%integer,none,none)) do return escape
 -- floating point values with only a width spec are left justified with
 -- zero padding on the right.
 "
 global __retval__
 (V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
 (W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+
 fmtstr = '{:'+str(w_val)+'f}'
 __retval__ = ('string', fmtstr.format(v_val))
 "
 -- floating point values with a width and precision specs
 -- are formatted according to Python formatting rules
-with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer)) do return escape
+with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer,none)) do return escape
 "
 global __retval__
 (V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
 (W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
 (P_TYPE, p_val) = state.symbol_table.lookup_sym('p')
+
 fmtstr = '{:'+str(w_val)+'.'+str(p_val)+'f}'
+__retval__ = ('string', fmtstr.format(v_val))
+"
+-- floating point values with width, precision and scientific notation specs
+-- are formatted according to Python formatting rules
+with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer,s:%boolean)) do return escape
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+(P_TYPE, p_val) = state.symbol_table.lookup_sym('p')
+(S_TYPE, s_val) = state.symbol_table.lookup_sym('s')
+
+fmtstr = '{:'+str(w_val)+'.'+str(p_val)+('e}' if s_val else 'f}')
 __retval__ = ('string', fmtstr.format(v_val))
 "
 with item do return escape
@@ -136,6 +158,8 @@ function stringformat
 ------------------------------------------------------------------
 -- a wrapper around our __STRINGFORMAT__ object as a member
 -- of our module.
+with (l:%integer,p:%integer,s:%boolean) do
+  return __STRINGFORMAT__(l,p,s).
 with (l:%integer,p:%integer) do
   return __STRINGFORMAT__(l,p).
 with l:%integer do
