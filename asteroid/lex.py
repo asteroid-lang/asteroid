@@ -89,7 +89,6 @@ token_specs = [
     (r'\.',                                                     'DOT'),
     (r',',                                                      'COMMA'),
     (r'=',                                                      'ASSIGN'),
-    (r'\'',                                                     'QUOTE'),
     # this is the catch-all pattern, it has to be
     # here do that we can report illegal characters
     # in the input.

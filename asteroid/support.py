@@ -257,8 +257,8 @@ def term2string(term):
         term_string += term2string(args)
         return term_string
 
-    elif TYPE == 'quote':
-        # we are printing out a term - just ignore the quote operator
+    elif TYPE == 'pattern':
+        # we are printing out a term - just ignore the pattern operator
         val = term[1]
         return term2string(val)
 

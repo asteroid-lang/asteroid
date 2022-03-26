@@ -1,0 +1,17 @@
+structure A with
+  data a.
+  data b.
+end
+
+let zp = pattern A(p,q). -- pattern constructed purely structural
+let zo = A(pattern p, pattern q). -- pattern constructed as an object
+
+-- both patterns can match objects
+assert(A(1,2) is %[*zp]%).
+assert(A(1,2) is %[*zo]%).
+
+-- two patterns are equivalent if they can match each other, 
+-- but these patterns are not equivalent: they cannot match each other
+assert(zo is %[*zp]%).
+assert(not(zp is %[*zo]%)).
+

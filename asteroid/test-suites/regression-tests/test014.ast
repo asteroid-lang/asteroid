@@ -2,7 +2,7 @@
 load system io.
 
 try
-    let (1,y) = '(1,x).
+    let (1,y) = pattern (1,x).
 catch e do
     io @println e.
 end
