@@ -110,9 +110,8 @@ def unify(term, pattern, unifying = True ):
     elif ((not unifying) and (term[0] == 'deref')):
 
         # Unpack a term-side first-class pattern if evaluating redundant clauses
-        (ID, sym) = term[1]
-        term = state.symbol_table.lookup_sym(sym)
-        return unify(term[1], pattern, unifying)
+        term_pattern = walk(term[1])
+        return unify(term_pattern, pattern, unifying)
 
     ### Asteroid value level matching
     elif pattern[0] == 'object' and term[0] == 'object':
@@ -185,7 +184,11 @@ def unify(term, pattern, unifying = True ):
         if else_exp[0] != 'null':
             raise ValueError("conditional patterns do not support else clauses")
 
-        return unify(pexp,pattern,False)
+        #return unify(pexp,pattern,False)
+        # Otherwise if the term is not another cmatch the clauses are correctly ordered.
+        raise PatternMatchFailed(
+            "Conditional patterns not supported.")
+
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
@@ -221,7 +224,9 @@ def unify(term, pattern, unifying = True ):
                     .format(typematch, term[0]))
 
         elif typematch == 'pattern':
-            if term[0] == 'quote':
+            # any kind of structure can be a pattern, and variables
+            # see globals.py for a definition of 'patterns'
+            if term[0] in patterns:
                 return []
             else:
                 raise PatternMatchFailed(
@@ -285,16 +290,16 @@ def unify(term, pattern, unifying = True ):
             "pattern of type '{}' not allowed in pattern matching"
             .format(pattern[0]))
 
-    elif pattern[0] == 'quote':
-        # quotes on the pattern side can always be ignored
+    elif pattern[0] == 'pattern':
+        # pattern operator on the pattern side can always be ignored
         # --TODO double check - ttc
-        if term[0] == 'quote':
+        if term[0] == 'pattern':
             return unify(term[1], pattern[1], unifying)
         else:
             return unify(term, pattern[1], unifying)
 
-    elif term[0] == 'quote' and pattern[0] not in ['id', 'index']:
-        # ignore quote on the term if we are not trying to unify term with
+    elif term[0] == 'pattern' and pattern[0] not in ['id', 'index']:
+        # ignore pattern operator on the term if we are not trying to unify term with
         # a variable or other kind of lval
         return unify(term[1], pattern, unifying)
 
@@ -322,10 +327,12 @@ def unify(term, pattern, unifying = True ):
         unifier = (pattern, term)
         return [unifier]
 
-    elif term[0] == 'id' and unifying: # variable in term not allowed
-        raise PatternMatchFailed(      # when unifying
-            "variable '{}' in term not allowed"
-            .format(term[1]))
+# lhh: looking at patterns as values we are now allowed to match
+# against patterns as terms where the terms now include variables.
+#    elif term[0] == 'id' and unifying: # variable in term not allowed
+#        raise PatternMatchFailed(      # when unifying
+#            "variable '{}' in term not allowed"
+#            .format(term[1]))
 
     elif pattern[0] == 'id': # variable in pattern add to unifier
         sym = pattern[1]
@@ -561,6 +568,10 @@ def read_at_ix(structure_val, ix):
         else:
             ix_val = walk(ix)
 
+    elif structure_val[0] == 'pattern':
+        # simple patterns are just structures - skip the pattern operator
+        return read_at_ix(structure_val[1], ix)
+
     else:
         raise ValueError("'{}' is not indexable".format(structure_val[0]))
 
@@ -626,6 +637,10 @@ def store_at_ix(structure_val, ix, value):
             ix_val = ('integer', member_names.index(ix[1]))
         else:
             ix_val = walk(ix)
+
+    elif structure_val[0] == 'pattern':
+        # simple patterns are just structures - skip the pattern operator
+        return store_at_ix(structure_val[1], ix, value)
 
     else:
         raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
@@ -1225,11 +1240,11 @@ def eval_exp(node):
     #lhh
     #print("after expand: {}".format(exp_val_expand))
     # now walk the actual term
-    state.ignore_quote = True
+    state.ignore_pattern += 1
     exp_val = walk(exp_val_expand)
     #lhh
     #print("after walk: {}".format(exp_val))
-    state.ignore_quote = False
+    state.ignore_pattern -= 1
     return exp_val
 
 #########################################################################
@@ -1603,12 +1618,10 @@ dispatch_dict = {
     'boolean'       : lambda node : node,
     'object'        : lambda node : node,
     'eval'          : eval_exp,
-    # quoted code should be treated like a constant if not ignore_quote
-    'quote'         : lambda node : walk(node[1]) if state.ignore_quote else node,
+    # pattern code should be treated like a constant if not ignore_pattern
+    'pattern'         : lambda node : walk(node[1]) if state.ignore_pattern else node,
     # constraint patterns
     'constraint'    : constraint_exp,
-    # the following is now handled with an if-exp
-    #'cmatch'        : constraint_exp,
     'typematch'     : constraint_exp,
     # type tag used in conjunction with escaped code in order to store
     # foreign objects in Asteroid data structures

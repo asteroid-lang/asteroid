@@ -33,7 +33,6 @@
     | WHILE exp DO stmt_list END
     | REPEAT DO? stmt_list UNTIL exp '.'?
     | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-    | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
     | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
     | THROW exp '.'?
     | BREAK '.'?
@@ -69,15 +68,11 @@
    to highlight the SEMANTIC difference between patterns and
    expressions.
   */
-  pattern
-    : exp
-
   exp
-    : quote_exp
+    : pattern
 
-  quote_exp
-    : QUOTE exp
-    | PATTERN WITH? exp
+  pattern
+    : PATTERN WITH? exp
     | '%[' exp ']%'      /* constraint-only pattern match */
     | head_tail
 

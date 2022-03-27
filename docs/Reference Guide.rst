@@ -2,18 +2,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
 
 .. highlight:: none
 
@@ -31,6 +22,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
+
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
@@ -54,7 +46,6 @@ are written in quotes.
     | WHILE exp DO stmt_list END
     | REPEAT DO? stmt_list UNTIL exp '.'?
     | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
-    | MATCH exp WITH? (CASE pattern DO stmt_list)+ (OTHERWISE DO? stmt_list)? END
     | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
     | THROW exp '.'?
     | BREAK '.'?
@@ -85,15 +76,11 @@ are written in quotes.
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
   
-  pattern
-    : exp
-
   exp
-    : quote_exp
+    : pattern
 
-  quote_exp
-    : QUOTE exp
-    | PATTERN WITH? exp
+  pattern
+    : PATTERN WITH? exp
     | '%[' exp ']%'      
     | head_tail
 
@@ -165,6 +152,7 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
+
 
 
 Builtin Functions
@@ -389,11 +377,13 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 An example,
 ::
+
     load system io.
     load system math.
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
+
 
 Pick
 ^^^^
@@ -403,6 +393,7 @@ pick objects that allow a user to randomly pick items from a list using the ``pi
 The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
 Here is a simple use case
 ::
+
    load system io.
    load system pick.
 
@@ -446,11 +437,13 @@ The ``sort`` function makes use of a user-defined order predicate on the list's 
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
 The following is a simple example,
 ::
+
    load system io.
    load system sort.
    let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
                        [10,5,110,50]).
     io @println sl.
+
 
 prints the sorted list::
 
@@ -473,6 +466,7 @@ The following stream interface functions are available,
 
 A simple use case.
 ::
+
    load system io.
    load system stream.
 
@@ -515,6 +509,7 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 Here is a program that exercises some of the string formatting options,
 ::
+
     load system io.
     load system type.
     load system math.
@@ -536,6 +531,7 @@ Here is a program that exercises some of the string formatting options,
     let r = type @tostring(math @pi,type @stringformat(6,3)).
     io @println r.
 
+
 The output of the program is,
 ::
 
@@ -556,6 +552,7 @@ Notice the right justification of the various values within the given string len
 
 A simple example program using the ``gettype`` function,
 ::
+
    load system type.
 
    let i = 1.
@@ -597,6 +594,7 @@ The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 
 Here is a simple example program for the ``vector`` module,
 ::
+
    load system io.
    load system vector.
 
@@ -607,3 +605,4 @@ Here is a simple example program for the ``vector`` module,
    
 
 which prints the value ``0``.
+

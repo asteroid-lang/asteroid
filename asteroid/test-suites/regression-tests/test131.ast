@@ -1,0 +1,4 @@
+-- patterns can always match themselves.
+let z = pattern (p,q).
+assert(z is %[*z]%).
+

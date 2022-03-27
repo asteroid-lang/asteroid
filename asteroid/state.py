@@ -1,7 +1,7 @@
 ###########################################################################################
 # Asteroid State Object
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 from asteroid.symtab import SymTab
@@ -14,7 +14,7 @@ class State:
         self.symbol_table = SymTab()
         self.modules = [] # loaded modules
         self.AST = None
-        self.ignore_quote = False # used to evaluate quoted expressions
+        self.ignore_pattern = 0 # used to evaluate pattern expressions
         self.constraint_lvl = 0 # used to evaluate constraint-only patterns
         self.cond_warning = False # used to indicate if conditional subsumption
                                   # warning has been displayed

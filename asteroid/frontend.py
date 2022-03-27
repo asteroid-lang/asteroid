@@ -44,11 +44,10 @@ primary_lookahead = {
     } | ops
 
 exp_lookahead = {
-    'QUOTE',
     'PATTERN',
     'LCONSTRAINT',} | primary_lookahead
 
-exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
+exp_lookahead_no_ops = exp_lookahead - ops
 
 primary_lookahead_no_ops = exp_lookahead_no_ops
 
@@ -525,40 +524,26 @@ class Parser:
         return ('body-list', ('list', body_list))
 
     ###########################################################################################
-    # pattern
-    #    : exp
-    def pattern(self):
-        dbg_print("parsing PATTERN")
-        e = self.exp()
-        return e
-
-    ###########################################################################################
     # exp
-    #    : quote_exp
+    #    : pattern
     def exp(self):
         dbg_print("parsing EXP")
-        v = self.quote_exp()
+        v = self.pattern()
         return v
 
     ###########################################################################################
-    # quote_exp
-    #    : QUOTE exp
-    #    | PATTERN WITH? exp
+    # pattern
+    #    : PATTERN WITH? exp
     #    | '%[' exp ']%'
     #    | head_tail
-    def quote_exp(self):
-        dbg_print("parsing QUOTE_EXP")
+    def pattern(self):
+        dbg_print("parsing PATTERN")
 
-        if self.lexer.peek().type == 'QUOTE':
-            self.lexer.match('QUOTE')
-            v = self.exp()
-            return ('quote', v)
-        # 'pattern with' is just the long version of the quote char
-        elif self.lexer.peek().type == 'PATTERN':
+        if self.lexer.peek().type == 'PATTERN':
             self.lexer.match('PATTERN')
             self.lexer.match_optional('WITH')
             v = self.exp()
-            return ('quote', v)
+            return ('pattern', v)
         elif self.lexer.peek().type == 'LCONSTRAINT': #constraint-only pattern match
             self.lexer.match('LCONSTRAINT')
             v = self.exp()
