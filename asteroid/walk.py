@@ -110,9 +110,8 @@ def unify(term, pattern, unifying = True ):
     elif ((not unifying) and (term[0] == 'deref')):
 
         # Unpack a term-side first-class pattern if evaluating redundant clauses
-        (ID, sym) = term[1]
-        term = state.symbol_table.lookup_sym(sym)
-        return unify(term[1], pattern, unifying)
+        term_pattern = walk(term[1])
+        return unify(term_pattern, pattern, unifying)
 
     ### Asteroid value level matching
     elif pattern[0] == 'object' and term[0] == 'object':
@@ -185,7 +184,11 @@ def unify(term, pattern, unifying = True ):
         if else_exp[0] != 'null':
             raise ValueError("conditional patterns do not support else clauses")
 
-        return unify(pexp,pattern,False)
+        #return unify(pexp,pattern,False)
+        # Otherwise if the term is not another cmatch the clauses are correctly ordered.
+        raise PatternMatchFailed(
+            "Conditional patterns not supported.")
+
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
@@ -222,7 +225,7 @@ def unify(term, pattern, unifying = True ):
 
         elif typematch == 'pattern':
             # any kind of structure can be a pattern, and variables
-            patterns = ['pattern','id','string','real','integer','list','tuple','boolean','none','object','struct']
+            # see globals.py for a definition of 'patterns'
             if term[0] in patterns:
                 return []
             else:
@@ -324,6 +327,8 @@ def unify(term, pattern, unifying = True ):
         unifier = (pattern, term)
         return [unifier]
 
+# lhh: looking at patterns as values we are now allowed to match
+# against patterns as terms where the terms now include variables.
 #    elif term[0] == 'id' and unifying: # variable in term not allowed
 #        raise PatternMatchFailed(      # when unifying
 #            "variable '{}' in term not allowed"
@@ -1617,8 +1622,6 @@ dispatch_dict = {
     'pattern'         : lambda node : walk(node[1]) if state.ignore_pattern else node,
     # constraint patterns
     'constraint'    : constraint_exp,
-    # the following is now handled with an if-exp
-    #'cmatch'        : constraint_exp,
     'typematch'     : constraint_exp,
     # type tag used in conjunction with escaped code in order to store
     # foreign objects in Asteroid data structures

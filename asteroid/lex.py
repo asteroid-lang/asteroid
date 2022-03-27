@@ -100,7 +100,6 @@ token_specs = [
 implicit_token_types = [
     'INTEGER',
     'REAL',
-    'CMATCH',
 ]
 
 class Token:

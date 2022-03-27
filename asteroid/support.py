@@ -316,180 +316,18 @@ def term2string(term):
         term_string += term2string(state.symbol_table.lookup_sym(pName))
         return term_string
 
-    elif TYPE == 'cmatch':              # Handle a conditional pattern
-
-        (CMATCH,CVALUE,CEXPRESSION) = term
-
-        #Check for a compound condtional( ANDs and ORs )
-        if (((CEXPRESSION[1])[1] == '__and__') or ((CEXPRESSION[1])[1] == '__or__')):
-            return compound_relational_to_string(term)
-
-        try:
-            (NAMED_PATTERN,ID,pattern) = CVALUE
-        except:
-            ID = CVALUE
-            pattern = CVALUE
-        (APPLY,expression_type,expressions) = CEXPRESSION
-
-        if ((expressions[0] == 'tuple')):
-
-            if ((expression_type[1])[0] == '_'): #Handle conditional prebuit operation
-                (TUPLE,[ expression_lhs , expression_rhs ]) = expressions
-
-                term_string = term2string(ID) + ':'
-                term_string += term2string(pattern)
-                term_string += " %" + "if "
-                term_string += term2string(expression_lhs)
-
-                if expression_type[1] == '__gt__':
-                    term_string += ' > '
-                elif expression_type[1] == '__lt__':
-                    term_string += ' < '
-                elif expression_type[1] == '__le__':
-                    term_string += ' <= '
-                elif expression_type[1] == '__ge__':
-                    term_string += ' >= '
-                elif expression_type[1] == '__eq__':
-                    term_string += ' == '
-                elif expression_type[1] == '__ne__':
-                    term_string += ' =/= '
-
-                term_string += term2string(expression_rhs)
-
-            else:               #Handle a function with multiple args
-                (TUPLE,EXPRESION_LIST) = expressions
-
-                term_string = term2string(ID)+ ':'
-                term_string += term2string(pattern)
-                term_string += " if "
-                term_string += expression_type[1] + '( '
-
-                for expression in EXPRESION_LIST:
-                    term_string += term2string(expression)
-                    term_string += ', '
-                term_string = term_string[:-2]
-                term_string += ' )'
-
-        elif (expressions[0] == 'none'): #Handle a function with no arguments
-            term_string = term2string(ID)+ ':'
-            term_string += term2string(pattern)
-            term_string += " if "
-            term_string += expression_type[1] + '()'
-
-        elif (expressions[0] in ['id','integer','real','sting','boolean']): #Handle a function with one arguments
-            term_string = term2string(ID)+ ':'
-            term_string += term2string(pattern)
-            term_string += " if "
-            term_string += expression_type[1] + '( '
-            term_string += str(expressions[1]) + ' )'
-
-        return term_string
+    elif TYPE == 'if-exp':              # Handle a conditional pattern
+        (IF_EXP,EXPRESSION,value,NULL) = term
+        # conditions can be arbitrary computations not structural terms
+        # therefore we don't print the whole tree.
+        return term2string(value)+' if (condition...)'
 
     else:
         #lhh print(term)
         raise ValueError(
             "unknown type '{}' in term2string"
             .format(TYPE))
-##############################################################################################
-# term2string helper
-# This function takes in a relational conditional expression from a conditional pattern clause
-# and then returns that expression as a nicely formatted string
-#
-# Ths realtional expression is expected to come in its raw nested tuple/AST form from the Asteroid
-# Interpreter.
-def walk_relational_expr(term):
 
-    # Unpack
-    (APPLY,expression_type,args) = term
-    (TUPLE,arg_list) = args
-
-    term_string = ''
-    term_string += term2string(arg_list[0])
-
-    # Parse and write the argument type
-    if expression_type[1] == '__gt__':
-        term_string += ' > '
-    elif expression_type[1] == '__lt__':
-        term_string += ' < '
-    elif expression_type[1] == '__le__':
-        term_string += ' <= '
-    elif expression_type[1] == '__ge__':
-        term_string += ' >= '
-    elif expression_type[1] == '__eq__':
-        term_string += ' == '
-    elif expression_type[1] == '__ne__':
-        term_string += ' =/= '
-    else:
-        return ''
-
-    term_string += term2string(arg_list[1])
-
-    return term_string
-
-##############################################################################################
-# term2string helper
-#
-# This function helps construct a string from a compound relational conditional pattern clause.
-# The and/or nodes are walked down as the string is constructed.
-# This function takes in the raw term/AST from the compound relational conditional pattern clause
-# in the nested tuple/AST form.
-#
-# Example clause:
-#               with (x) if x <= 10 and x > 1 or x > 2 and x < 9 or x < 7 do
-# Example output:
-#               x: if x <= 10 and x > 1 or x > 2 and x < 9 or x < 7
-def compound_relational_to_string(term):
-
-    #Check if we have passed by the relation type before
-    not_first_pass_and = False
-    not_first_pass_or = False
-
-    # If its the first time we have seen this we need to write the header/pattern name
-    # before recursing
-    if (term[0] == 'cmatch'):
-        (CMATCH,pattern,apply_list) = term
-        term_string = term2string(pattern)
-        term_string += ': if '
-        term_string += compound_relational_to_string(apply_list)
-        return term_string
-
-    # Else we just unpack the node and peek at the upcoming operation
-    else:
-        (APPLY,operation,apply_list) = term
-        term_string = ''
-        op_name = operation[1]
-
-    # Walk down the tree, constucting the string along the way
-    if ( op_name == '__or__' ):
-
-        for expr in apply_list[1]:
-
-            # Add seperator if appropriate
-            if not_first_pass_or:
-                term_string += " or "
-            else:
-                not_first_pass_or = True
-
-            #write the current term to string
-            term_string += compound_relational_to_string(expr)
-    elif ( op_name == '__and__'):
-
-        for expr in apply_list[1]:
-
-            # Add seperator if appropriate
-            if not_first_pass_and:
-                term_string += " and "
-            else:
-                not_first_pass_and = True
-
-            #write the current term to string
-            if (expr[1])[1] in ['__and__','__or__']:
-                term_string += compound_relational_to_string(expr)
-            term_string += walk_relational_expr(expr)
-    else:
-        term_string += walk_relational_expr(term)
-
-    return term_string
 ##############################################################################################
 # Function head_tail_length determines the lenth of a head-tail node by walking to the end.
 # The length is then returned from this function as in integer.

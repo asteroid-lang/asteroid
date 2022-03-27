@@ -151,3 +151,19 @@ unify_not_allowed = {
 }
 
 ###########################################################################################
+# list of structures that constitute patterns
+
+patterns = [
+    'pattern',
+    'id',
+    'string',
+    'real',
+    'integer',
+    'list',
+    'tuple',
+    'boolean',
+    'none',
+    'object',
+    'struct',
+    'typematch',
+]
