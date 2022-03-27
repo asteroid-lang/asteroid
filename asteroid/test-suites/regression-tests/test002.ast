@@ -85,7 +85,7 @@ try
   let v = 1 if v == 2.
   throw Error("FAIL: no expected error ").
 catch Exception("SystemError", s) do
-  if not isnone(s @index("else clause")) do
+  if not isnone(s @index("'else' clause")) do
   . -- pass
   else
     throw Error("FAIL: unexpected error "+s).
