@@ -1,0 +1,48 @@
+load system io.
+
+function foo
+    with %pattern do
+        io @println("is a pattern").
+    with _ do
+        io @println("not a pattern").
+    end
+
+foo (pattern x).
+foo (lambda with x do return x).
+
+function foo
+    with %pattern do
+        io @println("is a pattern").
+    with %function do
+        io @println("not a pattern").
+    end
+
+foo (pattern x).
+foo (lambda with x do return x).
+
+
+function foo
+    with %function do
+        io @println("not a pattern").
+    with %pattern do
+        io @println("is a pattern").
+    end
+
+foo (pattern x).
+foo (lambda with x do return x).
+
+function foo
+    with %pattern do
+        io @println("not a pattern").
+    with %pattern do
+        io @println("is a pattern").
+    end
+
+try
+    foo (pattern x).
+    throw Error("Redundanct pattern not detected!").
+catch e do
+    io @println("Success!").
+end
+
+let x:%pattern = 1.
