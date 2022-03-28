@@ -60,7 +60,7 @@ elif item_val[0] == 'struct':
 
 else:
     raise ValueError(
-   	  'len expected a list, tuple, string, or structure got {}'
+   	  'len expected a list, tuple, string, or structure got \'{}\''
 	    .format(item_val[0]))
 "
 end
@@ -227,7 +227,7 @@ this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
 if item_val[0] not in ['list', 'string', 'tuple']:
-    raise ValueError('extend expected a list, string, or tuple, got {}'
+    raise ValueError('extend expected a list, string, or tuple, got \'{}\''
                 .format(item_val[0]))
 
 __retval__ = ('list', this_val[1].extend(item_val[1]))
