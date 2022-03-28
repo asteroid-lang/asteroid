@@ -46,3 +46,57 @@ catch e do
 end
 
 let x:%pattern = 1.
+
+
+function foo
+    with %pattern do
+        io @println("not a pattern").
+    with %integer do
+        io @println("is a pattern").
+    end
+
+try
+    foo (pattern x).
+    foo (1).
+catch e do
+    io @println("Success!").
+end
+
+function foo
+    with %pattern do
+        io @println("not a pattern").
+    with %real do
+        io @println("is a pattern").
+    end
+
+try
+    foo (pattern x).
+    foo (1.1).
+catch e do
+    io @println("Success!").
+end
+
+function foo
+    with %integer do
+        io @println("not a pattern").
+    with %pattern do
+        io @println("is a pattern").
+    end
+
+
+foo (pattern x).
+foo (1).
+
+function foo
+    with %pattern do
+        io @println("not a pattern").
+    with %string do
+        io @println("is a pattern").
+    end
+
+try
+    foo (pattern x).
+    foo ("hello").
+catch e do
+    io @println("Success!").
+end
