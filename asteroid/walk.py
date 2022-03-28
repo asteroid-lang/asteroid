@@ -244,8 +244,8 @@ def unify(term, pattern, unifying = True ):
                 if (term[0] in ["list","head-tail"]):
                     if ((typematch == 'list')):
                         return []
-
-                if typematch == term[nextIndex]:
+                
+                if term[nextIndex] in pattern_subsumes:
                     return []
                 else:
                     raise PatternMatchFailed(

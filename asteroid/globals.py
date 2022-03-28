@@ -167,3 +167,20 @@ patterns = [
     'struct',
     'typematch',
 ]
+
+###########################################################################################
+# list of structures that a pattern type-pattern will subsume/overlap
+
+pattern_subsumes = [
+    'pattern',
+    'string',
+    'real',
+    'integer',
+    'list',
+    'tuple',
+    'boolean',
+    'none',
+    'object',
+    'struct',
+    'typematch',
+]
