@@ -34,7 +34,6 @@ keywords = {
     'let'           : 'LET',
     'load'          : 'LOAD',
     'loop'          : 'LOOP',
-    'nonlocal'      : 'NONLOCAL',
     'not'           : 'NOT',
     'or'            : 'OR',
     'orwith'        : 'ORWITH',

@@ -62,7 +62,6 @@ stmt_lookahead = {
     'LET',
     'LOAD',
     'LOOP',
-    'NONLOCAL',
     'REPEAT',
     'RETURN',
     'STRUCTURE',
@@ -118,7 +117,6 @@ class Parser:
     #    : '.' // NOOP
     #    | LOAD SYSTEM? (STRING | ID) '.'?
     #    | GLOBAL id_list '.'?
-    #    | NONLOCAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | STRUCTURE ID WITH struct_stmts END
     #    | TRAIT ID WITH trait_stmts END
@@ -220,13 +218,6 @@ class Parser:
             id_list = self.id_list()
             self.lexer.match_optional('DOT')
             return ('global', id_list)
-
-        elif tt == 'NONLOCAL':
-            dbg_print("parsing NONLOCAL")
-            self.lexer.match('NONLOCAL')
-            id_list = self.id_list()
-            self.lexer.match_optional('DOT')
-            return ('nonlocal', id_list)
 
         elif tt == 'ASSERT':
             dbg_print("parsing ASSERT")
