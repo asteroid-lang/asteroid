@@ -153,7 +153,7 @@ unify_not_allowed = {
 ###########################################################################################
 # list of structures that constitute patterns
 
-patterns = [
+patterns = {
     'pattern',
     'id',
     'string',
@@ -166,21 +166,9 @@ patterns = [
     'object',
     'struct',
     'typematch',
-]
+}
 
 ###########################################################################################
 # list of structures that a pattern type-pattern will subsume/overlap
 
-pattern_subsumes = [
-    'pattern',
-    'string',
-    'real',
-    'integer',
-    'list',
-    'tuple',
-    'boolean',
-    'none',
-    'object',
-    'struct',
-    'typematch',
-]
+pattern_subsumes = patterns - {'id'}
