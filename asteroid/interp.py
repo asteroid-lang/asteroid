@@ -108,18 +108,23 @@ def interp(input_stream,
         if not exceptions:
             sys.exit(1)
 
-    except ExpectationError as e:
-        module, lineno = state.lineinfo
-        print("Error: {}: {}: {}".format(module, lineno, e.value))
-        # needed for REPL
-        if not exceptions:
-            sys.exit(1)
-
     except  KeyboardInterrupt as e:
         print("Error: keyboard interrupt")
         # needed for REPL
         if not exceptions:
             sys.exit(1)
+
+    # Expectation Error is used by the REPL, so, like exceptions,
+    # we re throw it
+    except ExpectationError as e:
+        if exceptions:
+            raise e
+        else:
+            module, lineno = state.lineinfo
+            print("Error: {}: {}: {}".format(module, lineno, e.value))
+            # needed for REPL
+            if not exceptions:
+                sys.exit(1)
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace

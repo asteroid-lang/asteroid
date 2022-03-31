@@ -111,6 +111,7 @@ def init_token_values():
     # grab tokens from token_specs table
     token_values.update({'INTEGER':'integer value'})
     token_values.update({'REAL':'real value'})
+    token_values.update({'EOF':'EOF'})
     for (_,display,type) in token_specs:
         token_values.update({type:display})
 
