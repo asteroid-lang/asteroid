@@ -68,7 +68,7 @@ class SymTab:
         self.globals[CURR_SCOPE].append(sym)
 
     def lookup_sym(self, sym, strict=True):
-        dict = self.find_sym(sym)
+        dict = self.find_sym_dict(sym)
         if not dict:
             if strict:
                 raise ValueError("'{}' is not defined".format(sym))
@@ -81,7 +81,7 @@ class SymTab:
         # find the first occurence of sym
         # and update the associated value
 
-        dict = self.find_sym(sym)
+        dict = self.find_sym_dict(sym)
         if not dict:
             raise ValueError("'{}' is not defined".format(sym))
         else:
@@ -100,7 +100,7 @@ class SymTab:
         else:
             return False
 
-    def find_sym(self, sym):
+    def find_sym_dict(self, sym):
         n_scopes = len(self.scoped_symtab)
         for scope in range(n_scopes):
             if sym in self.scoped_symtab[scope]:

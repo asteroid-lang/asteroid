@@ -246,7 +246,7 @@ def unify(term, pattern, unifying = True ):
 
         else:
             # Check if the typematch is in the symbol table
-            in_symtab = state.symbol_table.find_sym(typematch)
+            in_symtab = state.symbol_table.find_sym_dict(typematch)
 
             # If not, then it is not a vaid type for typematch
             if not in_symtab:
@@ -312,7 +312,7 @@ def unify(term, pattern, unifying = True ):
         (APPLY,
          (ID, apply_id),
          arg) = pattern
-        type = state.symbol_table.find_sym(apply_id)
+        type = state.symbol_table.lookup_sym(apply_id,strict=False)
         if (not type) or (type and type[0] != 'struct'):
             raise PatternMatchFailed("'{}' is not a type".format(apply_id))
 

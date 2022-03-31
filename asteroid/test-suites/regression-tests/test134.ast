@@ -1,0 +1,13 @@
+-- pattern matching does not work with undeclared types
+
+structure A with
+  data a.
+  data b.
+end
+
+try
+   let B(x,y) = A(1,2).
+catch Exception(t,m) do
+   assert(m is "pattern match failed: 'B' is not a type").
+end
+
