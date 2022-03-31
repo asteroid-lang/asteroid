@@ -503,7 +503,7 @@ def check_repeated_symbols( unifiers ):
 
         elif sym in symbols: # We have found a non-linear pattern
             raise NonLinearPatternError(
-            "multiple instances of {} found within a pattern.".format(sym))
+            "multiple instances of '{}' found within pattern.".format(sym))
 
         else: # Else we have never seen this before so we record it.
             symbols[sym] = term
