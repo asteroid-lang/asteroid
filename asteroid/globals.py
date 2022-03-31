@@ -63,7 +63,7 @@ class ThrowValue(Exception):
         self.value = value
 
     def __str__(self):
-        return(repr(self.value))
+        return(str(self.value))
 
 #########################################################################
 class PatternMatchFailed(Exception):
@@ -71,7 +71,7 @@ class PatternMatchFailed(Exception):
         self.value = "pattern match failed: " + value
 
     def __str__(self):
-        return(repr(self.value))
+        return(self.value)
 
 #########################################################################
 class NonLinearPatternError(Exception):
@@ -79,7 +79,8 @@ class NonLinearPatternError(Exception):
         self.value = "non-linear pattern error: " + value
 
     def __str__(self):
-        return(repr(self.value))
+        return(self.value)
+
 #########################################################################
 class ExpectationError(Exception):
     def __init__(self, found, expected):
@@ -87,7 +88,8 @@ class ExpectationError(Exception):
         self.value = "expected {} found {}.".format(str(expected), str(found))
 
     def __str__(self):
-        return(repr(self.value))
+        return(self.value)
+        
 ##############################################################################################
 # *** Part of the Redundant Pattern Detector ***
 #
