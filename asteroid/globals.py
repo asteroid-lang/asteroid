@@ -82,13 +82,9 @@ class NonLinearPatternError(Exception):
         return(repr(self.value))
 #########################################################################
 class ExpectationError(Exception):
-    def __init__(self, found, msg=None, expected=None):
+    def __init__(self, found, expected):
         self.found_EOF = (found == 'EOF')
-
-        if msg:
-            self.value = msg
-        else:
-            self.value = "expected {} found {}.".format(str(expected), str(found))
+        self.value = "expected {} found {}.".format(str(expected), str(found))
 
     def __str__(self):
         return(repr(self.value))

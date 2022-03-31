@@ -1,7 +1,7 @@
 ###########################################################################################
 # Asteroid interpreter
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import os
@@ -40,7 +40,6 @@ def interp(input_stream,
 
         # read in prologue
         if prologue:
-
             prologue_file = ''
             prologue_file_base = os.path.join('modules', prologue_name)
             module_path = os.path.join(os.path.split(os.path.abspath(__file__))[0], prologue_file_base)
@@ -85,7 +84,7 @@ def interp(input_stream,
         else:
             print("Error: {}: {}: unhandled Asteroid exception: {}"
                   .format(module, lineno, term2string(throw_val.value)))
-
+        # needed for REPL
         if not exceptions:
             sys.exit(1)
 
@@ -93,21 +92,39 @@ def interp(input_stream,
         module, lineno = state.lineinfo
         print("Error: {}: {}: return statement used outside a function environment"
               .format(module, lineno))
-
+        # needed for REPL
         if not exceptions:
             sys.exit(1)
 
     except RedundantPatternFound as e:
         print("Error:  {}".format(e))
-
+        # needed for REPL
         if not exceptions:
             sys.exit(1)
 
     except NonLinearPatternError as e:
         print("Error:  {}".format(e))
-
+        # needed for REPL
         if not exceptions:
             sys.exit(1)
+
+    except  KeyboardInterrupt as e:
+        print("Error: keyboard interrupt")
+        # needed for REPL
+        if not exceptions:
+            sys.exit(1)
+
+    # Expectation Error is used by the REPL, so, like exceptions,
+    # we re throw it
+    except ExpectationError as e:
+        if exceptions:
+            raise e
+        else:
+            module, lineno = state.lineinfo
+            print("Error: {}: {}: {}".format(module, lineno, e.value))
+            # needed for REPL
+            if not exceptions:
+                sys.exit(1)
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
@@ -117,17 +134,12 @@ def interp(input_stream,
         else:
             module, lineno = state.lineinfo
             print("Error: {}: {}: {}".format(module, lineno, e))
-
+            # needed for REPL
             if not exceptions:
                 sys.exit(1)
 
-    except  KeyboardInterrupt as e:
-        print("Error: keyboard interrupt")
-        if not exceptions:
-            sys.exit(1)
-            
-
     except  BaseException as e:
         print("Error: {}".format(e))
+        # needed for REPL
         if not exceptions:
             sys.exit(1)

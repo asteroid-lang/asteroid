@@ -9,7 +9,7 @@ import sys
 from pathlib import Path, PurePath
 
 from asteroid.globals import asteroid_file_suffix, ExpectationError
-from asteroid.lex import Lexer
+from asteroid.lex import Lexer, token_lookup
 from asteroid.state import state, warning
 
 ###########################################################################################
@@ -91,7 +91,7 @@ class Parser:
         sl = self.stmt_list()
         if not self.lexer.EOF():
             raise SyntaxError("expected 'EOF' found '{}'." \
-                              .format(self.lexer.peek().type))
+                              .format(token_lookup(self.lexer.peek().type)))
         else:
             dbg_print("parsing EOF")
         return sl
@@ -149,7 +149,7 @@ class Parser:
             if self.lexer.peek().type in ['STRING', 'ID']:
                 str_tok = self.lexer.match(self.lexer.peek().type)
             elif self.lexer.peek().type == 'EOF':
-                raise ExpectationError( msg="Expected valid module name, found EOF", found='EOF' )
+                raise ExpectationError(expected="valid module name", found='EOF' )
             else:
                 raise SyntaxError("invalid module name '{}'"
                                   .format(self.lexer.peek().value))
@@ -264,8 +264,9 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise ExpectationError(msg="Expected 'in' expression in for loop",
-                        found=self.lexer.peek().type)
+                raise ExpectationError(
+                        expected="'in' expression in for loop",
+                        found=token_lookup(self.lexer.peek().type))
 
             self.lexer.match('DO')
             sl = self.stmt_list()
@@ -865,8 +866,8 @@ class Parser:
 
         else:
             raise ExpectationError(
-                expected='primary expression',
-                found=self.lexer.peek().type)
+                expected='expression',
+                found=token_lookup(self.lexer.peek().type))
 
             #raise SyntaxError("syntax error at '{}'"
                 # .format(self.lexer.peek().value))
