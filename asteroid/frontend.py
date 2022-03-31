@@ -90,7 +90,7 @@ class Parser:
         dbg_print("parsing PROG")
         sl = self.stmt_list()
         if not self.lexer.EOF():
-            raise SyntaxError("expected 'EOF' found '{}'." \
+            raise SyntaxError("expected 'EOF' found {}." \
                               .format(token_lookup(self.lexer.peek().type)))
         else:
             dbg_print("parsing EOF")
