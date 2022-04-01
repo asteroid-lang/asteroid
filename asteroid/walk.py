@@ -76,7 +76,7 @@ def unify(term, pattern, unifying = True ):
             return [] # return empty unifier
         else:
             raise PatternMatchFailed(
-                "regular expression {} did not match {}"
+                "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
 
     elif isinstance(term, (int, float, bool)):
@@ -84,7 +84,7 @@ def unify(term, pattern, unifying = True ):
             return [] # return an empty unifier
         else:
             raise PatternMatchFailed(
-                "{} is not the same as {}"
+                "'{}' is not the same as '{}'"
                 .format(term, pattern))
 
     elif isinstance(term, list) or isinstance(pattern, list):
@@ -123,7 +123,7 @@ def unify(term, pattern, unifying = True ):
         (OBJECT, (STRUCT_ID, (ID, tid)), (OBJECT_MEMORY, (LIST, tl))) = term
         if pid != tid:
             raise PatternMatchFailed(
-                "pattern type {} and term type {} do not agree"
+                "pattern type '{}' and term type '{}' do not agree"
                 .format(pid,tid))
         return unify(data_only(tl),data_only(pl))
 
@@ -152,7 +152,7 @@ def unify(term, pattern, unifying = True ):
         (IF_EXP, cond_exp, pexp, else_exp) = pattern
 
         if else_exp[0] != 'null':
-            raise ValueError("conditional patterns do not support else clauses")
+            raise ValueError("conditional patterns do not support 'else' clauses")
 
         unifiers = unify(term, pexp, unifying)
 
@@ -182,7 +182,7 @@ def unify(term, pattern, unifying = True ):
         (IF_EXP, cond_exp, pexp, else_exp) = term
 
         if else_exp[0] != 'null':
-            raise ValueError("conditional patterns do not support else clauses")
+            raise ValueError("conditional patterns do not support 'else' clauses")
 
         #return unify(pexp,pattern,False)
         # Otherwise if the term is not another cmatch the clauses are correctly ordered.
@@ -211,7 +211,7 @@ def unify(term, pattern, unifying = True ):
                 return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got a term of type {}"
+                    "expected typematch '{}' got a term of type '{}'"
                     .format(typematch, term[nextIndex]))
 
         elif typematch == 'function':
@@ -220,7 +220,7 @@ def unify(term, pattern, unifying = True ):
                 return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got a term of type {}"
+                    "expected typematch '{}' got a term of type '{}'"
                     .format(typematch, term[0]))
 
         elif typematch == 'pattern':
@@ -232,7 +232,7 @@ def unify(term, pattern, unifying = True ):
                     return []
                 else:
                     raise PatternMatchFailed(
-                                        "expected typematch {} got a term of type {}"
+                                        "expected typematch '{}' got a term of type '{}'"
                                         .format(typematch, term[0]))
 
             else: # Evaluating typematch-pattern subsumption
@@ -249,9 +249,8 @@ def unify(term, pattern, unifying = True ):
                     return []
                 else:
                     raise PatternMatchFailed(
-                        "expected typematch {} got a term of type {}"
+                        "expected typematch '{}' got a term of type '{}'"
                         .format(typematch, term[nextIndex]))
-
 
         elif term[0] == 'object':
             (OBJECT,
@@ -261,26 +260,26 @@ def unify(term, pattern, unifying = True ):
                     return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got an object of type {}"
+                    "expected typematch '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
 
         else:
             # Check if the typematch is in the symbol table
-            in_symtab = state.symbol_table.find_sym(typematch)
+            in_symtab = state.symbol_table.find_sym_dict(typematch)
 
-            # If not, then it is not a vaid type fot typematch
+            # If not, then it is not a vaid type for typematch
             if not in_symtab:
-                raise PatternMatchFailed( "{} is not a valid type for typematch".format(typematch))
+                raise PatternMatchFailed( "'{}' is not a valid type for typematch".format(typematch))
 
             # If it is in the symbol table but not a struct, it cannot be typematched
             # because it is not a type
             elif in_symtab and state.symbol_table.lookup_sym(typematch)[0] != 'struct':
-                raise PatternMatchFailed( "{} is not a type".format(typematch) )
+                raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
 
             # Otherwhise, the typematch has failed
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got an object of type {}"
+                    "expected typematch '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
 
 
@@ -332,6 +331,10 @@ def unify(term, pattern, unifying = True ):
         (APPLY,
          (ID, apply_id),
          arg) = pattern
+        type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if (not type) or (type and type[0] != 'struct'):
+            raise PatternMatchFailed("'{}' is not a type".format(apply_id))
+
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(apply_id, struct_id))
@@ -432,7 +435,7 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'apply':
         if term[0] != pattern[0]: # make sure both are applys
             raise PatternMatchFailed(
-                "term and pattern disagree on 'apply' node")
+                "term and pattern disagree on structure")
 
         # unpack the apply structures
         (APPLY, (ID, t_id), t_arg) = term
@@ -484,9 +487,8 @@ def declare_formal_args(unifiers):
 
     for u in unifiers:
         (pattern, term) = u
-        (ID, sym) = pattern
-        if ID != 'id':
-            raise ValueError("no pattern match possible in function call")
+        (ID, sym) = pattern # in unifiers the pattern is always a variable
+        assert_match(ID,'id')
         if sym == 'this':
             raise ValueError("'this' is a reserved word")
         state.symbol_table.enter_sym(sym, term)
@@ -524,7 +526,7 @@ def check_repeated_symbols( unifiers ):
 
         elif sym in symbols: # We have found a non-linear pattern
             raise NonLinearPatternError(
-            "multiple instances of {} found within a pattern.".format(sym))
+            "multiple instances of '{}' found within pattern.".format(sym))
 
         else: # Else we have never seen this before so we record it.
             symbols[sym] = term
@@ -593,7 +595,8 @@ def read_at_ix(structure_val, ix):
         return read_at_ix(structure_val[1], ix)
 
     else:
-        raise ValueError("'{}' is not indexable".format(structure_val[0]))
+        raise ValueError("term '{}' is not indexable"
+                         .format(term2string(structure_val)))
 
     # index into memory and get value(s)
     if ix_val[0] == 'integer':
@@ -663,7 +666,8 @@ def store_at_ix(structure_val, ix, value):
         return store_at_ix(structure_val[1], ix, value)
 
     else:
-        raise ValueError("'{}' is not a mutable structure".format(structure_val[0]))
+        raise ValueError("term '{}' is not a mutable structure"
+                         .format(term2string(structure_val)))
 
     # Next, we do the actual memory storage operation
 
@@ -678,9 +682,9 @@ def store_at_ix(structure_val, ix, value):
 
         # Make sure the rval is a list
         if value[0] != 'list':
-            raise ValueError('Pattern slicing needs values to be a list')
+            raise ValueError('pattern slicing needs values to be a list')
         elif value[0] == 'list' and (len(ix_val[1]) != len(value[1])):
-            raise ValueError('Pattern slicing needs indexes and values of equal length')
+            raise ValueError('pattern slicing needs indexes and values of equal length')
 
         # Get the l/rval
         (LIST, lval) = ix_val
@@ -718,13 +722,13 @@ def handle_builtins(node):
             elif type == 'string':
                 return (type, term2string(val_a) + term2string(val_b))
             else:
-                raise ValueError('unsupported type {} in +'.format(type))
+                raise ValueError("unsupported type '{}' in +".format(type))
         elif opname == '__minus__':
             type = promote(val_a[0], val_b[0])
             if type in ['integer', 'real']:
                 return (type, val_a[1] - val_b[1])
             else:
-                raise ValueError('unsupported type {} in -'.format(type))
+                raise ValueError("unsupported type '{}' in -".format(type))
         elif opname == '__times__':
             type = promote(val_a[0], val_b[0])
             if type in ['integer', 'real']:
@@ -792,7 +796,7 @@ def handle_builtins(node):
             else:
                 raise ValueError('unsupported type in >')
         else:
-            raise ValueError('unknown builtin binary opname {}'.format(opname))
+            raise ValueError("unknown builtin binary operation '{}'".format(opname))
 
     elif opname in unary_operators:
         arg_val = walk(args)
@@ -804,23 +808,23 @@ def handle_builtins(node):
             elif val[1] == True:
                 return ('boolean', False)
             else:
-                raise ValueError('not a boolean value in not')
+                raise ValueError("not a boolean value in 'not'")
         elif opname == '__uminus__':
             if arg_val[0] in ['integer', 'real']:
                 return (arg_val[0], - arg_val[1])
             else:
                 raise ValueError(
-                    'unsupported type {} in unary minus'
+                    "unsupported type '{}' in unary minus"
                     .format(arg_val[0]))
         elif opname == '__uplus__':
             if arg_val[0] in ['integer', 'real']:
                 return (arg_val[0], + arg_val[1])
             else:
                 raise ValueError(
-                    'unsupported type {} in unary plus'
+                    "unsupported type '{}' in unary plus"
                     .format(arg_val[0]))
         else:
-            raise ValueError('unknown builtin unary opname {}'.format(opname))
+            raise ValueError("unknown builtin unary operation '{}'".format(opname))
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
@@ -865,7 +869,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             break
 
     if not unified:
-        raise ValueError("none of the function bodies unified with actual parameters")
+        raise ValueError("actual argument '{}' not recognized by function '{}'"
+                         .format(term2string(actual_val_args),fname))
 
     declare_formal_args(unifiers)
 
@@ -941,7 +946,7 @@ def global_stmt(node):
     for id_tuple in id_list:
         (ID, id_val) = id_tuple
         if state.symbol_table.is_symbol_local(id_val):
-            raise ValueError("{} is already local, cannot be declared global"
+            raise ValueError("'{}' is already local, cannot be declared global"
                              .format(id_val))
         state.symbol_table.enter_global(id_val)
 
@@ -1333,7 +1338,7 @@ def apply_exp(node):
             data_memory = data_only(object_memory)
             if len(data_memory) != len(arg_array):
                 raise ValueError(
-                    "default constructor expected {} arguments got {}"
+                    "default constructor expected '{}' arguments got '{}'"
                     .format(len(data_memory), len(arg_array)))
             # copy initializers into object memory
             data_ix = data_ix_list(object_memory)
@@ -1344,7 +1349,8 @@ def apply_exp(node):
         result = obj_ref
 
     else:
-        raise ValueError("unknown apply term '{}'".format(f_val[0]))
+        raise ValueError("term '{}' is not a function, did you forget the end-of-line period?"
+                         .format(term2string(f_val)))
 
     return result
 
@@ -1430,7 +1436,7 @@ def in_exp(node):
     (EXP_LIST_TYPE, exp_list_val, *_) = walk(exp_list)
 
     if EXP_LIST_TYPE != 'list':
-        raise ValueError("right argument to in operator has to be a list")
+        raise ValueError("right argument to 'in' operator has to be a list")
 
     # we simply map our in operator to the Python in operator
     if exp_val in exp_list_val:
@@ -1447,7 +1453,7 @@ def if_exp(node):
     # if expressions without an else clause are only allowed in
     # conditional patterns.
     if else_exp[0] == 'null':
-        raise ValueError("if expressions need an else clause")
+        raise ValueError("if expressions need an 'else' clause")
 
     (BOOLEAN, cond_val) = map2boolean(walk(cond_exp))
 
@@ -1512,7 +1518,7 @@ def to_list_exp(node):
         raise ValueError("negative stride sizes are not supported")
 
     else:
-        raise ValueError("{} not a valid stride value".format(stride_val))
+        raise ValueError("'{}' not a valid stride value".format(stride_val))
 
     return ('list', out_list_val)
 
@@ -1529,7 +1535,7 @@ def head_tail_exp(node):
 
     if TAIL_TYPE != 'list':
         raise ValueError(
-            "unsupported tail type {} in head-tail operator".
+            "unsupported tail type '{}' in head-tail operator".
             format(TAIL_TYPE))
 
     return ('list', [head_val] + tail_val)
@@ -1587,8 +1593,8 @@ def constraint_exp(node):
     # A constraint-only pattern match AST cannot be walked and therefor
     # we raise an error.
     raise ValueError(
-        "constraint pattern: {} cannot be used as a constructor.".
-        format(term2string(node)))
+        "constraint pattern: '{}' cannot be used as a constructor."
+        .format(term2string(node)))
 
 #########################################################################
 # walk
@@ -1601,7 +1607,7 @@ def walk(node):
         node_function = dispatch_dict[type]
         return node_function(node)
     else:
-        raise ValueError("feature {} not yet implemented".format(type))
+        raise ValueError("feature '{}' not yet implemented".format(type))
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {

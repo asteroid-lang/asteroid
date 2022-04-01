@@ -141,10 +141,10 @@ def map2boolean(value):
     elif value[0] == 'boolean':
         return value
 
-    elif value[0] in  ['integer', 'real', 'list', 'string']:
+    elif value[0] in  ['integer', 'real', 'list', 'tuple', 'string']:
         return ('boolean', bool(value[1]))
 
-    elif value[0] == 'object':
+    elif value[0] in ['object', 'function-val', 'pattern']:
         return ('boolean', True)
 
     else:

@@ -34,7 +34,6 @@ keywords = {
     'let'           : 'LET',
     'load'          : 'LOAD',
     'loop'          : 'LOOP',
-    'nonlocal'      : 'NONLOCAL',
     'not'           : 'NOT',
     'or'            : 'OR',
     'orwith'        : 'ORWITH',
@@ -59,40 +58,40 @@ keywords = {
 # this table defines tokens whose value is defined by a
 # regular expression.
 token_specs = [
-#   value:                                                      type:
-    (r'[0-9]+([.][0-9]+)?((e|E)(\+|\-)?[0-9]+)?',               'NUMBER'),
-    (r'"([^"]|\\"|\\)*"',                                       'STRING'),
-    (r'(--.*)|(\#.*)',                                          'COMMENT'),
-    (r'[a-zA-Z_][a-zA-Z_0-9]*',                                 'ID'),
-    (r'\n',                                                     'NEWLINE'),
-    (r'[ \t]+',                                                 'WHITESPACE'),
-    (r'\%[a-zA-Z_][a-zA-Z_0-9]*',                               'TYPEMATCH'),
-    (r'\+',                                                     'PLUS'),
-    (r'-',                                                      'MINUS'),
-    (r'\*',                                                     'TIMES'),
-    (r'/',                                                      'DIVIDE'),
-    (r'==',                                                     'EQ'),
-    (r'=/=',                                                    'NE'),
-    (r'<=',                                                     'LE'),
-    (r'<',                                                      'LT'),
-    (r'>=',                                                     'GE'),
-    (r'>',                                                      'GT'),
-    (r'@',                                                      'AT'),
-    (r'\%\[',                                                   'LCONSTRAINT'),
-    (r'\]\%',                                                   'RCONSTRAINT'),
-    (r'\(',                                                     'LPAREN'),
-    (r'\)',                                                     'RPAREN'),
-    (r'\[',                                                     'LBRACKET'),
-    (r'\]',                                                     'RBRACKET'),
-    (r':',                                                      'COLON'),
-    (r'\|',                                                     'BAR'),
-    (r'\.',                                                     'DOT'),
-    (r',',                                                      'COMMA'),
-    (r'=',                                                      'ASSIGN'),
+#   value:                                        display:      type:
+    (r'[0-9]+([.][0-9]+)?((e|E)(\+|\-)?[0-9]+)?', "number",     'NUMBER'),
+    (r'"([^"]|\\"|\\)*"',                         "string",     'STRING'),
+    (r'(--.*)|(\#.*)',                            "comment",    'COMMENT'),
+    (r'[a-zA-Z_][a-zA-Z_0-9]*',                   "variable",   'ID'),
+    (r'\n',                                       "\n",         'NEWLINE'),
+    (r'[ \t]+',                                   "space/tab",  'WHITESPACE'),
+    (r'\%[a-zA-Z_][a-zA-Z_0-9]*',                 "%type",      'TYPEMATCH'),
+    (r'\+',                                       "'+'",        'PLUS'),
+    (r'-',                                        "'-'",        'MINUS'),
+    (r'\*',                                       "'*'",        'TIMES'),
+    (r'/',                                        "'/'",        'DIVIDE'),
+    (r'==',                                       "'=='",       'EQ'),
+    (r'=/=',                                      "'=/='",      'NE'),
+    (r'<=',                                       "'<='",       'LE'),
+    (r'<',                                        "'<'",        'LT'),
+    (r'>=',                                       "'>='",       'GE'),
+    (r'>',                                        "'>'",        'GT'),
+    (r'@',                                        "'@'",        'AT'),
+    (r'\%\[',                                     "'%['",       'LCONSTRAINT'),
+    (r'\]\%',                                     "']%'",       'RCONSTRAINT'),
+    (r'\(',                                       "'('",        'LPAREN'),
+    (r'\)',                                       "')'",        'RPAREN'),
+    (r'\[',                                       "'['",        'LBRACKET'),
+    (r'\]',                                       "']'",        'RBRACKET'),
+    (r':',                                        "':'",        'COLON'),
+    (r'\|',                                       "'|'",        'BAR'),
+    (r'\.',                                       "'.'",        'DOT'),
+    (r',',                                        "','",        'COMMA'),
+    (r'=',                                        "'='",        'ASSIGN'),
     # this is the catch-all pattern, it has to be
     # here do that we can report illegal characters
     # in the input.
-    (r'.',                                                      'MISMATCH'),
+    (r'.',                                        "unknown",    'MISMATCH'),
 ]
 
 # this table specifies token types that are used in the tokenizer
@@ -101,6 +100,27 @@ implicit_token_types = [
     'INTEGER',
     'REAL',
 ]
+
+# A table that given a token type will return the expected value
+# a reverse token specification: given a type compute the value
+token_values = {}
+
+def init_token_values():
+    global token_values
+
+    # grab tokens from token_specs table
+    token_values.update({'INTEGER':'integer value'})
+    token_values.update({'REAL':'real value'})
+    token_values.update({'EOF':'EOF'})
+    for (_,display,type) in token_specs:
+        token_values.update({type:display})
+
+    # grab tokens from keywords table
+    for k in keywords:
+        token_values.update({keywords[k]:"'"+k+"'"})
+
+def token_lookup(type):
+    return token_values[type]
 
 class Token:
     def __init__(self,type,value,module,lineno):
@@ -119,7 +139,7 @@ def tokenize(code):
     (module, line_num) = state.lineinfo
     # here we create a list of named patterns from the token_specs table
     # the name of the pattern is the token type
-    named_re_list = ['(?P<{}>{})'.format(type,re) for (re,type) in token_specs]
+    named_re_list = ['(?P<{}>{})'.format(type,re) for (re,_,type) in token_specs]
     # create one giant re that describes the token structure of the whole
     # language. we 'or' together all the re's on the named_re_list
     combined_re = '|'.join(named_re_list)
@@ -173,7 +193,6 @@ def tokenize(code):
         elif type == 'MISMATCH':
             if value == '\"':
                 raise ExpectationError(expected='\"', found='EOF')
-
             else:
                 raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
@@ -196,9 +215,11 @@ class Lexer:
         # keep a set of all possible token types in our lexer
         # this let's us weed out bad match calls very easily
         self.token_types = \
-            set(type for (_,type) in token_specs) | \
+            set(type for (_,_,type) in token_specs) | \
             set(list(keywords.values())) | \
             set(implicit_token_types)
+        # init token value lookup
+        init_token_values()
 
     def input(self, input_string):
         self.tokens = tokenize(input_string)
@@ -229,7 +250,8 @@ class Lexer:
         if token_type not in self.token_types:
             raise ValueError("unknown token type '{}'".format(token_type))
         elif token_type != self.curr_token.type:
-            raise ExpectationError( found=self.curr_token.type, expected=token_type)
+            raise ExpectationError(found=token_lookup(self.curr_token.type),
+                                   expected=token_lookup(token_type))
         else:
             dbg_print('matching {}'.format(token_type))
             ct = self.curr_token

@@ -45,7 +45,6 @@ are written in quotes.
     : '.' // NOOP
     | LOAD SYSTEM? (STRING | ID) '.'?
     | GLOBAL id_list '.'?
-    | NONLOCAL id_list '.'?
     | ASSERT exp '.'?
     | STRUCTURE ID WITH struct_stmts END
     | LET pattern '=' exp '.'?
