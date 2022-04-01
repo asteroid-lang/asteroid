@@ -224,14 +224,33 @@ def unify(term, pattern, unifying = True ):
                     .format(typematch, term[0]))
 
         elif typematch == 'pattern':
-            # any kind of structure can be a pattern, and variables
-            # see globals.py for a definition of 'patterns'
-            if term[0] in patterns:
-                return []
-            else:
-                raise PatternMatchFailed(
-                                    "expected typematch '{}' got a term of type '{}'"
-                                    .format(typematch, term[0]))
+            if unifying:
+
+                # any kind of structure can be a pattern, and variables
+                # see globals.py for a definition of 'patterns'
+                if term[nextIndex] in patterns:
+                    return []
+                else:
+                    raise PatternMatchFailed(
+                                        "expected typematch '{}' got a term of type '{}'"
+                                        .format(typematch, term[0]))
+
+            else: # Evaluating typematch-pattern subsumption
+                #walk a different path for this one node
+                if (term[0] == 'typematch'):
+                    nextIndex = 1
+
+                #handle lists/head-tails subsuming each other
+                if (term[0] in ["list","head-tail"]):
+                    if ((typematch == 'list')):
+                        return []
+                
+                if term[nextIndex] in pattern_subsumes:
+                    return []
+                else:
+                    raise PatternMatchFailed(
+                        "expected typematch '{}' got a term of type '{}'"
+                        .format(typematch, term[nextIndex]))
 
         elif term[0] == 'object':
             (OBJECT,
