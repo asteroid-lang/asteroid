@@ -76,7 +76,7 @@ def unify(term, pattern, unifying = True ):
             return [] # return empty unifier
         else:
             raise PatternMatchFailed(
-                "regular expression {} did not match {}"
+                "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
 
     elif isinstance(term, (int, float, bool)):
@@ -84,7 +84,7 @@ def unify(term, pattern, unifying = True ):
             return [] # return an empty unifier
         else:
             raise PatternMatchFailed(
-                "{} is not the same as {}"
+                "'{}' is not the same as '{}'"
                 .format(term, pattern))
 
     elif isinstance(term, list) or isinstance(pattern, list):
@@ -123,7 +123,7 @@ def unify(term, pattern, unifying = True ):
         (OBJECT, (STRUCT_ID, (ID, tid)), (OBJECT_MEMORY, (LIST, tl))) = term
         if pid != tid:
             raise PatternMatchFailed(
-                "pattern type {} and term type {} do not agree"
+                "pattern type '{}' and term type '{}' do not agree"
                 .format(pid,tid))
         return unify(data_only(tl),data_only(pl))
 
@@ -211,7 +211,7 @@ def unify(term, pattern, unifying = True ):
                 return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got a term of type {}"
+                    "expected typematch '{}' got a term of type '{}'"
                     .format(typematch, term[nextIndex]))
 
         elif typematch == 'function':
@@ -220,7 +220,7 @@ def unify(term, pattern, unifying = True ):
                 return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got a term of type {}"
+                    "expected typematch '{}' got a term of type '{}'"
                     .format(typematch, term[0]))
 
         elif typematch == 'pattern':
@@ -230,7 +230,7 @@ def unify(term, pattern, unifying = True ):
                 return []
             else:
                 raise PatternMatchFailed(
-                                    "expected typematch {} got a term of type {}"
+                                    "expected typematch '{}' got a term of type '{}'"
                                     .format(typematch, term[0]))
 
         elif term[0] == 'object':
@@ -241,26 +241,26 @@ def unify(term, pattern, unifying = True ):
                     return []
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got an object of type {}"
+                    "expected typematch '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
 
         else:
             # Check if the typematch is in the symbol table
-            in_symtab = state.symbol_table.find_sym(typematch)
+            in_symtab = state.symbol_table.find_sym_dict(typematch)
 
-            # If not, then it is not a vaid type fot typematch
+            # If not, then it is not a vaid type for typematch
             if not in_symtab:
-                raise PatternMatchFailed( "{} is not a valid type for typematch".format(typematch))
+                raise PatternMatchFailed( "'{}' is not a valid type for typematch".format(typematch))
 
             # If it is in the symbol table but not a struct, it cannot be typematched
             # because it is not a type
             elif in_symtab and state.symbol_table.lookup_sym(typematch)[0] != 'struct':
-                raise PatternMatchFailed( "{} is not a type".format(typematch) )
+                raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
 
             # Otherwhise, the typematch has failed
             else:
                 raise PatternMatchFailed(
-                    "expected typematch {} got an object of type {}"
+                    "expected typematch '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
 
 
@@ -312,6 +312,10 @@ def unify(term, pattern, unifying = True ):
         (APPLY,
          (ID, apply_id),
          arg) = pattern
+        type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if (not type) or (type and type[0] != 'struct'):
+            raise PatternMatchFailed("'{}' is not a type".format(apply_id))
+
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
                 .format(apply_id, struct_id))
@@ -412,7 +416,7 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'apply':
         if term[0] != pattern[0]: # make sure both are applys
             raise PatternMatchFailed(
-                "term and pattern disagree on 'apply' node")
+                "term and pattern disagree on structure")
 
         # unpack the apply structures
         (APPLY, (ID, t_id), t_arg) = term
