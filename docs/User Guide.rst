@@ -368,7 +368,8 @@ The output is,
     Sophie is 46 years old and is a woman.
 
 
-The ``structure`` statement introduces a new typed data structure. In this case it introduces a data structure of type ``Person`` with three "data slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second ``let`` statement in the program above.
+The ``structure`` statement introduces a data structure of type ``Person`` with the three data members ``name``, ``age``, and ``gender``.  We use this data structure to build a list of persons.  One of the interesting things is that we can pattern match the generated data structure as in the second ``let`` statement in the program to extract
+information from a ``Person`` object.
 
 In addition to the default constructor, structures in Asteroid also support user specified
 constructors and member functions.  We'll talk about those later when we talk about OO programming in Asteroid.
@@ -382,16 +383,12 @@ The ``let`` statement is a pattern matching statement and can be viewed as Aster
     let 1 = 1.
 
 where we take the term on the right side and match it to the pattern on the left side of
-the ``=`` operator are completely legal and highlight the fact that ``let`` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
-
+the ``=`` operator are completely legal and highlight the fact that ``let`` statement is not equivalent to an assignment statement.  Simple patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
 Here is an example where we do some computations on the right side of a ``let`` statement and then match the result against a pattern on the left,
 ::
 
     load system io.
 
-    -- note 1+1 evaluates to 2 and is then matched
-    -- the variables x and y are bound to 1 and 3, respectively,
-    -- via pattern matching
     let [x,2,y] = [1+0,1+1,1+2].
     io @println (x,y).
 
@@ -405,8 +402,8 @@ of a given type.  For instance, the ``%integer`` pattern matches any integer val
     let %integer = 1.
 
 
-This ``let`` statement succeeds because the value ``1`` can be pattern matched against
-the type pattern ``%integer``
+This ``let`` statement succeeds because ``1`` is an integer value can be pattern-matched against
+the type pattern ``%integer``.
 
 Asteroid also
 supports something called a **named pattern** were a (sub)pattern on the left side
@@ -436,20 +433,21 @@ about pattern matching.  Consider,
     load system type.
 
     let x:%real = math @pi.
-    io @println (type @tostring(x,type @stringformat(4,2))).
+    io @println (type @tostring (x,type @stringformat (4,2))).
 
 
 The left side of the ``let`` statement is a named type pattern that matches any real value, and
 if that match is successful then the value is bound to the variable ``x``.  Note
 that even though this looks like a declaration, it is in fact a pattern matching
-operation.  The program will print the value ``3.14``.
+operation.  The program will print the value ``3.14`` according to the format of
+4 characters with 2 characters after the decimal point.
 
 Flow of Control
 ---------------
 
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages in use such as Python, Swift, or Rust.  For example, the ``for`` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the ``if`` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the ``for`` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the ``if`` statement defines what does or does not happen when certain conditions are met in a very familiar way. For a list of all control statements in Asteroid, please take a look at the reference guide.
 
-As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages in use today.  For example, here is a short program with a ``for`` loop that prints out the first six even positive integers,
+As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages.  For example, here is a short program with a ``for`` loop that prints out the first six even positive integers,
 ::
 
     load system io.
@@ -475,7 +473,7 @@ Here is another example that iterates over lists,
     load system io.
     load system util
 
-    for (ix,bird) in util @zip(["first","second","third"],["turkey","duck","chicken"]) do
+    for (ix,bird) in util @zip (["first","second","third"],["turkey","duck","chicken"]) do
         io @println ("the "+ix+" bird is a "+bird).
     end
 
@@ -496,17 +494,17 @@ The following is a short program that demonstrates an ``if`` statement,
     load system io.
     load system type.
 
-    let x = type @tointeger(io @input("Please enter an integer: ")).
+    let x = type @tointeger (io @input "Please enter an integer: ").
 
     if x < 0 do
         let x = 0.
-        io @println("Negative, changed to zero").
+        io @println "Negative, changed to zero".
     elif x == 0 do
-        io @println("Zero").
+        io @println "Zero".
     elif x == 1 do
-        io @println("Single")
+        io @println "Single".
     else do
-        io @println("More").
+        io @println "More".
     end
 
 
