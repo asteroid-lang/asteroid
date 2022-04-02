@@ -244,7 +244,7 @@ def unify(term, pattern, unifying = True ):
                 if (term[0] in ["list","head-tail"]):
                     if ((typematch == 'list')):
                         return []
-                
+
                 if term[nextIndex] in pattern_subsumes:
                     return []
                 else:
@@ -1338,8 +1338,10 @@ def apply_exp(node):
             data_memory = data_only(object_memory)
             if len(data_memory) != len(arg_array):
                 raise ValueError(
-                    "default constructor expected '{}' arguments got '{}'"
-                    .format(len(data_memory), len(arg_array)))
+                    "default constructor expected {} argument{} got {}"
+                    .format(len(data_memory),
+                            "" if len(data_memory) else "s",
+                            len(arg_array)))
             # copy initializers into object memory
             data_ix = data_ix_list(object_memory)
             for (i,k) in zip(data_ix, range(0,len(data_memory))):
