@@ -18,7 +18,7 @@ Introduction
 ------------
 
 Asteroid is a multi-paradigm programming language supporting first-class patterns.
-The language is heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, and makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*. When we talk about pattern matching we mean structural pattern matching
+The language is heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, and makes pattern matching one of its core computational mechanisms.  We often refer to this as pattern-matching oriented programming. When we talk about pattern matching we mean structural pattern matching
 as well as regular expression matching.
 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
@@ -78,7 +78,7 @@ Asteroid supports two more data types:
 * ``list``
 * ``tuple``
 
-These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.``(3,)``.
+These are **structured data types** in that they can contain entities that belong to other data types. Both of these data types have constructors which are possibly empty sequences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g. ``(3,)``.
 Here are some examples,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-005.ast"
@@ -98,11 +98,14 @@ That is, any list or tuple can be viewed as a string.  This is very convenient f
 
 
 Finally, Asteroid supports one more type, namely the ``none`` type.  The ``none`` type has
-only one member: A constant named conveniently ``none``.  The null-tuple belongs to this type (rather than the tuple type discussed earlier) and therefore the constant ``()`` can often be used as a convenient short hand for the constant ``none``.  That is, the following ``let`` statements will succeed,
+only one member: A constant named ``none``.  However, it turns out that the null-tuple, a tuple with no components
+indicated by ``()``, also belongs to this type rather than the tuple type discussed earlier. But the ``none``
+data type only has one constant, this implies that ``()`` and ``none`` mean the same thing and can be used
+interchangeably.  That is, the following ``let`` statements will succeed,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-008.ast"
 
-meaning that the constants ``()`` and ``none`` are equivalent and pattern-match each other.
+showing that ``()`` and ``none`` are equivalent and pattern-match each other.
 The ``none`` data type itself does not belong to any type hierarchy.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different.
@@ -113,24 +116,31 @@ Data Structures
 Lists
 ^^^^^
 
-In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
+In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is a list reversal example program.  Notice that lists are zero-indexed and
+elements of a list are accessed via the ``@`` operator,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-009.ast"
 
 The output is: ``[3,2,1]``.
 
-In Asteroid lists are considered objects with member functions that can manipulate the list
-object, e.g. ``[1,2,3] @ reverse()``. We could rewrite the above example as,
+We can achieve the same effect by giving a list of index values (a slice) to the ``@`` operator,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-009a.ast"
+
+In Asteroid lists are considered objects with member functions that can manipulate list
+objects. We could rewrite the above example as,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-010.ast"
 
-For a full list of available member functions for Asteroid lists please see the reference guide.
+The ``@`` operator allows you to access either individual elements, slices, or member functions of a list.
+Actually, the ``@`` operator is more general than that, it is Asteroid's substructure access operator.
+Notice that in order to access the ``println`` function of the ``io`` module we also use the ``@`` operator.
 
-As we have seen, the ``@`` operator allows you to access either individual elements, slices, or member functions of a list.
+For a comprehensive treatment of available member functions for Asteroid lists please see the reference guide.
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
-a stride specifier allowying you to generate integer values within that range,
+a stride specifier allowing you to generate integer values within that range,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-011.ast"
 
@@ -155,51 +165,69 @@ Higher dimensional arrays can easily be simulated with lists of lists,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-013.ast"
 
-The output is: ``[[1,2,3],[4,0,6],[7,8,9]]``
+The output is,
+::
+    [[1,2,3]
+     [4,0,6]
+     [7,8,9]]
 
-**NOTE**: At this point slicing is not supported on the left side of a ``let`` statement.
 
 Tuples
 ^^^^^^
 
 As we saw earlier, the ``tuple`` is another fundamental, built-in data structure that can be found in Asteroid.
-
 Below is an example of a tuple declaration and access.
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-014.ast"
 
-Like ``lists``, ``tuples`` may also be nested,
+Lists and tuples may be nested,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-015.ast"
 
-Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new ``tuple``. The following code block demonstrates this,
+Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following code block demonstrates this,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-016.ast"
 
 Which will print out the following message:
 ::
 
-    SystemError: 'tuple' is not a mutable structure
+    SystemError: term '(a,b,c)' is not a mutable structure
 
+Should we want to change the contents of an already declared tuple, we would need to abandon the original and create a new one with the updated contents.
 When to use tuples and when to use lists is really application dependent.
 Tuples tend to be preferred over lists when representing some sort of structure,
-like abstract syntax trees, where that structure is unmutable meaning, for example,
+like abstract syntax trees, where that structure is immutable meaning, for example,
 that the arity of a tree node cannot change.
 
-Custom Data Structures using ``structure``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Custom Data Structures
+^^^^^^^^^^^^^^^^^^^^^^
 
-You can introduce custom data structures using the ``structure`` keyword.  These custom data structures differ from lists and tuples in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are in fact introducing a new type into your program.  We should mention that Asteroid creates
-a *default constructor* for a structure.  That constructor copies the arguments given to it into the
-data member fields of the structure in the order that the data members appear in the
-structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
+You can introduce custom data structures using the ``structure`` keyword.  For example,
+the following statement introduces a structure of type ``A`` with data members ``a`` and ``b``,
+::
+    structure A with
+       data a.
+       data b.
+    end
+
+These custom data structures differ from lists and tuples in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are in fact introducing a new type into your program.   Asteroid creates
+a *default constructor* that instantiates an object from a given structure.  A default constructor copies the arguments given to it into the
+data member fields in the order that the data members appear in the
+structure definition and as they appear in the parameter list of the constructor.
+Also, the data fields of an object are accessed via
+their names rather than index values.  Here is a simple example that illustrates
+all this,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-017a.ast"
+
+The following is a more involved example,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-017.ast"
 
 The output is,
 ::
 
-    Sophie is 46 years old and is F.
+    Sophie is 46 years old and is a woman.
 
 
 The ``structure`` statement introduces a new typed data structure. In this case it introduces a data structure of type ``Person`` with three "data slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second ``let`` statement in the program above.

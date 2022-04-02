@@ -1,4 +1,3 @@
-    load system io.   -- load the io module so we can print
     let a = (1,2,3).    -- construct tuple a
     let b = a @1.       -- access the second element in tuple a
-    io @println b.          -- print the element to the console
+    assert(b == 2).     -- assert that the value of the second element is correct
