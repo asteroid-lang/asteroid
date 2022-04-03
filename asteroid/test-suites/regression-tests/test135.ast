@@ -8,6 +8,6 @@ end
 try
    let B(x,y) = A(1,2).
 catch Exception(t,m) do
-   assert(m is "pattern match failed: 'B' is not a type").
+   assert(m is "'B' is not defined").
 end
 
