@@ -7,4 +7,4 @@
 
     -- modify an element in the array
     let b @1 @1 = 0.
-    io @println b.
+    io @println ("["+b@0+"\n "+b@1+"\n "+b@2+"]").

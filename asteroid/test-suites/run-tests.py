@@ -6,13 +6,14 @@
 
 # the following is a list of directories of test cases the script will run
 
-dirs = ['action-tests',
+dirs = [
+	'action-tests',
         'first-class-redundant-pattern-tests',
         'redundant-pattern-test',
         'ref-programs',
         'regression-tests',
         'ug-programs',
-         ]
+       ]
 
 # set the following to True if you encounter failed test cases. It will
 # give you details and a stack dump.

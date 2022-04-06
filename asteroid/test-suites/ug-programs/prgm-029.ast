@@ -3,7 +3,7 @@
     let list = [1,2,3].
 
     repeat do
-        let [head|tail] = list.
+        let [head|tail] = list. -- pattern match with head/tail operator
         io @println head.
         let list = tail.
-    until list is [].
+    until list is []. -- pattern match with is predicate

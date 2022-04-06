@@ -1,0 +1,9 @@
+    -- define a structure of type A
+    structure A with
+        data a.
+        data b.
+    end
+
+    let obj = A(1,2).       -- call constructor
+    assert( obj @a == 1 ).  -- access first data member
+    assert( obj @b == 2 ).  -- access second data member

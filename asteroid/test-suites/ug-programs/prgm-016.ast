@@ -1,9 +1,9 @@
     load system io.
-    -- build a tuple
-    let b = ("a","b","c").
-    -- attempt to modify an element in the tuple
+
+    let b = ("a","b","c"). -- build a tuple
+    
     try
-        let b @1 = "z".
-    catch Exception(kind,s) do
-        io @println(kind+": "+s).
+        let b @1 = "z". -- attempt to modify an element in the tuple
+    catch Exception(kind,message) do
+        io @println (kind+": "+message).
     end.

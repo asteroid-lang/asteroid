@@ -18,7 +18,7 @@ Introduction
 ------------
 
 Asteroid is a multi-paradigm programming language supporting first-class patterns.
-The language is heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, and makes pattern matching one of its core computational mechanisms.  This is often called *pattern-matching oriented programming*. When we talk about pattern matching we mean structural pattern matching
+The language is heavily influenced by `Python <https://www.python.org>`_, `Rust <https://www.rust-lang.org>`_, `ML <https://www.smlnj.org>`_, and `Prolog <http://www.swi-prolog.org>`_, and makes pattern matching one of its core computational mechanisms.  We often refer to this as pattern-matching oriented programming. When we talk about pattern matching we mean structural pattern matching
 as well as regular expression matching.
 
 In this document we describe the major features of Asteroid and give plenty of examples.  If you have used a programming language like Python or JavaScript before, then Asteroid should appear very familiar.  However, there are some features which differ drastically from other programming languages due to the core pattern-matching programming
@@ -78,7 +78,7 @@ Asteroid supports two more data types:
 * ``list``
 * ``tuple``
 
-These are **structured data types** in that they can contain entities of other data types. Both of these data types have the probably familiar constructors which are possibly empty squences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g.``(3,)``.
+These are **structured data types** in that they can contain entities that belong to other data types. Both of these data types have constructors which are possibly empty sequences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g. ``(3,)``.
 Here are some examples,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-005.ast"
@@ -98,11 +98,14 @@ That is, any list or tuple can be viewed as a string.  This is very convenient f
 
 
 Finally, Asteroid supports one more type, namely the ``none`` type.  The ``none`` type has
-only one member: A constant named conveniently ``none``.  The null-tuple belongs to this type (rather than the tuple type discussed earlier) and therefore the constant ``()`` can often be used as a convenient short hand for the constant ``none``.  That is, the following ``let`` statements will succeed,
+only one member: A constant named ``none``.  However, it turns out that the null-tuple, a tuple with no components
+indicated by ``()``, also belongs to this type rather than the tuple type discussed earlier. But the ``none``
+data type only has one constant, this implies that ``()`` and ``none`` mean the same thing and can be used
+interchangeably.  That is, the following ``let`` statements will succeed,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-008.ast"
 
-meaning that the constants ``()`` and ``none`` are equivalent and pattern-match each other.
+showing that ``()`` and ``none`` are equivalent and pattern-match each other.
 The ``none`` data type itself does not belong to any type hierarchy.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different.
@@ -113,24 +116,31 @@ Data Structures
 Lists
 ^^^^^
 
-In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is the list reversal example from above as an executable Asteroid program. So go ahead and experiment!
+In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is a list reversal example program.  Notice that lists are zero-indexed and
+elements of a list are accessed via the ``@`` operator,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-009.ast"
 
 The output is: ``[3,2,1]``.
 
-In Asteroid lists are considered objects with member functions that can manipulate the list
-object, e.g. ``[1,2,3] @ reverse()``. We could rewrite the above example as,
+We can achieve the same effect by giving a list of index values (a slice) to the ``@`` operator,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-009a.ast"
+
+In Asteroid lists are considered objects with member functions that can manipulate list
+objects. We could rewrite the above example as,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-010.ast"
 
-For a full list of available member functions for Asteroid lists please see the reference guide.
+The ``@`` operator allows you to access either individual elements, slices, or member functions of a list.
+Actually, the ``@`` operator is more general than that, it is Asteroid's substructure access operator.
+Notice that in order to access the ``println`` function of the ``io`` module we also use the ``@`` operator.
 
-As we have seen, the ``@`` operator allows you to access either individual elements, slices, or member functions of a list.
+For a comprehensive treatment of available member functions for Asteroid lists please see the reference guide.
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
-a stride specifier allowying you to generate integer values within that range,
+a stride specifier allowing you to generate integer values within that range,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-011.ast"
 
@@ -155,54 +165,73 @@ Higher dimensional arrays can easily be simulated with lists of lists,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-013.ast"
 
-The output is: ``[[1,2,3],[4,0,6],[7,8,9]]``
+The output is,
+::
+    [[1,2,3]
+     [4,0,6]
+     [7,8,9]]
 
-**NOTE**: At this point slicing is not supported on the left side of a ``let`` statement.
 
 Tuples
 ^^^^^^
 
 As we saw earlier, the ``tuple`` is another fundamental, built-in data structure that can be found in Asteroid.
-
 Below is an example of a tuple declaration and access.
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-014.ast"
 
-Like ``lists``, ``tuples`` may also be nested,
+Lists and tuples may be nested,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-015.ast"
 
-Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared. Should we want to change the contents of an already declared tuple, we would need to abandon the original and declare a new ``tuple``. The following code block demonstrates this,
+Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following code block demonstrates this,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-016.ast"
 
 Which will print out the following message:
 ::
 
-    SystemError: 'tuple' is not a mutable structure
+    SystemError: term '(a,b,c)' is not a mutable structure
 
+Should we want to change the contents of an already declared tuple, we would need to abandon the original and create a new one with the updated contents.
 When to use tuples and when to use lists is really application dependent.
 Tuples tend to be preferred over lists when representing some sort of structure,
-like abstract syntax trees, where that structure is unmutable meaning, for example,
+like abstract syntax trees, where that structure is immutable meaning, for example,
 that the arity of a tree node cannot change.
 
-Custom Data Structures using ``structure``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Custom Data Structures
+^^^^^^^^^^^^^^^^^^^^^^
 
-You can introduce custom data structures using the ``structure`` keyword.  These custom data structures differ from lists and tuples in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are in fact introducing a new type into your program.  We should mention that Asteroid creates
-a *default constructor* for a structure.  That constructor copies the arguments given to it into the
-data member fields of the structure in the order that the data members appear in the
-structure definition and as they appear in the parameter list of the constructor. Here is a simple example,
+You can introduce custom data structures using the ``structure`` keyword.  For example,
+the following statement introduces a structure of type ``A`` with data members ``a`` and ``b``,
+::
+    structure A with
+       data a.
+       data b.
+    end
+
+These custom data structures differ from lists and tuples in the sense that the name of the structure acts like a type tag.  So, when you define a new structure you are in fact introducing a new type into your program.   Asteroid creates
+a *default constructor* that instantiates an object from a given structure.  A default constructor copies the arguments given to it into the
+data member fields in the order that the data members appear in the
+structure definition and as they appear in the parameter list of the constructor.
+Also, the data fields of an object are accessed via
+their names rather than index values.  Here is a simple example that illustrates
+all this,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-017a.ast"
+
+The following is a more involved example,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-017.ast"
 
 The output is,
 ::
 
-    Sophie is 46 years old and is F.
+    Sophie is 46 years old and is a woman.
 
 
-The ``structure`` statement introduces a new typed data structure. In this case it introduces a data structure of type ``Person`` with three "data slots".  We use this data structure to build a list of persons.  One of the interesting things  is that we can pattern match the generated data structure as in the second ``let`` statement in the program above.
+The ``structure`` statement introduces a data structure of type ``Person`` with the three data members ``name``, ``age``, and ``gender``.  We use this data structure to build a list of persons.  One of the interesting things is that we can pattern match the generated data structure as in the second ``let`` statement in the program to extract
+information from a ``Person`` object.
 
 In addition to the default constructor, structures in Asteroid also support user specified
 constructors and member functions.  We'll talk about those later when we talk about OO programming in Asteroid.
@@ -216,8 +245,7 @@ The ``let`` statement is a pattern matching statement and can be viewed as Aster
     let 1 = 1.
 
 where we take the term on the right side and match it to the pattern on the left side of
-the ``=`` operator are completely legal and highlight the fact that ``let`` statement is not equivalent to an assignment statement.  Patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
-
+the ``=`` operator are completely legal and highlight the fact that ``let`` statement is not equivalent to an assignment statement.  Simple patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, and user defined structures.
 Here is an example where we do some computations on the right side of a ``let`` statement and then match the result against a pattern on the left,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-018.ast"
@@ -229,8 +257,8 @@ of a given type.  For instance, the ``%integer`` pattern matches any integer val
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-019.ast"
 
-This ``let`` statement succeeds because the value ``1`` can be pattern matched against
-the type pattern ``%integer``
+This ``let`` statement succeeds because ``1`` is an integer value can be pattern-matched against
+the type pattern ``%integer``.
 
 Asteroid also
 supports something called a **named pattern** were a (sub)pattern on the left side
@@ -254,14 +282,15 @@ about pattern matching.  Consider,
 The left side of the ``let`` statement is a named type pattern that matches any real value, and
 if that match is successful then the value is bound to the variable ``x``.  Note
 that even though this looks like a declaration, it is in fact a pattern matching
-operation.  The program will print the value ``3.14``.
+operation.  The program will print the value ``3.14`` according to the format of
+4 characters with 2 characters after the decimal point.
 
 Flow of Control
 ---------------
 
-Control structure implementation in Asteroid is along the lines of any of the modern programming languages in use such as Python, Swift, or Rust.  For example, the ``for`` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the ``if`` statement defines what does or does not happen when certain conditions are met. For a list of all control statements in Asteroid, see the reference guide.
+Control structure implementation in Asteroid is along the lines of any of the modern programming languages such as Python, Swift, or Rust.  For example, the ``for`` loop allows you to iterate over lists without having to explicitly define a loop index counter. In addition, the ``if`` statement defines what does or does not happen when certain conditions are met in a very familiar way. For a list of all control statements in Asteroid, please take a look at the reference guide.
 
-As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages in use today.  For example, here is a short program with a ``for`` loop that prints out the first six even positive integers,
+As we said, in terms of flow of control statements there are really not a lot of surprises. This is because Asteroid supports loops and conditionals in a very similar way to many of the other modern programming languages.  For example, here is a short program with a ``for`` loop that prints out the first six even positive integers,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-022.ast"
 
@@ -299,20 +328,31 @@ Functions
 ---------
 
 Functions in Asteroid resemble function definitions in functional programming languages such as Haskell and ML.
-Formal arguments are bound via pattern matching and functions are multi-dispatch, that is,
-a single function can have multiple bodies each attached to a different pattern
-instantiating the formal arguments.
-
-Let's start with something simple.  Here is a function definition for ``revdouble`` that reverses a list of integers
-then doubles each value before returning the result,
+Here functions have a single formal argument and function calls are expressed via juxtaposition
+of the function name and the actual argument.  Here is a simple example,
 ::
-#include "../asteroid/test-suites/ug-programs/prgm-025.ast"
+#include "../asteroid/test-suites/ug-programs/prgm-025a.ast"
 
-The output is ``[6,4,2]``.  Notice how we used type patterns to make sure that this
-function is only applied to lists of integers.
+In the ``with`` statement we pattern match the actual argument that is
+being passed in against the variable ``i``.  Also note that the function call is expressed via juxtaposition,
+no parentheses necessary.
 
-In order to demonstrate functional programming like multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each ``with`` clause introduces a new function body with its
+If we wanted to pass more than a single value to a function we have to create
+a tuple and then pass that tuple to the function like in this example,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-025b.ast"
+
+Even though the function call looks like a traditional function call like in
+Python it is not.  The underlying mechanism is quite different: on the call site
+we construct a tuple that holds all our values which is then passed to the function as the only parameter.
+Within the function that tuple is pattern matched and whatever variables are
+instantiated during this pattern match can be used within the function body.
+
+In Asteroid functions are multi-dispatch, that is,
+a single function can have multiple bodies each attached to a different pattern
+matching the formal argument.
+The following is the quick sort implemented in
+Asteroid where each ``with`` clause introduces a new function body with its
 corresponding pattern,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-026.ast"
@@ -322,11 +362,12 @@ The output is as expected,
 
     [0,1,2,3]
 
-Notice that we use the multi-dispatch mechanism to deal with the base cases of the
-``qsort`` recursion using separate function bodies in the first two ``with`` clauses.
-In the third ``with`` clause we use the head-tail operator ``[pivot|rest]``
-which itself is a pattern matching any non-empty list.
-Here the variable ``pivot`` matches the first element of a list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if ``foobar`` is a function then ``foobar(a)`` is a function call in Asteroid but so is ``foobar a``.  The latter form of function call is used in the last line of the function ``qsort`` below.
+Notice that we use the multi-dispatch mechanism to deal with the base cases in the first two ``with`` clauses.
+In the third ``with`` clause we use the pattern ``[pivot|rest]`` to match the input list.
+Here the variable ``pivot`` matches the first element of the list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.
+The function body then implements the pretty much standard recursive definition of the
+quick sort.  Just keep in mind that function calls are expressed via juxtaposition
+of function name and actual argument; no parentheses necessary.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or ``lambda`` functions.  Lambda functions behave just like regular
 functions except that you declare them on-the-fly and they are declared without a
@@ -351,7 +392,7 @@ Consider the following example of this predicate among some patterns,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-028.ast"
 
-Here we use patterns to determine if ``p`` is a triple, a pair, or something else. Pattern matching is embedded in the expressions of the ``if`` statement. The
+Here we use patterns to determine if ``p`` is a triple, a pair, or something else. Pattern matching is embedded in the expressions of the ``if`` statement using the ``is`` predicate. The
 output of this program is,
 ::
 
@@ -364,13 +405,13 @@ be used.  That means we can use the predicate also in ``let`` statements,
     let true = (1,2) is (1,2).
 
 This is kind of strange looking but it succeeds.  Here the
-left side of the ``is`` predicate is the term and
-the right side is the pattern.  Obviously this pattern match will succeed because the
+left operand of the ``is`` predicate is a term and
+the right operand is a pattern.  Obviously this pattern match will succeed because the
 term and the pattern look identical.  The return value of the ``is`` predicate is then
-pattern matched against the ``true`` value on the left of the ``=`` operator.
+pattern matched against the ``true`` value on the left of the ``=`` symbol.
 
 We can also employ pattern matching in loops.
-In the following program we use the ``is`` predicate to test whether the list is empty or not
+In the following program we use the ``is`` predicate to test whether a list is empty or not
 while looping,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-029.ast"
@@ -382,7 +423,7 @@ The output is,
     2
     3
 
-The example employs pattern matching using the head-tail operator in the ``repeat-until`` loop expression in order to iterate over a list and print the list elements.  The
+In addition, the example employs pattern matching using the head-tail operator  in order to iterate over the list elements and print print them.  The
 termination condition of the loop is computed with the ``is`` predicate.
 
 Pattern Matching in Function Arguments
@@ -395,7 +436,8 @@ Here is an example that uses pattern matching on function arguments using custom
     x + 0 = x
     x + s(y) = s(x+y)
 
-Here ``x`` and ``y`` are variables, ``0`` represents the natural number with value zero, and ``s`` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number ``0``. Here is the program where we replaced the ``+`` operator with the
+Here ``x`` and ``y`` are variables, ``0`` represents the natural number with value zero, and ``s`` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number ``0``. Here is the program that implements
+the Peano arithmetic based on the two axiom where we replaced the ``+`` operator with the
 ``add`` symbol,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-030.ast"
@@ -825,7 +867,8 @@ In this last example we simply convert the caught exception object into a string
 and print it,
 ::
 
-    something happened: Exception(PatternMatchFailed,pattern match failed: term and pattern lists/tuples are not the same length)
+    something happened: Exception(PatternMatchFailed,pattern match failed: term and pattern
+    lists/tuples are not the same length)
 
 
 Basic Asteroid I/O
