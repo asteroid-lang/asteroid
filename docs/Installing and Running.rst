@@ -59,4 +59,14 @@ Asteroid program by typing::
 
     asteroid [flags] <program file>
 
-at the command prompt.
+at the command prompt.  Asteroid also supports an interactive mode::
+
+    $ asteroid
+    Asteroid Version 1.0.0
+    Run "asteroid -h" for help
+    Press CTRL+D to exit
+    > load system io.
+    > io @println "Hello, World!".
+    Hello, World!
+    >
+  

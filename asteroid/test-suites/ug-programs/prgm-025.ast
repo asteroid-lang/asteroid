@@ -1,8 +1,0 @@
-    load system io.
-
-    function revdouble
-        with l:%list do
-            return l @reverse() @map(lambda with x:%integer do return 2*x).
-        end
-
-    io @println (revdouble [1,2,3]).

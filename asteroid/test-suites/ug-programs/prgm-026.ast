@@ -1,11 +1,11 @@
     load system io.
 
     function qsort
-        with [] do
+        with [] do -- empty list pattern
             return [].
-        with [a] do
+        with [a] do -- single element list pattern
             return [a].
-        with [pivot|rest] do
+        with [pivot|rest] do -- separating the list into pivot and rest of list
             let less=[].
             let more=[].
 

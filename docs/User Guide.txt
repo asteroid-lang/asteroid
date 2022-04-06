@@ -328,20 +328,31 @@ Functions
 ---------
 
 Functions in Asteroid resemble function definitions in functional programming languages such as Haskell and ML.
-Formal arguments are bound via pattern matching and functions are multi-dispatch, that is,
-a single function can have multiple bodies each attached to a different pattern
-instantiating the formal arguments.
-
-Let's start with something simple.  Here is a function definition for ``revdouble`` that reverses a list of integers
-then doubles each value before returning the result,
+Here functions have a single formal argument and function calls are expressed via juxtaposition
+of the function name and the actual argument.  Here is a simple example,
 ::
-#include "../asteroid/test-suites/ug-programs/prgm-025.ast"
+#include "../asteroid/test-suites/ug-programs/prgm-025a.ast"
 
-The output is ``[6,4,2]``.  Notice how we used type patterns to make sure that this
-function is only applied to lists of integers.
+In the ``with`` statement we pattern match the actual argument that is
+being passed in against the variable ``i``.  Also note that the function call is expressed via juxtaposition,
+no parentheses necessary.
 
-In order to demonstrate functional programming like multi-dispatch, the following is the quick sort implemented in
-Asteroid. Each ``with`` clause introduces a new function body with its
+If we wanted to pass more than a single value to a function we have to create
+a tuple and then pass that tuple to the function like in this example,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-025b.ast"
+
+Even though the function call looks like a traditional function call like in
+Python it is not.  The underlying mechanism is quite different: on the call site
+we construct a tuple that holds all our values which is then passed to the function as the only parameter.
+Within the function that tuple is pattern matched and whatever variables are
+instantiated during this pattern match can be used within the function body.
+
+In Asteroid functions are multi-dispatch, that is,
+a single function can have multiple bodies each attached to a different pattern
+matching the formal argument.
+The following is the quick sort implemented in
+Asteroid where each ``with`` clause introduces a new function body with its
 corresponding pattern,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-026.ast"
@@ -351,11 +362,12 @@ The output is as expected,
 
     [0,1,2,3]
 
-Notice that we use the multi-dispatch mechanism to deal with the base cases of the
-``qsort`` recursion using separate function bodies in the first two ``with`` clauses.
-In the third ``with`` clause we use the head-tail operator ``[pivot|rest]``
-which itself is a pattern matching any non-empty list.
-Here the variable ``pivot`` matches the first element of a list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.  What you also will notice is that function calls do not necessarily have to involve parentheses.  Function application is expressed by simple juxtaposition in Asteroid.  For example, if ``foobar`` is a function then ``foobar(a)`` is a function call in Asteroid but so is ``foobar a``.  The latter form of function call is used in the last line of the function ``qsort`` below.
+Notice that we use the multi-dispatch mechanism to deal with the base cases in the first two ``with`` clauses.
+In the third ``with`` clause we use the pattern ``[pivot|rest]`` to match the input list.
+Here the variable ``pivot`` matches the first element of the list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.
+The function body then implements the pretty much standard recursive definition of the
+quick sort.  Just keep in mind that function calls are expressed via juxtaposition
+of function name and actual argument; no parentheses necessary.
 
 As you have seen in a couple of occasions already in the document, Asteroid also supports anonymous or ``lambda`` functions.  Lambda functions behave just like regular
 functions except that you declare them on-the-fly and they are declared without a
@@ -380,7 +392,7 @@ Consider the following example of this predicate among some patterns,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-028.ast"
 
-Here we use patterns to determine if ``p`` is a triple, a pair, or something else. Pattern matching is embedded in the expressions of the ``if`` statement. The
+Here we use patterns to determine if ``p`` is a triple, a pair, or something else. Pattern matching is embedded in the expressions of the ``if`` statement using the ``is`` predicate. The
 output of this program is,
 ::
 
@@ -393,13 +405,13 @@ be used.  That means we can use the predicate also in ``let`` statements,
     let true = (1,2) is (1,2).
 
 This is kind of strange looking but it succeeds.  Here the
-left side of the ``is`` predicate is the term and
-the right side is the pattern.  Obviously this pattern match will succeed because the
+left operand of the ``is`` predicate is a term and
+the right operand is a pattern.  Obviously this pattern match will succeed because the
 term and the pattern look identical.  The return value of the ``is`` predicate is then
-pattern matched against the ``true`` value on the left of the ``=`` operator.
+pattern matched against the ``true`` value on the left of the ``=`` symbol.
 
 We can also employ pattern matching in loops.
-In the following program we use the ``is`` predicate to test whether the list is empty or not
+In the following program we use the ``is`` predicate to test whether a list is empty or not
 while looping,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-029.ast"
@@ -411,7 +423,7 @@ The output is,
     2
     3
 
-The example employs pattern matching using the head-tail operator in the ``repeat-until`` loop expression in order to iterate over a list and print the list elements.  The
+In addition, the example employs pattern matching using the head-tail operator  in order to iterate over the list elements and print print them.  The
 termination condition of the loop is computed with the ``is`` predicate.
 
 Pattern Matching in Function Arguments
@@ -424,7 +436,8 @@ Here is an example that uses pattern matching on function arguments using custom
     x + 0 = x
     x + s(y) = s(x+y)
 
-Here ``x`` and ``y`` are variables, ``0`` represents the natural number with value zero, and ``s`` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number ``0``. Here is the program where we replaced the ``+`` operator with the
+Here ``x`` and ``y`` are variables, ``0`` represents the natural number with value zero, and ``s`` is the successor function.  In Peano arithmetic any natural number can be represented by the appropriate number of applications of the successor function to the natural number ``0``. Here is the program that implements
+the Peano arithmetic based on the two axiom where we replaced the ``+`` operator with the
 ``add`` symbol,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-030.ast"
@@ -854,7 +867,8 @@ In this last example we simply convert the caught exception object into a string
 and print it,
 ::
 
-    something happened: Exception(PatternMatchFailed,pattern match failed: term and pattern lists/tuples are not the same length)
+    something happened: Exception(PatternMatchFailed,pattern match failed: term and pattern
+    lists/tuples are not the same length)
 
 
 Basic Asteroid I/O
