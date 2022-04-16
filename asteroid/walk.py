@@ -824,6 +824,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
+    state.trace_stack.append((state.lineinfo[0],
+                              state.lineinfo[1],
+                              fname))
+
     # static scoping for functions
     # Note: we have to do this here because unifying
     # over the body patterns can introduce variable declarations,
@@ -890,6 +894,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.lineinfo = old_lineinfo
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(save_symtab)
+
+    state.trace_stack.pop()
 
     return return_value
 

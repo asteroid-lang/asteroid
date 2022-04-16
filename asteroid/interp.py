@@ -10,7 +10,7 @@ import sys
 from asteroid.globals import *
 from asteroid.support import *
 from asteroid.frontend import Parser
-from asteroid.state import state
+from asteroid.state import state, dump_trace
 from asteroid.walk import walk
 
 # the prologue file is expected to be in the 'modules' folder
@@ -29,7 +29,7 @@ def interp(input_stream,
     try:
         # initialize state
         if initialize_state:
-            state.initialize()
+            state.initialize(input_name)
 
         #lhh
         #print("path[0]: {}".format(sys.path[0]))
@@ -79,28 +79,31 @@ def interp(input_stream,
     #       for 'Exception' unless the exception needs special handling like
     #       'ThrowValue' or 'ReturnValue' etc.
     except ThrowValue as throw_val:
+        dump_trace()
         # handle exceptions using the standard Error constructor
         module, lineno = state.lineinfo
         if throw_val.value[0] == 'apply' and throw_val.value[1][1] == 'Error':
             (APPLY, (ID, id), (APPLY, error_obj, rest)) = throw_val.value
-            print("Error: {}: {}: {}".format(module, lineno, term2string(error_obj)))
+            print("error: {}: {}: {}".format(module, lineno, term2string(error_obj)))
         else:
-            print("Error: {}: {}: unhandled Asteroid exception: {}"
+            print("error: {}: {}: unhandled Asteroid exception: {}"
                   .format(module, lineno, term2string(throw_val.value)))
         # needed for REPL
         if not exceptions:
             sys.exit(1)
 
     except ReturnValue as inst:
+        dump_trace()
         module, lineno = state.lineinfo
-        print("Error: {}: {}: return statement used outside a function environment"
+        print("error: {}: {}: return statement used outside a function environment"
               .format(module, lineno))
         # needed for REPL
         if not exceptions:
             sys.exit(1)
 
     except  KeyboardInterrupt as e:
-        print("Error: keyboard interrupt")
+        dump_trace()
+        print("error: keyboard interrupt")
         # needed for REPL
         if not exceptions:
             sys.exit(1)
@@ -111,14 +114,16 @@ def interp(input_stream,
                 state.symbol_table.dump()
             raise e
         else:
+            dump_trace()
             module, lineno = state.lineinfo
-            print("Error: {}: {}: {}".format(module, lineno, e))
+            print("error: {}: {}: {}".format(module, lineno, e))
             # needed for REPL
             if not exceptions:
                 sys.exit(1)
 
     except BaseException as e:
-        print("Error: {}".format(e))
+        dump_trace()
+        print("error: {}".format(e))
         # needed for REPL
         if not exceptions:
             sys.exit(1)

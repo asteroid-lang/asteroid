@@ -55,7 +55,7 @@ def run_repl():
         except EOFError:
             print()
             break
-        
+
         """
         Interpretation, multiline input, and exception handling
         """
@@ -63,7 +63,7 @@ def run_repl():
             # Try to interpret the new statement
             interp(line, initialize_state=False, exceptions=True)
 
-            # Try to 
+            # Try to
             line = ""
 
         except ExpectationError as e:
@@ -71,13 +71,13 @@ def run_repl():
             if e.found_EOF:
                 current_prompt = continue_prompt
             else:
-                print(e)
+                print("error: "+str(e))
                 line = ""
                 current_prompt = arrow_prompt
 
         except Exception as e:
             # FIX THIS
-            print(e)
+            print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
 

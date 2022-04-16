@@ -26,7 +26,7 @@ def display_help():
     print(" -p    disable prologue")
     print(" -h    display help")
     print(" -r    disable redundant pattern detector")
-    print(" -e    show full exceptions")
+    print(" -e    show Python exceptions")
 
 def main():
     # defaults for the flags - when the flag is set on the command line
