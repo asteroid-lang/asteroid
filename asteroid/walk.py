@@ -1281,8 +1281,25 @@ def apply_exp(node):
         return handle_builtins(node)
 
     # handle function application
+    # retrive the function name from the AST
+    if f[0] in ['function-exp','apply']:
+        # cannot use the function expression as a name,
+        # could be a very complex computation. the apply
+        # node means that the lambda function has to still be
+        # computed.
+        f_name = 'lambda'
+    elif f[0] == 'index':
+        # object member function
+        (INDEX, ix, (ID, f_name)) = f
+        # 'str' is necessary in case we use an index value
+        # instead of a function name -- see regression test test085.ast
+        f_name = "member function " + str(f_name)
+    else:
+        # just a regular function call
+        (ID, f_name) = f
+
+    # evaluate the function expression and the arguments
     f_val = walk(f)
-    f_name = f[1]
     arg_val = walk(arg)
 
     # object member function
