@@ -2,18 +2,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
 
 .. highlight:: none
 
@@ -23,6 +14,163 @@ Asteroid Reference Guide
 Language Syntax
 ---------------
 
+Note: in the following descriptions the syntax ``'.'?`` denotes an optional
+period at the end of a statement.
+
+Statements
+^^^^^^^^^^
+
+Assert
+%%%%%%
+
+Syntax: ``ASSERT exp '.'?``
+
+If the expression of the assert statement evaluates to a
+value equivalent to the Boolean value
+``false`` an exception is thrown otherwise the statement is ignored.
+
+For example, the statement,
+::
+      assert (1+1 == 3).
+
+will generate a runtime error but the statement,
+::
+      assert (1+1 == 2).
+
+will be ignored once the expression has been evaluated.
+
+
+Break
+%%%%%
+
+Syntax: ``BREAK '.'?``
+
+The break statement immediately breaks out of the closest surrounding looping structure.
+Execution will continue at the statement right after the loop. Issuing a break statement
+outside of a looping structure will lead to a runtime error.
+
+As an example we break out of the indefinite loop below when `i` is equal to 10,
+::
+      let i = 0.
+
+      loop
+         let i = i+1.
+         if i==10 do
+            break.
+         end
+      end
+
+      assert (i==10).
+
+
+For-Loop
+%%%%%%%%
+
+Syntax: ``FOR pattern IN exp DO stmt_list END``
+
+In a for-loop the expression must evaluate to a list.  The pattern is then matched to
+each element of the list sequentially starting with the first element of the list.
+The loop body is executed for each successful match.
+
+In the following program the body of the loop is executed exactly once when
+the pattern matches the tuple ``(1,"chicken")``,
+::
+      for (1,bird) in [(0,"duck"),(1,"chicken"),(2,"turkey")] do
+         assert(bird is "chicken").
+      end
+
+
+Function-Definition
+%%%%%%%%%%%%%%%%%%%
+
+Syntax: FUNCTION function_name WITH pattern DO stmt_list (WITH pattern DO stmt_list)* END
+
+Function definitions in Asteroids can have one or more function bodies associated
+with single function name.  A function body is associated with a particular pattern
+that is matched against the actual argument of the function call.  If the match
+is successful then the associated function body is executed.  If the match is not
+successful then other pattern/body pairs are tried if present.  If none of the
+patterns match the actual argument then this constitutes a runtime error.
+
+The following is the definition of the ``sign`` function,
+::
+      function sign
+         with x if x >= 0 do
+            return 1.
+         with x if x < 0 do
+            return -1.
+      end
+
+Here the first function body returns ``1`` if the actual argument is greater or equal to zero.
+The second function body return ``-1`` if the actual argument is less than zero.
+
+Function-Call
+%%%%%%%%%%%%%
+
+A function call at the statement level is nothing else but a regular function
+call where any return value of the function is ignored.
+
+Global
+%%%%%%
+
+The ``global`` statement allows the developer to set the value of a global variable
+from within functions.
+
+Consider the following code snippet,
+::
+      let x = 0.
+
+      function foo
+         with none do
+            global x.
+            let x = 1.
+      end
+
+      foo().
+      assert(x==1).
+
+The ``global`` statement within the function ``foo`` indicates that the ``let`` statement
+on the following line should assign a value to the global variable ``x``.
+
+If-Else
+%%%%%%%
+
+Let
+%%%
+
+Loop-Loop
+%%%%%%%%%
+
+Noop
+%%%%
+
+Repeat-Loop
+%%%%%%%%%%%
+
+Return
+%%%%%%
+
+Structure
+%%%%%%%%%
+
+Try-Catch
+%%%%%%%%%
+
+Throw
+%%%%%
+
+While-Loop
+%%%%%%%%%%
+
+Expressions
+^^^^^^^^^^^
+
+Patterns
+^^^^^^^^
+
+Asteroid Grammar
+^^^^^^^^^^^^^^^^
+
 The following is the complete grammar for the Asteroid language. Capitalized
 words are either keywords such as ``FOR`` and ``END`` or tokens such as ``STRING`` and ``ID``.  Non-terminals
 are written in all lowercase letters.  The grammar utilizes an extended BNF notation
@@ -31,6 +179,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
+
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
@@ -159,6 +308,7 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
+
 
 
 Builtin Functions
@@ -383,11 +533,13 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 An example,
 ::
+
     load system io.
     load system math.
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
+
 
 Pick
 ^^^^
@@ -397,6 +549,7 @@ pick objects that allow a user to randomly pick items from a list using the ``pi
 The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
 Here is a simple use case
 ::
+
    load system io.
    load system pick.
 
@@ -440,11 +593,13 @@ The ``sort`` function makes use of a user-defined order predicate on the list's 
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
 The following is a simple example,
 ::
+
    load system io.
    load system sort.
    let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
                        [10,5,110,50]).
     io @println sl.
+
 
 prints the sorted list::
 
@@ -467,6 +622,7 @@ The following stream interface functions are available,
 
 A simple use case.
 ::
+
    load system io.
    load system stream.
 
@@ -509,6 +665,7 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 Here is a program that exercises some of the string formatting options,
 ::
+
     load system io.
     load system type.
     load system math.
@@ -530,6 +687,7 @@ Here is a program that exercises some of the string formatting options,
     let r = type @tostring(math @pi,type @stringformat(6,3)).
     io @println r.
 
+
 The output of the program is,
 ::
 
@@ -550,6 +708,7 @@ Notice the right justification of the various values within the given string len
 
 A simple example program using the ``gettype`` function,
 ::
+
    load system type.
 
    let i = 1.
@@ -591,6 +750,7 @@ The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 
 Here is a simple example program for the ``vector`` module,
 ::
+
    load system io.
    load system vector.
 
@@ -601,3 +761,4 @@ Here is a simple example program for the ``vector`` module,
    
 
 which prints the value ``0``.
+
