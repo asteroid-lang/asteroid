@@ -58,7 +58,7 @@ are written in quotes.
     | BREAK '.'?
     | RETURN exp? '.'?
     | function_def
-    | call_or_index '.'?
+    | exp '.'?
 
   function_def
     : FUNCTION ID body_defs END
