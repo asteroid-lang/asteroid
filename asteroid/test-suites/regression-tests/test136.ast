@@ -1,0 +1,3 @@
+-- test expressions computing return values
+let x = (lambda with i do i+1) 1.
+assert(x is 2).
