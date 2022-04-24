@@ -13,6 +13,6 @@ function f2 with () do
    io @println "hello".
 end
 
-assert(f1() is t).
+assert(f1() is 5).
 assert(f2() is none).
 
