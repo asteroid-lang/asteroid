@@ -68,13 +68,13 @@ def run_repl():
             line = ""
 
             # Check for return value
-            if function_return_value:
-                # Get the last return value
-                val = function_return_value[-1]
+            if function_return_value[-1]:
+                # Get the last return value (type, value)
+                (_, val) = function_return_value[-1]
 
                 # If it isn't none, print out the value
-                if val:
-                    print(val[1])
+                if val is not None:
+                    print(val)
 
         except ExpectationError as e:
             # If we expected something but found EOF, it's a continue
