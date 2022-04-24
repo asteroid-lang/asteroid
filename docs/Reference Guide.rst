@@ -113,6 +113,8 @@ call where any return value of the function is ignored.
 Global
 %%%%%%
 
+Syntax: ``GLOBAL variable_name (',' variable_name)* '.'?``
+
 The ``global`` statement allows the developer to set the value of a global variable
 from within functions.
 
@@ -134,6 +136,35 @@ on the following line should assign a value to the global variable ``x``.
 
 If-Else
 %%%%%%%
+
+Syntax: ``IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END``
+
+If the ``if`` expression evaluates to the equivalent of a Boolean ``true`` value
+then the associated statements will be executed and the execution
+continues after the ``end`` keyword.  If the expression evaluates to the equivalent
+of a Boolean ``false`` then the expressions of the optional ``elif`` clauses
+are evaluated if present.  If one of them evaluates to the equivalent of a Boolean
+value ``true`` then the associated statements are executed. Otherwise
+the statements of the optional ``else`` clause are executed if present.
+
+As an example consider the following ``if`` statement that determines
+what kind of integer value the user supplied,
+::
+      load system io.
+      load system type.
+
+      let x = type @tointeger (io @input "Please enter an integer: ").
+
+      if x < 0 do
+          io @println "Negative".
+      elif x == 0 do
+          io @println "Zero".
+      elif x == 1 do
+          io @println "One".
+      else do
+          io @println "Positive".
+      end
+
 
 Let
 %%%
