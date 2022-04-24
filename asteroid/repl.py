@@ -2,6 +2,7 @@ from asteroid.interp import interp
 from asteroid.version import VERSION
 from asteroid.state import state
 from asteroid.globals import ExpectationError
+from asteroid.walk import function_return_value
 
 from sys import stdin
 import readline
@@ -65,6 +66,15 @@ def run_repl():
 
             # Try to
             line = ""
+
+            # Check for return value
+            if function_return_value[-1]:
+                # Get the last return value (type, value)
+                (_, val) = function_return_value[-1]
+
+                # If it isn't none, print out the value
+                if val is not None:
+                    print(val)
 
         except ExpectationError as e:
             # If we expected something but found EOF, it's a continue
