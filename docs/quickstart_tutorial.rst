@@ -3,38 +3,41 @@
     
 Welcome To Asteroid!
 ====================
-Thank you for visiting our page about Asteroid! If you have gone to the `Asteroid Documentation <https://asteroid-lang.readthedocs.io/en/latest/>`_ then you have seen that Asteroid is a pattern-matching object-oriented language.
-If you have not heard of that programming paradigm (type of programming language) before, Asteroid is the first of its kind. Before you start coding in Asteroid, it would be beneficial to understand what pattern-matching actually is, since the langauges you have worked on in the past may not have been this same paradigm.
+Thank you for visiting our page about Asteroid! If you have gone to the `Asteroid Documentation <https://asteroid-lang.readthedocs.io/en/latest/>`_ then you have seen that Asteroid is a pattern-matching oriented language.
+If you have not heard of that programming paradigm (type of programming language) before, Asteroid is one of the first of its kind. Here we provide a brief introduction to Asteroid for C++ programmers.
 
-What is Pattern-Matching?
--------------------------
-Pattern-matching is the idea of testing an epxression to determine if it has certain characteristics. For instance, look at this example program of a function that determines if a number is zero or not zero in the programming langauge SML:  
+Pattern Matching at the Core of Things
+--------------------------------------
+Pattern-matching is the idea of extracting values from a structure by applying a pattern to that structure.  If the pattern 
+contains variables then these variables will be instantiated with values from the structure.  Consider the structure ``(1,2)``.
+If we apply the pattern ``(1,x)`` to that structure the ``1`` will be matched and the variable ``x`` will be instantiated 
+with the value ``2``.  The interesting part about pattern matching is that they can also fail to match.  Consider again 
+our structure ``(1,2)`` but now we want to apply the pattern ``(y,1)``.  This pattern match will fail because the second component of our structure and the pattern do not match.  Because of this mismatch the variable ``y`` will also not be instantiated.
+
+A very interesting aspect of pattern matching is that it provides a powerful way to inspect the values passed to a function.
+Consider the C++ function `f` defined here,
 ::
-    fun f (0) = "zero"
-        | f (x) = "not zero";
-        
-As you can see, there are two "patterns" that this function can have; either have the function be called with 0 (in this case the function would output "zero") or have the function called with something that is not zero (in this case, "not zero" would be outputted). Depending on what the function call is, the appropriate line will get executed. This is the basis of pattern-matching. In this particular example, we are testing what the function call of f will be; either with 0 or with a number, and depending on which pattern is satisfied, that line will get executed.
+   #include <iostream>
 
-This is an important note to remember because **not all programming languages have pattern-matching implemented into them**. For instance, C++ without any extra libraries does not have pattern-matching built into it. If you wanted the same function in C++, it would look something like:
-::
-    void f(x) {
-        if x == 0 {
-            std::cout << "zero\n";
-        } else {
-            std::cout << "not zero\n";
-        }
-    }
+   void f(int x) {
+     if (x == 0)
+       std::cout << "zero\n";
+     else
+       std::cout << "not zero\n";
+   }
 
+If the integer value passed to the function is equal to zero then it prints out the word ``zero`` otherwise it prints out 
+the words ``not zero``.
 Notice that there are no patterns in this function; the programmer had to use conditionals (which is not a bad practice, however the function looks less cluttered with patterns and also not every programming language has conditionals, however Asteroid does).  
-:raw-html:`<br />`
-Here is an example of pattern matching in Asteroid (note that -- is the start of a comment in Asteroid):
+
+In Asteroid we can accomplish this kind of analysis in the function argument using pattern matching,
 ::
-   function is_zero
-        with 0 do
-            println("This is zero").
-        with (n:%integer) if n =/= 0 do      -- the =/= means "not equal to" in Asteroid
-            println("This is not zero").
-        end
+   function f
+      with 0 do
+         println("zero").
+      with x do      
+         println("not zero").
+      end
 
 In this above example, there are only two patterns for the arguments of this function: the number n (which would be the number passed into the function) can either be 0 (at which point "This is zero" would be outputted to the screen) or not zero (in other words, anything but 0, at which point "This is not zero" would be outputted to the screen). The with keyword is just splitting up the function bodies with its corresponding pattern. So in this example, the function is split up into two bodies (one body being if the argument is 0 and the other if the argument is not 0). This is also called **function style pattern-matching**, since there is pattern-matching occuring within the body of the function.
 
