@@ -204,6 +204,10 @@ where the name of the program is the name of the file that you want to run.
  
 **Make sure that you are in the same folder in your terminal of the file that you are trying to run!**
  
+Notice how the ``@`` symbol is used in two different places (this is common in programming languages, where one operator can be used multiple ways). In Asteroid, modules (which was the ``load system io.`` line at the top of our files) are actually objects, so to access a method in a module, you use the ``@`` symbol. So in this example, the module is the ``io`` module and we want to use the ``println`` method in that module, which is why you see the ``@`` symbol in there. **A module is a group of code that has already been written (typically by the developers of the language) which can be used again in other people's programs.**
+
+`Here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html#asteroid-modules>`_ is the complete list of modules in Asteroid.
+
 Some important things to note in Asteroid:
  
 * Most statements must end with a period (this is equivalent to using a semicolon in C++)
