@@ -18,8 +18,9 @@ Asteroid Reference Guide
 Language Syntax
 ---------------
 
-Note: in the following descriptions the syntax ``'.'?`` denotes an optional
-period at the end of a statement.
+Note: In the following descriptions ``<something>?`` denotes an optional
+something in a piece of syntax.  We also use the notation ``<something>*``
+which means that something can appear zero or more times in a program.
 
 Statements
 ^^^^^^^^^^
@@ -53,7 +54,7 @@ The break statement immediately breaks out of the closest surrounding looping st
 Execution will continue at the statement right after the loop. Issuing a break statement
 outside of a looping structure will lead to a runtime error.
 
-As an example we break out of the indefinite loop below when `i` is equal to 10,
+As an example we break out of the indefinite loop below when ``i`` is equal to 10,
 ::
       let i = 0.
 
@@ -96,7 +97,13 @@ The loop body is executed for each successful match.
 In the following program the body of the loop is executed exactly once when
 the pattern matches the tuple ``(1,"chicken")``,
 ::
-      for (1,bird) in [(0,"duck"),(1,"chicken"),(2,"turkey")] do
+      let tuple_list = [
+              (0,"duck"),
+              (1,"chicken"),
+              (2,"turkey")
+              ].
+
+      for (1,bird) in tuple_list do
          assert(bird is "chicken").
       end
 
@@ -106,14 +113,15 @@ Function-Definition
 
 Syntax: FUNCTION function_name WITH pattern DO stmt_list (WITH pattern DO stmt_list)* END
 
-Function definitions in Asteroids can have one or more function bodies associated
+Function definitions in Asteroid can have one or more function bodies associated
 with single function name.  A function body is associated with a particular pattern
 that is matched against the actual argument of the function call.  If the match
 is successful then the associated function body is executed.  If the match is not
 successful then other pattern/body pairs are tried if present.  If none of the
 patterns match the actual argument then this constitutes a runtime error.
+Patterns are tried in the order they appear in the function definition.
 
-The following is the definition of the ``sign`` function,
+The following is a definition of the ``sign`` function,
 ::
       function sign
          with x if x >= 0 do
@@ -125,18 +133,13 @@ The following is the definition of the ``sign`` function,
 Here the first function body returns ``1`` if the actual argument is greater or equal to zero.
 The second function body return ``-1`` if the actual argument is less than zero.
 
-Function-Call
-%%%%%%%%%%%%%
-
-A function call at the statement level is nothing else but a regular function
-call where any return value of the function is ignored.
-
 Global
 %%%%%%
 
 Syntax: ``GLOBAL variable_name (',' variable_name)* '.'?``
 
-The ``global`` statement allows the developer to set the value of a global variable
+The ``global`` statement allows the developer to declare a variable as global
+within a function scope and this allows the developer to set the value of a global variable
 from within functions.
 
 Consider the following code snippet,
@@ -149,24 +152,27 @@ Consider the following code snippet,
             let x = 1.
       end
 
+      assert(x==0).
       foo().
       assert(x==1).
 
 The ``global`` statement within the function ``foo`` indicates that the ``let`` statement
 on the following line should assign a value to the global variable ``x``.
 
-If-THEN-Else
+If-Then-Else
 %%%%%%%%%%%%
 
 Syntax: ``IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END``
 
-If the ``if`` expression evaluates to the equivalent of a Boolean ``true`` value
+If the first expression evaluates to the equivalent of a Boolean ``true`` value
 then the associated statements will be executed and the execution
 continues after the ``end`` keyword.  If the expression evaluates to the equivalent
 of a Boolean ``false`` then the expressions of the optional ``elif`` clauses
 are evaluated if present.  If one of them evaluates to the equivalent of a Boolean
-value ``true`` then the associated statements are executed. Otherwise
-the statements of the optional ``else`` clause are executed if present.
+value ``true`` then the associated statements are executed and execution continues
+after the ``end`` keyword. Otherwise
+the statements of the optional ``else`` clause are executed if present and again
+flow of control is transferred to the statements following the if-statement.
 
 As an example consider the following ``if`` statement that determines
 what kind of integer value the user supplied,
@@ -231,7 +237,7 @@ Repeat-Until
 Syntax: ``REPEAT DO? stmt_list UNTIL exp '.'?``
 
 Repeatedly execute the statements in the loop body until the
-expression evaluated to the equivalent of a Boolean ``true`` value.
+expression evaluates to the equivalent of a Boolean ``true`` value.
 
 Here is an example of a program that prints out the elements
 of a list,
@@ -290,7 +296,7 @@ can be copied into an object,
       assert( betty @name == "Betty" ).
       assert( betty @age == 21 ).
 
-Also note that object identity is expression using the ``this`` keyword.
+Also note that object identity is expressed using the ``this`` keyword.
 
 Try-Catch
 %%%%%%%%%
@@ -299,7 +305,7 @@ Syntax: ``TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END``
 
 This statement allows the programmer to set up exception handlers for
 exceptions thrown in the code of the ``try`` part of the statement.
-Notice that you can set up one or more handlers with in the ``catch`` part of
+Notice that you can set up one or more handlers within the ``catch`` part of
 the statement.  If there are more than one handlers then they are searched in
 order starting with the first.  Handlers are selected via pattern matching
 on the exception object.  The handler code of the first ``catch`` clause whose
@@ -370,12 +376,12 @@ Substructure Access
 Syntax: ``structure_exp @ index_exp``
 
 Asteroid provides the uniform substructure access operator ``@`` for all structures
-that includes lists, tuples, and objects. For example, accessing the first
-elements of a list is accomplished by the expression,
+which includes lists, tuples, and objects. For example, accessing the first
+element of a list is accomplished by the expression,
 ::
       [1,2,3] @0
 
-Similarly, given an object constructed from structure ``A`` member values
+Similarly, given an object constructed from structure ``A``, member values
 are accessed by name via the ``@`` operator,
 ::
       structure A with
@@ -384,7 +390,7 @@ are accessed by name via the ``@`` operator,
       end
 
       let obj = A(1,2).
-      assert( obj @a == 1).  -- access member a
+      assert( obj @a == 1 ).  -- access member a
 
 
 Head-Tail Operator
@@ -401,8 +407,8 @@ It can also be nested,
 ::
       let [1,2,3] = 1 | 2 | 3 | [].
 
-In the second way it works as a pattern to deconstruct lists in their first
-element and the remainder of the list with its first element removed,
+In the second way it works as a pattern to deconstruct a list into its first
+element and the remainder of the list, the list with its first element removed,
 ::
       let h | t = [1,2,3].
       assert(h == 1).
@@ -421,7 +427,7 @@ Syntax: ``exp IS pattern``
 This operator matches the structure computed by the expression on the left
 side against the pattern on the right side of the operator.  If the match is
 successful it returns the Boolean value ``true`` and if not successful then
-it returns the Boolean value ``false.  All regular rules of pattern matching
+it returns the Boolean value ``false``.  All regular rules of pattern matching
 apply such as instantiating appropriate variable bindings in the current scope.
 
 Example,
@@ -456,7 +462,7 @@ This expression constructs a list starting with an element given by the start ex
 up to the value of the end expression with a given stride.  If the stride expression
 is not given then a stride value of 1 is assumed.  The stride value is always a
 positive value.  The constructor figures out how to apply the stride value to reach the
-end value from the start value.  The constructor can be placed be optional square brackets.
+end value from the start value.  The constructor can be placed between optional square brackets.
 
 Examples,
 ::
@@ -474,7 +480,7 @@ a function expression and the second expression has to evaluate to an appropriat
 actual function parameter.  Notice that function calls are defined in terms of a
 single function parameter.  If you would like to pass more than one value to a
 function then you have to create a tuple.  For example, if the function ``foo``
-needs to values to be passed to it then you need to create a tuple, e.g. ``foo (1,2)``.
+needs two values to be passed to it then you need to create a tuple, e.g. ``foo (1,2)``.
 In that respect function calls differ drastically from function calls in languages
 like C/C++ or Python.
 
@@ -493,8 +499,8 @@ If-Else Expressions
 Syntax: ``then_exp IF bool_exp ELSE else_exp``
 
 If the boolean expression evaluates to true then this expression returns
-the value of the then expression.  Otherwise it will return the value of the
-else expression.
+the value of the first expression.  Otherwise it will return the value of the
+last expression.
 
 Example,
 ::
@@ -523,7 +529,7 @@ variables, e.g.
 ::
       let *p = (1,2).
 
-Here the pair ``(1,2)`` is matched against the pattern store in the variable ``p``
+Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``p``
 such that ``x`` is bound to the value ``2``.
 
 Type Patterns
@@ -568,6 +574,8 @@ Example,
       load system math.
       let k if (math @mod(k,2) == 0) = val.
 
+Here ``k`` only matches the value of ``val`` if that value is an even number.
+
 Pure Constraint Patterns
 %%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -579,7 +587,7 @@ by placing it between the ``%[`` and ``]%`` operators.
 
 Example,
 ::
-      let pos_int = %[(x:%integer) if x > 0]%
+      let pos_int = pattern %[(x:%integer) if x > 0]%
       let i:*pos_int = val.
 
 The first line defines a pure constraint pattern for the positive integers.
