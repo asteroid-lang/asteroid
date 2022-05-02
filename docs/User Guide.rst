@@ -1143,7 +1143,6 @@ in computations.  For example,
 
 The output of the program is,
 ::
-
     ([1],[2])
 
 which is the value computed by the ``eval`` function given the values associated with

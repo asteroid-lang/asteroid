@@ -62,6 +62,23 @@ As an example we break out of the indefinite loop below when `i` is equal to 10,
 
       assert (i==10).
 
+Expressions at the Statement Level
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Expressions at the statement level are supported.  However, they do not have
+any effect on the computation unless they contain side effects with one
+exception:  In the absence of an explicit return statement, the value of the last expression
+evaluated in a function body is considered the return value of the function.
+
+An example,
+::
+      function inc
+         with i do
+            i+1.
+         end
+
+Notice that because the expression ``i+1`` is the last statement evaluated in the
+function body its value becomes the return value of the function.
 
 For-Loop
 %%%%%%%%
@@ -134,8 +151,8 @@ Consider the following code snippet,
 The ``global`` statement within the function ``foo`` indicates that the ``let`` statement
 on the following line should assign a value to the global variable ``x``.
 
-If-Else
-%%%%%%%
+If-THEN-Else
+%%%%%%%%%%%%
 
 Syntax: ``IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END``
 
@@ -169,35 +186,405 @@ what kind of integer value the user supplied,
 Let
 %%%
 
-Loop-Loop
-%%%%%%%%%
+Syntax: ``LET pattern = exp '.'?``
 
-Noop
+The ``let`` statement is Asteroid's version of the assignment statement with a twist though:  the left side of the ``=`` sign is not just a variable
+but is considered a pattern.  For simple assignments there is no discernible difference between assignments in Asteroid and assignments in other
+languages,
+::
+  let x = val.
+
+Here, the variable ``x`` will match the value stored in ``val``.  However, because the left side of the ``=`` sign is a pattern we
+can write something like this,
+::
+  load system math.
+  let x:%[(k:%integer) if math @mod(k,2)==0]% = val.
+
+where ``x`` will only match the value of ``val`` if that value is an even integer value.  The fact that the left side of the ``=`` is a pattern allows
+us to write things like this,
+::
+   let 1 = 1.
+
+which simply states that the value ``1`` on the right can be matched by the pattern ``1`` on the left.  Having the ability to pattern match
+on literals is convenient for statements like these,
+::
+  let (1,x) = p.
+
+This ``let`` statement is only successful for values of ``p`` which are pairs where the first component of the pair is the value ``1``.
+
+
+Loop
 %%%%
 
-Repeat-Loop
-%%%%%%%%%%%
+Syntax: ``LOOP DO? stmt_list END``
+
+The ``loop`` statement executes the statements in the loop body indefinitely
+unless a ``break`` statement is encountered.
+
+Repeat-Until
+%%%%%%%%%%%%
+
+Syntax: ``REPEAT DO? stmt_list UNTIL exp '.'?``
+
+Repeatedly execute the statements in the loop body until the
+expression evaluated to the equivalent of a Boolean ``true`` value.
+
+Here is an example of a program that prints out the elements
+of a list,
+::
+      load system io.
+
+      let l = ["bmw", "volkswagen", "mercedes"].
+
+      repeat
+         let [element|l] = l.
+         io @println element.
+      until l is [].
+
 
 Return
 %%%%%%
 
+Syntax; ``RETURN exp? '.'?``
+
+Explicitly return from a function with an optional return value.
+
 Structure
 %%%%%%%%%
+
+Syntax: ``STRUCTURE type_name WITH data_or_function_stmts END``
+
+The ``structure`` statement introduces a composite data type that defines a physically grouped list of variables under one name.  The variables within a structure can be declared as data members or as function members.
+Unless a member function was declared as a constructor (an ``__init__`` function) structures are
+instantiated using a default constructor. The default constructor copies the arguments given to it into the data member fields in the order that the data members appear in the structure definition and as they appear in the parameter list of the constructor.  We often refer to instantiated structures as objects.  Member values of objects
+are accessed using the access operator ``@``. Here is a simple example,
+::
+      -- define a structure of type A
+      structure A with
+          data a.
+          data b.
+      end
+
+      let obj = A(1,2).       -- call default constructor
+      assert( obj @a == 1 ).  -- access first data member
+      assert( obj @b == 2 ).  -- access second data member
+
+We can use custom constructors to enforce that only certain types of values
+can be copied into an object,
+::
+      -- define a structure of type Person
+      structure Person with
+          data name.
+          data age.
+          function __init__ with (name:%string,age:%integer) do -- constructor
+             let this @name = name.
+             let this @age = age.
+          end
+      end
+
+      let betty = Person("Betty",21).  -- call constructor
+      assert( betty @name == "Betty" ).
+      assert( betty @age == 21 ).
+
+Also note that object identity is expression using the ``this`` keyword.
 
 Try-Catch
 %%%%%%%%%
 
+Syntax: ``TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END``
+
+This statement allows the programmer to set up exception handlers for
+exceptions thrown in the code of the ``try`` part of the statement.
+Notice that you can set up one or more handlers with in the ``catch`` part of
+the statement.  If there are more than one handlers then they are searched in
+order starting with the first.  Handlers are selected via pattern matching
+on the exception object.  The handler code of the first ``catch`` clause whose
+pattern matches the exception object is executed.
+
+Below is an example of a ``try-catch`` statement where the code
+in the ``try`` part generates a division-by-zero exception.  The
+exception object is pattern-matched in the ``catch`` clause and processed
+by the associated handler,
+::
+      load system io.
+
+      try
+          let x = 1/0.
+      catch Exception("ArithmeticError", s) do
+          io @println s.
+      end
+
+For more details on exceptions please see the User Guide.
+
 Throw
 %%%%%
+
+Syntax: ``THROW exp '.'?``
+
+Allows the developer to throw an exception.  Any object can serve as an
+exception object. However, Asteroid provides some predefined exception objects.
+For more details on exceptions please see the User Guide.
 
 While-Loop
 %%%%%%%%%%
 
+Syntax: ``WHILE exp DO stmt_list END``
+
+While the expression evaluates to the equivalent of a Boolean ``true`` value
+execute the statements in the body of the loop.  The loop expression is reevaluated
+after each loop iteration.
+
+Here is an example that prints out a sequence of integer values in reverse order,
+::
+      load system io.
+
+      let i = 10.
+
+      while i do
+         io @println i.
+         let i = i-1.
+      end
+
+The loop terminates once ``i`` becomes zero which is the equivalent to a Boolean
+value ``false``.
+
 Expressions
 ^^^^^^^^^^^
 
-Patterns
-^^^^^^^^
+All the usual arithmetic, relational, and logic operators,
+::
+      +, -, *, /, ==, =/=, <=, <, >=, >, and, or, not
+
+are supported in
+Asteroid.  For extended mathematical operations such as ``mod`` (modulus) or
+``sin`` (sine) see the ``math`` module.  Here we discuss expression constructions
+that are particular to Asteroid.
+
+Substructure Access
+%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``structure_exp @ index_exp``
+
+Asteroid provides the uniform substructure access operator ``@`` for all structures
+that includes lists, tuples, and objects. For example, accessing the first
+elements of a list is accomplished by the expression,
+::
+      [1,2,3] @0
+
+Similarly, given an object constructed from structure ``A`` member values
+are accessed by name via the ``@`` operator,
+::
+      structure A with
+         data a.
+         data b.
+      end
+
+      let obj = A(1,2).
+      assert( obj @a == 1).  -- access member a
+
+
+Head-Tail Operator
+%%%%%%%%%%%%%%%%%%
+
+Syntax: ``element_exp | list_exp``
+
+This operator works in one of two ways.  In the first way it allows you to
+pre-append an element to a list,
+::
+      let [1,2,3] = 1 | [2,3].
+
+It can also be nested,
+::
+      let [1,2,3] = 1 | 2 | 3 | [].
+
+In the second way it works as a pattern to deconstruct lists in their first
+element and the remainder of the list with its first element removed,
+::
+      let h | t = [1,2,3].
+      assert(h == 1).
+      assert(t == [2,3]).
+
+You can put optional brackets around the operator to highlight the fact that
+we are dealing with a list,
+::
+      let [h | t] = [1,2,3].
+
+The ``is`` Predicate
+%%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``exp IS pattern``
+
+This operator matches the structure computed by the expression on the left
+side against the pattern on the right side of the operator.  If the match is
+successful it returns the Boolean value ``true`` and if not successful then
+it returns the Boolean value ``false.  All regular rules of pattern matching
+apply such as instantiating appropriate variable bindings in the current scope.
+
+Example,
+::
+      if v is (x,y) do
+         io @println "success".
+         assert(isdefined x).
+         assert(isdefined y).
+      else
+         io @println "not matched".
+      end
+
+The ``in`` Predicate
+%%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``exp IN list_exp``
+
+This predicate returns ``true`` if the value computed by the expression on the
+left in contained in the list computed by the list expression on the right.
+It is an error if the expression on the right does not compute a list.
+
+Example,
+::
+      let true = 1 in [1,2,3].
+
+Iterative List Constructor
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``start_exp TO end_exp (STRIDE exp)?``
+
+This expression constructs a list starting with an element given by the start expression
+up to the value of the end expression with a given stride.  If the stride expression
+is not given then a stride value of 1 is assumed.  The stride value is always a
+positive value.  The constructor figures out how to apply the stride value to reach the
+end value from the start value.  The constructor can be placed be optional square brackets.
+
+Examples,
+::
+      let [0,1,2,3,4] = [0 to 4].
+      let [0,-2,-4,-6] = [0 to -6 stride 2].
+
+Function Calls
+%%%%%%%%%%%%%%
+
+Syntax: ``exp exp``
+
+Function calls are defined by function application, more specifically by
+juxtaposition of expressions.  Here, the first expression has to evaluated to
+a function expression and the second expression has to evaluate to an appropriate
+actual function parameter.  Notice that function calls are defined in terms of a
+single function parameter.  If you would like to pass more than one value to a
+function then you have to create a tuple.  For example, if the function ``foo``
+needs to values to be passed to it then you need to create a tuple, e.g. ``foo (1,2)``.
+In that respect function calls differ drastically from function calls in languages
+like C/C++ or Python.
+
+Examples,
+::
+      let val = (lambda with i do i+1) 1.
+      assert(val == 2).
+
+      function foo with (q,p) do q+p end
+      let val = foo (1,2).
+      assert(val == 3).
+
+If-Else Expressions
+%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``then_exp IF bool_exp ELSE else_exp``
+
+If the boolean expression evaluates to true then this expression returns
+the value of the then expression.  Otherwise it will return the value of the
+else expression.
+
+Example,
+::
+      let val = "yup" if b else "nope".
+
+If ``b`` evaluates to true then this expression returns the string ``"yup"``
+otherwise it returns the string ``"nope"``.
+
+First-Class Patterns
+%%%%%%%%%%%%%%%%%%%%
+
+| Syntax: ``PATTERN exp``
+| Syntax: ``* exp``
+
+This construction allows the user to construct a pattern as a value using
+the ``pattern`` keyword.  The advantage of patterns as values is that they
+can be stored in variables or passed to or from functions.  As an example
+we construct a pattern which is a pair where the first component is the constant
+``1`` and the second component is the variable ``x`` and we store this pattern
+in the variable ``p`` for later use,
+::
+      let p = pattern (1,x).
+
+The pattern derefence operator ``*`` allows us to retrieve patterns from
+variables, e.g.
+::
+      let *p = (1,2).
+
+Here the pair ``(1,2)`` is matched against the pattern store in the variable ``p``
+such that ``x`` is bound to the value ``2``.
+
+Type Patterns
+%%%%%%%%%%%%%
+
+Syntax: ``'%'type_name``
+
+Type patterns match all the values of a particular type.  Type patterns exist
+for all the Asteroid builtin types and are also available for user defined
+types introduced via a ``structure`` command.
+
+Example,
+::
+      let true = 1 is %integer.
+
+Named Patterns
+%%%%%%%%%%%%%%
+
+Syntax: ``name_exp ':' pattern``
+
+Named patterns allow you to bind the term matched by the pattern to a variable.
+Here the name expression has to evaluate to something that looks like a variable,
+object member variable, or array location.
+
+Example,
+::
+      let x:%integer = val.
+
+The variable ``x`` will be bound to the value of ``val`` if that value matches the
+type pattern ``%integer``.
+
+Conditional Patterns
+%%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``pattern IF cond_exp``
+
+In conditional patterns the pattern only matches if the condition expression
+evaluates to true.
+
+Example,
+::
+      load system math.
+      let k if (math @mod(k,2) == 0) = val.
+
+Pure Constraint Patterns
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+Syntax: ``%[ pattern ]%``
+
+A pure constraint pattern is a pattern that does not create any bindings
+in the current scope.  Any pattern can be turned into a pure constraint pattern
+by placing it between the ``%[`` and ``]%`` operators.
+
+Example,
+::
+      let pos_int = %[(x:%integer) if x > 0]%
+      let i:*pos_int = val.
+
+The first line defines a pure constraint pattern for the positive integers.
+Notice that the pattern internally uses the variable ``x`` in order to evaluate
+the conditional pattern but because it has been declared as a pure constraint
+pattern this value binding is not exported to the current scope during pattern matching.
+On the second line we constrain the pattern ``i`` to only the positive integer values using
+the pure constraint pattern stored in ``p``.  This pattern match will only succeed if ``val``
+evaluates to a postive integer.
 
 Asteroid Grammar
 ^^^^^^^^^^^^^^^^
