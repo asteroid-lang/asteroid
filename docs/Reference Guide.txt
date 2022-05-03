@@ -456,20 +456,20 @@ Example,
 ::
       let true = 1 in [1,2,3].
 
-Iterative List Constructor
-%%%%%%%%%%%%%%%%%%%%%%%%%%
+List Comprehensions
+%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``start_exp TO end_exp (STRIDE exp)?``
 
 This expression constructs a list starting with an element given by the start expression
 up to the value of the end expression with a given stride.  If the stride expression
 is not given then a stride value of 1 is assumed.  The stride value is always a
-positive value.  The constructor figures out how to apply the stride value to reach the
-end value from the start value.  The constructor can be placed between optional square brackets.
+positive value.  The comprehension figures out how to apply the stride value to reach the
+end value from the start value.  The comprehension can be placed between optional square brackets.
 
 Examples,
 ::
-      let [0,1,2,3,4] = [0 to 4].
+      let [0,1,2,3,4] = 0 to 4.
       let [0,-2,-4,-6] = [0 to -6 stride 2].
 
 Function Calls
