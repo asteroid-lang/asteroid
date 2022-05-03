@@ -903,4 +903,4 @@ Say that you wanted to load the ``math`` module so you could execute a certain t
 
 Both the function ``sin`` and the constant value ``pi`` are defined in the ``math`` module.
 In addition, the ``io`` module is where all input/output functions in Asteroid (such as ``println``) come from.
-If you want the complete list of modules, make sure to check out the user guide `here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html>`_.
+If you want the complete list of modules, make sure to check out the reference guide `here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html>`_.

@@ -22,7 +22,7 @@ copyright = '2021- University of Rhode Island'
 author = 'Lutz Hamel, Tim Colaneri, Oliver McLaughlin, Ariel Finkel, Theodore Henson, Calvin Higgins'
 
 # The full version, including alpha/beta/rc tags
-release = '1.x.x'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------

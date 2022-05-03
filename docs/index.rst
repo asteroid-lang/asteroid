@@ -17,6 +17,7 @@ Contents
    :maxdepth: 1
 
    Installing and Running
+   Quickstart Tutorial
    User Guide
    Reference Guide
    Asteroid in Action
