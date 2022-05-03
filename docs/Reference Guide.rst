@@ -17,6 +17,9 @@ Language Syntax
 Note: In the following descriptions ``<something>?`` denotes an optional
 something in a piece of syntax.  We also use the notation ``<something>*``
 which means that something can appear zero or more times in a program.
+Capitalized
+words are keywords where ``FOR`` represents the keyword ``for`` and ``END``
+represents ``end``.
 
 Statements
 ^^^^^^^^^^
