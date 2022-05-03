@@ -69,7 +69,7 @@ stmt_lookahead = {
     'TRY',
     'WHILE',
     #'WITH',
-    } | primary_lookahead
+    } | exp_lookahead
 
 ###########################################################################################
 class Parser:
@@ -105,6 +105,7 @@ class Parser:
         sl = []
         while self.lexer.peek().type in stmt_lookahead:
             sl += [('lineinfo', state.lineinfo)]
+            sl += [('clear-ret-val',)]
             sl += [self.stmt()]
         return ('list', sl)
 
@@ -131,7 +132,7 @@ class Parser:
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
     #    | function_def
-    #    | call_or_index '.'?
+    #    | exp '.'?
     def stmt(self):
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
@@ -391,10 +392,10 @@ class Parser:
             self.lexer.match_optional('DOT')
             return ('throw', e)
 
-        elif tt in primary_lookahead:
-            v = self.call_or_index()
+        elif tt in exp_lookahead:
+            v = self.exp()
             self.lexer.match_optional('DOT')
-            return v
+            return ('set-ret-val', v)
 
         else:
             raise SyntaxError("syntax error at '{}'"

@@ -135,6 +135,8 @@ objects. We could rewrite the above example as,
 The ``@`` operator allows you to access either individual elements, slices, or member functions of a list.
 Actually, the ``@`` operator is more general than that, it is Asteroid's substructure access operator.
 Notice that in order to access the ``println`` function of the ``io`` module we also use the ``@`` operator.
+This is because in Asteroid, **system modules are objects**, so you must use the ``@`` to access the functions
+of the module.
 
 For a comprehensive treatment of available member functions for Asteroid lists please see the reference guide.
 
@@ -901,3 +903,4 @@ Say that you wanted to load the ``math`` module so you could execute a certain t
 
 Both the function ``sin`` and the constant value ``pi`` are defined in the ``math`` module.
 In addition, the ``io`` module is where all input/output functions in Asteroid (such as ``println``) come from.
+If you want the complete list of modules, make sure to check out the user guide `here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html>`_.

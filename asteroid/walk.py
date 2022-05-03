@@ -26,6 +26,12 @@ string_member_functions = dict()
 #########################################################################
 __retval__ = None  # return value register for escaped code
 
+#########################################################################
+# return values for function computed by the last expression executed
+# in the context of a function.  note that we consider global code
+# to be part of the 'top-level' function
+function_return_value = [None]
+
 ###########################################################################################
 # check if the two type tags match
 def match(tag1, tag2):
@@ -883,12 +889,19 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls transfer control - save our caller's lineinfo
     old_lineinfo = state.lineinfo
 
+    global function_return_value
     try:
+        function_return_value.append(None)
         walk(stmts)
+        val = function_return_value.pop()
+        if val:
+            return_value = val
+        else:
+            return_value = ('none', None)
     except ReturnValue as val:
+        # we got here because a return statement threw a return object
+        function_return_value.pop()
         return_value = val.value
-    else:
-        return_value = ('none', None) # need that in case function has no return statement
 
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
@@ -1281,8 +1294,25 @@ def apply_exp(node):
         return handle_builtins(node)
 
     # handle function application
+    # retrieve the function name from the AST
+    if f[0] in ['function-exp','apply']:
+        # cannot use the function expression as a name,
+        # could be a very complex computation. the apply
+        # node means that the lambda function has to still be
+        # computed.
+        f_name = 'lambda'
+    elif f[0] == 'index':
+        # object member function
+        (INDEX, ix, (ID, f_name)) = f
+        # 'str' is necessary in case we use an index value
+        # instead of a function name -- see regression test test085.ast
+        f_name = "member function " + str(f_name)
+    else:
+        # just a regular function call
+        (ID, f_name) = f
+
+    # evaluate the function expression and the arguments
     f_val = walk(f)
-    f_name = f[1]
     arg_val = walk(arg)
 
     # object member function
@@ -1597,13 +1627,32 @@ def constraint_exp(node):
         .format(term2string(node)))
 
 #########################################################################
+def set_ret_val(node):
+
+    (SET_RET_VAL, exp) = node
+    assert_match(SET_RET_VAL,'set-ret-val')
+
+    global function_return_value
+    val = walk(exp)
+    function_return_value.pop()
+    function_return_value.append(val)
+
+    return
+
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
     # node format: (TYPE, [child1[, child2[, ...]]])
     type = node[0]
 
-    if type in dispatch_dict:
+    if type == 'clear-ret-val':
+        # implemented here instead of dictionary for efficiency reasons
+        global function_return_value
+        function_return_value.pop()
+        function_return_value.append(None)
+        return
+    elif type in dispatch_dict:
         node_function = dispatch_dict[type]
         return node_function(node)
     else:
@@ -1613,6 +1662,7 @@ def walk(node):
 dispatch_dict = {
     # statements - statements do not produce return values
     'lineinfo'      : process_lineinfo,
+    'set-ret-val'   : set_ret_val,
     'noop'          : lambda node : None,
     'assert'        : assert_stmt,
     'unify'         : unify_stmt,
@@ -1634,7 +1684,6 @@ dispatch_dict = {
     'head-tail'     : head_tail_exp,
     'raw-to-list'   : lambda node : walk(('to-list', node[1], node[2], node[3])),
     'raw-head-tail' : lambda node : walk(('head-tail', node[1], node[2])),
-    'seq'           : lambda node : ('seq', walk(node[1]), walk(node[2])),
     'none'          : lambda node : node,
     'nil'           : lambda node : node,
     'function-exp'  : function_exp,
