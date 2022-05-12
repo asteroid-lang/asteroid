@@ -3,6 +3,7 @@ from asteroid.version import VERSION
 from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
+from asteroid.support import term2string
 
 from sys import stdin
 import readline
@@ -74,7 +75,8 @@ def run_repl():
 
                 # If it isn't none, print out the value
                 if val is not None:
-                    print(val)
+                    print(term2string(function_return_value[-1]))
+
 
         except ExpectationError as e:
             # If we expected something but found EOF, it's a continue
