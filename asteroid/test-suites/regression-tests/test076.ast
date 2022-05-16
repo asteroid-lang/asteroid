@@ -1,0 +1,8 @@
+
+load system io.
+load "util".
+
+let y = -1.
+let x = 4 if y == 3 else 0.
+io @println x.
+assert (x == 0).

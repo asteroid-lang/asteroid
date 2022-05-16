@@ -1,0 +1,5 @@
+    load system io.    -- load the io module so we can print
+
+    let a = [1,2,3].             -- construct list a
+    let b = [a @2, a @1, a @0].  -- reverse list a
+    io @println b.

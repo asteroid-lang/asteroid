@@ -1,0 +1,5 @@
+
+load system io.
+let r = [1,2,3] @reduce (lambda with (x,y) do return x*y).
+io @println r.
+assert (r == 6).

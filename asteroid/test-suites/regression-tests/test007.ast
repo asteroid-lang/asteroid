@@ -1,0 +1,42 @@
+
+load system io.
+
+structure Dog with
+
+  data name.
+  data tricks.
+
+  function add_trick
+    with new_trick do
+      let this @tricks = this @tricks + [new_trick].
+    end
+
+  function __init__
+    with name do
+      let this @name = name.
+      let this @tricks = [].
+    end
+
+  end -- structure
+
+-- Fido the dog
+let fido = Dog("Fido").
+fido @add_trick("roll over").
+fido @add_trick("play dead").
+
+-- Buddy the dog
+let buddy = Dog("Buddy").
+buddy @add_trick("roll over").
+buddy @add_trick("sit stay").
+
+-- Fifi the dog
+let fifi = Dog("Fifi").
+fifi @add_trick("sit stay").
+
+-- print out all the names of dogs
+-- whose first trick is 'roll over'.
+let dogs = [fido, buddy, fifi].
+
+for Dog(name, ["roll over"|_]) in dogs do
+    io @println (name + " does roll over").
+end

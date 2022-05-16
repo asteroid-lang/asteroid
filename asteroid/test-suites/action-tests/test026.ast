@@ -1,0 +1,16 @@
+  load system io.
+
+  let POS_INT = pattern with (x:%integer) if x > 0.
+  let NEG_INT = pattern with (x:%integer) if x < 0.
+
+  function fact
+      with 0 do
+          return 1
+      with n:*POS_INT do
+          return n * fact (n-1).
+      with n:*NEG_INT do
+          throw Error("factorial is not defined for "+n).
+      end
+
+  io @println ("The factorial of 3 is: " + fact (3)).
+  assert (fact(3) == 6).

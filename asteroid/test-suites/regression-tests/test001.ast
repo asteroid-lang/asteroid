@@ -1,0 +1,5 @@
+
+load system io.
+
+let x = 1.
+io @println x.

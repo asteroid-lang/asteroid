@@ -54,14 +54,13 @@ elif item_val[0] == 'object':
 elif item_val[0] == 'struct':
     (STRUCT,
         (MEMBER_NAMES, (LIST, member_names)),
-        (STRUCT_MEMORY, (LIST, struct_memory)),
-        (STRUCT_SCOPE, t_struct_scope)) = item_val
+        (STRUCT_MEMORY, (LIST, struct_memory))) = item_val
     l = len(data_only(struct_memory))
     __retval__ = ('integer', l)
 
 else:
     raise ValueError(
-   	  'len expected a list, tuple, string, or structure got {}'
+   	  'len expected a list, tuple, string, or structure got \'{}\''
 	    .format(item_val[0]))
 "
 end
@@ -94,7 +93,7 @@ function range
   with (start:%integer,stop:%integer) do
     return [start to stop-1].
   with (start:%integer,stop:%integer,inc:%integer) do
-    return [start to stop-1 step inc].
+    return [start to stop-1 stride inc].
   with stop:%integer do
     return [0 to stop-1].
   end
@@ -228,7 +227,7 @@ this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
 if item_val[0] not in ['list', 'string', 'tuple']:
-    raise ValueError('extend expected a list, string, or tuple, got {}'
+    raise ValueError('extend expected a list, string, or tuple, got \'{}\''
                 .format(item_val[0]))
 
 __retval__ = ('list', this_val[1].extend(item_val[1]))
@@ -709,7 +708,7 @@ endix_val = state.symbol_table.lookup_sym('endix')
 
 val = this_val[1].find(item_val[1], startix_val[1], endix_val[1])
 if val == -1:
-    __retval__ = ('none', None')
+    __retval__ = ('none', None)
 else:
     __retval__ = ('integer', val)
 "

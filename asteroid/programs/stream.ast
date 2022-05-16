@@ -1,18 +1,18 @@
 load system io.
-load system "stream".
+load system stream.
 
-let s = Stream([1,2,3,4]).
+let s = stream @stream([1,2,3,4]).
 
 while not s @eof() do
-  println(s @get()).
+  io @println(s @get()).
 end
 s @rewind().
 
 s @map(lambda with x do return 2*x).
 
 while not s @eof() do
-  println(s @get()).
+  io @println(s @get()).
 end
 s @rewind().
 
-println(s @__string__()).
+io @println(s @__string__()).

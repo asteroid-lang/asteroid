@@ -1,0 +1,13 @@
+  load system io.
+  load system math.
+
+  let values = [727.7, 1086.5, 1091.0, 1361.3, 1490.5, 1956.1].
+
+  let avg = values @reduce(lambda with (x,y) do return x+y) / values @length().
+  let diff_sq = values @map(lambda with x do return math @pow(x-avg,2)).
+  let numerator = diff_sq @reduce(lambda with (x,y) do return x+y).
+  let denominator = values @length() -1.
+  let sigma = math @sqrt(numerator/denominator).
+  io @println sigma.
+
+  assert (sigma == 420.96248961952256)

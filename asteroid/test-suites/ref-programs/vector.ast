@@ -1,0 +1,8 @@
+   load system io.
+   load system vector.
+
+   let a = [1,0].
+   let b = [0,1].
+
+   io @println (vector @dot (a,b)).
+   

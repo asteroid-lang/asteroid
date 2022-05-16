@@ -1,0 +1,6 @@
+    load system io.
+    let P = pattern ([a],[b]).
+    let v = ([1],[2]).
+    let *P = v.
+    io @println a.
+    io @println b.

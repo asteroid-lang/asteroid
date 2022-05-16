@@ -13,6 +13,10 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
+------------------------------------------------------------------
+structure __SORT_MODULE__
+------------------------------------------------------------------
+with
 
 function sort
     with (_,[]) do
@@ -31,5 +35,9 @@ function sort
             end
         end
 
-        return sort(p,less) + [pivot] + sort(p,more).
+        return this @sort(p,less) + [pivot] + this @sort(p,more).
     end
+end -- __SORT_MODULE__
+
+------------------------------------------------------------------
+let sort = __SORT_MODULE__().

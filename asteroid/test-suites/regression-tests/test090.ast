@@ -1,0 +1,8 @@
+
+load system io.
+load "util".
+
+let a = [0,1,2,3].
+let b = a@[0 to 3 stride 2].
+io @println b.
+assert (b is [0,2]).

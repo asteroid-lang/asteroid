@@ -1,0 +1,4 @@
+    load system io.
+
+    let [x,2,y] = [1+0,1+1,1+2].
+    io @println (x,y).

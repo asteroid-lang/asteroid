@@ -3,7 +3,7 @@
 -- constrained inputs using pattern matching
 -- with type classes and conditional matching
 
-load "io".
+load system io.
 load "util".
 
 let POS_INT = pattern with (n:%integer) if n > 0.
@@ -19,8 +19,8 @@ function fact
     end
 
 try
-  let i = tointeger(input("Enter an integer value: ")).
-  println ("The factorial of "+i+" is: " + fact (i)).
+  let i = tointeger(io @input("Enter an integer value: ")).
+  io @println ("The factorial of "+i+" is: " + fact (i)).
 catch e do
-  println e.
+  io @println e.
 end

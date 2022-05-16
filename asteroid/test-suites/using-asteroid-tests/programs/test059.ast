@@ -1,9 +1,0 @@
-
-load "io".
-load "random".
-
-seed(42).
-let b = [1 to 20] @shuffle().
-println b.
-
-assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).

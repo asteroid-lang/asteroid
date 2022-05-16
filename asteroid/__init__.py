@@ -9,6 +9,7 @@ import cProfile
 import sys
 import os
 from asteroid.interp import interp
+from asteroid.repl import repl
 from asteroid.version import VERSION
 
 def display_help():
@@ -25,7 +26,7 @@ def display_help():
     print(" -p    disable prologue")
     print(" -h    display help")
     print(" -r    disable redundant pattern detector")
-    print(" -e    show full exceptions")
+    print(" -e    show Python exceptions")
 
 def main():
     # defaults for the flags - when the flag is set on the command line
@@ -52,7 +53,11 @@ def main():
             sys.exit(0)
         flags[fl] = not flags[fl]
 
-    if flags['-h'] or len(sys.argv) == 1:
+    if len(sys.argv) == 1:
+        repl()
+        sys.exit(0)
+
+    if flags['-h']:
         display_help()
         sys.exit(0)
 

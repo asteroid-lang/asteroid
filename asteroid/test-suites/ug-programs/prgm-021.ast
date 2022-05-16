@@ -1,0 +1,6 @@
+    load system io.
+    load system math.
+    load system type.
+
+    let x:%real = math @pi.
+    io @println (type @tostring (x,type @stringformat (4,2))).

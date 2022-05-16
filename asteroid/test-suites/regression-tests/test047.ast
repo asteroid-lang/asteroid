@@ -1,0 +1,8 @@
+
+load system random.
+load system io.
+
+let v = random @random().
+
+io @println v.
+assert(v <= 1.0 and v >= 0.0).

@@ -63,7 +63,7 @@ class ThrowValue(Exception):
         self.value = value
 
     def __str__(self):
-        return(repr(self.value))
+        return(str(self.value))
 
 #########################################################################
 class PatternMatchFailed(Exception):
@@ -71,7 +71,7 @@ class PatternMatchFailed(Exception):
         self.value = "pattern match failed: " + value
 
     def __str__(self):
-        return(repr(self.value))
+        return(self.value)
 
 #########################################################################
 class NonLinearPatternError(Exception):
@@ -79,8 +79,17 @@ class NonLinearPatternError(Exception):
         self.value = "non-linear pattern error: " + value
 
     def __str__(self):
-        return(repr(self.value))
+        return(self.value)
 
+#########################################################################
+class ExpectationError(Exception):
+    def __init__(self, found, expected):
+        self.found_EOF = (found == 'EOF')
+        self.value = "expected {} found {}.".format(str(expected), str(found))
+
+    def __str__(self):
+        return(self.value)
+        
 ##############################################################################################
 # *** Part of the Redundant Pattern Detector ***
 #
@@ -140,3 +149,24 @@ unify_not_allowed = {
 }
 
 ###########################################################################################
+# list of structures that constitute patterns
+
+patterns = {
+    'pattern',
+    'id',
+    'string',
+    'real',
+    'integer',
+    'list',
+    'tuple',
+    'boolean',
+    'none',
+    'object',
+    'struct',
+    'typematch',
+}
+
+###########################################################################################
+# list of structures that a pattern type-pattern will subsume/overlap
+
+pattern_subsumes = patterns - {'id'}

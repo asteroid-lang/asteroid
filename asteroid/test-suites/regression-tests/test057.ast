@@ -1,0 +1,12 @@
+
+load system io.
+
+structure MyException with 
+    data e.
+    end 
+
+try
+    throw MyException("Hello There!").
+catch MyException(v) do
+    io @println v.
+end 

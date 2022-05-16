@@ -1,0 +1,16 @@
+    load system io.
+
+    structure Person with
+        data name.
+        -- the function is defined in the middle of the data fields
+        function hello
+            with none do
+                io @println ("Hello, my name is "+this @name).
+            end
+        data age.
+        data gender.
+        end
+
+    -- pattern matching ignores function definitions
+    let Person(name,age,_) = Person("Scarlett",28,"F").
+    io @println (name+" is "+age+" years old").

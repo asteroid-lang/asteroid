@@ -1,0 +1,21 @@
+
+-- load modules
+load system io.
+
+structure Family with
+  data parent1.
+  
+  function members
+    with none do
+        let Parent(name1) = this @parent1.
+        let Parent(name1:%string) = this @parent1.
+        return name1.
+    end
+  end -- structure
+
+structure Parent with
+  data name.
+  end
+
+let family = Family(Parent("Harry")).
+io @println (family @members()).

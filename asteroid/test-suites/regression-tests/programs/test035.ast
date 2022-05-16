@@ -1,7 +1,0 @@
-
-load "io".
-let a = [].
-
-if a is [b|rest] do
-    println "yes".
-end

@@ -1,0 +1,18 @@
+  load system io.
+  load system math.
+
+  function rotate with (l:%list,i:%integer) do
+      let n = l @length().
+      let vix = range n @map(lambda with x do return math @mod(x+i,n)).
+      return l @vix.
+  end
+
+
+  let a = [1, 3, 5, 7, 9, 11, 13, 15].
+  let b = rotate(a,3).
+  let c = rotate(a,-3).
+  io @println a.
+  io @println b.
+  io @println c.
+
+  assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).

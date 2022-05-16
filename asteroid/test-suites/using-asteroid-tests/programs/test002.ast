@@ -1,3 +1,0 @@
-
-load "io".
-__raw_print__ "Hello, World!".

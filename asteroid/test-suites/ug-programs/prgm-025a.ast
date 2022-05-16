@@ -1,0 +1,7 @@
+    function double
+        with i do -- pattern match the actual arg with i
+            return 2*i.
+        end
+
+    let d = double 2.  -- function call via juxtaposition
+    assert( d == 4 ).

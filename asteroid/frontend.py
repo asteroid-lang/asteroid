@@ -8,8 +8,8 @@ import os
 import sys
 from pathlib import Path, PurePath
 
-from asteroid.globals import asteroid_file_suffix
-from asteroid.lex import Lexer
+from asteroid.globals import asteroid_file_suffix, ExpectationError
+from asteroid.lex import Lexer, token_lookup
 from asteroid.state import state, warning
 
 ###########################################################################################
@@ -44,11 +44,10 @@ primary_lookahead = {
     } | ops
 
 exp_lookahead = {
-    'QUOTE',
     'PATTERN',
     'LCONSTRAINT',} | primary_lookahead
 
-exp_lookahead_no_ops = exp_lookahead - ops - {'QUOTE'}
+exp_lookahead_no_ops = exp_lookahead - ops
 
 primary_lookahead_no_ops = exp_lookahead_no_ops
 
@@ -63,7 +62,6 @@ stmt_lookahead = {
     'LET',
     'LOAD',
     'LOOP',
-    'NONLOCAL',
     'REPEAT',
     'RETURN',
     'STRUCTURE',
@@ -71,7 +69,7 @@ stmt_lookahead = {
     'TRY',
     'WHILE',
     #'WITH',
-    } | primary_lookahead
+    } | exp_lookahead
 
 ###########################################################################################
 class Parser:
@@ -92,8 +90,8 @@ class Parser:
         dbg_print("parsing PROG")
         sl = self.stmt_list()
         if not self.lexer.EOF():
-            raise SyntaxError("expected 'EOF' found '{}'." \
-                              .format(self.lexer.peek().type))
+            raise SyntaxError("expected 'EOF' found {}." \
+                              .format(token_lookup(self.lexer.peek().type)))
         else:
             dbg_print("parsing EOF")
         return sl
@@ -107,6 +105,7 @@ class Parser:
         sl = []
         while self.lexer.peek().type in stmt_lookahead:
             sl += [('lineinfo', state.lineinfo)]
+            sl += [('clear-ret-val',)]
             sl += [self.stmt()]
         return ('list', sl)
 
@@ -119,7 +118,6 @@ class Parser:
     #    : '.' // NOOP
     #    | LOAD SYSTEM? (STRING | ID) '.'?
     #    | GLOBAL id_list '.'?
-    #    | NONLOCAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | STRUCTURE ID WITH struct_stmts END
     #    | TRAIT ID WITH trait_stmts END
@@ -134,7 +132,7 @@ class Parser:
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
     #    | THROW exp '.'?
     #    | function_def
-    #    | call_or_index '.'?
+    #    | exp '.'?
     def stmt(self):
         dbg_print("parsing STMT")
         tt = self.lexer.peek().type  # tt - Token Type
@@ -151,6 +149,8 @@ class Parser:
             # allow module names without quotes
             if self.lexer.peek().type in ['STRING', 'ID']:
                 str_tok = self.lexer.match(self.lexer.peek().type)
+            elif self.lexer.peek().type == 'EOF':
+                raise ExpectationError(expected="valid module name", found='EOF' )
             else:
                 raise SyntaxError("invalid module name '{}'"
                                   .format(self.lexer.peek().value))
@@ -220,13 +220,6 @@ class Parser:
             self.lexer.match_optional('DOT')
             return ('global', id_list)
 
-        elif tt == 'NONLOCAL':
-            dbg_print("parsing NONLOCAL")
-            self.lexer.match('NONLOCAL')
-            id_list = self.id_list()
-            self.lexer.match_optional('DOT')
-            return ('nonlocal', id_list)
-
         elif tt == 'ASSERT':
             dbg_print("parsing ASSERT")
             self.lexer.match('ASSERT')
@@ -272,7 +265,10 @@ class Parser:
             self.lexer.match('FOR')
             e = self.exp()
             if e[0] != 'in':
-                raise SyntaxError("expected 'in' expression in for loop")
+                raise ExpectationError(
+                        expected="'in' expression in for loop",
+                        found=token_lookup(self.lexer.peek().type))
+
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
@@ -396,10 +392,10 @@ class Parser:
             self.lexer.match_optional('DOT')
             return ('throw', e)
 
-        elif tt in primary_lookahead:
-            v = self.call_or_index()
+        elif tt in exp_lookahead:
+            v = self.exp()
             self.lexer.match_optional('DOT')
-            return v
+            return ('set-ret-val', v)
 
         else:
             raise SyntaxError("syntax error at '{}'"
@@ -521,40 +517,26 @@ class Parser:
         return ('body-list', ('list', body_list))
 
     ###########################################################################################
-    # pattern
-    #    : exp
-    def pattern(self):
-        dbg_print("parsing PATTERN")
-        e = self.exp()
-        return e
-
-    ###########################################################################################
     # exp
-    #    : quote_exp
+    #    : pattern
     def exp(self):
         dbg_print("parsing EXP")
-        v = self.quote_exp()
+        v = self.pattern()
         return v
 
     ###########################################################################################
-    # quote_exp
-    #    : QUOTE exp
-    #    | PATTERN WITH? exp
+    # pattern
+    #    : PATTERN WITH? exp
     #    | '%[' exp ']%'
     #    | head_tail
-    def quote_exp(self):
-        dbg_print("parsing QUOTE_EXP")
+    def pattern(self):
+        dbg_print("parsing PATTERN")
 
-        if self.lexer.peek().type == 'QUOTE':
-            self.lexer.match('QUOTE')
-            v = self.exp()
-            return ('quote', v)
-        # 'pattern with' is just the long version of the quote char
-        elif self.lexer.peek().type == 'PATTERN':
+        if self.lexer.peek().type == 'PATTERN':
             self.lexer.match('PATTERN')
             self.lexer.match_optional('WITH')
             v = self.exp()
-            return ('quote', v)
+            return ('pattern', v)
         elif self.lexer.peek().type == 'LCONSTRAINT': #constraint-only pattern match
             self.lexer.match('LCONSTRAINT')
             v = self.exp()
@@ -643,18 +625,18 @@ class Parser:
         elif tt == 'TO':
             self.lexer.match('TO')
             v2 = self.exp()
-            if self.lexer.peek().type == 'STEP':
-                self.lexer.match('STEP')
+            if self.lexer.peek().type == 'STRIDE':
+                self.lexer.match('STRIDE')
                 v3 = self.exp()
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('step', v3))
+                        ('stride', v3))
             else:
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('step', ('integer', '1')))
+                        ('stride', ('integer', '1')))
 
         else:
             return v
@@ -778,14 +760,14 @@ class Parser:
     #    | FALSE
     #    | NONE
     #    | ID
-    #    | '*' ID         // "dereference" a variable during pattern matching
+    #    | '*' call_or_index /* pattern dereferencing */
     #    | NOT call_or_index
     #    | MINUS call_or_index
     #    | PLUS call_or_index
     #    | ESCAPE STRING
     #    | EVAL exp
-    #    | '(' tuple_stuff ')' // tuple/parenthesized expr
-    #    | '[' list_stuff ']'  // list or list access
+    #    | '(' tuple_stuff ')' /* tuple/parenthesized expr */
+    #    | '[' list_stuff ']'  /* list or list access */
     #    | function_const
     #    | TYPEMATCH // TYPEMATCH == '%'<typename>
     def primary(self):
@@ -823,8 +805,8 @@ class Parser:
 
         elif tt == 'TIMES':
             self.lexer.match('TIMES')
-            id_tok = self.lexer.match('ID')
-            return ('deref', ('id', id_tok.value))
+            v = self.call_or_index()
+            return ('deref', v)
 
         elif tt == 'NOT':
             self.lexer.match('NOT')
@@ -884,9 +866,12 @@ class Parser:
             return ('typematch', tok.value)
 
         else:
-            raise SyntaxError(
-                "syntax error at '{}'"
-                .format(self.lexer.peek().value))
+            raise ExpectationError(
+                expected='expression',
+                found=token_lookup(self.lexer.peek().type))
+
+            #raise SyntaxError("syntax error at '{}'"
+                # .format(self.lexer.peek().value))
 
     ###########################################################################################
     # tuple_stuff

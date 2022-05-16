@@ -1,0 +1,11 @@
+    load system io.
+
+    structure Person with
+        data name.
+        data age.
+        data gender.
+        end
+
+    let scarlett = Person("Scarlett",28,"F").
+    -- access the name field of the structure instance
+    io @println (scarlett @name).

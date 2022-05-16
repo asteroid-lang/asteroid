@@ -1,0 +1,24 @@
+    load system io.
+
+    function qsort
+        with [] do -- empty list pattern
+            return [].
+        with [a] do -- single element list pattern
+            return [a].
+        with [pivot|rest] do -- separating the list into pivot and rest of list
+            let less=[].
+            let more=[].
+
+            for e in rest do
+                if e < pivot do
+                    let less = less + [e].
+                else
+                    let more = more + [e].
+                end
+            end
+
+            return qsort less + [pivot] + qsort more.
+        end
+
+    -- print the sorted list
+    io @println (qsort [3,2,1,0])

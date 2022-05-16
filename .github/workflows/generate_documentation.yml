@@ -1,0 +1,41 @@
+name: Documentation Generation
+on:
+    push:
+        branches:
+            - master
+            - dev-1.0.0
+env:
+    PYTHONPATH: ${{ github.workspace }}
+jobs:
+  gen-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+        
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal access token.
+          fetch-depth: 0 # otherwise, there would be errors pushing refs to the destination repository.
+
+      - name: Regenerate documentation
+        run: |
+          cd docs
+          # This is to keep github actions happy
+          bash generate_docs
+          cd ..
+
+      - name: Commit files
+        run: |
+          git add .
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          (git commit -m "Updated documentation") || true
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+

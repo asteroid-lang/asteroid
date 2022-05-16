@@ -1,9 +1,0 @@
-
-load "io".
-
-try
-    println (42/0).
-catch Exception(_,m) do
-    println m.
-end
-println "We are still alive...".

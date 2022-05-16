@@ -1,0 +1,9 @@
+
+load system io.
+load "util".
+
+-- reverse the list
+let a = [1,2,3].
+let a = a@[2,1,0].
+io @println a.
+assert (a is [3,2,1]).

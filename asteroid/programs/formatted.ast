@@ -1,2 +1,2 @@
-load "io".
-println "hello world!\n".
+load system io.
+io @println "hello world!\n".

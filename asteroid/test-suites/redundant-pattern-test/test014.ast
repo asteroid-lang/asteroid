@@ -1,0 +1,35 @@
+
+--------------------------------------
+-- patterns_test13.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+-- By Timothy Colaneri
+--------------------------------------
+load system io.
+load "util".
+
+-- A testing function with multiple patterns
+function testFunction
+    with [ x, y ] do  
+        return 1.
+    with [ head | tail ] do  -- *** will SUBSUME [ a, b, c, d ] ***
+        return 2.
+    with [ a, b, c, d ] do 
+        return 3.    
+    end.
+    
+
+try
+    
+    -- Evaluate the function with a test input.
+    let x = testFunction[ 3 , 4 ].
+
+    -- If the function test worked, print the output we got.
+    io @println( "The value returned is: " + x ).
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

@@ -9,7 +9,7 @@
 load system random.
 
 ------------------------------------------------------------------
-structure Pick
+structure __PICK__
 ------------------------------------------------------------------
 -- A pick object holds a list of items that
 -- we can randomly pick from with the 'pick'
@@ -22,7 +22,7 @@ structure Pick
   function pick with n:%integer do
       let l = [].
       for i in 1 to n do
-          let ix = randint(0, this @items @length()-1).
+          let ix = random @randint(0, this @items @length()-1).
           l @append(this @items @ix).
       end
       return l.
@@ -33,4 +33,18 @@ structure Pick
       let this @items = l.
   end
 
-end -- Pick
+end -- __PICK__
+
+------------------------------------------------------------------
+structure __PICK_MODULE__
+------------------------------------------------------------------
+with
+
+function pick with l:%list do
+   return __PICK__(l).
+end
+
+end -- __PICK_MODULE__
+
+------------------------------------------------------------------
+let pick = __PICK_MODULE__().

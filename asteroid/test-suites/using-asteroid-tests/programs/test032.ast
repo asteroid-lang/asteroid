@@ -1,9 +1,0 @@
-
-load "io".
-load "math".
-
--- not equal under the default tolerance of 1E-09
-assert (not isclose(2.0,2.00001)).
-
--- equal under the user defined tolerance of 0.0001
-assert (isclose(2.0,2.00001,0.0001)).

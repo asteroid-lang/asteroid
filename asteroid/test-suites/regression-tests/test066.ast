@@ -1,0 +1,15 @@
+
+load system io.
+load "util".
+
+function postfix
+    with (op, cl, cr) do 
+        return (postfix cl, postfix cr, op)
+    with (op, c) do 
+        return (postfix c, op)
+    with (v,) do 
+        return (v,)
+end 
+
+io @println (postfix ("+", (1,), (2,))).
+assert ((postfix ("+", (1,), (2,))) is ((1,),(2,),"\+")). -- strings in patterns are REs!

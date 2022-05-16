@@ -1,0 +1,16 @@
+  load system io.
+  load system type.
+
+  let tobase = type @tobase.
+  let tointeger = type @tointeger.
+
+  let val = 42.
+
+  io @println (tobase(val,2)).  -- bin
+  io @println (tobase(val,8)).  -- oct
+  io @println (tobase(val,16)). -- hex
+
+  -- make sure that conversions are correct in both directions
+  assert (tointeger(tobase(val,2),2) == val).
+  assert (tointeger(tobase(val,8),8) == val).
+  assert (tointeger(tobase(val,16),16) == val).

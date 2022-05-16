@@ -1,0 +1,12 @@
+
+-- Palindrome list filter
+load io.
+
+function filter 
+    with (x:%string) if x @explode() == x @explode() @reverse() do
+        return true.
+    with _ do 
+        return false.
+    end
+    
+io @print (filter "radar").

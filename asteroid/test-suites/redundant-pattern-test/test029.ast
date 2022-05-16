@@ -1,0 +1,48 @@
+
+--------------------------------------
+-- patterns_test28.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+structure Person with
+    data name.
+    data age.
+    data gender.
+    end
+
+-- define a list of persons
+let people = [
+    Person("George", 32, "M"),
+    Person("Sophie", 46, "F"),
+    Person("Oliver", 21, "X")
+    ].
+
+function test_function 
+  with Person(name:".*p.*",_,_) do
+    return "Found a p.".
+  with Person(name:".*g.*",_,_) do   -- *** The regular expression ".*g.*" will subsume ".*gg.*"
+    return "Found a g.".
+  with Person(name:".*v.*",_,_) do
+    return "Found a v.".
+  with Person(name:".*gg.*",_,_) do  -- will be redundant
+    return "Found a gg.".
+  end.
+
+let loopCounter = 0.
+
+-- print names that contain 'p'
+for Person(_,_,_) in people do
+  try
+    io @println (test_function( people @loopCounter )).
+  catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+  catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+  end.
+  let loopCounter = loopCounter + 1.
+end.

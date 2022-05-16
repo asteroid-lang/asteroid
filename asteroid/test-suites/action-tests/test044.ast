@@ -1,0 +1,29 @@
+  load system io.
+  load system math.
+
+  -- define common math functions locally so the
+  -- formulas are easy to read
+  let cos = math @cos.
+  let sin = math @sin.
+  let sqrt = math @sqrt.
+  let pow = math @pow.
+  let atan = math @atan.
+
+  function polar_to_cartesian with (r,psi) do
+      -- return a tuple: (x,y)
+      return (r*cos(psi),r*sin(psi)).
+  end
+
+  function cartesian_to_polar with (x,y) do
+      -- return a tuple: (r,psi)
+      return (sqrt(pow(x,2)+pow(y,2)),atan(y/x)).
+  end
+
+  let (r,psi) = cartesian_to_polar(1,2).
+  let (x,y) = polar_to_cartesian(r,psi).
+
+  io @println (x,y).
+
+  -- show that the recovered coordinates are the same
+  -- we started with
+  assert (math @isclose(1,x,0.0001) and math @isclose(2,y,0.0001)).

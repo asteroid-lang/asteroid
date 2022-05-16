@@ -1,0 +1,9 @@
+
+-- load system io.
+structure A with
+    data a.
+    data b.
+    end
+
+let a = A(1,2).
+assert((a @a is 1) and (a @b is 2)).

@@ -1,5 +1,5 @@
 -- a simple program using lambda functions
 
-load "io".
+load system io.
 
-println ((lambda with n do return n+1) 1).
+io @println ((lambda with n do return n+1) 1).

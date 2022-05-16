@@ -1,9 +1,0 @@
-
-load "io".
-
-let l = [1,2,3].
-
-repeat do
-    let [head|l] = l.
-    println head.
-until l is [].

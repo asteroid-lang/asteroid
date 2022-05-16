@@ -1,0 +1,36 @@
+
+--------------------------------------
+-- patterns_test9.ast
+-- a simple program to test for
+-- subsumption detection in Asteroid.
+--------------------------------------
+--------------------------------------
+load system io.
+load "util".
+
+let ptrn1 = pattern with false.
+
+-- A testing function with multiple patterns
+function testFunction
+    with true do       
+        return 1. 
+    with *ptrn1 do -- *** will subsume false
+        return 2.    
+    with false do -- *** duplicate pattern
+        return 2.  
+    end.
+    
+try
+
+    -- Evaluate the function with a test input.
+    let x = true.
+    let y = testFunction( x ).
+
+    -- If the function test worked, print the output we got.
+    io @println( "The value returned is: " + y ).
+catch Exception("RedundantPatternFound",s) do
+    io @println("PASS.").
+catch e do
+    io @println("FAIL.").
+    throw Error("FAIL: unexpected error "+e).
+end.

@@ -71,5 +71,5 @@ let f2 = construct_family(FP,"Margot","Selma",["Latisha","Rudolf"]).
 -----------------------------
 -- destructure families
 -----------------------------
-println(destructure_family(FP,f1)).
-println(destructure_family(FP,f2)).
+io @println(destructure_family(FP,f1)).
+io @println(destructure_family(FP,f2)).

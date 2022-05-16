@@ -1,0 +1,8 @@
+    load system io.
+    load system type.
+
+    try
+        let (x,y) = (1,2,3).
+    catch e do
+        io @println ("something happened: "+type @tostring(e)).
+    end

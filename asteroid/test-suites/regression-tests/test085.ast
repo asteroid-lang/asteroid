@@ -1,0 +1,14 @@
+
+load system io.
+load "util".
+
+structure A with
+    data x.
+    data y.
+    end 
+
+let a = A(999, (lambda with none do return "Hello World!"+this@x)).
+io @println (a@1()).
+
+assert(a@1() is "Hello World!999").
+
