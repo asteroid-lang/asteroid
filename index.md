@@ -13,7 +13,7 @@ Here are some example programs that highlight various aspects of Asteroid.
 Simple things are simple. Here is the ''Hello, World!'' program written in Asteroid,
 ```
 load system io.
-println "Hello, World!".
+io @println "Hello, World!".
 ```
 
 ### Procedural Programming is Straightforward
@@ -43,7 +43,7 @@ let people = [
 -- print names of persons that contain 'p'
 
 for Person(name:".*p.*",_,_) in people do
-  println name.
+  io @println name.
 end
 ```
 In the for-loop we pattern-match Person objects and then use regular expression match on the name.  The output of this program is,
@@ -80,7 +80,7 @@ function qsort
         return qsort less + [pivot] + qsort more.
     end
 
-println (qsort [3,2,1,0]).
+io @println (qsort [3,2,1,0]).
 ```
 The last line of the program prints out the sorted list returned by the Quicksort.  The output is,
 ```
@@ -95,10 +95,10 @@ of alternating positive and negative ones,
 load system io.
 load system math.
 
-let a = [1 to 10] @map(lambda with x do return mod(x,2))
-                  @map(lambda with x do return 1 if x else -1).
+let a = [1 to 10] @map(lambda with x do math @mod(x,2))
+                  @map(lambda with x do 1 if x else -1).
 
-println a.
+io @println a.
 ```
 The list constructor `[1 to 10]` constructs a list of values `[1, 2,...,10]`.  The first `map`turns this list into the list
 `[1,0,1,...0]` and the second call to `map` turns that list into the list `[1,-1,1,-1,...,-1]`.
@@ -170,7 +170,7 @@ buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
 for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
-    println (name+" knows how to fetch").
+    io @println (name+" knows how to fetch").
 end
 ```
 What is perhaps striking in the for loop is that rather than searching through the list of tricks for a "fetch" trick for each dog
