@@ -16,7 +16,7 @@ load system io.
 io @println "Hello, World!".
 ```
 
-### Procedural Programming is Straightforward
+## Procedural Programming is Straightforward
 
 Procedural programming in Asteroid should seem familiar to anybody who has some programming experience.
 Intuitive  structure definitions and standard list notation makes it easy to create the data structures your
@@ -51,7 +51,7 @@ In the for-loop we pattern-match Person objects and then use regular expression 
 Sophie
 ```
 
-### A Functional Programming Approach to Function Definitions
+## A Functional Programming Approach to Function Definitions
 
 Asteroid supports functional programming style pattern matching on the arguments of a function.   
 When a pattern matches the corresponding function body is executed.  Here is a  Quicksort implementation 
@@ -87,7 +87,7 @@ The last line of the program prints out the sorted list returned by the Quicksor
 [0,1,2,3]
 ```
 
-### Higher-Order Programming
+## Higher-Order Programming
 
 Asteroid seamlessly supports functional programming style higher-order programming. Here is a program that creates a list 
 of alternating positive and negative ones,
@@ -103,7 +103,7 @@ io @println a.
 The list constructor `[1 to 10]` constructs a list of values `[1, 2,...,10]`.  The first `map`turns this list into the list
 `[1,0,1,...0]` and the second call to `map` turns that list into the list `[1,-1,1,-1,...,-1]`.
 
-### Pattern Reuse
+## Pattern Reuse
 
 One of the novel aspects of Asteroid is the ability to reuse patterns.  The following program defines two functions that have to deal 
 with values over the same domains.  We can define patterns that describe these input values very precisely and then use these
@@ -135,7 +135,7 @@ function sign
         return -1.
     end
 ```
-### Object-Oriented Programming in Asteroid
+## Object-Oriented Programming in Asteroid
 
 Asteroid supports OO style programming.  Here is a program based on the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know to 'fetch'.
 ```
@@ -180,5 +180,17 @@ and then use regular expression matching on it to see if it contains a "fetch" t
 Fido knows how to fetch
 ```
 You can try Asteroid without installing anything in our cloud-based Asteroid installation (see 'Try it!' below) or you can install Asteroid on your machine via 'pip' (see the PyPI Project Page below).
+
+## Contributors
+
+Open source projects cannot succeed without the hard work and commitment of the contributors that make it happen,
+
+Ariel Finkle<br>
+Calvin Higgens<br>
+Christian Tropeano<br>
+Lutz Hamel<br>
+Oliver McLaughlin<br>
+Theodore Henson<br>
+Timothy Colaneri<br>
 
 [Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
