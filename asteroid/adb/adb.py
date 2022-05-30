@@ -38,6 +38,10 @@ class ADB:
         self.program_text = None
         self.filename = None
 
+        # Explicit mode is the verbose mode where expressions are 
+        # totally detailed
+        self.explicit = True
+
     def message(self, message):
         """
         Print a formatted message through the debugger
