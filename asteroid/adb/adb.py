@@ -16,7 +16,7 @@ class ADB:
         Major distinction notice:
             stepping:   Go to next executing line
             continuing: Go to next breakpoint
-            next:       Go to next top level line (i.e. top level statement)
+            next:       Go to next top level line (i.e. top level statement) {Can be a breakpoint}
         """
         # List of breakpoints
         self.breakpoints = []
