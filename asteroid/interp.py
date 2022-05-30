@@ -11,12 +11,39 @@ from asteroid.globals import *
 from asteroid.support import *
 from asteroid.frontend import Parser
 from asteroid.state import state, dump_trace
-from asteroid.walk import walk
+from asteroid.walk import walk, debug_walk
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
+def load_prologue():
+    """
+    Load the prolog files and run them.
+    """
+    prologue_file = ''
+    prologue_file_base = os.path.join('modules', prologue_name)
+    module_path = os.path.join(os.path.split(os.path.abspath(__file__))[0], prologue_file_base)
+    working_path = os.path.join(os.getcwd(), prologue_file_base)
 
-# TODO: adjust the defaults
+    if os.path.isfile(module_path):
+        prologue_file = module_path
+    
+    elif os.path.isfile(working_path):
+        prologue_file = working_path
+    
+    else:
+        raise ValueError("Asteroid prologue '{}' not found"
+                        .format(prologue_file_base))
+    
+    with open(prologue_file) as f:
+        state.modules.append(prologue_name)
+        data = f.read()
+        pparser = Parser(prologue_name)
+        (LIST, pstmts) = pparser.parse(data)
+
+    state.AST = ('list', pstmts)
+    walk(state.AST)
+    state.AST = None
+
 def interp(input_stream,
            input_name = "<input>",
            tree_dump=False,
@@ -25,53 +52,32 @@ def interp(input_stream,
            exceptions=False,
            redundancy=True,
            prologue=True,
-           initialize_state = True):
+           initialize_state = True,
+           debugger=None):
     try:
         # initialize state
         if initialize_state:
             state.initialize(input_name)
 
-        #lhh
-        #print("path[0]: {}".format(sys.path[0]))
-        #print("path[1]: {}".format(sys.path[1]))
+        if prologue:
+            load_prologue()
 
         # initialize "check for useless clauses" flag
         state.eval_redundancy = redundancy
 
-        # read in prologue
-        if prologue:
-            prologue_file = ''
-            prologue_file_base = os.path.join('modules', prologue_name)
-            module_path = os.path.join(os.path.split(os.path.abspath(__file__))[0], prologue_file_base)
-            working_path = os.path.join(os.getcwd(), prologue_file_base)
-
-            if os.path.isfile(module_path):
-                prologue_file = module_path
-            elif os.path.isfile(working_path):
-                prologue_file = working_path
-            else:
-                raise ValueError("Asteroid prologue '{}' not found"
-                                .format(prologue_file_base))
-
-            with open(prologue_file) as f:
-                state.modules.append(prologue_name)
-                data = f.read()
-                pparser = Parser(prologue_name)
-                (LIST, pstmts) = pparser.parse(data)
-
         # build the AST
         parser = Parser(input_name)
         (LIST, istmts) = parser.parse(input_stream)
-        if prologue:
-            state.AST = ('list', pstmts + istmts)
-        else:
-            state.AST = ('list', istmts)
+        state.AST = ('list', istmts)
 
         # walk the AST
         if tree_dump:
             dump_AST(state.AST)
         if do_walk:
-            walk(state.AST)
+            if debugger:
+                debug_walk(state.AST, debugger)
+            else:
+                walk(state.AST)
         if symtab_dump:
             state.symbol_table.dump()
 
@@ -103,6 +109,8 @@ def interp(input_stream,
 
     except  KeyboardInterrupt as e:
         dump_trace()
+        if debugger:
+            raise e
         print("error: keyboard interrupt")
         # needed for REPL
         if not exceptions:

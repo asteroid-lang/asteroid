@@ -1,4 +1,4 @@
-from asteroid.interp import interp
+from asteroid.interp import interp, load_prologue
 from asteroid.version import VERSION
 from asteroid.state import state
 from asteroid.globals import ExpectationError
@@ -8,9 +8,12 @@ from asteroid.support import term2string
 from sys import stdin
 import readline
 
-def repl():
-    state.initialize()
-    print_repl_menu()
+def repl(new=True):
+
+    if new:
+        state.initialize()
+        load_prologue()
+        print_repl_menu()
     try:
         run_repl()
     except EOFError:
@@ -21,7 +24,6 @@ def print_repl_menu():
     print("Asteroid Version", VERSION)
     print("Run \"asteroid -h\" for help")
     print("Press CTRL+D to exit")
-
 
 def run_repl():
 
@@ -62,8 +64,7 @@ def run_repl():
         Interpretation, multiline input, and exception handling
         """
         try:
-            # Try to interpret the new statement
-            interp(line, initialize_state=False, exceptions=True)
+            interp(line, prologue=False, initialize_state=False, exceptions=True)
 
             # Try to
             line = ""

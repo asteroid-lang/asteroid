@@ -202,13 +202,12 @@ class Parser:
             #print("opening module {}".format(ast_module_file))
 
             old_lineinfo = state.lineinfo
-
             with open(ast_module_file) as f:
                 state.modules.append(module_name)
                 data = f.read()
-                fparser = Parser(module_name)
+                fparser = Parser(str(ast_module_path))
                 (STMT_LIST, fstmts) = fparser.parse(data)
-
+            
             state.lineinfo = old_lineinfo
             (LIST, sl) = self.stmt_list()
             return ('list', fstmts + sl)
