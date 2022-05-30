@@ -26,6 +26,7 @@ class ADB:
         # List of breakpoints
         self.breakpoints = []
 
+        #############################
         # Flag if the debugger is continuing to the next breakpoint (continue) 
         self.is_continuing = False
 
@@ -35,17 +36,20 @@ class ADB:
         # OR next top level statement (next)
         self.is_next = True
 
+        #############################
         # If our program is executing at the top level
         self.top_level = True
+
+        # Explicit mode is the verbose mode where more information
+        # about the computation is detailed
+        self.explicit = True
+
+        #############################
 
         # File information
         self.lineinfo = None
         self.program_text = None
         self.filename = None
-
-        # Explicit mode is the verbose mode where expressions are 
-        # totally detailed
-        self.explicit = True
 
     def message(self, message):
         """
