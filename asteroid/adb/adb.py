@@ -57,21 +57,28 @@ class ADB:
         f = open(filename, 'r')
         input_stream = f.read()
         f.close()
-        
-        try:
-            interp(input_stream,
-                input_name = filename,
-                do_walk=True,
-                prologue=False,
-                exceptions=True,
-                debugger=self)
-            self.message("End of file reached, restarting session")
-        
-        except (EOFError, KeyboardInterrupt):
-            exit(0)
-        except Exception as e:
-            print("ADB Error: ", e)
-            dump_trace()
+
+        while True:
+            try:
+                interp(input_stream,
+                    input_name = filename,
+                    do_walk=True,
+                    prologue=False,
+                    exceptions=True,
+                    debugger=self)
+                self.message("End of file reached, restarting session")
+
+                # Reset defaults
+                self.is_continuing = False
+                self.is_stepping = False
+                self.is_next = True
+                self.top_level = True
+            
+            except (EOFError, KeyboardInterrupt):
+                exit(0)
+            except Exception as e:
+                print("ADB Error: ", e)
+                dump_trace()
 
     def has_breakpoint_here(self):
         """
@@ -146,12 +153,14 @@ class ADB:
                     self.is_next = False
                     exit_loop = True
 
+                # Continue
                 case "c":
                     self.is_stepping = False
                     self.is_continuing = True
                     self.is_next = False
                     exit_loop = True
 
+                # Next
                 case "n":
                     self.is_stepping = False
                     self.is_continuing = False
@@ -163,7 +172,15 @@ class ADB:
                     break_line = cmd[1:]
                     for b in break_line:
                         self.breakpoints.append(int(b))
+                
+                # Remove a breakpoint
+                case "unbreak":
+                    break_line = cmd[1:]
+                    for b in break_line:
+                        if int(b) in self.breakpoints:
+                            self.breakpoints.remove(int(b))
 
+                # REPL
                 case "!":
                     old_lineinfo = self.lineinfo
                     repl(new=False)
@@ -180,13 +197,20 @@ class ADB:
         """
         Notify the debugger that a potential tick-point has
         occured and do the necessary checks to see if we can
-        tick here
+        tick here.
+
+        This function is a little complicated because the
+        behavior is complicated.
+
+        TODO: Consider refactoring
         """
         # If we're not on the intended file, just return
         if self.lineinfo[0] != self.filename:
             pass
 
-        elif self.has_breakpoint_here():
+        # If we have a breakpoint here and we're not trying to go
+        # to the next top level statement, then tick
+        elif self.has_breakpoint_here() and not self.is_next:
             self.message("Breakpoint")
             self.tick()
 
@@ -194,6 +218,8 @@ class ADB:
         # to the next breakpoint, and we're going to the next statement
         # do a tick
         elif self.top_level and self.is_next and not self.is_continuing:
+            if self.has_breakpoint_here():
+                self.message("Breakpoint")
             self.tick()
 
         # Otherwhise, if we're stepping through the program,
