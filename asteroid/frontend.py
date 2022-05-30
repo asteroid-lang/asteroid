@@ -205,6 +205,8 @@ class Parser:
             with open(ast_module_file) as f:
                 state.modules.append(module_name)
                 data = f.read()
+
+                # Give the absolute path to the parser
                 fparser = Parser(str(ast_module_path))
                 (STMT_LIST, fstmts) = fparser.parse(data)
             

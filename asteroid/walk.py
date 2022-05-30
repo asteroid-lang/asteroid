@@ -12,6 +12,26 @@ from asteroid.support import *
 from asteroid.state import state, warning
 
 #########################################################################
+# These two variables are used by the debugger. "Debugging" is a flag
+# to tell if we're currently in debugging mode and "Debugger" is a
+# debugger object
+#########################################################################
+debugging = False
+debugger = None
+
+def notify_debugger():
+    if debugging:
+        # We need to save the old lineinfo in case we go into a REPL
+        old_lineinfo = state.lineinfo
+
+        # Notify the debugger
+        debugger.notify()
+
+        # Reset our lineinfo
+        state.lineinfo = old_lineinfo
+        debugger.set_lineinfo(state.lineinfo)
+
+#########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
 # see 'prologue.ast' for details
@@ -949,6 +969,7 @@ def declare_unifiers(unifiers):
 # node functions
 #########################################################################
 def global_stmt(node):
+    notify_debugger()
 
     (GLOBAL, (LIST, id_list)) = node
     assert_match(GLOBAL, 'global')
@@ -963,6 +984,7 @@ def global_stmt(node):
 
 #########################################################################
 def assert_stmt(node):
+    notify_debugger()
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
@@ -973,6 +995,7 @@ def assert_stmt(node):
 
 #########################################################################
 def unify_stmt(node):
+    notify_debugger()
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
@@ -984,6 +1007,7 @@ def unify_stmt(node):
 
 #########################################################################
 def return_stmt(node):
+    notify_debugger()
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
@@ -992,6 +1016,7 @@ def return_stmt(node):
 
 #########################################################################
 def break_stmt(node):
+    notify_debugger()
 
     (BREAK,) = node
     assert_match(BREAK, 'break')
@@ -1000,6 +1025,7 @@ def break_stmt(node):
 
 #########################################################################
 def throw_stmt(node):
+    notify_debugger()
 
     (THROW, object) = node
     assert_match(THROW, 'throw')
@@ -1008,6 +1034,7 @@ def throw_stmt(node):
 
 #########################################################################
 def try_stmt(node):
+    notify_debugger()
 
     (TRY,
      (STMT_LIST, try_stmts),
@@ -1107,6 +1134,7 @@ def try_stmt(node):
 
 #########################################################################
 def loop_stmt(node):
+    notify_debugger()
 
     (LOOP, body_stmts) = node
     assert_match(LOOP, 'loop')
@@ -1121,6 +1149,7 @@ def loop_stmt(node):
 
 #########################################################################
 def while_stmt(node):
+    notify_debugger()
 
     (WHILE, cond_exp, body_stmts) = node
     assert_match(WHILE, 'while')
@@ -1138,6 +1167,7 @@ def while_stmt(node):
 
 #########################################################################
 def repeat_stmt(node):
+    notify_debugger()
 
     (REPEAT, body_stmts, cond_exp) = node
     assert_match(REPEAT, 'repeat')
@@ -1157,6 +1187,7 @@ def repeat_stmt(node):
 
 #########################################################################
 def for_stmt(node):
+    notify_debugger()
 
     (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
     assert_match(FOR, 'for')
@@ -1198,6 +1229,7 @@ def for_stmt(node):
 
 #########################################################################
 def if_stmt(node):
+    notify_debugger()
 
     (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
@@ -1220,6 +1252,7 @@ def if_stmt(node):
 
 #########################################################################
 def struct_def_stmt(node):
+    notify_debugger()
 
     (STRUCT_DEF, (ID, struct_id), (MEMBER_LIST, (LIST, member_list))) = node
     assert_match(STRUCT_DEF, 'struct-def')
@@ -1597,6 +1630,9 @@ def process_lineinfo(node):
     (LINEINFO, lineinfo_val) = node
     assert_match(LINEINFO, 'lineinfo')
 
+    if debugging:
+        debugger.set_lineinfo(lineinfo_val)
+
     #lhh
     #print("lineinfo: {}".format(lineinfo_val))
 
@@ -1657,6 +1693,23 @@ def walk(node):
         return node_function(node)
     else:
         raise ValueError("feature '{}' not yet implemented".format(type))
+
+#########################################################################
+# debug_walk
+#########################################################################
+def debug_walk(node, dbg):
+    # We want to differentiate between top level and nested
+    # statements. So, we run the list of statements outright
+    # so we can control when we know we are at the top level
+    global debugging, debugger
+    debugging, debugger = (True, dbg)
+
+    (LIST, inlist) = node
+    assert_match(LIST, 'list')
+
+    for e in inlist:
+        debugger.set_top_level(True)
+        walk(e)
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
