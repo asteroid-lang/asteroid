@@ -17,6 +17,11 @@ class ADB:
             stepping:   Go to next executing line
             continuing: Go to next breakpoint
             next:       Go to next top level line (i.e. top level statement) {Can be a breakpoint}
+
+        State management is pretty important so I've segmented it into several pieces.
+            * Stepping/continuation/next level (What do we do on next tick?)
+            * Top level (Is this statement at the top level?)
+                * Explicit (Are we just showing everything for a little bit?)
         """
         # List of breakpoints
         self.breakpoints = []
