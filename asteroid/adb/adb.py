@@ -202,6 +202,11 @@ class ADB:
         This function is a little complicated because the
         behavior is complicated.
 
+        Hierarchy of ticking:
+            Step
+            Breakpoint (Continue)
+            Next
+
         TODO: Consider refactoring
         """
         # If we're not on the intended file, just return
