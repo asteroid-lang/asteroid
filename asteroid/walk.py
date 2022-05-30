@@ -31,6 +31,18 @@ def notify_debugger():
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
 
+"""
+Differentiating between explicit and surface level details
+is important. We can make this differentiation easier by
+having a mode called "explicit mode" that gets run
+"""
+# def notify_debugger_explicit():
+#     pass
+
+# def enable_explicit_mode():
+#     if debugging and debugger.has_breakpoint_here():
+#         debugger.set_explicit_mode(True)
+
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
