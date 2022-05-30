@@ -1,5 +1,8 @@
 """
 The Asteroid Debugger
+
+Known issues:
+    Debugging programs with imports does not work correctly
 """
 from asteroid.repl import repl
 
@@ -71,26 +74,41 @@ class ADB:
             dump_trace()
 
     def has_breakpoint_here(self):
+        """
+        Check if the user has set a breakpoint at the current line
+        """
         return self.lineinfo[1] in self.breakpoints and self.lineinfo[0] == self.filename
 
     def set_top_level(self, tl):
+        """
+        Set our flag that tells the debugger if it's at the top level of a program or not
+        """
         self.top_level = tl
 
     def set_lineinfo(self, lineinfo):
+        """
+        Set the debugger's internal lineinfo
+        """
         self.lineinfo = lineinfo
 
         if self.program_text is None:
             with open(lineinfo[0], "r") as f:
                 self.program_text = f.readlines()
 
-    def format_current_line(self):
+    def print_current_line(self):
+        """
+        Print the current line nicely
+        """
         prog_line = self.program_text[self.lineinfo[1] - 1][:-1]
         outline =  ("{" + self.lineinfo[0] + " " + str(self.lineinfo[1]) + "}")
         outline += ("\n -->> " + prog_line)
 
-        return outline
+        print(outline)
 
     def list_program(self):
+        """
+        List the program contents
+        """
         self.message("Program Listing")
         start_of_line = "  "
 
@@ -104,8 +122,13 @@ class ADB:
             start_of_line = "  "
 
     def tick(self):
+        """
+        "Tick" the debugger. This refers to hitting some point where the user
+        has decided they would like the debugger to come back to life and entering
+        the command selection phase.
+        """
         # Print the current line with lineinfo
-        print(self.format_current_line())
+        self.print_current_line()
 
         # Main command loop
         exit_loop = False
@@ -154,6 +177,11 @@ class ADB:
                     print("Unknown command: {}".format(cmd[0]))
 
     def notify(self):
+        """
+        Notify the debugger that a potential tick-point has
+        occured and do the necessary checks to see if we can
+        tick here
+        """
         # If we're not on the intended file, just return
         if self.lineinfo[0] != self.filename:
             pass
@@ -178,4 +206,4 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    #db.run("/home/oliver/082.ast")
+    db.run("/home/oliver/082.ast")
