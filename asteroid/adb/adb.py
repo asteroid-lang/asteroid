@@ -233,6 +233,10 @@ class ADB:
                 case "l":
                     self.list_program()
 
+                # Quit adb
+                case "quit":
+                    exit(0)
+
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
         
