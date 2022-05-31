@@ -959,12 +959,15 @@ def declare_unifiers(unifiers):
     # walk the unifiers and bind name-value pairs into the symtab
 
     # TODO: check for repeated names in the unfiers
-    message_explicit("Unified: {}".format(unifiers))
     for unifier in unifiers:
 
         #lhh
         #print("unifier: {}".format(unifier))
         (lval, value) = unifier
+
+        message_explicit("Unified: {} = {}".format(
+            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)"    
+        ), "tertiary")
 
         if lval[0] == 'id':
             if lval[1] == 'this':
