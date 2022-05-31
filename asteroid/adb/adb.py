@@ -50,6 +50,25 @@ class ADB:
         self.lineinfo = None
         self.program_text = None
         self.filename = None
+    
+    def set_explicit(self, ex):
+        """
+        Set state of explicit mode
+        """
+        if ex == True and self.has_breakpoint_here():
+            self.explicit = True
+        else:
+            self.explicit = False
+
+    def message_explicit(self, message, level = None):
+        # TODO: Make this less spaghetti
+        if self.explicit:
+            if level == None:
+                print("**** {} ****".format(message))
+            elif level == "secondary":
+                print("** {} **".format(message))
+            elif level == "tertiary":
+                print("* {}".format(message))
 
     def message(self, message):
         """
@@ -88,10 +107,12 @@ class ADB:
                 self.top_level = True
             
             except (EOFError, KeyboardInterrupt):
-                exit(0)
+                break;
             except Exception as e:
+                # TODO: Fix error messaging
                 print("ADB Error: ", e)
                 dump_trace()
+                break;
 
     def has_breakpoint_here(self):
         """
@@ -250,4 +271,4 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    db.run("/home/oliver/082.ast")
+    db.run("/home/oliver/077.ast")

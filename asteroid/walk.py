@@ -19,6 +19,18 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
+def enable_explicit_if_breakpoint():
+    if debugging:
+        debugger.set_explicit(True)
+
+def disable_explicit():
+    if debugging:
+        debugger.set_explicit(False)
+
+def message_explicit(message, level=None):
+    if debugging:
+        debugger.message_explicit(message, level)
+
 def notify_debugger():
     if debugging:
         # We need to save the old lineinfo in case we go into a REPL
@@ -852,6 +864,7 @@ def handle_builtins(node):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
+    message_explicit("Call: {}".format(fname))
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -887,13 +900,16 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         try:
+            message_explicit("Trying to unify: {} and {}".format(term2string(actual_val_args), term2string(p)), "secondary")
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
+            message_explicit("Unification failed!" , "tertiary")
             unifiers = []
             unified = False
 
         if unified:
+            message_explicit("Unification successful!", "tertiary")
             break
 
     if not unified:
@@ -943,12 +959,11 @@ def declare_unifiers(unifiers):
     # walk the unifiers and bind name-value pairs into the symtab
 
     # TODO: check for repeated names in the unfiers
-
+    message_explicit("Unified: {}".format(unifiers))
     for unifier in unifiers:
 
         #lhh
         #print("unifier: {}".format(unifier))
-
         (lval, value) = unifier
 
         if lval[0] == 'id':
@@ -1002,6 +1017,7 @@ def assert_stmt(node):
 #########################################################################
 def unify_stmt(node):
     notify_debugger()
+    enable_explicit_if_breakpoint()
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
@@ -1011,14 +1027,18 @@ def unify_stmt(node):
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
 
+    disable_explicit()
+
 #########################################################################
 def return_stmt(node):
     notify_debugger()
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
+    
+    retval = walk(e)
 
-    raise ReturnValue(walk(e))
+    raise ReturnValue(retval)
 
 #########################################################################
 def break_stmt(node):
@@ -1035,8 +1055,10 @@ def throw_stmt(node):
 
     (THROW, object) = node
     assert_match(THROW, 'throw')
+    
+    throw_object = walk(object)
 
-    raise ThrowValue(walk(object))
+    raise ThrowValue(throw_object)
 
 #########################################################################
 def try_stmt(node):
@@ -1133,6 +1155,7 @@ def try_stmt(node):
         else:
             declare_unifiers(unifiers)
             walk(catch_stmts)
+
             return
 
     # no exception handler found - rethrow the exception
