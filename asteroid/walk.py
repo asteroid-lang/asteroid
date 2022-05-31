@@ -952,6 +952,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    message_explicit("Return value from {}: {}".format(fname, term2string(return_value)))
     return return_value
 
 #########################################################################

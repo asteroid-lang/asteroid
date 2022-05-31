@@ -226,6 +226,9 @@ class ADB:
 
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
+        
+        # Print an empty line for readability
+        print()
 
     def notify(self):
         """
