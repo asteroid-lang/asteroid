@@ -864,7 +864,7 @@ def handle_builtins(node):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
-    message_explicit("Call: {}".format(fname))
+    message_explicit("Call: {} ({})".format(fname, term2string(actual_val_args)))
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -967,7 +967,7 @@ def declare_unifiers(unifiers):
 
         message_explicit("Unified: {} = {}".format(
             term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)"    
-        ), "tertiary")
+        ))
 
         if lval[0] == 'id':
             if lval[1] == 'this':
@@ -1042,7 +1042,6 @@ def return_stmt(node):
     retval = walk(e)
 
     message_explicit("Return: {}".format(term2string(retval)))
-    notify_debugger()
 
     raise ReturnValue(retval)
 

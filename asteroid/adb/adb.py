@@ -66,9 +66,9 @@ class ADB:
             if level == None:
                 print("**** {} ****".format(message))
             elif level == "secondary":
-                print("** {} **".format(message))
+                print("  ** {} **".format(message))
             elif level == "tertiary":
-                print("* {}".format(message))
+                print("    * {}".format(message))
 
     def message(self, message):
         """
@@ -99,7 +99,9 @@ class ADB:
                     exceptions=True,
                     debugger=self)
                 
-                print()
+                # This gives us one last tick before EOF is reached
+                self.lineinfo = (self.lineinfo[0], len(self.program_text))
+                self.tick()
                 self.message("End of file reached, restarting session")
 
                 # Reset defaults
@@ -137,6 +139,8 @@ class ADB:
         if self.program_text is None:
             with open(lineinfo[0], "r") as f:
                 self.program_text = f.readlines()
+            # Always add an extra line
+            self.program_text.append("")
 
     def print_current_line(self):
         """
@@ -144,7 +148,10 @@ class ADB:
         """
         prog_line = self.program_text[self.lineinfo[1] - 1][:-1]
         outline =  ("{" + self.lineinfo[0] + " " + str(self.lineinfo[1]) + "}")
-        outline += ("\n -->> " + prog_line)
+        
+        # If the line is empty don't bother showing it
+        if prog_line != "":
+            outline += ("\n -->> " + prog_line)
 
         print(outline)
 
