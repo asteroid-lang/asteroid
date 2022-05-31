@@ -98,6 +98,8 @@ class ADB:
                     prologue=False,
                     exceptions=True,
                     debugger=self)
+                
+                print()
                 self.message("End of file reached, restarting session")
 
                 # Reset defaults

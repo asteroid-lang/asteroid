@@ -904,12 +904,12 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
-            message_explicit("Unification failed!" , "tertiary")
+            message_explicit("Fail" , "tertiary")
             unifiers = []
             unified = False
 
         if unified:
-            message_explicit("Unification successful!", "tertiary")
+            message_explicit("Success", "tertiary")
             break
 
     if not unified:
@@ -952,7 +952,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
-    message_explicit("Return value from {}: {}".format(fname, term2string(return_value)))
     return return_value
 
 #########################################################################
@@ -1041,6 +1040,9 @@ def return_stmt(node):
     assert_match(RETURN, 'return')
     
     retval = walk(e)
+
+    message_explicit("Return: {}".format(term2string(retval)))
+    notify_debugger()
 
     raise ReturnValue(retval)
 
