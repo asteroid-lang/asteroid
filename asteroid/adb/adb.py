@@ -45,6 +45,10 @@ class ADB:
         self.explicit_lock = False
 
         #############################
+        # List of function calls
+        self.call_stack = []
+
+        #############################
 
         # File information
         self.lineinfo = None
@@ -168,7 +172,13 @@ class ADB:
         """
         prog_line = self.program_text[self.lineinfo[1] - 1][:-1]
         outline =  ("{" + self.lineinfo[0] + " " + str(self.lineinfo[1]) + "}")
-        
+
+        if len(self.call_stack) > 0:
+            outline += " ("
+            for c in self.call_stack[:-1]:
+                outline += c + "->"
+            outline += self.call_stack[-1] + ")"
+
         # If the line is empty don't bother showing it
         if prog_line != "":
             outline += ("\n -->> " + prog_line)
@@ -305,4 +315,4 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    db.run("/home/oliver/022.ast")
+    db.run("/home/oliver/test.ast")

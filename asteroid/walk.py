@@ -877,6 +877,10 @@ def handle_builtins(node):
 def handle_call(obj_ref, fval, actual_val_args, fname):
     message_explicit("Call: {} ({})".format(fname, term2string(actual_val_args)))
 
+    # TODO: Make proxy functions for this and the pop
+    if debugging:
+        debugger.call_stack.append(fname)
+
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
@@ -963,6 +967,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    if debugging:
+        debugger.call_stack.pop()
+    
+    message_explicit("Return: {} from {}".format(term2string(return_value), fname))
+    
     return return_value
 
 #########################################################################
@@ -1059,8 +1068,6 @@ def return_stmt(node):
     assert_match(RETURN, 'return')
     
     retval = walk(e)
-
-    message_explicit("Return: {}".format(term2string(retval)))
 
     raise ReturnValue(retval)
 
