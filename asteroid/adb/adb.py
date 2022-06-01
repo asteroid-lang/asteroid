@@ -51,6 +51,13 @@ class ADB:
         self.program_text = None
         self.filename = None
     
+    def reset_defaults(self):
+        # Reset defaults
+        self.is_continuing = False
+        self.is_stepping = False
+        self.is_next = True
+        self.top_level = True
+
     def is_locked_explicit(self):
         return self.explicit_lock
 
@@ -85,7 +92,7 @@ class ADB:
         the asteroid debugger
         """
         from asteroid.interp import interp
-        from asteroid.state import dump_trace
+        from asteroid.state import state, dump_trace
         
         self.filename = filename
 
@@ -107,19 +114,18 @@ class ADB:
                 self.tick()
                 self.message("End of file reached, restarting session")
 
-                # Reset defaults
-                self.is_continuing = False
-                self.is_stepping = False
-                self.is_next = True
-                self.top_level = True
+                self.reset_defaults()
             
             except (EOFError, KeyboardInterrupt):
                 break;
             except Exception as e:
-                # TODO: Fix error messaging
-                print("ADB Error: ", e)
                 dump_trace()
-                break;
+                module, lineno = self.lineinfo
+                print("error: {}: {}: {}".format(module, lineno, e))
+                self.message("Error occured, restarting session")
+                self.reset_defaults()
+
+                continue
 
     def has_breakpoint_here(self):
         """
@@ -242,9 +248,6 @@ class ADB:
 
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
-        
-        # Print an empty line for readability
-        print()
 
     def notify(self):
         """
