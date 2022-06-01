@@ -19,11 +19,22 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-def enable_explicit_if_breakpoint():
-    if debugging:
-        debugger.set_explicit(True)
+def lock_explicit():
+    """
+    Tries to lock into explicit mode
 
-def disable_explicit():
+    Returns the state of locked/unlocked as a boolean
+    """
+    if debugging:
+        if debugger.is_locked_explicit():
+            return False
+        else:
+            debugger.set_explicit(True)
+            return True
+    else:
+        return False
+
+def unlock_explicit():
     if debugging:
         debugger.set_explicit(False)
 
@@ -900,7 +911,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         try:
-            message_explicit("Trying to unify: {} and {}".format(term2string(actual_val_args), term2string(p)), "secondary")
+            message_explicit("Trying to match: {} and {}".format(term2string(actual_val_args), term2string(p)), "secondary")
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
@@ -1009,6 +1020,7 @@ def global_stmt(node):
 #########################################################################
 def assert_stmt(node):
     notify_debugger()
+    was_unlocked = lock_explicit()
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
@@ -1017,10 +1029,16 @@ def assert_stmt(node):
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
 
+    message_explicit("Assert Succeeded")
+
+    if was_unlocked:
+        unlock_explicit()
+
 #########################################################################
 def unify_stmt(node):
     notify_debugger()
-    enable_explicit_if_breakpoint()
+
+    was_unlocked = lock_explicit()
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
@@ -1030,7 +1048,8 @@ def unify_stmt(node):
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
 
-    disable_explicit()
+    if was_unlocked:
+        unlock_explicit()
 
 #########################################################################
 def return_stmt(node):
@@ -1264,6 +1283,9 @@ def for_stmt(node):
 #########################################################################
 def if_stmt(node):
     notify_debugger()
+    was_unlocked = lock_explicit()
+
+    message_explicit("Evaluating if clauses")
 
     (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
@@ -1278,12 +1300,17 @@ def if_stmt(node):
          (COND, cond),
          (STMT_LIST, stmts)) = if_list[ i + 1 ]
 
+        message_explicit("Checking: {}".format(term2string(cond)), "secondary")
+
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
         if cond_val:
+            message_explicit("Condition met", "tertiary")
             walk(stmts)
             break
 
+    if was_unlocked:
+        unlock_explicit()
 #########################################################################
 def struct_def_stmt(node):
     notify_debugger()

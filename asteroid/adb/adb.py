@@ -42,7 +42,7 @@ class ADB:
 
         # Explicit mode is the verbose mode where more information
         # about the computation is detailed
-        self.explicit = True
+        self.explicit_lock = False
 
         #############################
 
@@ -51,18 +51,21 @@ class ADB:
         self.program_text = None
         self.filename = None
     
+    def is_locked_explicit(self):
+        return self.explicit_lock
+
     def set_explicit(self, ex):
         """
         Set state of explicit mode
         """
         if ex == True and self.has_breakpoint_here():
-            self.explicit = True
+            self.explicit_lock = True
         else:
-            self.explicit = False
+            self.explicit_lock = False
 
     def message_explicit(self, message, level = None):
         # TODO: Make this less spaghetti
-        if self.explicit:
+        if self.explicit_lock:
             if level == None:
                 print("**** {} ****".format(message))
             elif level == "secondary":
@@ -287,4 +290,4 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    db.run("/home/oliver/077.ast")
+    db.run("/home/oliver/022.ast")
