@@ -52,13 +52,21 @@ class ADB:
         self.filename = None
     
     def reset_defaults(self):
+        """
+        Resets the debugger's default config
+        """
         # Reset defaults
         self.is_continuing = False
         self.is_stepping = False
         self.is_next = True
         self.top_level = True
+        self.explicit_lock = False
 
     def is_locked_explicit(self):
+        """
+        Checks if the debugger is currently locked in explicit
+        mode
+        """
         return self.explicit_lock
 
     def set_explicit(self, ex):
@@ -71,14 +79,17 @@ class ADB:
             self.explicit_lock = False
 
     def message_explicit(self, message, level = None):
-        # TODO: Make this less spaghetti
+        """
+        Sends a message in explicit mode
+        """
         if self.explicit_lock:
-            if level == None:
-                print("**** {} ****".format(message))
-            elif level == "secondary":
-                print("  ** {} **".format(message))
-            elif level == "tertiary":
-                print("    * {}".format(message))
+            match(level):
+                case None:
+                    print("**** {} ****".format(message))
+                case "secondary":
+                    print("  ** {} **".format(message))
+                case "tertiary":
+                    print("    * {}".format(message))
 
     def message(self, message):
         """
@@ -121,7 +132,7 @@ class ADB:
             except Exception as e:
                 dump_trace()
                 module, lineno = self.lineinfo
-                print("error: {}: {}: {}".format(module, lineno, e))
+                print("ERROR: {}: {}: {}".format(module, lineno, e))
                 self.message("Error occured, restarting session")
                 self.reset_defaults()
 
@@ -263,7 +274,8 @@ class ADB:
             Breakpoint (Continue)
             Next
 
-        TODO: Consider refactoring
+        Explicit mode is a mode in which extra steps in
+        computations are revealed to the user
         """
         # If we're not on the intended file, just return
         if self.lineinfo[0] != self.filename:
