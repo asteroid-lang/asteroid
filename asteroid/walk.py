@@ -875,7 +875,7 @@ def handle_builtins(node):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
-    message_explicit("Call: {} ({})".format(fname, term2string(actual_val_args)))
+    message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
 
     # TODO: Make proxy functions for this and the pop
     if debugging:
@@ -970,7 +970,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if debugging:
         debugger.call_stack.pop()
     
-    message_explicit("Return: {} from {}".format(term2string(return_value), fname))
+    message_explicit("Return: {} from {}({})".format(term2string(return_value), fname, term2string(actual_val_args)))
     
     return return_value
 
