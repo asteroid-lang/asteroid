@@ -978,7 +978,7 @@ def declare_unifiers(unifiers):
 
         message_explicit("Unified: {} = {}".format(
             term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)"    
-        ))
+        ), "secondary")
 
         if lval[0] == 'id':
             if lval[1] == 'this':
@@ -1203,6 +1203,9 @@ def loop_stmt(node):
 #########################################################################
 def while_stmt(node):
     notify_debugger()
+    was_unlocked = lock_explicit()
+
+    message_explicit("While loop")
 
     (WHILE, cond_exp, body_stmts) = node
     assert_match(WHILE, 'while')
@@ -1210,13 +1213,20 @@ def while_stmt(node):
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
+    message_explicit("Condition {}".format(term2string(cond)), "secondary")
+
     try:
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
+        if cond_val:
+            message_explicit("Condition is True", "tertiary")
         while cond_val:
             walk(body)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
     except Break:
         pass
+
+    if was_unlocked:
+        unlock_explicit()
 
 #########################################################################
 def repeat_stmt(node):
