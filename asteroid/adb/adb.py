@@ -67,6 +67,15 @@ class ADB:
         self.top_level = True
         self.explicit_enabled = False
 
+    def make_tab_level(self):
+        """
+        Make the tab level for nested messaging
+        """
+        if self.is_next:
+            return self.tab_level*"  "
+        else:
+            return ""
+
     def message_explicit(self, message, level = None):
         """
         Sends a message in explicit mode
@@ -74,11 +83,11 @@ class ADB:
         if self.explicit_enabled:
             match(level):
                 case None:
-                    print("{}~~~~ {} ~~~~".format(self.tab_level*"\t", message))
+                    print("{}~~~~ {} ~~~~".format(self.make_tab_level(), message))
                 case "secondary":
-                    print("{}  ** {} **".format(self.tab_level*"\t", message))
+                    print("{}  ** {} **".format(self.make_tab_level(), message))
                 case "tertiary":
-                    print("{}    * {}".format(self.tab_level*"\t", message))
+                    print("{}    * {}".format(self.make_tab_level(), message))
 
     def message(self, message):
         """

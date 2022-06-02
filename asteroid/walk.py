@@ -891,6 +891,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     message_explicit("Attempting to match function body", "secondary")
 
+    #TODO: MAKE THIS A FUNCTION
     if debugging:
         debugger.tab_level += 1
 
@@ -960,6 +961,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    #TODO: MAKE THIS A FUNCTION
+    if debugging:
+        debugger.tab_level -= 1
+
     message_explicit("Return: {} from {}({})".format(
         term2string(return_value), fname, term2string(actual_val_args)))
 
@@ -967,7 +972,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     if debugging:
         debugger.call_stack.pop()
-        debugger.tab_level -= 1
 
     return return_value
 
