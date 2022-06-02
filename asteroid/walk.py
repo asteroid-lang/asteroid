@@ -885,6 +885,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
+    message_explicit("Attempting to match function body", "secondary")
+
     for i in range(0, len(body_list_val), 2):
         # Process lineinfo
         lineinfo = body_list_val[ i ]
@@ -896,16 +898,19 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         try:
-            message_explicit("Trying to match: {} and {}".format(term2string(actual_val_args), term2string(p)), "secondary")
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
-            message_explicit("Fail" , "tertiary")
+            message_explicit("Failed to match:  {} and {}".format(
+                term2string(actual_val_args), term2string(p)), "tertiary")
+
             unifiers = []
             unified = False
 
         if unified:
-            message_explicit("Success", "tertiary")
+            message_explicit("Success! Matched: {} and {}".format(
+                term2string(actual_val_args), term2string(p)), "tertiary")
+
             break
 
     if not unified:

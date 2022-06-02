@@ -323,4 +323,4 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    db.run("/home/oliver/test.ast")
+    db.run("/home/oliver/rec.ast")
