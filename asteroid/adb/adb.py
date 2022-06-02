@@ -49,6 +49,7 @@ class ADB:
         self.call_stack = []
 
         #############################
+        self.tab_level = 0
 
         # File information
         self.lineinfo = None
@@ -66,22 +67,6 @@ class ADB:
         self.top_level = True
         self.explicit_enabled = False
 
-    # def is_locked_explicit(self):
-    #     """
-    #     Checks if the debugger is currently locked in explicit
-    #     mode
-    #     """
-    #     return self.explicit_enabled
-
-    # def set_explicit(self, ex):
-    #     """
-    #     Set state of explicit mode
-    #     """
-    #     if ex == True and self.has_breakpoint_here():
-    #         self.explicit_enabled = True
-    #     else:
-    #         self.explicit_enabled = False
-
     def message_explicit(self, message, level = None):
         """
         Sends a message in explicit mode
@@ -89,11 +74,11 @@ class ADB:
         if self.explicit_enabled:
             match(level):
                 case None:
-                    print("**** {} ****".format(message))
+                    print("{}~~~~ {} ~~~~".format(self.tab_level*"\t", message))
                 case "secondary":
-                    print("  ** {} **".format(message))
+                    print("{}  ** {} **".format(self.tab_level*"\t", message))
                 case "tertiary":
-                    print("    * {}".format(message))
+                    print("{}    * {}".format(self.tab_level*"\t", message))
 
     def message(self, message):
         """

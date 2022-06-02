@@ -19,6 +19,10 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
+def notify_explicit():
+    if debugging and debugger.explicit_enabled:
+        notify_debugger()
+
 def message_explicit(message, level=None):
     if debugging:
         debugger.message_explicit(message, level)
@@ -887,6 +891,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     message_explicit("Attempting to match function body", "secondary")
 
+    if debugging:
+        debugger.tab_level += 1
+
     for i in range(0, len(body_list_val), 2):
         # Process lineinfo
         lineinfo = body_list_val[ i ]
@@ -953,10 +960,14 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
-    message_explicit("Return: {} from {}({})".format(term2string(return_value), fname, term2string(actual_val_args)))
+    message_explicit("Return: {} from {}({})".format(
+        term2string(return_value), fname, term2string(actual_val_args)))
+
+    notify_explicit()
 
     if debugging:
         debugger.call_stack.pop()
+        debugger.tab_level -= 1
 
     return return_value
 
