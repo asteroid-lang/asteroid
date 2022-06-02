@@ -19,25 +19,6 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-def lock_explicit():
-    """
-    Tries to lock into explicit mode
-
-    Returns the state of locked/unlocked as a boolean
-    """
-    if debugging:
-        if debugger.is_locked_explicit():
-            return False
-        else:
-            debugger.set_explicit(True)
-            return True
-    else:
-        return False
-
-def unlock_explicit():
-    if debugging:
-        debugger.set_explicit(False)
-
 def message_explicit(message, level=None):
     if debugging:
         debugger.message_explicit(message, level)
@@ -969,7 +950,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     if debugging:
         debugger.call_stack.pop()
-    
+
     message_explicit("Return: {} from {}({})".format(term2string(return_value), fname, term2string(actual_val_args)))
     
     return return_value
@@ -1029,7 +1010,6 @@ def global_stmt(node):
 #########################################################################
 def assert_stmt(node):
     notify_debugger()
-    was_unlocked = lock_explicit()
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
@@ -1040,14 +1020,9 @@ def assert_stmt(node):
 
     message_explicit("Assert Succeeded")
 
-    if was_unlocked:
-        unlock_explicit()
-
 #########################################################################
 def unify_stmt(node):
     notify_debugger()
-
-    was_unlocked = lock_explicit()
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
@@ -1056,9 +1031,6 @@ def unify_stmt(node):
 
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
-
-    if was_unlocked:
-        unlock_explicit()
 
 #########################################################################
 def return_stmt(node):
@@ -1210,7 +1182,6 @@ def loop_stmt(node):
 #########################################################################
 def while_stmt(node):
     notify_debugger()
-    was_unlocked = lock_explicit()
 
     message_explicit("While loop")
 
@@ -1231,9 +1202,6 @@ def while_stmt(node):
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
     except Break:
         pass
-
-    if was_unlocked:
-        unlock_explicit()
 
 #########################################################################
 def repeat_stmt(node):
@@ -1300,7 +1268,6 @@ def for_stmt(node):
 #########################################################################
 def if_stmt(node):
     notify_debugger()
-    was_unlocked = lock_explicit()
 
     message_explicit("Evaluating if clauses")
 
@@ -1325,9 +1292,6 @@ def if_stmt(node):
             message_explicit("Condition met", "tertiary")
             walk(stmts)
             break
-
-    if was_unlocked:
-        unlock_explicit()
 #########################################################################
 def struct_def_stmt(node):
     notify_debugger()

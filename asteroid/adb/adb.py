@@ -42,7 +42,7 @@ class ADB:
 
         # Explicit mode is the verbose mode where more information
         # about the computation is detailed
-        self.explicit_lock = False
+        self.explicit_enabled = False
 
         #############################
         # List of function calls
@@ -64,29 +64,29 @@ class ADB:
         self.is_stepping = False
         self.is_next = True
         self.top_level = True
-        self.explicit_lock = False
+        self.explicit_enabled = False
 
-    def is_locked_explicit(self):
-        """
-        Checks if the debugger is currently locked in explicit
-        mode
-        """
-        return self.explicit_lock
+    # def is_locked_explicit(self):
+    #     """
+    #     Checks if the debugger is currently locked in explicit
+    #     mode
+    #     """
+    #     return self.explicit_enabled
 
-    def set_explicit(self, ex):
-        """
-        Set state of explicit mode
-        """
-        if ex == True and self.has_breakpoint_here():
-            self.explicit_lock = True
-        else:
-            self.explicit_lock = False
+    # def set_explicit(self, ex):
+    #     """
+    #     Set state of explicit mode
+    #     """
+    #     if ex == True and self.has_breakpoint_here():
+    #         self.explicit_enabled = True
+    #     else:
+    #         self.explicit_enabled = False
 
     def message_explicit(self, message, level = None):
         """
         Sends a message in explicit mode
         """
-        if self.explicit_lock:
+        if self.explicit_enabled:
             match(level):
                 case None:
                     print("**** {} ****".format(message))
@@ -171,7 +171,7 @@ class ADB:
         Print the current line nicely
         """
         prog_line = self.program_text[self.lineinfo[1] - 1][:-1]
-        outline =  ("{" + self.lineinfo[0] + " " + str(self.lineinfo[1]) + "}")
+        outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
 
         if len(self.call_stack) > 0:
             outline += " ("
@@ -181,7 +181,7 @@ class ADB:
 
         # If the line is empty don't bother showing it
         if prog_line != "":
-            outline += ("\n -->> " + prog_line)
+            outline += ("\n-->> " + prog_line)
 
         print(outline)
 
@@ -266,6 +266,14 @@ class ADB:
                 # Quit adb
                 case "quit":
                     exit(0)
+
+                case "explicit":
+                    self.explicit_enabled = True
+                    self.message("Explicit mode enabled")
+
+                case "unexplicit":
+                    self.explicit_enabled = False
+                    self.message("Explicit mode disabled")
 
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
