@@ -948,11 +948,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    message_explicit("Return: {} from {}({})".format(term2string(return_value), fname, term2string(actual_val_args)))
+
     if debugging:
         debugger.call_stack.pop()
 
-    message_explicit("Return: {} from {}({})".format(term2string(return_value), fname, term2string(actual_val_args)))
-    
     return return_value
 
 #########################################################################
