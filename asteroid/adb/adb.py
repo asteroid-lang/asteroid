@@ -66,6 +66,7 @@ class ADB:
         self.is_next = True
         self.top_level = True
         self.explicit_enabled = False
+        self.call_stack = []
 
     def make_tab_level(self):
         """
@@ -80,14 +81,14 @@ class ADB:
         """
         Sends a message in explicit mode
         """
-        if self.explicit_enabled:
+        if self.explicit_enabled and not self.is_continuing:
             match(level):
                 case None:
-                    print("{}~~~~ {} ~~~~".format(self.make_tab_level(), message))
+                    print("{}---- {}".format(self.make_tab_level(), message))
                 case "secondary":
-                    print("{}  ** {} **".format(self.make_tab_level(), message))
+                    print("{}-- {}".format(self.make_tab_level(), message))
                 case "tertiary":
-                    print("{}    * {}".format(self.make_tab_level(), message))
+                    print("{}- {}".format(self.make_tab_level(), message))
 
     def message(self, message):
         """
@@ -121,6 +122,7 @@ class ADB:
                 # This gives us one last tick before EOF is reached
                 self.lineinfo = (self.lineinfo[0], len(self.program_text))
                 self.tick()
+                print()
                 self.message("End of file reached, restarting session")
 
                 self.reset_defaults()
@@ -131,6 +133,10 @@ class ADB:
                 dump_trace()
                 module, lineno = self.lineinfo
                 print("ERROR: {}: {}: {}".format(module, lineno, e))
+                if module == self.lineinfo[0]:
+                    print("    ==>> " + self.program_text[lineno - 1].strip())
+
+                print()
                 self.message("Error occured, restarting session")
                 self.reset_defaults()
 
@@ -157,14 +163,15 @@ class ADB:
         if self.program_text is None:
             with open(lineinfo[0], "r") as f:
                 self.program_text = f.readlines()
-            # Always add an extra line
-            self.program_text.append("")
+            
+            # Always add an EOF specifier
+            self.program_text.append("[EOF]\n")
 
     def print_current_line(self):
         """
         Print the current line nicely
         """
-        prog_line = self.program_text[self.lineinfo[1] - 1][:-1]
+        prog_line = self.program_text[self.lineinfo[1] - 1][:-1].strip()
         outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
 
         if len(self.call_stack) > 0:
@@ -250,7 +257,12 @@ class ADB:
                 # REPL
                 case "!":
                     old_lineinfo = self.lineinfo
+                    old_explicit = self.explicit_enabled
+                    self.explicit_enabled = False
+
                     repl(new=False)
+
+                    self.explicit_enabled = old_explicit
                     self.set_lineinfo(old_lineinfo)
 
                 # List the program
@@ -263,12 +275,13 @@ class ADB:
 
                 case "explicit":
                     self.explicit_enabled = True
-                    self.message("Explicit mode enabled")
 
                 case "unexplicit":
                     self.explicit_enabled = False
-                    self.message("Explicit mode disabled")
 
+                case "clear":
+                    import os
+                    os.system("clear")
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
 
@@ -317,4 +330,8 @@ class ADB:
 
 if __name__ == "__main__":
     db = ADB()
-    db.run("/home/oliver/rec.ast")
+    import sys
+    if len(sys.argv) < 2:
+        print("No file given to debug")
+    else:
+        db.run(sys.argv[-1])

@@ -260,7 +260,7 @@ def term2string(term):
     elif TYPE == 'pattern':
         # we are printing out a term - just ignore the pattern operator
         val = term[1]
-        return term2string(val)
+        return "pattern " + term2string(val)
 
     elif TYPE == 'nil':
         return ''
@@ -309,8 +309,8 @@ def term2string(term):
 
     elif TYPE == 'deref':               # Handle a first-class pattern
         (DEREF, (ID, pName)) = term
-        term_string = pName
-        term_string += ":"
+        term_string = "({})".format(pName)
+        term_string += " "
 
         #Get the actual pattern from the symbol table
         term_string += term2string(state.symbol_table.lookup_sym(pName))
@@ -322,6 +322,10 @@ def term2string(term):
         # therefore we don't print the whole tree.
         return term2string(value)+' if (condition...)'
 
+    elif TYPE == 'is':
+        (IS, e1, e2) = term
+
+        return term2string(e1) + " is " + term2string(e2)
     else:
         #lhh print(term)
         raise ValueError(

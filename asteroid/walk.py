@@ -19,9 +19,9 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-def notify_explicit():
-    if debugging and debugger.explicit_enabled:
-        notify_debugger()
+# def notify_explicit():
+#     if debugging and debugger.explicit_enabled:
+#         notify_debugger()
 
 def message_explicit(message, level=None):
     if debugging:
@@ -38,12 +38,6 @@ def notify_debugger():
         # Reset our lineinfo
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
-
-"""
-Differentiating between explicit and surface level details
-is important. We can make this differentiation easier by
-having a mode called "explicit mode" that gets run
-"""
 
 #########################################################################
 # this dictionary maps list member function names to function
@@ -968,8 +962,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     message_explicit("Return: {} from {}({})".format(
         term2string(return_value), fname, term2string(actual_val_args)))
 
-    notify_explicit()
-
     if debugging:
         debugger.call_stack.pop()
 
@@ -979,6 +971,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 def declare_unifiers(unifiers):
     # walk the unifiers and bind name-value pairs into the symtab
 
+    if debugging:
+        l = []
+
     # TODO: check for repeated names in the unfiers
     for unifier in unifiers:
 
@@ -986,9 +981,8 @@ def declare_unifiers(unifiers):
         #print("unifier: {}".format(unifier))
         (lval, value) = unifier
 
-        message_explicit("Unified: {} = {}".format(
-            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)"    
-        ), "secondary")
+        if debugging:
+            l.append( (lval, value) )
 
         if lval[0] == 'id':
             if lval[1] == 'this':
@@ -1009,6 +1003,18 @@ def declare_unifiers(unifiers):
 
         else:
             raise ValueError("unknown unifier type '{}'".format(lval[0]))
+
+    if debugging:
+        ustring = ""
+        for (lval, value) in l[:-1]:
+            ustring += "{} = {}, ".format(
+            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)")
+
+        (lval, value) = l[-1]
+        ustring += "{} = {}".format(
+            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)") 
+
+        message_explicit(ustring)
 
 #########################################################################
 # node functions
@@ -1048,6 +1054,11 @@ def unify_stmt(node):
     assert_match(UNIFY, 'unify')
 
     term = walk(exp)
+
+    message_explicit("pattern: {}".format(
+        term2string(pattern)), "secondary")
+    message_explicit("term: {}".format(
+        term2string(term)), "secondary")
 
     unifiers = unify(term, pattern)
     declare_unifiers(unifiers)
