@@ -39,6 +39,8 @@ def notify_debugger():
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
 
+
+
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
@@ -139,7 +141,6 @@ def unify(term, pattern, unifying = True ):
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
-
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
 
@@ -862,7 +863,11 @@ def handle_builtins(node):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
-    message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
+    # TODO: FIX THIS!!!!
+    if actual_val_args[0] == 'struct':
+        message_explicit("Call: {} on (struct...)".format(fname))
+    else:
+        message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
 
     # TODO: Make proxy functions for this and the pop
     if debugging:
@@ -911,15 +916,17 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
-            message_explicit("Failed to match:  {} and {}".format(
-                term2string(actual_val_args), term2string(p)), "tertiary")
+            if actual_val_args[0] != 'struct':
+                message_explicit("Failed to match:  {} and {}".format(
+                    term2string(actual_val_args), term2string(p)), "tertiary")
 
             unifiers = []
             unified = False
 
         if unified:
-            message_explicit("Success! Matched: {} and {}".format(
-                term2string(actual_val_args), term2string(p)), "tertiary")
+            if actual_val_args[0] != 'struct':
+                message_explicit("Success! Matched: {} and {}".format(
+                    term2string(actual_val_args), term2string(p)), "tertiary")
 
             break
 
@@ -967,8 +974,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if debugging:
         debugger.tab_level -= 1
 
-    message_explicit("Return: {} from {}({})".format(
-        term2string(return_value), fname, term2string(actual_val_args)))
+    message_explicit("Return: {} from {}".format(
+            ("None" if (not return_value[1]) else term2string(return_value)), 
+            fname
+        )
+    )
 
     if debugging:
         debugger.call_stack.pop()
@@ -1011,19 +1021,20 @@ def declare_unifiers(unifiers):
 
         else:
             raise ValueError("unknown unifier type '{}'".format(lval[0]))
-
+    
     if debugging:
-        ustring = ""
-        for (lval, value) in l[:-1]:
-            ustring += "{} = {}, ".format(
-            term2string(lval), term2string(value))
+        # If we've actually unified anything
+        if l:
+            ustring = ""
+            for (lval, value) in l[:-1]:
+                ustring += "{} = {}, ".format(
+                term2string(lval), term2string(value))
 
-        (lval, value) = l[-1]
-        ustring += "{} = {}".format(
-            term2string(lval), term2string(value))
+            (lval, value) = l[-1]
+            ustring += "{} = {}".format(
+                term2string(lval), term2string(value))
 
-        message_explicit(ustring)
-
+            message_explicit(ustring)
 #########################################################################
 # node functions
 #########################################################################

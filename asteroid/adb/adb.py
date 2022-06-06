@@ -101,8 +101,9 @@ class ADB:
         This function runs the given filename through
         the asteroid debugger
         """
-        from asteroid.interp import interp
+        from asteroid.interp import interp, load_prologue
         from asteroid.state import dump_trace
+        from asteroid.state import state
         
         self.filename = filename
 
@@ -115,7 +116,7 @@ class ADB:
                 interp(input_stream,
                     input_name = filename,
                     do_walk=True,
-                    prologue=False,
+                    prologue=True,
                     exceptions=True,
                     debugger=self)
                 
@@ -131,10 +132,13 @@ class ADB:
                 break;
             except Exception as e:
                 dump_trace()
-                module, lineno = self.lineinfo
+                (module, lineno) = state.lineinfo
                 print("ERROR: {}: {}: {}".format(module, lineno, e))
-                if module == self.lineinfo[0]:
+
+                if self.lineinfo and module == self.lineinfo[0]:
                     print("    ==>> " + self.program_text[lineno - 1].strip())
+                else:
+                    break
 
                 print()
                 self.message("Error occured, restarting session")

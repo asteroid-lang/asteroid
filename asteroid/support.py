@@ -288,9 +288,13 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'named-pattern':       # Handle a named pattern
-
         (NAMED_PATTERN,ID,pattern) = term
-        term_string = ID[1] + ':'
+
+        if ID[0] == 'index':
+            (INDEX, i1, i2) = ID
+            term_string = term2string(i1) + "@ " + term2string(i2) + ":"
+        else:
+            term_string = ID[1] + ':'
 
         return term_string + term2string(pattern)
 
@@ -308,12 +312,14 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
-        (DEREF, (ID, pName)) = term
-        term_string = pName
-        term_string += ":"
+        (DEREF, d_exp) = term
+        term_string = "*" + term2string(d_exp)
 
         #Get the actual pattern from the symbol table
-        term_string += term2string(state.symbol_table.lookup_sym(pName))
+        # NOTE: THIS BREAKS WHEN A PATTERN IS NOT DEFINED IN SCOPE
+        # TODO: FIX THIS
+        # \/\/\/\/\/\/\/\/\/
+        #term_string += term2string(state.symbol_table.lookup_sym(pName))
         return term_string
 
     elif TYPE == 'if-exp':              # Handle a conditional pattern
