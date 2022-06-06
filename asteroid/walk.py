@@ -1540,6 +1540,23 @@ def list_exp(node):
     return ('list', outlist)
 
 #########################################################################
+def import_list_exp(node):
+    global debugging
+    old_debugging = debugging
+    debugging = False
+
+    (LIST, inlist) = node
+    assert_match(LIST, 'import_list')
+
+    outlist =[]
+
+    for e in inlist:
+        outlist.append(walk(e))
+
+    debugging = old_debugging
+    return ('list', outlist)
+
+#########################################################################
 def tuple_exp(node):
 
     (TUPLE, intuple) = node
@@ -1760,6 +1777,10 @@ def set_ret_val(node):
     (SET_RET_VAL, exp) = node
     assert_match(SET_RET_VAL,'set-ret-val')
 
+    # This call allows us to have statement-level expressions
+    # act like statements to the debugger
+    notify_debugger()
+
     global function_return_value
     val = walk(exp)
     function_return_value.pop()
@@ -1797,7 +1818,6 @@ def debug_walk(node, dbg):
     debugging, debugger = (True, dbg)
 
     (LIST, inlist) = node
-    assert_match(LIST, 'list')
 
     for e in inlist:
         debugger.set_top_level(True)
@@ -1824,6 +1844,7 @@ dispatch_dict = {
     'struct-def'    : struct_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
+    'import_list'   : import_list_exp,
     'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,

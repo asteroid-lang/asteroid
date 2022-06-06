@@ -72,10 +72,10 @@ def run_repl():
             # Check for return value
             if function_return_value[-1]:
                 # Get the last return value (type, value)
-                (_, val) = function_return_value[-1]
+                retval = function_return_value[-1]
 
                 # If it isn't none, print out the value
-                if val is not None:
+                if retval[0] != "None":
                     print(term2string(function_return_value[-1]))
 
 

@@ -253,8 +253,8 @@ def term2string(term):
     elif TYPE == 'apply':
         (APPLY, f, args) = term
         term_string = term2string(f)
-        term_string += ' '
-        term_string += term2string(args)
+        term_string += '(' + term2string(args) + ')'
+
         return term_string
 
     elif TYPE == 'pattern':

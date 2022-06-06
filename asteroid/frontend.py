@@ -212,7 +212,7 @@ class Parser:
             
             state.lineinfo = old_lineinfo
             (LIST, sl) = self.stmt_list()
-            return ('list', fstmts + sl)
+            return ('list', [('import_list', fstmts)] + sl)
 
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
