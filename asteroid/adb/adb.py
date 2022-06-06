@@ -102,7 +102,7 @@ class ADB:
         the asteroid debugger
         """
         from asteroid.interp import interp
-        from asteroid.state import state, dump_trace
+        from asteroid.state import dump_trace
         
         self.filename = filename
 
