@@ -107,6 +107,8 @@ def unify(term, pattern, unifying = True ):
     if isinstance(term, str): # apply regular expression match
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
+            message_explicit("Regex match: {} and {}".format(pattern, term), "secondary")
+            message_explicit("Matched!", "tertiary")
             return [] # return empty unifier
         else:
             raise PatternMatchFailed(
@@ -115,6 +117,8 @@ def unify(term, pattern, unifying = True ):
 
     elif isinstance(term, (int, float, bool)):
         if term == pattern:
+            message_explicit("Literal match: {} and {}".format(pattern, term, "secondary"))
+            message_explicit("Matched!", "tertiary")
             return [] # return an empty unifier
         else:
             raise PatternMatchFailed(
@@ -129,6 +133,9 @@ def unify(term, pattern, unifying = True ):
             raise PatternMatchFailed(
                 "term and pattern lists/tuples are not the same length")
         else:
+            message_explicit("Matching lists: {} and {}".format(
+                term2string( ('list', pattern) ), term2string( ('list', term) ) ) )
+
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
@@ -228,6 +235,7 @@ def unify(term, pattern, unifying = True ):
         typematch = pattern[1]
         nextIndex = 0 #indicates index of where we will 'look' next
 
+        message_explicit("Typematch {} to type {}".format(term2string(term), typematch), "secondary")
         if typematch in ['string','real','integer','list','tuple','boolean','none']:
 
             if (not unifying):
@@ -1008,11 +1016,11 @@ def declare_unifiers(unifiers):
         ustring = ""
         for (lval, value) in l[:-1]:
             ustring += "{} = {}, ".format(
-            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)")
+            term2string(lval), term2string(value))
 
         (lval, value) = l[-1]
         ustring += "{} = {}".format(
-            term2string(lval), term2string(value) if value[0] != "function-val" else "(function-val...)") 
+            term2string(lval), term2string(value))
 
         message_explicit(ustring)
 

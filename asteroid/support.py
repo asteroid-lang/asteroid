@@ -260,7 +260,7 @@ def term2string(term):
     elif TYPE == 'pattern':
         # we are printing out a term - just ignore the pattern operator
         val = term[1]
-        return "pattern " + term2string(val)
+        return term2string(val)
 
     elif TYPE == 'nil':
         return ''
@@ -309,8 +309,8 @@ def term2string(term):
 
     elif TYPE == 'deref':               # Handle a first-class pattern
         (DEREF, (ID, pName)) = term
-        term_string = "({})".format(pName)
-        term_string += " "
+        term_string = pName
+        term_string += ":"
 
         #Get the actual pattern from the symbol table
         term_string += term2string(state.symbol_table.lookup_sym(pName))
@@ -322,12 +322,33 @@ def term2string(term):
         # therefore we don't print the whole tree.
         return term2string(value)+' if (condition...)'
 
+    elif TYPE == 'index':
+        (INDEX, base, ix) = term
+        return term2string(base) #+ "@ " + term2string(ix)
+
+    elif TYPE == 'foreign':
+        return "(foreign ...)"
+
     elif TYPE == 'is':
         (IS, e1, e2) = term
 
         return term2string(e1) + " is " + term2string(e2)
+
+    elif TYPE == 'in':
+        (IN, e1, e2) = term
+
+        return term2string(e1) + " in " + term2string(e2)
+
+    elif TYPE == 'to-list':
+        (TO_LIST, (START, start), (STOP, stop), (STRIDE, stride)) = term
+        return "[" + term2string(start) + " to " + term2string(stop) + ", stride: " + term2string(stride) + "]"
+
+    elif TYPE == 'function-exp':
+        return ('function exp...')
+
+    elif TYPE == 'function-val':
+        return ('function val...')
     else:
-        #lhh print(term)
         raise ValueError(
             "unknown type '{}' in term2string"
             .format(TYPE))
