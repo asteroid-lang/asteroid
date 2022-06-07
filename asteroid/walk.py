@@ -143,28 +143,6 @@ def unify(term, pattern, unifying = True ):
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
     
-    # This gives slightly better debugger information
-    # TODO: See if this is really worth having
-    elif pattern[0] == 'tuple' or term[0] == 'tuple':
-        if pattern[0] != 'tuple' or term[0] != 'tuple':
-            raise PatternMatchFailed(
-                "term and pattern do not agree on list/tuple constructor")
-        elif len(term) != len(pattern):
-            raise PatternMatchFailed(
-                "term and pattern lists/tuples are not the same length")
-        else:
-            message_explicit("Matching tuples: {} and {}".format(
-                term2string( pattern ), term2string( term) ) )
-
-            unifier = []
-            term_val = term[1]
-            pattern_val = pattern[1]
-
-            for i in range(len(term_val)):
-                unifier += unify(term_val[i], pattern_val[i], unifying)
-            check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
-            return unifier
-    
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
