@@ -34,9 +34,6 @@ def notify_debugger():
         # Reset our lineinfo
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
-
-
-
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
@@ -487,8 +484,10 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'constraint':
         state.constraint_lvl += 1
+        message_explicit("Constraint only pattern BEGIN")
         unifier = unify(term,pattern[1])
         state.constraint_lvl -= 1
+        message_explicit("Constraint only pattern END")
         return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
@@ -1114,6 +1113,7 @@ def try_stmt(node):
      (CATCH_LIST, (LIST, catch_list))) = node
 
     try:
+        message_explicit("Try block")
         walk(try_stmts)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
@@ -1186,6 +1186,7 @@ def try_stmt(node):
     else:
         # no exceptions found in the try statements
         return
+    message_explicit("Exception Caught: {}".format(str(inst_val)), "secondary")
 
     # we had an exception - walk the catch list and find an appropriate set of
     # catch statements.

@@ -75,10 +75,7 @@ class ADB:
         """
         Make the tab level for nested messaging
         """
-        if self.is_next:
-            return self.tab_level*"  "
-        else:
-            return ""
+        return self.tab_level*"  "
 
     def message_explicit(self, message, level = None):
         """
@@ -288,6 +285,8 @@ class ADB:
                     os.system("clear")
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
+
+        self.tab_level = 0
     
     def print_extra_line(self):
         # If it's not the first line then pad with
