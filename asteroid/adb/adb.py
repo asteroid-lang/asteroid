@@ -55,6 +55,8 @@ class ADB:
         self.lineinfo = None
         self.program_text = None
         self.filename = None
+
+        self.first_line = True
     
     def reset_defaults(self):
         """
@@ -66,6 +68,7 @@ class ADB:
         self.is_next = True
         self.top_level = True
         self.explicit_enabled = False
+        self.first_line = True
         self.call_stack = []
 
     def make_tab_level(self):
@@ -86,9 +89,9 @@ class ADB:
                 case None:
                     print("{}- {}".format(self.make_tab_level(), message))
                 case "secondary":
-                    print("{}  -- {}".format(self.make_tab_level(), message))
+                    print("{} ** {}".format(self.make_tab_level(), message))
                 case "tertiary":
-                    print("{}   --- {}".format(self.make_tab_level(), message))
+                    print("{}  * {}".format(self.make_tab_level(), message))
 
     def message(self, message):
         """
@@ -125,7 +128,6 @@ class ADB:
                 self.tick()
                 print()
                 self.message("End of file reached, restarting session")
-
                 self.reset_defaults()
             
             except (EOFError, KeyboardInterrupt):
@@ -286,6 +288,14 @@ class ADB:
                     os.system("clear")
                 case _:
                     print("Unknown command: {}".format(cmd[0]))
+    
+    def print_extra_line(self):
+        # If it's not the first line then pad with
+        # a newline
+        if self.first_line:
+            self.first_line = False
+        else:
+            print()
 
     def notify(self):
         """
@@ -311,6 +321,7 @@ class ADB:
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
         elif self.has_breakpoint_here() and not self.is_next:
+            self.print_extra_line()
             self.message("Breakpoint")
             self.tick()
 
@@ -318,6 +329,7 @@ class ADB:
         # to the next breakpoint, and we're going to the next statement
         # do a tick
         elif self.top_level and self.is_next and not self.is_continuing:
+            self.print_extra_line()
             if self.has_breakpoint_here():
                 self.message("Breakpoint")
             self.tick()
@@ -325,6 +337,7 @@ class ADB:
         # Otherwhise, if we're stepping through the program,
         # always tick
         elif self.is_stepping:
+            self.print_extra_line()
             self.tick()
         
         # Reset the top level so that nested statements don't come in

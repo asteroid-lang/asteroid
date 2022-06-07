@@ -19,10 +19,6 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-# def notify_explicit():
-#     if debugging and debugger.explicit_enabled:
-#         notify_debugger()
-
 def message_explicit(message, level=None):
     if debugging:
         debugger.message_explicit(message, level)
@@ -378,6 +374,11 @@ def unify(term, pattern, unifying = True ):
         else:
             pattern_list = [arg]
         # only pattern match on object data members
+        message_explicit("Comparing data lists from: {} and {}".format(
+            struct_id,
+            apply_id,
+        ))
+
         return unify(data_only(obj_memory), pattern_list, unifying)
 
     elif pattern[0] == 'index': # list element lval access
@@ -895,10 +896,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    #TODO: MAKE THIS A FUNCTION
-    if debugging:
-        debugger.tab_level += 1
-
     for i in range(0, len(body_list_val), 2):
         # Process lineinfo
         lineinfo = body_list_val[ i ]
@@ -968,10 +965,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.set_config(save_symtab)
 
     state.trace_stack.pop()
-
-    #TODO: MAKE THIS A FUNCTION
-    if debugging:
-        debugger.tab_level -= 1
 
     message_explicit("Return: {} from {}".format(
             ("None" if (not return_value[1]) else term2string(return_value)), 
@@ -1351,6 +1344,8 @@ def struct_def_stmt(node):
     assert_match(MEMBER_LIST, 'member-list')
     assert_match(LIST, 'list')
 
+    message_explicit("Struct definition for {}".format(struct_id))
+
     # declare members
     # member names are declared as variables whose value is the slot
     # in a struct object
@@ -1363,12 +1358,18 @@ def struct_def_stmt(node):
             (DATA, (ID, member_id)) = member
             struct_memory.append(('none', None))
             member_names.append(member_id)
+
+            message_explicit("Data member: {}".format(member_id), "secondary")
+
         elif member[0] == 'unify':
             (UNIFY, (ID, member_id), function_exp) = member
             # Note: we have to bind a function VALUE into the structure memory
             function_val = walk(function_exp)
             struct_memory.append(function_val)
             member_names.append(member_id)
+
+            message_explicit("Member function: {}".format(member_id), "secondary")
+
         elif member[0] == 'noop':
             pass
         else:
@@ -1819,8 +1820,16 @@ def debug_walk(node, dbg):
     (LIST, inlist) = node
 
     for e in inlist:
-        debugger.set_top_level(True)
-        walk(e)
+        # We have to differentiate between top level
+        # lists and statements to keep the top level
+        # state correctness
+        if e[0] == 'list':
+            for n in e[1]:
+                debugger.set_top_level(True)
+                walk(n)
+        else:
+            debugger.set_top_level(True)
+            walk(e)
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
