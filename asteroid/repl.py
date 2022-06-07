@@ -75,7 +75,7 @@ def run_repl():
                 retval = function_return_value[-1]
 
                 # If it isn't none, print out the value
-                if retval[0] != "None":
+                if retval[1] != "none":
                     print(term2string(function_return_value[-1]))
 
 

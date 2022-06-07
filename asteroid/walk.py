@@ -70,7 +70,6 @@ def match(tag1, tag2):
         return True
     else:
         return False
-
 ###########################################################################################
 def unify(term, pattern, unifying = True ):
     '''
@@ -143,7 +142,29 @@ def unify(term, pattern, unifying = True ):
                 unifier += unify(term[i], pattern[i], unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             return unifier
+    
+    # This gives slightly better debugger information
+    # TODO: See if this is really worth having
+    elif pattern[0] == 'tuple' or term[0] == 'tuple':
+        if pattern[0] != 'tuple' or term[0] != 'tuple':
+            raise PatternMatchFailed(
+                "term and pattern do not agree on list/tuple constructor")
+        elif len(term) != len(pattern):
+            raise PatternMatchFailed(
+                "term and pattern lists/tuples are not the same length")
+        else:
+            message_explicit("Matching tuples: {} and {}".format(
+                term2string( pattern ), term2string( term) ) )
 
+            unifier = []
+            term_val = term[1]
+            pattern_val = pattern[1]
+
+            for i in range(len(term_val)):
+                unifier += unify(term_val[i], pattern_val[i], unifying)
+            check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+            return unifier
+    
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
@@ -867,7 +888,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if actual_val_args[0] == 'struct':
         message_explicit("Call: {} on (struct...)".format(fname))
     else:
-        message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
+        message_explicit("Call: {}( {} )".format(fname, term2string(actual_val_args)))
 
     # TODO: Make proxy functions for this and the pop
     if debugging:
@@ -896,8 +917,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
-    message_explicit("Attempting to match function body", "secondary")
-
     #TODO: MAKE THIS A FUNCTION
     if debugging:
         debugger.tab_level += 1
@@ -906,6 +925,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # Process lineinfo
         lineinfo = body_list_val[ i ]
         process_lineinfo(lineinfo)
+
+        message_explicit("Attempting to match function body", "secondary")
 
         # Deconstruct function body
         (BODY,
@@ -926,7 +947,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         if unified:
             if actual_val_args[0] != 'struct':
                 message_explicit("Success! Matched: {} and {}".format(
-                    term2string(actual_val_args), term2string(p)), "tertiary")
+                    term2string(actual_val_args), term2string(p)), "secondary")
 
             break
 

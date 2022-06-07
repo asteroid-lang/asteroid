@@ -81,14 +81,14 @@ class ADB:
         """
         Sends a message in explicit mode
         """
-        if self.explicit_enabled and not self.is_continuing:
+        if self.explicit_enabled and not self.is_continuing and self.lineinfo[0] == self.filename:
             match(level):
                 case None:
-                    print("{}---- {}".format(self.make_tab_level(), message))
-                case "secondary":
-                    print("{}-- {}".format(self.make_tab_level(), message))
-                case "tertiary":
                     print("{}- {}".format(self.make_tab_level(), message))
+                case "secondary":
+                    print("{}  -- {}".format(self.make_tab_level(), message))
+                case "tertiary":
+                    print("{}   --- {}".format(self.make_tab_level(), message))
 
     def message(self, message):
         """
@@ -121,7 +121,7 @@ class ADB:
                     debugger=self)
                 
                 # This gives us one last tick before EOF is reached
-                self.lineinfo = (self.lineinfo[0], len(self.program_text))
+                self.lineinfo = (self.filename, len(self.program_text))
                 self.tick()
                 print()
                 self.message("End of file reached, restarting session")
@@ -131,20 +131,18 @@ class ADB:
             except (EOFError, KeyboardInterrupt):
                 break;
             except Exception as e:
-                dump_trace()
                 (module, lineno) = state.lineinfo
                 print("ERROR: {}: {}: {}".format(module, lineno, e))
+                dump_trace()
 
                 if self.lineinfo and module == self.lineinfo[0]:
                     print("    ==>> " + self.program_text[lineno - 1].strip())
+                    print()
+                    self.message("Error occured, restarting session")
+                    self.reset_defaults()
+                    continue
                 else:
                     break
-
-                print()
-                self.message("Error occured, restarting session")
-                self.reset_defaults()
-
-                continue
 
     def has_breakpoint_here(self):
         """
