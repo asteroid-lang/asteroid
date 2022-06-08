@@ -278,7 +278,7 @@ class ADB:
                     self.set_lineinfo(old_lineinfo)
 
                 # List the program
-                case "l": self.list_program()
+                case "l":  self.list_program()
                 case "ll": self.list_program(relative=True)
 
                 # Quit adb

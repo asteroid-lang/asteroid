@@ -23,22 +23,19 @@ def message_explicit(message, level=None):
     if debugging:
         debugger.message_explicit(message, level)
 
+def increase_debugger_tab_level():
+    if debugging:
+        debugger.tab_level += 1
+
+def decrease_debugger_tab_level():
+    if debugging:
+        debugger.tab_level -= 1
+
 def notify_debugger():
     if debugging:
         # We need to save the old lineinfo in case we go into a REPL
         old_lineinfo = state.lineinfo
 
-        # if debugger.has_breakpoint_here():
-        #     # cond = debugger.get_break_condition_here()
-        #     # if cond:
-        #     #   condition_met = map2boolean(walk(cond))
-        #     #   if condition_met:
-        #     #       debugger.notify()
-        #     # else:
-        #     #   debugger.notify()
-        #     pass
-        # # Notify the debugger
-        # else:
         debugger.notify()
 
         # Reset our lineinfo
@@ -143,10 +140,15 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Matching lists: {} and {}".format(
                 term2string( ('list', pattern) ), term2string( ('list', term) ) ) )
 
+            increase_debugger_tab_level()
+
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+
+            decrease_debugger_tab_level()
+
             return unifier
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
@@ -198,6 +200,12 @@ def unify(term, pattern, unifying = True ):
 
         (IF_EXP, cond_exp, pexp, else_exp) = pattern
 
+        message_explicit("Conditional expression: if {}".format(
+            term2string(cond_exp)
+        ))
+
+        increase_debugger_tab_level()
+
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
@@ -213,6 +221,8 @@ def unify(term, pattern, unifying = True ):
 
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
+
+        decrease_debugger_tab_level()
 
         if bool_val[1]:
             return unifiers
@@ -241,7 +251,7 @@ def unify(term, pattern, unifying = True ):
         typematch = pattern[1]
         nextIndex = 0 #indicates index of where we will 'look' next
 
-        message_explicit("Typematch {} to type {}".format(term2string(term), typematch), "secondary")
+        message_explicit("Typematch {} to type {}".format(term2string(term), typematch))
         if typematch in ['string','real','integer','list','tuple','boolean','none']:
 
             if (not unifying):
@@ -256,8 +266,10 @@ def unify(term, pattern, unifying = True ):
                         return []
 
             if typematch == term[nextIndex]:
+                message_explicit("Success!", "secondary")
                 return []
             else:
+                message_explicit("Failure", "secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got a term of type '{}'"
                     .format(typematch, term[nextIndex]))
@@ -505,10 +517,16 @@ def unify(term, pattern, unifying = True ):
         return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] == 'constraint':
+        message_explicit("Constraint only pattern BEGIN")        
+
         state.constraint_lvl += 1
-        message_explicit("Constraint only pattern BEGIN")
+        increase_debugger_tab_level()
+        
         unifier = unify(term,pattern[1])
+
+        decrease_debugger_tab_level()
         state.constraint_lvl -= 1
+
         message_explicit("Constraint only pattern END")
         return [] #Return an empty unifier
 
@@ -531,6 +549,7 @@ def unify(term, pattern, unifying = True ):
         #lhh
         #print("returning unifier: {}".format(unifier))
         return unifier
+
 
 #########################################################################
 def eval_actual_args(args):
