@@ -28,7 +28,17 @@ def notify_debugger():
         # We need to save the old lineinfo in case we go into a REPL
         old_lineinfo = state.lineinfo
 
-        # Notify the debugger
+        # if debugger.has_breakpoint_here():
+        #     # cond = debugger.get_break_condition_here()
+        #     # if cond:
+        #     #   condition_met = map2boolean(walk(cond))
+        #     #   if condition_met:
+        #     #       debugger.notify()
+        #     # else:
+        #     #   debugger.notify()
+        #     pass
+        # # Notify the debugger
+        # else:
         debugger.notify()
 
         # Reset our lineinfo
@@ -105,6 +115,9 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Matched!", "tertiary")
             return [] # return empty unifier
         else:
+            message_explicit("Regex match: {} and {}".format(pattern, term), "secondary")
+            message_explicit("Failed!", "tertiary")
+
             raise PatternMatchFailed(
                 "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
@@ -370,13 +383,22 @@ def unify(term, pattern, unifying = True ):
             pattern_list = arg[1]
         else:
             pattern_list = [arg]
+
         # only pattern match on object data members
-        message_explicit("Comparing data lists from: {} and {}".format(
-            struct_id,
-            apply_id,
+        message_explicit("Matching object {}{} and pattern {}{}".format(
+            apply_id,  term2string( ('tuple', data_only(obj_memory)) ),
+            struct_id, term2string( ('tuple', pattern_list) )
         ))
 
-        return unify(data_only(obj_memory), pattern_list, unifying)
+        # Running through the list elements indivuidually allows for
+        # better debugging information
+        unifiers = []
+        data = data_only(obj_memory)
+
+        for i in range(len(data)):
+            unifiers += unify(data[i], pattern_list[i], unifying)
+
+        return unifiers
 
     elif pattern[0] == 'index': # list element lval access
         unifier = (pattern, term)
@@ -1186,7 +1208,7 @@ def try_stmt(node):
     else:
         # no exceptions found in the try statements
         return
-    message_explicit("Exception Caught: {}".format(str(inst_val)), "secondary")
+    message_explicit("Exception Caught: {}".format(str(inst_val)))
 
     # we had an exception - walk the catch list and find an appropriate set of
     # catch statements.
