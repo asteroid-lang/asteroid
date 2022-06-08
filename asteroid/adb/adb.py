@@ -187,20 +187,31 @@ class ADB:
 
         print(outline)
 
-    def list_program(self):
+    def list_program(self, relative=False):
         """
         List the program contents
         """
         self.message("Program Listing")
         start_of_line = "  "
 
-        for ix, l in enumerate(self.program_text):
-            if ix+1 in self.breakpoints:
+        pt = self.program_text
+
+        start = 0
+
+        if relative:
+            lineno = self.lineinfo[1]
+
+            start = (lineno - 2) if lineno >= 2 else 0
+            end = lineno + 2 if lineno < len(pt) - 2 else len(pt)
+            pt = pt[start:end]
+
+        for ix, l in enumerate(pt):
+            if ix+1+start in self.breakpoints:
                 start_of_line = "* "
-            if self.lineinfo[1] == ix+1:
+            if self.lineinfo[1] == ix+1+start:
                 start_of_line = "> "
 
-            print(start_of_line, ix+1, l[:-1])
+            print(start_of_line, ix+1+start, l[:-1])
             start_of_line = "  "
 
     def tick(self):
@@ -267,24 +278,19 @@ class ADB:
                     self.set_lineinfo(old_lineinfo)
 
                 # List the program
-                case "l":
-                    self.list_program()
+                case "l": self.list_program()
+                case "ll": self.list_program(relative=True)
 
                 # Quit adb
-                case "quit":
-                    exit(0)
-
-                case "explicit":
-                    self.explicit_enabled = True
-
-                case "unexplicit":
-                    self.explicit_enabled = False
+                case "quit": exit(0)
+                case "explicit": self.explicit_enabled = True
+                case "unexplicit": self.explicit_enabled = False
 
                 case "clear":
                     import os
                     os.system("clear")
-                case _:
-                    print("Unknown command: {}".format(cmd[0]))
+                
+                case _: print("Unknown command: {}".format(cmd[0]))
 
         self.tab_level = 0
     
