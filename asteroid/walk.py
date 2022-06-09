@@ -291,8 +291,10 @@ def unify(term, pattern, unifying = True ):
         elif typematch == 'function':
             # matching function and member function values
             if term[0] in ['function-val','member-function-val']:
+                message_explicit("Success!", "secondary")
                 return []
             else:
+                message_explicit("Failure", "secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got a term of type '{}'"
                     .format(typematch, term[0]))
@@ -303,8 +305,10 @@ def unify(term, pattern, unifying = True ):
                 # any kind of structure can be a pattern, and variables
                 # see globals.py for a definition of 'patterns'
                 if term[nextIndex] in patterns:
+                    message_explicit("Success!", "secondary")
                     return []
                 else:
+                    message_explicit("Failure", "secondary")
                     raise PatternMatchFailed(
                             "expected type '{}' got a term of type '{}'"
                             .format(typematch, term[0]))
@@ -317,11 +321,14 @@ def unify(term, pattern, unifying = True ):
                 #handle lists/head-tails subsuming each other
                 if (term[0] in ["list","head-tail"]):
                     if ((typematch == 'list')):
+                        message_explicit("Success!", "secondary")
                         return []
 
                 if term[nextIndex] in pattern_subsumes:
+                    message_explicit("Success!", "secondary")
                     return []
                 else:
+                    message_explicit("Failure", "secondary")
                     raise PatternMatchFailed(
                         "expected type '{}' got a term of type '{}'"
                         .format(typematch, term[nextIndex]))
@@ -334,16 +341,20 @@ def unify(term, pattern, unifying = True ):
                 (STRUCT_ID, (ID, struct_id)),
                 (OBJECT_MEMORY, LIST)) = term
             if struct_id == typematch:
-                    return []
+                message_explicit("Success!", "secondary")
+                return []
             else:
+                message_explicit("Failure!", "secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
 
         else:
             if state.symbol_table.lookup_sym(typematch)[0] != 'struct':
+                message_explicit("Failure", "secondary")
                 raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
             else:
+                message_explicit("Failure", "secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
