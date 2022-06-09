@@ -81,6 +81,7 @@ class ADB:
         """
         Sends a message in explicit mode
         """
+
         if self.explicit_enabled and not self.is_continuing and self.lineinfo[0] == self.filename:
             match(level):
                 case None:

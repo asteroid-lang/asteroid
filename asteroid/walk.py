@@ -910,6 +910,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Needed for later
     global debugging
 
+    # function calls transfer control - save our caller's lineinfo
+    # we save the debug information here to preserve lineinfo between
+    # function calls between files.
+    old_lineinfo = state.lineinfo
+
     # TODO: FIX THIS!!!!
     if actual_val_args[0] == 'struct':
         message_explicit("Call: {} on (struct...)".format(fname))
@@ -953,8 +958,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (PATTERN, p),
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
-        message_explicit("Attempting to match {} with {}".format(
-            term2string(p), term2string(actual_val_args)
+        message_explicit("Attempting to match {} with pattern {}".format(
+            term2string(actual_val_args), term2string(p)
         ), "secondary")
         
         increase_debugger_tab_level()
@@ -999,9 +1004,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         debugging = old_state
 
     # execute the function
-    # function calls transfer control - save our caller's lineinfo
-    old_lineinfo = state.lineinfo
-
     global function_return_value
     try:
         function_return_value.append(None)
@@ -1020,7 +1022,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.lineinfo = old_lineinfo
 
     # Keep debugger up to date
-    debugger.set_lineinfo(old_lineinfo)
+    debugger.set_lineinfo(state.lineinfo)
 
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(save_symtab)
