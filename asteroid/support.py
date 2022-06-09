@@ -260,14 +260,14 @@ def term2string(term):
             '__minus__'     : ("-", False),
             '__times__'     : ("*", False),
             '__divide__'    : ("/", False),
-            '__or__'        : ("or", False),
-            '__and__'       : ("and", False),
-            '__eq__'        : ("==", False),
-            '__ne__'        : ("!=", False),
-            '__le__'        : ("<=", False),
-            '__lt__'        : ("<", False),
-            '__ge__'        : (">=", False),
-            '__gt__'        : (">", False)
+            '__or__'        : ("  ", False),
+            '__and__'       : (" and ", False),
+            '__eq__'        : (" == ", False),
+            '__ne__'        : (" != ", False),
+            '__le__'        : (" <= ", False),
+            '__lt__'        : (" < ", False),
+            '__ge__'        : (" >= ", False),
+            '__gt__'        : (" > ", False)
         }
         if f[1] in operator_table:
             (op_symbol, is_unary) = operator_table[f[1]]
@@ -277,7 +277,7 @@ def term2string(term):
                 )
             else:
                 (_, arglist) = args
-                term_string = "{} {} {}".format(
+                term_string = "{}{}{}".format(
                     term2string(arglist[0]), op_symbol, term2string(arglist[1])
                 )
         else:
