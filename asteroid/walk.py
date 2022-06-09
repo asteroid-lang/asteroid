@@ -1022,7 +1022,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.lineinfo = old_lineinfo
 
     # Keep debugger up to date
-    debugger.set_lineinfo(state.lineinfo)
+    if debugging:
+        debugger.set_lineinfo(state.lineinfo)
 
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(save_symtab)
