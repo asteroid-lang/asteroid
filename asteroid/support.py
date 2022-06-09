@@ -383,6 +383,9 @@ def term2string(term):
 
     elif TYPE == 'function-val':
         return ('function val...')
+
+    elif TYPE == 'struct':
+        return ('struct...')
     else:
         raise ValueError(
             "unknown type '{}' in term2string"
