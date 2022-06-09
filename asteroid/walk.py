@@ -170,7 +170,21 @@ def unify(term, pattern, unifying = True ):
             raise PatternMatchFailed(
                 "pattern type '{}' and term type '{}' do not agree"
                 .format(pid,tid))
-        return unify(data_only(tl),data_only(pl))
+
+        message_explicit("Matching objects {}{} and {}{}".format(
+            pid, term2string( ('tuple', pl) ),
+            tid, term2string( ('tuple', tl) )
+        ))
+        
+        increase_debugger_tab_level()
+
+        unifiers = []
+        for i in range(len(pl)):
+            unifiers += unify(pl[i], tl[i])
+        
+        decrease_debugger_tab_level()
+
+        return unifiers
 
     elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
