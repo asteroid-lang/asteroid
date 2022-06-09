@@ -180,7 +180,7 @@ def unify(term, pattern, unifying = True ):
 
         unifiers = []
         for i in range(len(pl)):
-            unifiers += unify(pl[i], tl[i])
+            unifiers += unify(tl[i], pl[i])
         
         decrease_debugger_tab_level()
 
@@ -519,7 +519,6 @@ def unify(term, pattern, unifying = True ):
 
         #lhh
         #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
-
         return unify(term,p,unifying)
 
     # builtin operators look like apply lists with operator names
