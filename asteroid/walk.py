@@ -140,14 +140,10 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Matching lists: {} and {}".format(
                 term2string( ('list', pattern) ), term2string( ('list', term) ) ) )
 
-            increase_debugger_tab_level()
-
             unifier = []
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
-
-            decrease_debugger_tab_level()
 
             return unifier
     
@@ -200,7 +196,7 @@ def unify(term, pattern, unifying = True ):
 
         (IF_EXP, cond_exp, pexp, else_exp) = pattern
 
-        message_explicit("Conditional expression: if {}".format(
+        message_explicit("Conditional match: if ({})".format(
             term2string(cond_exp)
         ))
 
@@ -222,11 +218,15 @@ def unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-        decrease_debugger_tab_level()
-
         if bool_val[1]:
+            decrease_debugger_tab_level()
+            message_explicit("Condition met, {}".format(
+                term2string(cond_exp)
+            ))
             return unifiers
         else:
+            decrease_debugger_tab_level
+            message_explicit("Condition failed")
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -250,7 +250,7 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
         nextIndex = 0 #indicates index of where we will 'look' next
-
+        
         message_explicit("Typematch {} to type {}".format(term2string(term), typematch))
         if typematch in ['string','real','integer','list','tuple','boolean','none']:
 
@@ -517,17 +517,21 @@ def unify(term, pattern, unifying = True ):
         return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] == 'constraint':
-        message_explicit("Constraint only pattern BEGIN")        
+        message_explicit("[Begin] constraint pattern")    
 
         state.constraint_lvl += 1
         increase_debugger_tab_level()
         
-        unifier = unify(term,pattern[1])
-
+        try:
+            unifier = unify(term,pattern[1])
+        except PatternMatchFailed as p:
+            decrease_debugger_tab_level()
+            raise p
+        
         decrease_debugger_tab_level()
         state.constraint_lvl -= 1
 
-        message_explicit("Constraint only pattern END")
+        message_explicit("[End] constraint pattern")
         return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
@@ -903,6 +907,9 @@ def handle_builtins(node):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
+    # Needed for later
+    global debugging
+
     # TODO: FIX THIS!!!!
     if actual_val_args[0] == 'struct':
         message_explicit("Call: {} on (struct...)".format(fname))
@@ -941,35 +948,42 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         lineinfo = body_list_val[ i ]
         process_lineinfo(lineinfo)
 
-        message_explicit("Attempting to match function body", "secondary")
-
         # Deconstruct function body
         (BODY,
         (PATTERN, p),
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
+        message_explicit("Attempting to match {} with {}".format(
+            term2string(p), term2string(actual_val_args)
+        ), "secondary")
+        
+        increase_debugger_tab_level()
+
         try:
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
+            # TODO: Do we need this message here?
+            #   If our other messaging is good, we shouldn't, it should be obvious
             if actual_val_args[0] != 'struct':
-                message_explicit("Failed to match:  {} and {}".format(
-                    term2string(actual_val_args), term2string(p)), "tertiary")
+                #message_explicit("Failed to match function body", "secondary")
+                pass
 
             unifiers = []
             unified = False
+            decrease_debugger_tab_level()
 
         if unified:
-            if actual_val_args[0] != 'struct':
-                message_explicit("Success! Matched: {} and {}".format(
-                    term2string(actual_val_args), term2string(p)), "secondary")
+            decrease_debugger_tab_level()
 
+            if actual_val_args[0] != 'struct':
+                message_explicit("Success! Matched function body", "secondary")
+            
             break
 
     if not unified:
         raise ValueError("actual argument '{}' not recognized by function '{}'"
                          .format(term2string(actual_val_args),fname))
-
     declare_formal_args(unifiers)
 
     # if we have an obj reference bind it to the
@@ -979,7 +993,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     # Check for useless patterns
     if state.eval_redundancy:
+        old_state = debugging
+        debugging = False
         check_redundancy(body_list, fname)
+        debugging = old_state
 
     # execute the function
     # function calls transfer control - save our caller's lineinfo
@@ -1866,9 +1883,10 @@ def debug_walk(node, dbg):
         # lists and statements to keep the top level
         # state correctness
         if e[0] == 'list':
-            for n in e[1]:
-                debugger.set_top_level(True)
-                walk(n)
+            # If we're entering a list, recall debug_walk
+            # so we can have the same logic perpetuate
+            debugger.set_top_level(True)
+            debug_walk(e, dbg)
         else:
             debugger.set_top_level(True)
             walk(e)
