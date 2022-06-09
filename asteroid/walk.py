@@ -1018,6 +1018,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
+
+    # Keep debugger up to date
+    debugger.set_lineinfo(old_lineinfo)
+
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(save_symtab)
 
