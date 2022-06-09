@@ -276,7 +276,6 @@ def term2string(term):
                     op_symbol, term2string(args)
                 )
             else:
-                print("***", args)
                 (_, arglist) = args
                 term_string = "{}{}{}".format(
                     term2string(arglist[0]), op_symbol, term2string(arglist[1])
