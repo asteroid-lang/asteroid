@@ -255,7 +255,7 @@ def term2string(term):
         operator_table = {
             '__uminus__'    : ("-", True),
             '__uplus__'     : ("+", True),
-            '__not__'       : ("~", False),
+            '__not__'       : ("~", True),
             '__plus__'      : ("+", False),
             '__minus__'     : ("-", False),
             '__times__'     : ("*", False),
@@ -276,6 +276,7 @@ def term2string(term):
                     op_symbol, term2string(args)
                 )
             else:
+                print("***", args)
                 (_, arglist) = args
                 term_string = "{}{}{}".format(
                     term2string(arglist[0]), op_symbol, term2string(arglist[1])
