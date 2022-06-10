@@ -381,9 +381,13 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
+            message_explicit("{} and none do not match".format(
+                term2string(term)
+            ))
             raise PatternMatchFailed("expected 'none' got '{}'"
                     .format(term[0]))
         else:
+            message_explicit("None and None match", "secondary")
             return []
 
     # NOTE: functions/foreign are allowed in terms as long as they are matched
