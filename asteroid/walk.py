@@ -368,9 +368,16 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'named-pattern':
         # unpack pattern
         (NAMED_PATTERN, name_exp, p) = pattern
+        message_explicit("Matching term {} to pattern {}".format(
+            term2string(name_exp), term2string(p)
+        ))
 
+        increase_debugger_tab_level()
         # name_exp can be an id or an index expression.
-        return unify(term, p, unifying) + [(name_exp, term)]
+        unifiers = unify(term, p, unifying) + [(name_exp, term)]
+        decrease_debugger_tab_level()
+
+        return unifiers
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -526,12 +533,18 @@ def unify(term, pattern, unifying = True ):
         #     term2string(pattern[1])
         # ), "tertiary")
 
+        message_explicit("Dereferencing {}".format(
+            term2string(pattern[1])
+        ))
+
+        increase_debugger_tab_level()
         p = walk(pattern[1])
-        
-        message_explicit("where {} = {}".format(
+        decrease_debugger_tab_level()
+
+        message_explicit("{} -> {}".format(
             term2string(pattern),
             term2string(p)
-        ), "tertiary")
+        ))
 
         #lhh
         #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
@@ -966,7 +979,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if actual_val_args[0] == 'struct':
         message_explicit("Call: {} on (struct...)".format(fname))
     else:
-        message_explicit("Call: {}( {} )".format(fname, term2string(actual_val_args)))
+        message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
 
     # TODO: Make proxy functions for this and the pop
     if debugging:
@@ -1029,7 +1042,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             decrease_debugger_tab_level()
 
             if actual_val_args[0] != 'struct':
-                message_explicit("Success! Matched function body", "secondary")
+                message_explicit("Success! Matched function body", "tertiary")
             
             break
 
@@ -1180,12 +1193,14 @@ def unify_stmt(node):
     term = walk(exp)
 
     message_explicit("pattern: {}".format(
-        term2string(pattern)), "secondary")
+        term2string(pattern)))
 
     message_explicit("term: {}".format(
-        term2string(term)), "secondary")
+        term2string(term)))
 
+    increase_debugger_tab_level()
     unifiers = unify(term, pattern)
+    decrease_debugger_tab_level()
 
     declare_unifiers(unifiers)
 
