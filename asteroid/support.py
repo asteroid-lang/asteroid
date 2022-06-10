@@ -255,7 +255,7 @@ def term2string(term):
         operator_table = {
             '__uminus__'    : ("-", True),
             '__uplus__'     : ("+", True),
-            '__not__'       : ("~", True),
+            '__not__'       : ("not ", True),
             '__plus__'      : ("+", False),
             '__minus__'     : ("-", False),
             '__times__'     : ("*", False),
@@ -272,7 +272,7 @@ def term2string(term):
         if f[1] in operator_table:
             (op_symbol, is_unary) = operator_table[f[1]]
             if is_unary:
-                term_string = "{}{}".format(
+                term_string = "{}({})".format(
                     op_symbol, term2string(args)
                 )
             else:
