@@ -133,7 +133,7 @@ class ADB:
 
             except Exception as e:
                 (module, lineno) = state.lineinfo
-                print("ERROR: {}: {}: {}".format(module, lineno, e))
+                print("\nERROR: {}: {}: {}".format(module, lineno, e))
                 dump_trace()
 
                 if self.lineinfo and module == self.lineinfo[0]:

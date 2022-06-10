@@ -242,8 +242,10 @@ def unify(term, pattern, unifying = True ):
             ))
             return unifiers
         else:
-            decrease_debugger_tab_level
-            message_explicit("Condition failed")
+            decrease_debugger_tab_level()
+            message_explicit("Condition ({}) failed".format(
+                term2string(cond_exp)
+            ))
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -525,6 +527,11 @@ def unify(term, pattern, unifying = True ):
         # ), "tertiary")
 
         p = walk(pattern[1])
+        
+        message_explicit("where {} = {}".format(
+            term2string(pattern),
+            term2string(p)
+        ), "tertiary")
 
         #lhh
         #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
@@ -1174,10 +1181,12 @@ def unify_stmt(node):
 
     message_explicit("pattern: {}".format(
         term2string(pattern)), "secondary")
+
     message_explicit("term: {}".format(
         term2string(term)), "secondary")
 
     unifiers = unify(term, pattern)
+
     declare_unifiers(unifiers)
 
 #########################################################################
