@@ -189,6 +189,9 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
+        message_explicit("Matching string {} and non-string {}".format(
+            term2string(pattern), term2string(term)
+        ))
         return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'if-exp':
