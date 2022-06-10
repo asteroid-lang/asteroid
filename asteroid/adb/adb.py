@@ -130,6 +130,7 @@ class ADB:
             
             except (EOFError, KeyboardInterrupt):
                 break;
+
             except Exception as e:
                 (module, lineno) = state.lineinfo
                 print("ERROR: {}: {}: {}".format(module, lineno, e))
@@ -283,7 +284,9 @@ class ADB:
                 case "ll": self.list_program(relative=True)
 
                 # Quit adb
-                case "quit": exit(0)
+                case "quit":
+                    raise SystemExit()
+
                 case "explicit": self.explicit_enabled = True
                 case "unexplicit": self.explicit_enabled = False
 
