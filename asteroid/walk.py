@@ -518,6 +518,12 @@ def unify(term, pattern, unifying = True ):
     elif pattern[0] == 'deref':  # ('deref', v)
         # v can be an AST representing any computation
         # that produces a pattern.
+
+        # owm- Do we want to show dereferencing in a pattern match?
+        # message_explicit("Dereferencing {}".format(
+        #     term2string(pattern[1])
+        # ), "tertiary")
+
         p = walk(pattern[1])
 
         #lhh
