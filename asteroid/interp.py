@@ -116,6 +116,9 @@ def interp(input_stream,
         if not exceptions:
             sys.exit(1)
 
+    except SystemExit:
+        exit(0)
+
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
             if symtab_dump:
