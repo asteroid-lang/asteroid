@@ -562,11 +562,19 @@ def unify(term, pattern, unifying = True ):
         return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
+        message_explicit("Fail: {} and {} are not the same".format(
+            term[0], pattern[0]
+        ), "secondary")
+
         raise PatternMatchFailed(
             "nodes '{}' and '{}' are not the same"
             .format(term[0], pattern[0]))
 
     elif len(term) != len(pattern): # nodes are not of same the arity
+        message_explicit("Fail: {} and {} are not the same arity".format(
+            term[0], pattern[0]
+        ), "secondary")
+
         raise PatternMatchFailed(
             "nodes '{}' and '{}'' are not of the same arity"
             .format(term[0], pattern[0]))
@@ -811,7 +819,6 @@ def store_at_ix(structure_val, ix, value):
 
 #########################################################################
 def handle_builtins(node):
-
     (APPLY, (ID, opname), args) = node
     assert_match(APPLY, 'apply')
     assert_match(ID, 'id')
@@ -1141,6 +1148,8 @@ def assert_stmt(node):
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
+
+    message_explicit("Asserting: {}".format(term2string(exp)))
 
     exp_val = walk(exp)
     # mapping asteroid assert into python assert
@@ -1503,7 +1512,6 @@ def eval_exp(node):
 
 #########################################################################
 def apply_exp(node):
-
     (APPLY, f, arg) = node
     assert_match(APPLY, 'apply')
 
