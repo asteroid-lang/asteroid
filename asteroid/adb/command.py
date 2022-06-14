@@ -127,18 +127,6 @@ class DebuggerParser:
                 cmd = self.dlx.match('COMMAND')
                 return ('COMMAND', cmd.value)
 
-            case 'STEP': 
-                self.dlx.match('STEP')
-                return ('STEP', )
-
-            case 'CONTINUE':
-                self.dlx.match('CONTINUE')
-                return ('CONTINUE', )
-
-            case 'NEXT':
-                self.dlx.match('NEXT')
-                return ('NEXT',)
-
             case 'BREAK':
                 self.dlx.match('BREAK')
                 nums = []
@@ -162,29 +150,10 @@ class DebuggerParser:
 
                 return ('DELETE', list(map(int, nums)))
 
-            case 'BANG':
-                self.dlx.match('BANG')
-                return ('BANG',)
-
-            case 'LONGLIST':
-                self.dlx.match('LONGLIST')
-                return ('LONGLIST', )
-            
-            case 'LIST':
-                self.dlx.match('LIST')
-                return ('LIST', )
-            
-            case 'QUIT':
-                self.dlx.match('QUIT')
-                return ('QUIT', )
-
-            case 'EXPLICIT':
-                self.dlx.match('EXPLICIT')
-                return ('EXPLICIT', )
-
-            case 'UNEXPLICIT':
-                self.dlx.match('UNEXPLICIT')
-                return ('UNEXPLICIT', )
+            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | 'STEP' | 'CONTINUE' | 'NEXT':
+                t = self.dlx.pointer().type
+                self.dlx.match(t)
+                return (t,)
 
             case _:
                 raise ValueError("Unknown command: {}".format(
