@@ -1,62 +1,198 @@
-"""
-line ::= command {";" command}
-command ::=  "s" | "step"
-        | "c" | "continue"
-        | "n" | "next"
-        | "l"  | "list"
-        | "ll" | "longlist"
-        | "q"  | "quit"
-        | "e"  | "explicit"
-        | "u"  | "unexplicit"
-        | "cl" | "clear"
-        | "!" [asteroid_exp]
-        | "b" number | "break" number
-        | "u" number | "unbreak" number
-        | "macro" name "(" command {";" command} ")"
-"""
+import re
 
-# token_specs = [
-#     (r'[a-zA-Z_][a-zA-Z_0-9]*', "name", 'ID'),
-# ]
+class Token:
+    def __init__(self,type,value):
+        self.type = type
+        self.value = value
 
-# keywords = [
-#         "c",    "continue",
-#         "n",    "next",
-#         "l",    "list",
-#         "ll",   "longlist",
-#         "q",    "quit",
-#         "e",    "explicit",
-#         "u",    "unexplicit",
-#         "cl",   "clear"
-#         "!"
-# ]
+    def __str__(self):
+        return 'Token({},{})'.format(self.type,self.value)
+
+class DebuggerLexer:
+    def __init__(self, input_string):
+        self.token_specs = [
+        #   type:          value:
+            ('COMMAND',     r'`([^`])*`'),
+            
+            ('STEP',        r'\bstep\b|\bs\b'),
+            ('CONTINUE',    r'\bcontinue\b|\bcont\b|\bc\b'),
+            ('NEXT',        r'\next\b|\bn\b'),
+            ('BREAK',       r'\bbreak\b|\bb\b'),
+            ('DELETE',      r'\bdelete\b|\bdel\b|\bd\b'),
+            ('BANG',        r'!'),
+            ('MACRO',       r'\bmacro\b'),
+            ('PRINT',       r'\bprint\b|\bp\b'),
+            ('LIST',        r'\blist\b|\bl\b'),
+            ('LONGLIST',    r'\blonglist\b|\bll\b'),
+            ('QUIT',        r'\bquit\b|\bq\b'),
+            ('EXPLICIT',    r'\bexplicit\b|\be\b'),
+            ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
 
 
-# def tokenize(code):
-#     # output token list
-#     tokens = []
+            ('NUM',        r'[+-]?([0-9]*[.])?[0-9]+'),
+            ('COLON',      r':'),
+            ('SEMI',       r';'),
+            
+            ('NAME',       r'[a-zA-Z_\$][a-zA-Z0-9_\$]*'),
+            ('WHITESPACE', r'[ \t\n]+'),
+            ('UNKNOWN',    r'.')
+        ]
 
-#     named_re_list = ['(?P<{}>{})'.format(type,re) for (re,_,type) in token_specs]
+        # used for sanity checking in lexer.
+        self.token_types = set(type for (type,_) in self.token_specs)
+        self.tokens = self.tokenize(input_string)
+        # the following is always valid because we will always have
+        # at least the EOF token on the tokens list.
+        self.curr_token_ix = 0
 
-#     combined_re = '|'.join(named_re_list)
+    def pointer(self):
+        return self.tokens[self.curr_token_ix]
 
-#     match_object_list = list(re.finditer(combined_re, code))
-#     for mo in match_object_list:
-#         # get the token type and value from
-#         # the match object
-#         type = mo.lastgroup
-#         value = mo.group()
-#         # some special processing of tokens
-#         if type == 'NUMBER':
-#                 pass
-#         elif type == 'ID':
-#             type = keywords.get(value,'ID')
-#         elif type == 'MISMATCH':
-#             if value == '\"':
-#                 raise ExpectationError(expected='\"', found='EOF')
-#             else:
-#                 raise ValueError("unexpected character '{}'".format(value))
-#     # always append an EOF token so we never run out of tokens
-#     # in the lexer.
-#     tokens.append(Token('EOF', '', module, line_num))
-#     return tokens
+    def next(self):
+        if not self.end_of_file():
+            self.curr_token_ix += 1
+        return self.pointer()
+
+    def match(self, token_type):
+        if token_type == self.pointer().type:
+            tk = self.pointer()
+            self.next()
+            return tk
+        elif token_type not in self.token_types:
+            raise ValueError("unknown token type '{}'".format(token_type))
+        else:
+            for t in self.tokens:
+                print(t)
+            raise SyntaxError('unexpected token {} while parsing, expected {}'
+                              .format(self.pointer().type, token_type))
+
+    def end_of_file(self):
+        if self.pointer().type == 'EOF':
+            return True
+        else:
+            return False
+
+    def tokenize(self, code):
+        tokens = []
+        re_list = ['(?P<{}>{})'.format(type,re) for (type,re) in self.token_specs]
+        combined_re = '|'.join(re_list)
+        match_object_list = list(re.finditer(combined_re, code))
+        for mo in match_object_list:
+            type = mo.lastgroup
+            value = mo.group()
+            if type == 'WHITESPACE':
+                continue #ignore
+            elif type == 'COMMAND':
+                tokens.append(Token('COMMAND', value[1:-1]))
+            elif type == 'UNKNOWN':
+                raise ValueError("unexpected character '{}'".format(value))
+            else: 
+                tokens.append(Token(type, value))
+        tokens.append(Token('EOF', '\eof'))
+        return tokens
+
+class DebuggerParser:
+    def __init__(self):
+        self.dlx = None
+
+    def parse(self, input_string):
+        self.dlx = DebuggerLexer(input_string)
+        return self.line()
+
+    def line(self):
+        if self.dlx.pointer().type == 'MACRO':
+            return self.macro()
+        else:
+            cmds = [self.command()]
+            while self.dlx.pointer().type == 'SEMI':
+                self.dlx.match('SEMI')
+                if self.dlx.pointer().type != 'EOF':
+                    cmds.append(self.command())
+                else:
+                    break
+            return ('LINE', cmds)
+    
+    def macro(self):
+        self.dlx.match('MACRO')
+        name = self.dlx.match('NAME')
+        self.dlx.match('COLON')
+
+        l = self.line()
+
+        return ('LINE', [('MACRO', name.value, l[1])] )
+
+    def command(self):
+        match(self.dlx.pointer().type):
+            case 'COMMAND':
+                cmd = self.dlx.match('COMMAND')
+                return ('COMMAND', cmd.value)
+
+            case 'STEP': 
+                self.dlx.match('STEP')
+                return ('STEP', )
+
+            case 'CONTINUE':
+                self.dlx.match('CONTINUE')
+                return ('CONTINUE', )
+
+            case 'NEXT':
+                self.dlx.match('NEXT')
+                return ('NEXT',)
+
+            case 'BREAK':
+                self.dlx.match('BREAK')
+                nums = []
+
+                while self.dlx.pointer().type == 'NUM':
+                    nums.append(self.dlx.match('NUM').value)
+
+                return ('BREAK', list(map(int, nums)))
+
+            case 'PRINT':
+                self.dlx.match('PRINT')
+                name = self.dlx.match('NAME').value
+                return ('PRINT', name)
+
+            case 'DELETE':
+                self.dlx.match('DELETE')
+                nums = [self.dlx.match('NUM').value]
+
+                while self.dlx.pointer().type == 'NUM':
+                    nums.append(self.dlx.match('NUM').value)
+
+                return ('DELETE', list(map(int, nums)))
+
+            case 'BANG':
+                self.dlx.match('BANG')
+                return ('BANG',)
+
+            case 'LONGLIST':
+                self.dlx.match('LONGLIST')
+                return ('LONGLIST', )
+            
+            case 'LIST':
+                self.dlx.match('LIST')
+                return ('LIST', )
+            
+            case 'QUIT':
+                self.dlx.match('QUIT')
+                return ('QUIT', )
+
+            case 'EXPLICIT':
+                self.dlx.match('EXPLICIT')
+                return ('EXPLICIT', )
+
+            case 'UNEXPLICIT':
+                self.dlx.match('UNEXPLICIT')
+                return ('UNEXPLICIT', )
+
+            case _:
+                raise ValueError("Unknown command: {}".format(
+                    str(self.dlx.pointer().value)
+                ))
+
+# if __name__ == "__main__":
+#     while True:
+#         dbgp = DebuggerParser()
+#         l = input("> ")
+#         print(dbgp.parse(l))

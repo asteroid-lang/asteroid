@@ -1,11 +1,77 @@
 """
 The Asteroid Debugger
-
-Known issues:
-    Debugging programs with imports does not work correctly
 """
-from asteroid.repl import repl
 
+from asteroid.repl import repl
+from asteroid.adb.command import DebuggerParser
+
+"""
+            cmd = cmd.split(" ")
+
+            # Match our command
+            match(cmd[0]):
+                # Step
+                case "s":
+                    self.is_stepping = True
+                    self.is_continuing = False
+                    self.is_next = False
+                    exit_loop = True
+
+                # Continue
+                case "c":
+                    self.is_stepping = False
+                    self.is_continuing = True
+                    self.is_next = False
+                    exit_loop = True
+
+                # Next
+                case "n":
+                    self.is_stepping = False
+                    self.is_continuing = False
+                    self.is_next = True
+                    exit_loop = True
+
+                # Set a breakpoint
+                case "break":
+                    break_line = cmd[1:]
+                    for b in break_line:
+                        self.breakpoints.append(int(b))
+                
+                # Remove a breakpoint
+                case "unbreak":
+                    break_line = cmd[1:]
+                    for b in break_line:
+                        if int(b) in self.breakpoints:
+                            self.breakpoints.remove(int(b))
+
+                # REPL
+                case "!":
+                    old_lineinfo = self.lineinfo
+                    old_explicit = self.explicit_enabled
+                    self.explicit_enabled = False
+
+                    repl(new=False)
+
+                    self.explicit_enabled = old_explicit
+                    self.set_lineinfo(old_lineinfo)
+
+                # List the program
+                case "l":  self.list_program()
+                case "ll": self.list_program(relative=True)
+
+                # Quit adb
+                case "quit":
+                    raise SystemExit()
+
+                case "explicit": self.explicit_enabled = True
+                case "unexplicit": self.explicit_enabled = False
+
+                case "clear":
+                    import os
+                    os.system("clear")
+                
+                case _: print("Unknown command: {}".format(cmd[0]))
+"""
 class ADB:
     """
     This class implements the behavior and state managment for the
@@ -57,6 +123,9 @@ class ADB:
         self.filename = None
 
         self.first_line = True
+        
+        #############################
+        self.dbgp = DebuggerParser()
     
     def reset_defaults(self):
         """
@@ -189,6 +258,10 @@ class ADB:
 
         print(outline)
 
+    def list_breakpoints(self):
+        for b in self.breakpoints:
+            print("* {}".format(b))
+
     def list_program(self, relative=False):
         """
         List the program contents
@@ -216,6 +289,71 @@ class ADB:
             print(start_of_line, ix+1+start, l[:-1])
             start_of_line = "  "
 
+    def set_config(self, step=False, cont=False, next=False):
+        self.is_stepping = step
+        self.is_continuing = cont
+        self.is_next = next
+
+    def walk_command(self, cmd):
+        exit_loop = False
+
+        match(cmd):
+            case ('MACRO', name, l):
+                print("MACROS ARE NOT IMPLEMENTED YET")
+
+            case ('COMMAND', value):
+                print("COMMANDS ARE NOT IMPLEMENTED YET")
+
+            case ('STEP', ):
+                self.set_config(step=True)
+                exit_loop = True
+
+            case ('CONTINUE', ):
+                self.set_config(cont=True)
+                exit_loop = True
+
+            case ('NEXT', ):
+                self.set_config(next=True)
+                exit_loop = True
+
+            case ('BREAK', nums):
+                if nums:
+                    for n in nums:
+                        self.breakpoints.append(n)
+                else:
+                    self.list_breakpoints()
+
+            case ('PRINT', name):
+                print("PRINT NOT YET IMPLEMENTED")
+
+            case ('DELETE', nums):
+                for n in nums:
+                    self.breakpoints.remove(n)
+
+            case ('BANG', ):
+                old_lineinfo = self.lineinfo
+                old_explicit = self.explicit_enabled
+                self.explicit_enabled = False
+                
+                repl(new=False)
+                
+                self.explicit_enabled = old_explicit
+                self.set_lineinfo(old_lineinfo)
+
+            case ('LONGLIST',): self.list_program(relative=True)
+            case ('LIST',):     self.list_program()
+
+            case ('QUIT', ):
+                raise SystemExit()
+
+            case ('EXPLICIT', ):
+                self.explicit_enabled = True
+
+            case ('UNEXPLICIT', ):
+                self.explicit_enabled = False
+
+        return exit_loop
+
     def tick(self):
         """
         "Tick" the debugger. This refers to hitting some point where the user
@@ -228,73 +366,19 @@ class ADB:
         # Main command loop
         exit_loop = False
         while not exit_loop:
-            # Get our input and split it TODO: Make this a parser with error messaging
-            cmd = input("(ADB) ")
-            cmd = cmd.split(" ")
+            query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
+            cmd = input(query_symbol)
 
-            # Match our command
-            match(cmd[0]):
-                # Step
-                case "s":
-                    self.is_stepping = True
-                    self.is_continuing = False
-                    self.is_next = False
-                    exit_loop = True
+            try:
+                (LINE, node) = self.dbgp.parse(cmd)
 
-                # Continue
-                case "c":
-                    self.is_stepping = False
-                    self.is_continuing = True
-                    self.is_next = False
-                    exit_loop = True
+                for n in node:
+                    exit_loop = self.walk_command(n)
 
-                # Next
-                case "n":
-                    self.is_stepping = False
-                    self.is_continuing = False
-                    self.is_next = True
-                    exit_loop = True
-
-                # Set a breakpoint
-                case "break":
-                    break_line = cmd[1:]
-                    for b in break_line:
-                        self.breakpoints.append(int(b))
-                
-                # Remove a breakpoint
-                case "unbreak":
-                    break_line = cmd[1:]
-                    for b in break_line:
-                        if int(b) in self.breakpoints:
-                            self.breakpoints.remove(int(b))
-
-                # REPL
-                case "!":
-                    old_lineinfo = self.lineinfo
-                    old_explicit = self.explicit_enabled
-                    self.explicit_enabled = False
-
-                    repl(new=False)
-
-                    self.explicit_enabled = old_explicit
-                    self.set_lineinfo(old_lineinfo)
-
-                # List the program
-                case "l":  self.list_program()
-                case "ll": self.list_program(relative=True)
-
-                # Quit adb
-                case "quit":
-                    raise SystemExit()
-
-                case "explicit": self.explicit_enabled = True
-                case "unexplicit": self.explicit_enabled = False
-
-                case "clear":
-                    import os
-                    os.system("clear")
-                
-                case _: print("Unknown command: {}".format(cmd[0]))
+                    if exit_loop:
+                        break;
+            except ValueError as e:
+                print("Debugger sytax error [{}]".format(e))
 
         self.tab_level = 0
     
