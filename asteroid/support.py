@@ -316,6 +316,13 @@ def term2string(term):
         term_string += "]"
         return term_string
 
+    elif TYPE == 'raw-head-tail':
+        (RHT, e1, e2) = term
+        walked_e1 = term2string(e1)
+        walked_e2 = term2string(e2)
+
+        return walked_e1 + "|" + walked_e2
+
     elif TYPE == 'named-pattern':       # Handle a named pattern
         (NAMED_PATTERN,ID,pattern) = term
 

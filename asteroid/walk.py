@@ -106,13 +106,12 @@ def unify(term, pattern, unifying = True ):
     # Python level values, if they don't match exactly then we have
     # a pattern match fail.
     if isinstance(term, str): # apply regular expression match
+        message_explicit("Regex match: {} and {}".format(pattern, term), "secondary")
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
-            message_explicit("Regex match: {} and {}".format(pattern, term), "secondary")
             message_explicit("Matched!", "tertiary")
             return [] # return empty unifier
         else:
-            message_explicit("Regex match: {} and {}".format(pattern, term), "secondary")
             message_explicit("Failed!", "tertiary")
 
             raise PatternMatchFailed(
@@ -150,6 +149,7 @@ def unify(term, pattern, unifying = True ):
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
+        message_explicit("Evaluating named pattern")
         return unify(term[2],pattern,unifying)
 
     elif ((not unifying) and (term[0] == 'deref')):
@@ -473,6 +473,10 @@ def unify(term, pattern, unifying = True ):
             return [unifier]
 
     elif pattern[0] in ['head-tail', 'raw-head-tail']:
+        message_explicit("Matching {} to {}".format(
+            term2string(term), term2string(pattern)
+        ))
+        increase_debugger_tab_level()
 
         # if we are unifying or we are not evaluating subsumption
         #  to another head-tail
@@ -481,11 +485,16 @@ def unify(term, pattern, unifying = True ):
             (LIST, list_val) = term
 
             if LIST != 'list':
+                message_explicit("Failed", "secondary")
+                decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "head-tail operator expected type 'list' got type '{}'"
                     .format(LIST))
 
             if not len(list_val):
+                message_explicit("Failed", "secondary")
+                decrease_debugger_tab_level()
+
                 raise PatternMatchFailed(
                     "head-tail operator expected a non-empty list")
 
@@ -497,6 +506,9 @@ def unify(term, pattern, unifying = True ):
             unifier += unify(list_tail, pattern_tail, unifying)
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+            message_explicit("Success!", "secondary")
+            decrease_debugger_tab_level()
+
             return unifier
 
         else: #Else we are evaluating subsumption to another head-tail
@@ -509,6 +521,8 @@ def unify(term, pattern, unifying = True ):
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is not redundant
+                message_explicit("Failed", "secondary")
+                decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
@@ -526,6 +540,8 @@ def unify(term, pattern, unifying = True ):
                         break
 
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+                message_explicit("Success!", "secondary")
+                decrease_debugger_tab_level()
                 return unifier
 
     elif pattern[0] == 'deref':  # ('deref', v)
