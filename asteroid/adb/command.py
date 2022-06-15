@@ -16,7 +16,7 @@ class DebuggerLexer:
             
             ('STEP',        r'\bstep\b|\bs\b'),
             ('CONTINUE',    r'\bcontinue\b|\bcont\b|\bc\b'),
-            ('NEXT',        r'\next\b|\bn\b'),
+            ('NEXT',        r'\bnext\b|\bn\b'),
             ('BREAK',       r'\bbreak\b|\bb\b'),
             ('DELETE',      r'\bdelete\b|\bdel\b|\bd\b'),
             ('BANG',        r'!'),
@@ -107,7 +107,7 @@ class DebuggerParser:
             while self.dlx.pointer().type == 'SEMI':
                 self.dlx.match('SEMI')
                 if self.dlx.pointer().type != 'EOF':
-                    cmds.append(self.command())
+                    cmds += [self.command()]
                 else:
                     break
             return ('LINE', cmds)
@@ -154,6 +154,9 @@ class DebuggerParser:
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
+
+            case 'EOF':
+                return []
 
             case _:
                 raise ValueError("Unknown command: {}".format(
