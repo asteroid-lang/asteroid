@@ -127,11 +127,17 @@ class DebuggerParser:
             case 'BREAK':
                 self.dlx.match('BREAK')
                 nums = []
+                conds = []
 
                 while self.dlx.pointer().type == 'NUM':
                     nums.append(self.dlx.match('NUM').value)
+                    if self.dlx.pointer().type == 'COMMAND':
+                        conds.append(self.dlx.match('COMMAND').value)
+                    else:
+                        conds.append(None)
 
-                return ('BREAK', list(map(int, nums)))
+                return ('BREAK', list(map(int, nums)), conds)
+
             case 'DELETE':
                 self.dlx.match('DELETE')
                 nums = [self.dlx.match('NUM').value]

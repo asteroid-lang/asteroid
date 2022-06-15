@@ -9,6 +9,9 @@ from asteroid.state import dump_trace
 from asteroid.state import state
 from asteroid.support import term2string
 
+from asteroid.walk import function_return_value
+from asteroid.support import map2boolean
+
 class ADB:
     """
     This class implements the behavior and state managment for the
@@ -26,8 +29,8 @@ class ADB:
             * Top level (Is this statement at the top level?)
                 * Explicit (Are we just showing everything for a little bit?)
         """
-        # List of breakpoints
-        self.breakpoints = []
+        # Table of breakpoints and conditions
+        self.breakpoints = {}
 
         #############################
         # Flag if the debugger is continuing to the next breakpoint (continue) 
@@ -158,7 +161,43 @@ class ADB:
         """
         Check if the user has set a breakpoint at the current line
         """
-        return self.lineinfo[1] in self.breakpoints and self.lineinfo[0] == self.filename
+        # Condition 1
+        breakpoint_at_line = (self.lineinfo[1] in self.breakpoints)
+
+        # Condition 2
+        in_same_file = (self.lineinfo[0] == self.filename)
+        
+        # Check the break condition
+        break_cond = self.breakpoints.get(self.lineinfo[1])
+
+        break_cond_met = True
+
+        if break_cond:
+            old_lineinfo = self.lineinfo
+            old_explicit = self.explicit_enabled
+            self.explicit_enabled = False
+
+            try:
+                interp(break_cond,
+                    input_name = "<COMMAND>",
+                    redundancy=False,
+                    prologue=False,
+                    initialize_state=False,
+                    debugger=None,
+                    exceptions=True
+                )
+            except Exception as e:
+                print("Breakpoint condition error: {}".format(e))
+            else:
+                break_cond_met = map2boolean(function_return_value[-1])[1]
+
+            self.explicit_enabled = old_explicit
+            self.set_lineinfo(old_lineinfo)
+
+        else:
+            break_cond_met = True
+
+        return breakpoint_at_line and in_same_file and break_cond_met
 
     def set_top_level(self, tl):
         """
@@ -200,8 +239,11 @@ class ADB:
 
     def list_breakpoints(self):
         self.message("Breakpoints")
+        
         for b in self.breakpoints:
-            print("* {}".format(b))
+            c = self.breakpoints[b]
+            print("* {} {}".format(
+                b, ": " + c if c else ''))
 
     def list_program(self, relative=False):
         """
@@ -244,10 +286,6 @@ class ADB:
                 self.message("Macro {}".format(name))
 
             case ('COMMAND', value):
-                from asteroid.interp import interp
-                from asteroid.walk import function_return_value
-                from asteroid.support import map2boolean
-
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
@@ -280,10 +318,10 @@ class ADB:
                 self.set_config(next=True)
                 exit_loop = True
 
-            case ('BREAK', nums):
+            case ('BREAK', nums, conds):
                 if nums:
-                    for n in nums:
-                        self.breakpoints.append(n)
+                    for ix, n in enumerate(nums):
+                        self.breakpoints[n] = conds[ix]
                 else:
                     self.list_breakpoints()
 
