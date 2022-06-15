@@ -4,6 +4,10 @@ The Asteroid Debugger
 
 from asteroid.repl import repl
 from asteroid.adb.command import DebuggerParser
+from asteroid.interp import interp, load_prologue
+from asteroid.state import dump_trace
+from asteroid.state import state
+from asteroid.support import term2string
 
 class ADB:
     """
@@ -62,7 +66,7 @@ class ADB:
 
         self.macros = {
             'x': [('CONTINUE',), ('EXPLICIT',), ('NEXT',), ('UNEXPLICIT',)]
-        }
+            }
 
         self.command_queue = []
     
@@ -110,9 +114,6 @@ class ADB:
         This function runs the given filename through
         the asteroid debugger
         """
-        from asteroid.interp import interp, load_prologue
-        from asteroid.state import dump_trace
-        from asteroid.state import state
         
         self.filename = filename
 
@@ -247,6 +248,10 @@ class ADB:
                 from asteroid.walk import function_return_value
                 from asteroid.support import map2boolean
 
+                old_lineinfo = self.lineinfo
+                old_explicit = self.explicit_enabled
+                self.explicit_enabled = False
+                
                 interp(value,
                     input_name = "<COMMAND>",
                     redundancy=False,
@@ -255,7 +260,10 @@ class ADB:
                     debugger=None
                 )
                 print(function_return_value[-1][1])
-
+                
+                self.explicit_enabled = old_explicit
+                self.set_lineinfo(old_lineinfo)
+                
             case ('STEP', ):
                 self.set_config(step=True)
                 exit_loop = True
@@ -275,9 +283,6 @@ class ADB:
                 else:
                     self.list_breakpoints()
 
-            case ('PRINT', name):
-                print("PRINT NOT YET IMPLEMENTED")
-
             case ('DELETE', nums):
                 for n in nums:
                     self.breakpoints.remove(n)
@@ -292,17 +297,11 @@ class ADB:
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
 
-            case ('LONGLIST',): self.list_program(relative=True)
-            case ('LIST',):     self.list_program()
-
-            case ('QUIT', ):
-                raise SystemExit()
-
-            case ('EXPLICIT', ):
-                self.explicit_enabled = True
-
-            case ('UNEXPLICIT', ):
-                self.explicit_enabled = False
+            case ('LONGLIST',):     self.list_program(relative=True)
+            case ('LIST',):         self.list_program()
+            case ('QUIT', ):        raise SystemExit()
+            case ('EXPLICIT', ):    self.explicit_enabled = True
+            case ('UNEXPLICIT', ):  self.explicit_enabled = False
 
             case _:
                 if cmd[0] in self.macros:                    
@@ -310,7 +309,7 @@ class ADB:
                 else:
                     raise ValueError("Unknown command: {}".format(
                                         str(cmd[0])
-                                    ))
+                    ))
         return exit_loop
 
     def tick(self):

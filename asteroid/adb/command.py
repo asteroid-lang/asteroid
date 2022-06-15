@@ -21,16 +21,14 @@ class DebuggerLexer:
             ('DELETE',      r'\bdelete\b|\bdel\b|\bd\b'),
             ('BANG',        r'!'),
             ('MACRO',       r'\bmacro\b'),
-            ('PRINT',       r'\bprint\b|\bp\b'),
             ('LIST',        r'\blist\b|\bl\b'),
             ('LONGLIST',    r'\blonglist\b|\bll\b'),
             ('QUIT',        r'\bquit\b|\bq\b'),
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
 
-
             ('NUM',        r'[+-]?([0-9]*[.])?[0-9]+'),
-            ('COLON',      r':'),
+            ('EQUAL',      r'='),
             ('SEMI',       r';'),
             
             ('NAME',       r'[a-zA-Z_\$][a-zA-Z0-9_\$]*'),
@@ -61,9 +59,7 @@ class DebuggerLexer:
         elif token_type not in self.token_types:
             raise ValueError("unknown token type '{}'".format(token_type))
         else:
-            for t in self.tokens:
-                print(t)
-            raise SyntaxError('unexpected token {} while parsing, expected {}'
+            raise ValueError('unexpected token {} while parsing, expected {}'
                               .format(self.pointer().type, token_type))
 
     def end_of_file(self):
@@ -115,7 +111,7 @@ class DebuggerParser:
     def macro(self):
         self.dlx.match('MACRO')
         name = self.dlx.match('NAME')
-        self.dlx.match('COLON')
+        self.dlx.match('EQUAL')
 
         l = self.line()
 
@@ -135,12 +131,6 @@ class DebuggerParser:
                     nums.append(self.dlx.match('NUM').value)
 
                 return ('BREAK', list(map(int, nums)))
-
-            case 'PRINT':
-                self.dlx.match('PRINT')
-                name = self.dlx.match('NAME').value
-                return ('PRINT', name)
-
             case 'DELETE':
                 self.dlx.match('DELETE')
                 nums = [self.dlx.match('NUM').value]
