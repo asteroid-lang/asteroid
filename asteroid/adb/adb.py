@@ -61,6 +61,7 @@ class ADB:
         self.dbgp = DebuggerParser()
 
         self.macros = {}
+        self.command_queue = []
     
     def reset_defaults(self):
         """
@@ -301,15 +302,10 @@ class ADB:
                 self.explicit_enabled = False
 
             case _:
-                # # This doesn't work but it's okay for right now
-                # # the issue is that the next/step/continue stuff
-                # # doesn't actually go
-                # if cmd[0] in self.macros:                    
-                #     for c in self.macros[cmd[0]]:
-                #         print(c)
-                #         self.walk_command(c)
-                # else:
-                raise ValueError("Unknown command: {}".format(
+                if cmd[0] in self.macros:                    
+                    self.command_queue += self.macros[cmd[0]]
+                else:
+                    raise ValueError("Unknown command: {}".format(
                                         str(cmd[0])
                                     ))
         return exit_loop
@@ -323,20 +319,34 @@ class ADB:
         # Print the current line with lineinfo
         self.print_current_line()
 
-        # Main command loop
+        """
+        As is this doesn't really work. We need some way of storing commands that
+        are trying to be executed at the next available time. Maybe the queue?
+        """
         exit_loop = False
+        
+        # Clear out the command queue
+        while self.command_queue:
+            exit_loop = self.walk_command(self.command_queue.pop(0))
+            if exit_loop:
+                break
+
+        # Main command loop
         while not exit_loop:
             query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
             cmd = input(query_symbol)
-
+            
             try:
                 (LINE, node) = self.dbgp.parse(cmd)
 
-                for n in node:
-                    exit_loop = self.walk_command(n)
+                self.command_queue += node
+
+                while self.command_queue:
+                    exit_loop = self.walk_command(self.command_queue.pop(0))
 
                     if exit_loop:
                         break;
+            
             except ValueError as e:
                 print("Debugger sytax error [{}]".format(e))
 
@@ -367,6 +377,7 @@ class ADB:
         Explicit mode is a mode in which extra steps in
         computations are revealed to the user
         """
+
         # If we're not on the intended file, just return
         if self.lineinfo[0] != self.filename:
             pass
