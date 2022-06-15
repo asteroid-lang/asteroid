@@ -59,6 +59,8 @@ class ADB:
         
         #############################
         self.dbgp = DebuggerParser()
+
+        self.macros = {}
     
     def reset_defaults(self):
         """
@@ -233,7 +235,8 @@ class ADB:
 
         match(cmd):
             case ('MACRO', name, l):
-                print("MACROS ARE NOT IMPLEMENTED YET")
+                self.macros[name] = l
+                self.message("Macro {}".format(name))
 
             case ('COMMAND', value):
                 print("COMMANDS ARE NOT IMPLEMENTED YET")
@@ -286,6 +289,18 @@ class ADB:
             case ('UNEXPLICIT', ):
                 self.explicit_enabled = False
 
+            case _:
+                # # This doesn't work but it's okay for right now
+                # # the issue is that the next/step/continue stuff
+                # # doesn't actually go
+                # if cmd[0] in self.macros:                    
+                #     for c in self.macros[cmd[0]]:
+                #         print(c)
+                #         self.walk_command(c)
+                # else:
+                raise ValueError("Unknown command: {}".format(
+                                        str(cmd[0])
+                                    ))
         return exit_loop
 
     def tick(self):
