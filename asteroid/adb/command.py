@@ -26,6 +26,7 @@ class DebuggerLexer:
             ('QUIT',        r'\bquit\b|\bq\b'),
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
+            ('HELP',        r'\bh\b|\bhelp\b'),
 
             ('NUM',        r'[+-]?([0-9]*[.])?[0-9]+'),
             ('EQUAL',      r'='),
@@ -144,6 +145,16 @@ class DebuggerParser:
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
+
+            case 'HELP':
+                self.dlx.match('HELP')
+                
+                n = None
+                if self.dlx.pointer().type != 'EOF':
+                    n = self.dlx.pointer().value
+                    self.dlx.next()
+                
+                return ('HELP', n)
 
             case 'EOF':
                 return []

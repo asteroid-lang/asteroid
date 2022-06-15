@@ -251,15 +251,19 @@ class ADB:
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
-                
-                interp(value,
-                    input_name = "<COMMAND>",
-                    redundancy=False,
-                    prologue=False,
-                    initialize_state=False,
-                    debugger=None
-                )
-                print(function_return_value[-1][1])
+                try:
+                    interp(value,
+                        input_name = "<COMMAND>",
+                        redundancy=False,
+                        prologue=False,
+                        initialize_state=False,
+                        debugger=None,
+                        exceptions=True
+                    )
+                except Exception as e:
+                    print("Command error: {}".format(e))
+                else:
+                    print(function_return_value[-1][1])
                 
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
@@ -297,11 +301,29 @@ class ADB:
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
 
-            case ('LONGLIST',):     self.list_program(relative=True)
-            case ('LIST',):         self.list_program()
+            case ('LONGLIST',):     self.list_program()
+            case ('LIST',):         self.list_program(relative=True)
             case ('QUIT', ):        raise SystemExit()
             case ('EXPLICIT', ):    self.explicit_enabled = True
             case ('UNEXPLICIT', ):  self.explicit_enabled = False
+            
+            case ('HELP', name):
+                from asteroid.adb.help import command_description_table
+                
+                if name:
+                    help_msg = command_description_table.get(name)
+
+                    if help_msg:
+                        self.message("Info for {}".format(name))
+                        print(help_msg)
+                    else:
+                        self.message("Unknown command for help: {}".format(
+                            name
+                        ))    
+                else:
+                    print("Type 'help NAME' to get help for a command")
+                    for c in command_description_table:
+                        print("* {}".format(c))
 
             case _:
                 if cmd[0] in self.macros:                    
