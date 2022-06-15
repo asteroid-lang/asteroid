@@ -239,7 +239,18 @@ class ADB:
                 self.message("Macro {}".format(name))
 
             case ('COMMAND', value):
-                print("COMMANDS ARE NOT IMPLEMENTED YET")
+                from asteroid.interp import interp
+                from asteroid.walk import function_return_value
+                from asteroid.support import map2boolean
+
+                interp(value,
+                    input_name = "<COMMAND>",
+                    redundancy=False,
+                    prologue=False,
+                    initialize_state=False,
+                    debugger=None
+                )
+                print(function_return_value[-1][1])
 
             case ('STEP', ):
                 self.set_config(step=True)
