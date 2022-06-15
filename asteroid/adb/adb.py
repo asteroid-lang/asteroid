@@ -60,7 +60,10 @@ class ADB:
         #############################
         self.dbgp = DebuggerParser()
 
-        self.macros = {}
+        self.macros = {
+            'x': [('CONTINUE',), ('EXPLICIT',), ('NEXT',), ('UNEXPLICIT',)]
+        }
+
         self.command_queue = []
     
     def reset_defaults(self):
