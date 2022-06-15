@@ -68,7 +68,7 @@ class ADB:
         self.dbgp = DebuggerParser()
 
         self.macros = {
-            'x': [('CONTINUE',), ('EXPLICIT',), ('NEXT',), ('UNEXPLICIT',)]
+            'px': [('CONTINUE',), ('EXPLICIT',), ('COMMAND', "io@println(\"x=\"+x)")]
             }
 
         self.command_queue = []
@@ -327,7 +327,7 @@ class ADB:
 
             case ('DELETE', nums):
                 for n in nums:
-                    self.breakpoints.remove(n)
+                    self.breakpoints.pop(n)
 
             case ('BANG', ):
                 old_lineinfo = self.lineinfo
