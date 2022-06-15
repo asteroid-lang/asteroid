@@ -192,6 +192,7 @@ class ADB:
         print(outline)
 
     def list_breakpoints(self):
+        self.message("Breakpoints")
         for b in self.breakpoints:
             print("* {}".format(b))
 
