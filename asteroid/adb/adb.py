@@ -315,13 +315,9 @@ class ADB:
         "Tick" the debugger. This refers to hitting some point where the user
         has decided they would like the debugger to come back to life and entering
         the command selection phase.
-        """
-        # Print the current line with lineinfo
-        self.print_current_line()
 
-        """
-        As is this doesn't really work. We need some way of storing commands that
-        are trying to be executed at the next available time. Maybe the queue?
+        The debugger uses a queue to store working commands. This allows for more
+        complex command execution
         """
         exit_loop = False
         
@@ -331,6 +327,9 @@ class ADB:
             if exit_loop:
                 break
 
+        # Print the current line with lineinfo
+        self.print_current_line()
+
         # Main command loop
         while not exit_loop:
             query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
@@ -339,8 +338,10 @@ class ADB:
             try:
                 (LINE, node) = self.dbgp.parse(cmd)
 
+                # Add the new commands to the queue
                 self.command_queue += node
 
+                # Add the list of commands to the queue
                 while self.command_queue:
                     exit_loop = self.walk_command(self.command_queue.pop(0))
 
