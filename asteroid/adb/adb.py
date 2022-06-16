@@ -5,12 +5,10 @@ The Asteroid Debugger
 from asteroid.repl import repl
 from asteroid.adb.command import DebuggerParser
 from asteroid.interp import interp, load_prologue
-from asteroid.state import dump_trace
-from asteroid.state import state
-from asteroid.support import term2string
+from asteroid.state import dump_trace, state
+from asteroid.support import term2string, map2boolean
 
 from asteroid.walk import function_return_value
-from asteroid.support import map2boolean
 
 class ADB:
     """
