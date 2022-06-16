@@ -548,11 +548,6 @@ def unify(term, pattern, unifying = True ):
         # v can be an AST representing any computation
         # that produces a pattern.
 
-        # owm- Do we want to show dereferencing in a pattern match?
-        # message_explicit("Dereferencing {}".format(
-        #     term2string(pattern[1])
-        # ), "tertiary")
-
         message_explicit("Dereferencing {}".format(
             term2string(pattern[1])
         ))

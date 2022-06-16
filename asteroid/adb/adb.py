@@ -65,12 +65,17 @@ class ADB:
         self.first_line = True
         
         #############################
+        # The parser for incoming commands
         self.dbgp = DebuggerParser()
-
+        
+        #############################
+        # Dictionary of macros
         self.macros = {
             'px': [('CONTINUE',), ('EXPLICIT',), ('COMMAND', "io@println(\"x=\"+x)")]
-            }
+        }
 
+        #############################
+        # The queue of commands being executed
         self.command_queue = []
     
     def reset_defaults(self):
@@ -118,14 +123,18 @@ class ADB:
         the asteroid debugger
         """
         
+        # Set our primary filename
         self.filename = filename
 
+        # Open and read the file
         f = open(filename, 'r')
         input_stream = f.read()
         f.close()
 
+        # Main debug loop
         while True:
             try:
+                # Interpret our file
                 interp(input_stream,
                     input_name = filename,
                     do_walk=True,
@@ -133,50 +142,66 @@ class ADB:
                     exceptions=True,
                     debugger=self)
                 
+                # Give us one final tick before restarting
                 # This gives us one last tick before EOF is reached
                 self.lineinfo = (self.filename, len(self.program_text))
                 self.tick()
                 print()
+
+                # Restart session
                 self.message("End of file reached, restarting session")
                 self.reset_defaults()
             
             except (EOFError, KeyboardInterrupt):
+                # If the user tries to exit with CTRL+C/D, exit
                 break;
 
             except Exception as e:
+                # Handle exceptions from the interpretation session
                 (module, lineno) = state.lineinfo
                 print("\nERROR: {}: {}: {}".format(module, lineno, e))
                 dump_trace()
 
-                if self.lineinfo and module == self.lineinfo[0]:
+                # If the error occured in our file, show the offending line
+                if self.lineinfo and (module == self.lineinfo[0]):
                     print("    ==>> " + self.program_text[lineno - 1].strip())
                     print()
                     self.message("Error occured, restarting session")
                     self.reset_defaults()
                     continue
                 else:
+                    # Otherwhise, just break
                     break
 
     def has_breakpoint_here(self):
         """
         Check if the user has set a breakpoint at the current line
         """
-        # Condition 1
+        # Condition 1: Is there a breakpoint at this line?
         breakpoint_at_line = (self.lineinfo[1] in self.breakpoints)
 
         # Condition 2
         in_same_file = (self.lineinfo[0] == self.filename)
+
+        # Preliminary check
+        if not (breakpoint_at_line and in_same_file):
+            return False
         
         # Check the break condition
         break_cond = self.breakpoints.get(self.lineinfo[1])
 
+        # Assume the break condition is true until proven false
         break_cond_met = True
 
+        # If there's a break condition
         if break_cond:
+
+            # Save our old lineinfo/explicit state
             old_lineinfo = self.lineinfo
             old_explicit = self.explicit_enabled
             self.explicit_enabled = False
 
+            # interpret the break conition
             try:
                 interp(break_cond,
                     input_name = "<COMMAND>",
@@ -185,23 +210,32 @@ class ADB:
                     initialize_state=False,
                     debugger=None,
                     exceptions=True
-                )
+            )
+
+            # If an error occurs in the break condition, show the error
             except Exception as e:
                 print("Breakpoint condition error: {}".format(e))
+
+            # Else, get the value of the expression calculated.
             else:
                 break_cond_met = map2boolean(function_return_value[-1])[1]
 
+            # Reenable everything
             self.explicit_enabled = old_explicit
             self.set_lineinfo(old_lineinfo)
 
+        # If there's no break cond, then by default it is true
         else:
             break_cond_met = True
 
-        return breakpoint_at_line and in_same_file and break_cond_met
+        # Return the state of the break condition
+        return break_cond_met
 
     def set_top_level(self, tl):
         """
         Set our flag that tells the debugger if it's at the top level of a program or not
+
+        We use this to get the `next` command working
         """
         self.top_level = tl
 
@@ -238,6 +272,9 @@ class ADB:
         print(outline)
 
     def list_breakpoints(self):
+        """
+        List the breakpoints and their conditions
+        """
         self.message("Breakpoints")
         
         for b in self.breakpoints:
@@ -273,18 +310,31 @@ class ADB:
             start_of_line = "  "
 
     def set_config(self, step=False, cont=False, next=False):
+        """
+        Set the debugger movement configuration
+        """
         self.is_stepping = step
         self.is_continuing = cont
         self.is_next = next
 
     def walk_command(self, cmd):
+        """
+        Walk a given command
+        """
+        # Loop sentinel value
+        # This is returned as True ~iff~ a movement command is
+        # executed
         exit_loop = False
 
+        # Match command to behavior
         match(cmd):
+
+            # Macros
             case ('MACRO', name, l):
                 self.macros[name] = l
                 self.message("Macro {}".format(name))
 
+            # Literal commands
             case ('COMMAND', value):
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
@@ -306,19 +356,23 @@ class ADB:
                 
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
-                
+            
+            # Step
             case ('STEP', ):
                 self.set_config(step=True)
                 exit_loop = True
 
+            # Continue
             case ('CONTINUE', ):
                 self.set_config(cont=True)
                 exit_loop = True
 
+            # Next
             case ('NEXT', ):
                 self.set_config(next=True)
                 exit_loop = True
 
+            # Break 
             case ('BREAK', nums, conds):
                 if nums:
                     for ix, n in enumerate(nums):
@@ -326,10 +380,12 @@ class ADB:
                 else:
                     self.list_breakpoints()
 
+            # Delete
             case ('DELETE', nums):
                 for n in nums:
                     self.breakpoints.pop(n)
 
+            # REPL (!)
             case ('BANG', ):
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
@@ -339,38 +395,51 @@ class ADB:
                 
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
-
+            
+            # Longlist, List, Quit, Explicit, Unexplicit
             case ('LONGLIST',):     self.list_program()
             case ('LIST',):         self.list_program(relative=True)
             case ('QUIT', ):        raise SystemExit()
             case ('EXPLICIT', ):    self.explicit_enabled = True
             case ('UNEXPLICIT', ):  self.explicit_enabled = False
-            
+
+            # Help menu
             case ('HELP', name):
                 from asteroid.adb.help import command_description_table
                 
+                # If a command name is supplied
                 if name:
+                    # Get the command description for that name
                     help_msg = command_description_table.get(name)
 
+                    # if there's a description, print the info
                     if help_msg:
                         self.message("Info for {}".format(name))
                         print(help_msg)
+
+                    # Else, print an error
                     else:
                         self.message("Unknown command for help: {}".format(
                             name
-                        ))    
+                        ))
+
+                # If no command is supplied, then just print out the default command menu
                 else:
                     print("Type 'help NAME' to get help for a command")
                     for c in command_description_table:
                         print("* {}".format(c))
 
-            case _:
-                if cmd[0] in self.macros:                    
-                    self.command_queue += self.macros[cmd[0]]
+            case ('NAME', v):
+                # If the command name is in macros
+                if v in self.macros:                    
+                    self.command_queue += self.macros[v]
                 else:
-                    raise ValueError("Unknown command: {}".format(
-                                        str(cmd[0])
-                    ))
+                    raise ValueError("Unknown macro: {}".format(str(v)))
+
+            # Macro/Unknown
+            case _:
+                raise ValueError("Unknown command: {}".format(str(cmd)))
+
         return exit_loop
 
     def tick(self):
@@ -395,10 +464,15 @@ class ADB:
 
         # Main command loop
         while not exit_loop:
+            # Format the input symbol to reflect explicitness
             query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
+
+            # Get the command
             cmd = input(query_symbol)
             
+            # Try to walk the command
             try:
+                # Parse the command
                 (LINE, node) = self.dbgp.parse(cmd)
 
                 # Add the new commands to the queue
@@ -406,17 +480,25 @@ class ADB:
 
                 # Add the list of commands to the queue
                 while self.command_queue:
+                    # Walk the command and get the exit state
                     exit_loop = self.walk_command(self.command_queue.pop(0))
 
+                    # Exit if necessary
                     if exit_loop:
                         break;
             
+            # Intercept debugger command errors
             except ValueError as e:
-                print("Debugger sytax error [{}]".format(e))
+                print("Debugger command error [{}]".format(e))
 
+        # Reset the tab level
         self.tab_level = 0
     
     def print_extra_line(self):
+        """
+        Small helper function to format nicer. Prints
+        a newline if its the first line
+        """
         # If it's not the first line then pad with
         # a newline
         if self.first_line:
