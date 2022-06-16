@@ -17,8 +17,9 @@ command_description_table = {
     Go to the next top level statement
     """,
     
-    'break':        """[b]reak ?(linenum)
-    Set a breakpoint at linenum
+    'break':        """[b]reak ((linenum) ?(command))*
+    Set a breakpoint at linenum. If you supply a command, the breakpoint
+    becomes conditional
     """,
 
     'command' :     """`command`
