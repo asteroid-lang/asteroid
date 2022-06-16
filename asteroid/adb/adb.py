@@ -289,6 +289,7 @@ class ADB:
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
+
                 try:
                     interp(value,
                         input_name = "<COMMAND>",
@@ -296,12 +297,12 @@ class ADB:
                         prologue=False,
                         initialize_state=False,
                         debugger=None,
-                        exceptions=True
-                    )
+                        exceptions=True)
+
                 except Exception as e:
                     print("Command error: {}".format(e))
                 else:
-                    print(function_return_value[-1][1])
+                    print(term2string(function_return_value[-1]))
                 
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
