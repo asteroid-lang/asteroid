@@ -269,7 +269,7 @@ def term2string(term):
             '__ge__'        : (" >= ", False),
             '__gt__'        : (" > ", False)
         }
-        if f[1] in operator_table:
+        if isinstance(f[1], str) and f[1] in operator_table:
             (op_symbol, is_unary) = operator_table[f[1]]
             if is_unary:
                 term_string = "{}({})".format(
