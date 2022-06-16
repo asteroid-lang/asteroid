@@ -19,6 +19,33 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
+"""
+message_explicit("Matching objects {}{} and {}{}".format(
+    pid, term2string( ('tuple', pl) ),
+    tid, term2string( ('tuple', tl) )
+))
+
+message_explicit(fmt_message, terms:[generator], level=None)
+    * fmt_message is "Matching objects {}{} and {}{}"
+    * terms is the terms for the format message
+
+    from types import GeneratorType
+
+    if debugging and debugger.explicit_enabled:
+        expressed_terms = []
+        for t in terms:
+            if isinstance(GeneratorType, t):
+                expressed_terms.append(next(t))
+            else:
+                expressed_terms.append(t)
+        
+        expressed_string = fmt_message.format(*expressed_terms)
+
+        debugger.message_explicit(expressed_string, level)
+"""
+def gen_t2s(node):
+    yield term2string(node)
+
 def message_explicit(message, level=None):
     if debugging:
         debugger.message_explicit(message, level)
@@ -1200,6 +1227,10 @@ def assert_stmt(node):
 
 #########################################################################
 def unify_stmt(node):
+    # owm - How can we get that nice deref listing behavior?
+    # The thing is, we would have to deref every kind of pattern
+    # recursively, which would be a hassle.
+
     notify_debugger()
 
     (UNIFY, pattern, exp) = node
