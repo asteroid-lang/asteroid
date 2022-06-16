@@ -162,12 +162,13 @@ class DebuggerParser:
                 
                 return ('HELP', n)
 
+            case 'NAME':
+                n = self.dlx.match('NAME').value
+                return ('NAME', n)
+
             case 'EOF':
                 return []
 
-            case 'NAME':
-                n = self.dlx.match('NAME').value
-                return (n, )
             case _:
                 raise ValueError("Unknown command: {}".format(
                     str(self.dlx.pointer().value)
