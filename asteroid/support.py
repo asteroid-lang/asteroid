@@ -260,7 +260,7 @@ def term2string(term):
             '__minus__'     : ("-", False),
             '__times__'     : ("*", False),
             '__divide__'    : ("/", False),
-            '__or__'        : ("  ", False),
+            '__or__'        : (" or ", False),
             '__and__'       : (" and ", False),
             '__eq__'        : (" == ", False),
             '__ne__'        : (" != ", False),
