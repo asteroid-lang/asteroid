@@ -326,6 +326,12 @@ class ADB:
         # Match command to behavior
         match(cmd):
 
+            # Macro display
+            case ('MACRO',):
+                for m in self.macros:
+                    print("* {} : {}".format(
+                        m, self.macros[m]
+                    ))
             # Macros
             case ('MACRO', name, l):
                 self.macros[name] = l

@@ -588,8 +588,6 @@ def unify(term, pattern, unifying = True ):
             term2string(p)
         ))
 
-        #lhh
-        #print("unifying \nterm:{}\npattern:{}\n".format(term,p))
         return unify(term,p,unifying)
 
     # builtin operators look like apply lists with operator names

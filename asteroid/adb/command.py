@@ -111,12 +111,18 @@ class DebuggerParser:
     
     def macro(self):
         self.dlx.match('MACRO')
-        name = self.dlx.match('NAME')
-        self.dlx.match('EQUAL')
 
-        l = self.line()
+        if self.dlx.pointer().type == 'EOF':
+            return ('LINE', [('MACRO',)])
 
-        return ('LINE', [('MACRO', name.value, l[1])] )
+        else:
+            name = self.dlx.match('NAME')
+            self.dlx.match('EQUAL')
+
+            l = self.line()
+
+            return ('LINE', [('MACRO', name.value, l[1])] )
+
 
     def command(self):
         match(self.dlx.pointer().type):

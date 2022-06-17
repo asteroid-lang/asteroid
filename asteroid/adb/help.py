@@ -1,6 +1,8 @@
 command_description_table = {
     'macro':        """macro (name) = (command list)
     Define a macro with name "name" and a list of commands.
+
+    Typing solely "macro" will list off the macros currently enabled
     Example:
         macro see_x = continue; explicit; n; p x;
     """,
