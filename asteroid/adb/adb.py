@@ -117,8 +117,7 @@ class ADB:
 
     def run(self, filename):
         """
-        This function runs the given filename through
-        the asteroid debugger
+        This function runs the given filename through the asteroid debugger
         """
         
         # Set our primary filename

@@ -1023,7 +1023,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     else:
         message_explicit("Call: {}({})".format(fname, term2string(actual_val_args)))
 
-    # TODO: Make proxy functions for this and the pop
     if debugging:
         debugger.call_stack.append(fname)
 
