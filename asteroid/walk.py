@@ -19,30 +19,30 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-"""
-message_explicit("Matching objects {}{} and {}{}".format(
-    pid, term2string( ('tuple', pl) ),
-    tid, term2string( ('tuple', tl) )
-))
+# message_explicit("Matching objects {}{} and {}{}".format(
+#     pid, term2string( ('tuple', pl) ),
+#     tid, term2string( ('tuple', tl) )
+# ))
 
-message_explicit(fmt_message, terms:[generator], level=None)
-    * fmt_message is "Matching objects {}{} and {}{}"
-    * terms is the terms for the format message
+# def message_explicit(fmt_message, terms, level=None)
+#     """
+#     fmt_message is a list of terms to be applied in the same
+#     way as .format
+#     """
+#     from types import GeneratorType
 
-    from types import GeneratorType
-
-    if debugging and debugger.explicit_enabled:
-        expressed_terms = []
-        for t in terms:
-            if isinstance(GeneratorType, t):
-                expressed_terms.append(next(t))
-            else:
-                expressed_terms.append(t)
+#     if debugging and debugger.explicit_enabled:
+#         expressed_terms = []
+#         for t in terms:
+#             if isinstance(GeneratorType, t):
+#                 expressed_terms.append(next(t))
+#             else:
+#                 expressed_terms.append(t)
         
-        expressed_string = fmt_message.format(*expressed_terms)
+#         expressed_string = fmt_message.format(*expressed_terms)
 
-        debugger.message_explicit(expressed_string, level)
-"""
+#         debugger.message_explicit(expressed_string, level)
+
 def gen_t2s(node):
     yield term2string(node)
 
@@ -240,6 +240,7 @@ def unify(term, pattern, unifying = True ):
 
         (IF_EXP, cond_exp, pexp, else_exp) = pattern
 
+        # Explicit messaging
         message_explicit("Conditional match: if ({})".format(
             term2string(cond_exp)
         ))
@@ -1360,6 +1361,7 @@ def try_stmt(node):
     else:
         # no exceptions found in the try statements
         return
+
     message_explicit("Exception Caught: {}".format(str(inst_val)))
 
     # we had an exception - walk the catch list and find an appropriate set of
@@ -1373,8 +1375,10 @@ def try_stmt(node):
         except PatternMatchFailed:
             pass
         else:
+            increase_debugger_tab_level()
             declare_unifiers(unifiers)
             walk(catch_stmts)
+            decrease_debugger_tab_level()
 
             return
 
@@ -1557,6 +1561,23 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
+def import_list_stmt(node):
+    global debugging
+    old_debugging = debugging
+    debugging = False
+
+    (LIST, inlist) = node
+    assert_match(LIST, 'import_list')
+
+    outlist = []
+
+    for e in inlist:
+        outlist.append(walk(e))
+
+    debugging = old_debugging
+    return ('list', outlist)
+
+#########################################################################
 def eval_exp(node):
 
     (EVAL, exp) = node
@@ -1711,23 +1732,6 @@ def list_exp(node):
     for e in inlist:
         outlist.append(walk(e))
 
-    return ('list', outlist)
-
-#########################################################################
-def import_list_exp(node):
-    global debugging
-    old_debugging = debugging
-    debugging = False
-
-    (LIST, inlist) = node
-    assert_match(LIST, 'import_list')
-
-    outlist =[]
-
-    for e in inlist:
-        outlist.append(walk(e))
-
-    debugging = old_debugging
     return ('list', outlist)
 
 #########################################################################
@@ -2027,7 +2031,7 @@ dispatch_dict = {
     'struct-def'    : struct_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    'import_list'   : import_list_exp,
+    'import_list'   : import_list_stmt,
     'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
