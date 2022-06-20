@@ -338,14 +338,14 @@ class ADB:
                 self.message("Macro {}".format(name))
 
             # Literal commands
-            case ('COMMAND', value):
+            case ('EVAL', value):
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
 
                 try:
                     interp(value,
-                        input_name = "<COMMAND>",
+                        input_name = "<EVAL>",
                         redundancy=False,
                         prologue=False,
                         initialize_state=False,
