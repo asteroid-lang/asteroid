@@ -12,9 +12,10 @@ class DebuggerLexer:
     def __init__(self, input_string):
         self.token_specs = [
         #   type:          value:
-            ('COMMAND',     r'`([^`])*`'),
+            ('STRING',     r'"([^"]|\")*"'),
             
             ('STEP',        r'\bstep\b|\bs\b'),
+            ('EVAL',        r'\beval\b'),
             ('CONTINUE',    r'\bcontinue\b|\bcont\b|\bc\b'),
             ('NEXT',        r'\bnext\b|\bn\b'),
             ('BREAK',       r'\bbreak\b|\bb\b'),
@@ -28,13 +29,18 @@ class DebuggerLexer:
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
             ('HELP',        r'\bh\b|\bhelp\b'),
 
-            ('NUM',        r'[+-]?([0-9]*[.])?[0-9]+'),
-            ('EQUAL',      r'='),
-            ('SEMI',       r';'),
-            
-            ('NAME',       r'[a-zA-Z_\$][a-zA-Z0-9_\$]*'),
-            ('WHITESPACE', r'[ \t\n]+'),
-            ('UNKNOWN',    r'.')
+            ('IF',          r'\bif\b'),
+
+            ('NUM',         r'[+-]?([0-9]*[.])?[0-9]+'),
+            ('EQUAL',       r'='),
+            ('SEMI',        r';'),
+            ('COMMA',       r','),
+            ('LPAREN',      r'\('),
+            ('RPAREN',      r'\)'),
+
+            ('NAME',        r'[a-zA-Z_\$][a-zA-Z0-9_\$]*'),
+            ('WHITESPACE',  r'[ \t\n]+'),
+            ('UNKNOWN',     r'.')
         ]
 
         # used for sanity checking in lexer.
@@ -77,10 +83,11 @@ class DebuggerLexer:
         for mo in match_object_list:
             type = mo.lastgroup
             value = mo.group()
+
             if type == 'WHITESPACE':
                 continue #ignore
-            elif type == 'COMMAND':
-                tokens.append(Token('COMMAND', value[1:-1]))
+            elif type == 'STRING':
+                tokens.append(Token('STRING', value[1:-1]))
             elif type == 'UNKNOWN':
                 raise ValueError("unexpected character '{}'".format(value))
             else: 
@@ -126,19 +133,37 @@ class DebuggerParser:
 
     def command(self):
         match(self.dlx.pointer().type):
-            case 'COMMAND':
-                cmd = self.dlx.match('COMMAND')
-                return ('COMMAND', cmd.value)
+            case 'EVAL':
+                self.dlx.match("EVAL")
+                self.dlx.match('LPAREN')
+                code = self.dlx.match('STRING')
+                self.dlx.match('RPAREN')
+
+                return ('EVAL', code.value)
 
             case 'BREAK':
                 self.dlx.match('BREAK')
                 nums = []
                 conds = []
 
+                first = True
+
                 while self.dlx.pointer().type == 'NUM':
+                    if first:
+                        first = False
+                    else:
+                        self.dlx.match('COMMA')
+
                     nums.append(self.dlx.match('NUM').value)
-                    if self.dlx.pointer().type == 'COMMAND':
-                        conds.append(self.dlx.match('COMMAND').value)
+
+                    if self.dlx.pointer().type == 'IF':
+                        self.dlx.match('IF')
+                        self.dlx.match('EVAL')
+                        self.dlx.match('LPAREN')
+                        code = self.dlx.match('STRING')
+                        self.dlx.match('RPAREN')
+
+                        conds.append(code.value)
                     else:
                         conds.append(None)
 
@@ -153,7 +178,8 @@ class DebuggerParser:
 
                 return ('DELETE', list(map(int, nums)))
 
-            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | 'STEP' | 'CONTINUE' | 'NEXT':
+            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | \
+                 'STEP' | 'CONTINUE' | 'NEXT':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
