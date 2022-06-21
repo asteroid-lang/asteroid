@@ -12,7 +12,7 @@ class DebuggerLexer:
     def __init__(self, input_string):
         self.token_specs = [
         #   type:          value:
-            ('STRING',     r'"([^"]|\")*"'),
+            ('STRING',     r'"(\\"|\\.|[^"])*"'),
             
             ('STEP',        r'\bstep\b|\bs\b'),
             ('EVAL',        r'\beval\b'),
@@ -87,7 +87,8 @@ class DebuggerLexer:
             if type == 'WHITESPACE':
                 continue #ignore
             elif type == 'STRING':
-                tokens.append(Token('STRING', value[1:-1]))
+                tokens.append(Token('STRING', value.encode('utf-8')
+                                                   .decode('unicode-escape')[1:-1]))
             elif type == 'UNKNOWN':
                 raise ValueError("unexpected character '{}'".format(value))
             else: 

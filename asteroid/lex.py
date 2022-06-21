@@ -60,7 +60,7 @@ keywords = {
 token_specs = [
 #   value:                                        display:      type:
     (r'[0-9]+([.][0-9]+)?((e|E)(\+|\-)?[0-9]+)?', "number",     'NUMBER'),
-    (r'"([^"]|\\"|\\)*"',                         "string",     'STRING'),
+    (r'"(\\"|\\.|[^"])*"',                         "string",     'STRING'),
     (r'(--.*)|(\#.*)',                            "comment",    'COMMENT'),
     (r'[a-zA-Z_][a-zA-Z_0-9]*',                   "variable",   'ID'),
     (r'\n',                                       "\n",         'NEWLINE'),
@@ -194,6 +194,8 @@ def tokenize(code):
             if value == '\"':
                 raise ExpectationError(expected='\"', found='EOF')
             else:
+                for t in tokens:
+                    print(t)
                 raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
         tokens.append(Token(type, value, module, line_num))
