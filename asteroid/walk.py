@@ -56,7 +56,9 @@ def increase_debugger_tab_level():
 
 def decrease_debugger_tab_level():
     if debugging:
-        debugger.tab_level -= 1
+        debugger.tab_level -=1
+        if debugger.tab_level < 0:
+            debugger.tab_level = 0
 
 def notify_debugger():
     if debugging:
@@ -137,10 +139,11 @@ def unify(term, pattern, unifying = True ):
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
             message_explicit("Matched!", "tertiary")
+            #decrease_debugger_tab_level()
             return [] # return empty unifier
         else:
             message_explicit("Failed!", "tertiary")
-
+            #decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
@@ -203,13 +206,13 @@ def unify(term, pattern, unifying = True ):
             tid, term2string( ('tuple', tl) )
         ))
         
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
 
         unifiers = []
         for i in range(len(pl)):
             unifiers += unify(tl[i], pl[i])
         
-        decrease_debugger_tab_level()
+        #decrease_debugger_tab_level()
 
         return unifiers
 
@@ -245,7 +248,7 @@ def unify(term, pattern, unifying = True ):
             term2string(cond_exp)
         ))
 
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
 
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
@@ -264,13 +267,13 @@ def unify(term, pattern, unifying = True ):
             state.symbol_table.pop_scope()
 
         if bool_val[1]:
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
             message_explicit("Condition met, {}".format(
                 term2string(cond_exp)
             ))
             return unifiers
         else:
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
             message_explicit("Condition ({}) failed".format(
                 term2string(cond_exp)
             ))
@@ -400,10 +403,10 @@ def unify(term, pattern, unifying = True ):
             term2string(name_exp), term2string(p)
         ))
 
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
         # name_exp can be an id or an index expression.
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
-        decrease_debugger_tab_level()
+        #decrease_debugger_tab_level()
 
         return unifiers
 
@@ -476,8 +479,12 @@ def unify(term, pattern, unifying = True ):
         unifiers = []
         data = data_only(obj_memory)
 
+        #increase_debugger_tab_level()
+
         for i in range(len(data)):
             unifiers += unify(data[i], pattern_list[i], unifying)
+
+        #decrease_debugger_tab_level()
 
         return unifiers
 
@@ -504,7 +511,7 @@ def unify(term, pattern, unifying = True ):
         message_explicit("Matching {} to {}".format(
             term2string(term), term2string(pattern)
         ))
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
 
         # if we are unifying or we are not evaluating subsumption
         #  to another head-tail
@@ -514,14 +521,14 @@ def unify(term, pattern, unifying = True ):
 
             if LIST != 'list':
                 message_explicit("Failed", "secondary")
-                decrease_debugger_tab_level()
+                #decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "head-tail operator expected type 'list' got type '{}'"
                     .format(LIST))
 
             if not len(list_val):
                 message_explicit("Failed", "secondary")
-                decrease_debugger_tab_level()
+                #decrease_debugger_tab_level()
 
                 raise PatternMatchFailed(
                     "head-tail operator expected a non-empty list")
@@ -535,7 +542,7 @@ def unify(term, pattern, unifying = True ):
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             message_explicit("Success!", "secondary")
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
 
             return unifier
 
@@ -550,7 +557,7 @@ def unify(term, pattern, unifying = True ):
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is not redundant
                 message_explicit("Failed", "secondary")
-                decrease_debugger_tab_level()
+                #decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
@@ -569,7 +576,7 @@ def unify(term, pattern, unifying = True ):
 
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 message_explicit("Success!", "secondary")
-                decrease_debugger_tab_level()
+                #decrease_debugger_tab_level()
                 return unifier
 
     elif pattern[0] == 'deref':  # ('deref', v)
@@ -580,9 +587,9 @@ def unify(term, pattern, unifying = True ):
             term2string(pattern[1])
         ))
 
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
         p = walk(pattern[1])
-        decrease_debugger_tab_level()
+        #decrease_debugger_tab_level()
 
         message_explicit("{} -> {}".format(
             term2string(pattern),
@@ -614,15 +621,15 @@ def unify(term, pattern, unifying = True ):
         message_explicit("[Begin] constraint pattern")    
 
         state.constraint_lvl += 1
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
         
         try:
             unifier = unify(term,pattern[1])
         except PatternMatchFailed as p:
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
             raise p
         
-        decrease_debugger_tab_level()
+        #decrease_debugger_tab_level()
         state.constraint_lvl -= 1
 
         message_explicit("[End] constraint pattern")
@@ -1062,7 +1069,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             term2string(actual_val_args), term2string(p)
         ), "secondary")
         
-        increase_debugger_tab_level()
+        #increase_debugger_tab_level()
 
         try:
             unifiers = unify(actual_val_args, p)
@@ -1076,10 +1083,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
             unifiers = []
             unified = False
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
 
         if unified:
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
 
             if actual_val_args[0] != 'struct':
                 message_explicit("Success! Matched function body", "tertiary")
@@ -1247,9 +1254,9 @@ def unify_stmt(node):
     message_explicit("term: {}".format(
         term2string(term)))
 
-    increase_debugger_tab_level()
+    #increase_debugger_tab_level()
     unifiers = unify(term, pattern)
-    decrease_debugger_tab_level()
+    #decrease_debugger_tab_level()
 
     declare_unifiers(unifiers)
 
@@ -1380,10 +1387,10 @@ def try_stmt(node):
         except PatternMatchFailed:
             pass
         else:
-            increase_debugger_tab_level()
+            #increase_debugger_tab_level()
             declare_unifiers(unifiers)
             walk(catch_stmts)
-            decrease_debugger_tab_level()
+            #decrease_debugger_tab_level()
 
             return
 
@@ -1456,6 +1463,9 @@ def repeat_stmt(node):
 #########################################################################
 def for_stmt(node):
     notify_debugger()
+    message_explicit("For loop")
+
+    #increase_debugger_tab_level()
 
     (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
     assert_match(FOR, 'for')
@@ -1491,9 +1501,17 @@ def for_stmt(node):
                 pass
             else:
                 declare_unifiers(unifiers)
+                
+                message_explicit("Walking body")
+                #increase_debugger_tab_level()
+
                 walk(stmt_list)
+                
+                #decrease_debugger_tab_level()
     except Break:
         pass
+
+    #decrease_debugger_tab_level()
 
 #########################################################################
 def if_stmt(node):
@@ -1675,6 +1693,8 @@ def apply_exp(node):
                    ('object-memory', ('list', object_memory)))
         # if the struct has an __init__ function call it on the object
         # NOTE: constructor functions do not have return values.
+
+        message_explicit("Constructing object {}({})".format(struct_id, term2string(arg_val)))
         if '__init__' in member_names:
             slot_ix = member_names.index('__init__')
             init_fval = struct_memory[slot_ix]
