@@ -1694,7 +1694,6 @@ def apply_exp(node):
         # if the struct has an __init__ function call it on the object
         # NOTE: constructor functions do not have return values.
 
-        message_explicit("Constructing object {}({})".format(struct_id, term2string(arg_val)))
         if '__init__' in member_names:
             slot_ix = member_names.index('__init__')
             init_fval = struct_memory[slot_ix]
