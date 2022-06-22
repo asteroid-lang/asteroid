@@ -439,6 +439,27 @@ class ADB:
                 else:
                     raise ValueError("Unknown macro: {}".format(str(v)))
 
+
+            """OWM
+            How will stack frame traversal work?
+
+            Some kind of loop where we run commands UNTIL an exit_loop is caused. then just
+            run as normal
+
+            Going to need to keep a list of contexts
+
+            Save the original config then reset it afterwards
+            Need to keep track of when we run out of scopes to go up.
+
+            self.trace_stack = [(module,1,"<toplevel>")]
+
+            old_config = state.symbol_table.get_config()
+            """
+            case ('UP',):
+                pass
+            case ('DOWN',):
+                pass
+
             # Macro/Unknown
             case _:
                 raise ValueError("Unknown command: {}".format(str(cmd)))
