@@ -69,7 +69,7 @@ class ADB:
         #############################
         # Dictionary of macros
         self.macros = {
-            'px': [('CONTINUE',), ('EXPLICIT',), ('COMMAND', "io@println(\"x=\"+x)")]
+            'px': [('CONTINUE',), ('EXPLICIT',), ('EVAL', "io@println(\"x=\"+x)")]
         }
 
         #############################
