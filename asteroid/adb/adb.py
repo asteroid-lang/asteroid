@@ -402,7 +402,6 @@ class ADB:
             # Longlist, List, Quit, Explicit, Unexplicit
             case ('LONGLIST',):     self.list_program()
             case ('LIST',):         self.list_program(relative=True)
-            case ('QUIT', ):        raise SystemExit()
             case ('EXPLICIT', ):    self.explicit_enabled = True
             case ('UNEXPLICIT', ):  self.explicit_enabled = False
 
@@ -439,26 +438,48 @@ class ADB:
                 else:
                     raise ValueError("Unknown macro: {}".format(str(v)))
 
-
-            """OWM
-            How will stack frame traversal work?
-
-            Some kind of loop where we run commands UNTIL an exit_loop is caused. then just
-            run as normal
-
-            Going to need to keep a list of contexts
-
-            Save the original config then reset it afterwards
-            Need to keep track of when we run out of scopes to go up.
-
-            self.trace_stack = [(module,1,"<toplevel>")]
-
-            old_config = state.symbol_table.get_config()
-            """
             case ('UP',):
-                pass
-            case ('DOWN',):
-                pass
+                """OWM
+                How will stack frame traversal work?
+
+                Some kind of loop where we run commands UNTIL an exit_loop is caused. then just
+                run as normal
+
+                Going to need to keep a list of contexts
+
+                Save the original config then reset it afterwards
+                Need to keep track of when we run out of scopes to go up.
+
+                self.trace_stack = [(module,1,"<toplevel>")]
+
+                old_config = state.symbol_table.get_config()
+                """
+                stack = state.trace_stack
+                if len(stack) == 1:
+                    self.message("At topmost frame")
+                else:
+                    """
+                    save old lineinfo
+                    save old config info
+                    save old trace stack
+                        pop the bottom of the trace stack??
+                        Maybe use a pointer to access it
+
+                    set lineinfo to where the stack frame is
+                    set the config to the previous one
+
+                        main command loop (can be recursive)
+
+                    reset previous config
+                    reset previous lineinfo
+                    """
+                    
+                    pass
+
+            case ('DOWN',): pass
+
+
+            case ('QUIT', ):        raise SystemExit()
 
             # Macro/Unknown
             case _:
@@ -466,25 +487,8 @@ class ADB:
 
         return exit_loop
 
-    def tick(self):
-        """
-        "Tick" the debugger. This refers to hitting some point where the user
-        has decided they would like the debugger to come back to life and entering
-        the command selection phase.
-
-        The debugger uses a queue to store working commands. This allows for more
-        complex command execution
-        """
+    def main_command_loop(self):
         exit_loop = False
-        
-        # Clear out the command queue
-        while self.command_queue:
-            exit_loop = self.walk_command(self.command_queue.pop(0))
-            if exit_loop:
-                break
-
-        # Print the current line with lineinfo
-        self.print_current_line()
 
         # Main command loop
         while not exit_loop:
@@ -514,6 +518,29 @@ class ADB:
             # Intercept debugger command errors
             except ValueError as e:
                 print("Debugger command error [{}]".format(e))
+
+    def tick(self):
+        """
+        "Tick" the debugger. This refers to hitting some point where the user
+        has decided they would like the debugger to come back to life and entering
+        the command selection phase.
+
+        The debugger uses a queue to store working commands. This allows for more
+        complex command execution
+        """
+        exit_loop = False
+        
+        # Clear out the command queue
+        while self.command_queue:
+            exit_loop = self.walk_command(self.command_queue.pop(0))
+            if exit_loop:
+                break
+
+        # Print the current line with lineinfo
+        self.print_current_line()
+
+        # Main command loop
+        self.main_command_loop()
 
         # Reset the tab level
         self.tab_level = 0
