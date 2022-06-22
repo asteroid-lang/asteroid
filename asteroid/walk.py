@@ -1201,12 +1201,17 @@ def global_stmt(node):
     assert_match(GLOBAL, 'global')
     assert_match(LIST, 'list')
 
+    global_str = ""
+
     for id_tuple in id_list:
         (ID, id_val) = id_tuple
         if state.symbol_table.is_symbol_local(id_val):
             raise ValueError("'{}' is already local, cannot be declared global"
                              .format(id_val))
         state.symbol_table.enter_global(id_val)
+        global_str += "{}, ".format(id_val)
+    
+    message_explicit("Global defs: {}".format(global_str[:-1]))
 
 #########################################################################
 def assert_stmt(node):
@@ -1389,6 +1394,8 @@ def try_stmt(node):
 def loop_stmt(node):
     notify_debugger()
 
+    message_explicit("Loop statement")
+
     (LOOP, body_stmts) = node
     assert_match(LOOP, 'loop')
 
@@ -1427,6 +1434,8 @@ def while_stmt(node):
 #########################################################################
 def repeat_stmt(node):
     notify_debugger()
+
+    message_explicit("Repeat statement")
 
     (REPEAT, body_stmts, cond_exp) = node
     assert_match(REPEAT, 'repeat')
