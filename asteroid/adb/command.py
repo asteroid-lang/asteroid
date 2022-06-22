@@ -131,69 +131,70 @@ class DebuggerParser:
 
             return ('LINE', [('MACRO', name.value, l[1])] )
 
+    def eval_cmd(self):
+        self.dlx.match("EVAL")
+        self.dlx.match('LPAREN')
+        code = self.dlx.match('STRING')
+        self.dlx.match('RPAREN')
+        
+        return ('EVAL', code.value)
+    
+    def break_cmd(self):
+        self.dlx.match('BREAK')
+        nums = []
+        conds = []
+        first = True
 
-    def command(self):
-        match(self.dlx.pointer().type):
-            case 'EVAL':
-                self.dlx.match("EVAL")
+        while self.dlx.pointer().type == 'NUM':
+            if first:
+                first = False
+            else:
+                self.dlx.match('COMMA')
+            nums.append(self.dlx.match('NUM').value)
+
+            if self.dlx.pointer().type == 'IF':
+                self.dlx.match('IF')
+                self.dlx.match('EVAL')
                 self.dlx.match('LPAREN')
                 code = self.dlx.match('STRING')
                 self.dlx.match('RPAREN')
+                conds.append(code.value)
+            else:
+                conds.append(None)
+        return ('BREAK', list(map(int, nums)), conds)
 
-                return ('EVAL', code.value)
+    def delete_cmd(self):
+        self.dlx.match('DELETE')
+        nums = [self.dlx.match('NUM').value]
+        
+        while self.dlx.pointer().type == 'NUM':
+            nums.append(self.dlx.match('NUM').value)
+        
+        return ('DELETE', list(map(int, nums)))
 
-            case 'BREAK':
-                self.dlx.match('BREAK')
-                nums = []
-                conds = []
 
-                first = True
-
-                while self.dlx.pointer().type == 'NUM':
-                    if first:
-                        first = False
-                    else:
-                        self.dlx.match('COMMA')
-
-                    nums.append(self.dlx.match('NUM').value)
-
-                    if self.dlx.pointer().type == 'IF':
-                        self.dlx.match('IF')
-                        self.dlx.match('EVAL')
-                        self.dlx.match('LPAREN')
-                        code = self.dlx.match('STRING')
-                        self.dlx.match('RPAREN')
-
-                        conds.append(code.value)
-                    else:
-                        conds.append(None)
-
-                return ('BREAK', list(map(int, nums)), conds)
-
-            case 'DELETE':
-                self.dlx.match('DELETE')
-                nums = [self.dlx.match('NUM').value]
-
-                while self.dlx.pointer().type == 'NUM':
-                    nums.append(self.dlx.match('NUM').value)
-
-                return ('DELETE', list(map(int, nums)))
+    def help_cmd(self):
+        self.dlx.match('HELP')
+        
+        n = None
+        if self.dlx.pointer().type != 'EOF':
+            n = self.dlx.pointer().value
+            self.dlx.next()
+        
+        return ('HELP', n)
+    
+    def command(self):
+        match(self.dlx.pointer().type):
+            case 'EVAL':    return self.eval_cmd()
+            case 'BREAK':   return self.break_cmd()
+            case 'DELETE':  return self.delete_cmd()
+            case 'HELP':    return self.help_cmd()
 
             case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | \
                  'STEP' | 'CONTINUE' | 'NEXT':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
-
-            case 'HELP':
-                self.dlx.match('HELP')
-                
-                n = None
-                if self.dlx.pointer().type != 'EOF':
-                    n = self.dlx.pointer().value
-                    self.dlx.next()
-                
-                return ('HELP', n)
 
             case 'NAME':
                 n = self.dlx.match('NAME').value
