@@ -59,8 +59,6 @@ class ADB:
         self.lineinfo = None
         self.program_text = None
         self.filename = None
-
-        self.first_line = True
         
         #############################
         # The parser for incoming commands
@@ -86,7 +84,6 @@ class ADB:
         self.is_next = True
         self.top_level = True
         self.explicit_enabled = False
-        self.first_line = True
         self.call_stack = []
 
     def make_tab_level(self):
@@ -288,13 +285,14 @@ class ADB:
 
         pt = self.program_text
 
+        length = 8
         start = 0
 
         if relative:
             lineno = self.lineinfo[1]
 
-            start = (lineno - 2) if lineno >= 2 else 0
-            end = lineno + 2 if lineno < len(pt) - 2 else len(pt)
+            start = (lineno - length) if lineno >= length else 0
+            end = lineno + length if lineno < len(pt) - 2 else len(pt)
             pt = pt[start:end]
 
         for ix, l in enumerate(pt):
@@ -455,29 +453,55 @@ class ADB:
                 old_config = state.symbol_table.get_config()
                 """
                 stack = state.trace_stack
-                if len(stack) == 1:
+                if state.symbol_table.at_topmost_frame():
                     self.message("At topmost frame")
                 else:
                     """
-                    save old lineinfo
-                    save old config info
-                    save old trace stack
-                        pop the bottom of the trace stack??
-                        Maybe use a pointer to access it
+                    The issue with frame jumping is that we don't actually
+                    store currently inactive frames anywhere except the locally
+                    saved scope in `handle_call`.
 
-                    set lineinfo to where the stack frame is
-                    set the config to the previous one
-
-                        main command loop (can be recursive)
-
-                    reset previous config
-                    reset previous lineinfo
+                    So we need to do two things.
+                    1) Have some guard to exit the recursive loops of up/down
+                    2) Some way of keeping track of the respective scopes
                     """
-                    
                     pass
+                    # # Save everything
+                    # old_lineinfo = self.lineinfo
+                    # (old_scoped_symtab, old_globals, old_global_scope) = state.symbol_table.get_config()
+                    # old_stack = stack
 
-            case ('DOWN',): pass
+                    # # Set new lineinfo
+                    # self.lineinfo = (old_stack[-1][0], old_stack[-1][1])
 
+                    # # Set new trace_stack
+                    # state.trace_stack = old_stack[:-1]
+
+                    # # Set new config
+                    # print(old_scoped_symtab)
+                    # state.symbol_table.set_config(
+                    #     (old_scoped_symtab[:-1], old_globals, old_global_scope)
+                    # )
+
+                    # # Print the current line with lineinfo
+                    # self.print_current_line()
+
+                    # # Main command loop
+                    # self.main_command_loop()
+
+                    # # Reset old config
+                    # state.symbol_table.set_config(
+                    #     (old_scoped_symtab, old_globals, old_global_scope)
+                    # )
+
+                    # # Reset trace_stack
+                    # state.trace_stack = old_stack
+
+                    # # Reset lineinfo
+                    # self.lineinfo = old_lineinfo
+
+            case ('DOWN',):
+                pass
 
             case ('QUIT', ):        raise SystemExit()
 
@@ -519,6 +543,8 @@ class ADB:
             except ValueError as e:
                 print("Debugger command error [{}]".format(e))
 
+        return exit_loop
+
     def tick(self):
         """
         "Tick" the debugger. This refers to hitting some point where the user
@@ -545,18 +571,6 @@ class ADB:
         # Reset the tab level
         self.tab_level = 0
     
-    def print_extra_line(self):
-        """
-        Small helper function to format nicer. Prints
-        a newline if its the first line
-        """
-        # If it's not the first line then pad with
-        # a newline
-        if self.first_line:
-            self.first_line = False
-        else:
-            print()
-
     def notify(self):
         """
         Notify the debugger that a potential tick-point has
@@ -582,7 +596,6 @@ class ADB:
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
         elif self.has_breakpoint_here() and not self.is_next:
-            self.print_extra_line()
             self.message("Breakpoint")
             self.tick()
 
@@ -590,7 +603,6 @@ class ADB:
         # to the next breakpoint, and we're going to the next statement
         # do a tick
         elif self.top_level and self.is_next and not self.is_continuing:
-            self.print_extra_line()
             if self.has_breakpoint_here():
                 self.message("Breakpoint")
             self.tick()
@@ -598,7 +610,6 @@ class ADB:
         # Otherwhise, if we're stepping through the program,
         # always tick
         elif self.is_stepping:
-            self.print_extra_line()
             self.tick()
         
         # Reset the top level so that nested statements don't come in
