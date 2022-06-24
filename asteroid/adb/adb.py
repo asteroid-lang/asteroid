@@ -92,14 +92,14 @@ class ADB:
         """
         return self.tab_level*"  "
 
-    def message_explicit(self, message, level = None):
+    def message_explicit(self, message, level = "primary"):
         """
         Sends a message in explicit mode
         """
 
         if self.explicit_enabled and not self.is_continuing and self.lineinfo[0] == self.filename:
             match(level):
-                case None:
+                case "primary":
                     print("{}- {}".format(self.make_tab_level(), message))
                 case "secondary":
                     print("{} ** {}".format(self.make_tab_level(), message))
