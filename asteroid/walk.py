@@ -19,7 +19,7 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-def message_explicit(fmt_message, terms=None, level=None):
+def message_explicit(fmt_message, terms=None, level="primary"):
     """
     Message explicit expects 1-3 arguments
 
@@ -37,8 +37,7 @@ def message_explicit(fmt_message, terms=None, level=None):
 
     if debugging and debugger.explicit_enabled:
         if not terms:
-            debugger.message_explicit(fmt_message)
-
+            debugger.message_explicit(fmt_message, level)
         else:
             expressed_terms = []
             for t in terms:
@@ -1593,8 +1592,9 @@ def struct_def_stmt(node):
 
 #########################################################################
 def import_list_stmt(node):
-    global debugging
     notify_debugger()
+
+    global debugging
     old_debugging = debugging
     debugging = False
 
@@ -1607,6 +1607,8 @@ def import_list_stmt(node):
         outlist.append(walk(e))
 
     debugging = old_debugging
+    
+    message_explicit("Import successful!")
     return ('list', outlist)
 
 #########################################################################
