@@ -1594,6 +1594,7 @@ def struct_def_stmt(node):
 #########################################################################
 def import_list_stmt(node):
     global debugging
+    notify_debugger()
     old_debugging = debugging
     debugging = False
 
