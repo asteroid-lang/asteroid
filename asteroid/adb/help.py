@@ -19,18 +19,18 @@ command_description_table = {
     Go to the next top level statement
     """,
     
-    'break':        """[b]reak ((linenum) ?(command))*
+    'break':        """[b]reak (linenum (if eval("command")))
     Set a breakpoint at linenum. If you supply a command, the breakpoint
     becomes conditional
     """,
 
-    'command' :     """`command`
+    'eval' :     """eval("command")
     Execute asteroid code
     Example:
-        `let x = 10. io@println("10").`
+        eval("let x = 10. io@println(\\"10\\")")
 
     -- Print out the contents of variable x
-        `x`
+        eval("x")
     """,
     
     'delete':       """[[d]el]ete (linenum)

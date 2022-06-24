@@ -208,9 +208,3 @@ class DebuggerParser:
                 raise ValueError("Unknown command: {}".format(
                     str(self.dlx.pointer().value)
                 ))
-
-# if __name__ == "__main__":
-#     while True:
-#         dbgp = DebuggerParser()
-#         l = input("> ")
-#         print(dbgp.parse(l))

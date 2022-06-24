@@ -285,7 +285,7 @@ class ADB:
 
         pt = self.program_text
 
-        length = 8
+        length = 4
         start = 0
 
         if relative:
