@@ -133,11 +133,18 @@ class ADB:
         # Main debug loop
         while True:
             try:
+                # Reset the debugging status
+                import asteroid.walk
+                asteroid.walk.debugging = False
+
+                state.initialize()
+                load_prologue()
+
                 # Interpret our file
                 interp(input_stream,
                     input_name = filename,
-                    do_walk=True,
-                    prologue=True,
+                    prologue=False,
+                    initialize_state=False,
                     exceptions=True,
                     debugger=self)
                 
