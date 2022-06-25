@@ -57,7 +57,7 @@ class ADB:
 
         # File information
         self.lineinfo = None
-        self.program_text = None
+        self.program_text = {}
         self.filename = None
         
         #############################
@@ -138,7 +138,7 @@ class ADB:
                 
                 # Give us one final tick before restarting
                 # This gives us one last tick before EOF is reached
-                self.lineinfo = (self.filename, len(self.program_text))
+                self.lineinfo = (self.filename, len(self.program_text[self.filename]))
                 self.tick()
                 print()
 
@@ -158,7 +158,7 @@ class ADB:
 
                 # If the error occured in our file, show the offending line
                 if self.lineinfo and (module == self.lineinfo[0]):
-                    print("    ==>> " + self.program_text[lineno - 1].strip())
+                    print("    ==>> " + self.program_text[module][lineno - 1].strip())
                     print()
                     self.message("Error occured, restarting session")
                     self.reset_defaults()
@@ -237,20 +237,25 @@ class ADB:
         """
         Set the debugger's internal lineinfo
         """
+        from os.path import exists
+
         self.lineinfo = lineinfo
 
-        if self.program_text is None:
+        # If the program text isn't already loaded and the file actually exists
+        # (isn't a stream line <input> or <command>)
+        if not self.program_text.get(lineinfo[0]) and exists(lineinfo[0]):
             with open(lineinfo[0], "r") as f:
-                self.program_text = f.readlines()
+                self.program_text[lineinfo[0]] = f.readlines()
             
             # Always add an EOF specifier
-            self.program_text.append("[EOF]\n")
+            self.program_text[lineinfo[0]].append("[EOF]\n")
 
     def print_current_line(self):
         """
         Print the current line nicely
         """
-        prog_line = self.program_text[self.lineinfo[1] - 1][:-1].strip()
+        pt = self.program_text[self.lineinfo[0]]
+        prog_line = pt[self.lineinfo[1] - 1][:-1].strip()
         outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
 
         if len(self.call_stack) > 0:
@@ -283,7 +288,7 @@ class ADB:
         self.message("Program Listing")
         start_of_line = "  "
 
-        pt = self.program_text
+        pt = self.program_text[self.lineinfo[0]]
 
         length = 4
         start = 0
@@ -453,7 +458,7 @@ class ADB:
                 old_config = state.symbol_table.get_config()
                 """
                 stack = state.trace_stack
-                if state.symbol_table.at_topmost_frame():
+                if len(stack) == 1:
                     self.message("At topmost frame")
                 else:
                     """
@@ -501,7 +506,9 @@ class ADB:
                     # self.lineinfo = old_lineinfo
 
             case ('DOWN',):
-                pass
+                stack = state.trace_stack
+                if len(stack) == 1:
+                    self.message("At bottommost frame")
 
             case ('QUIT', ):        raise SystemExit()
 
