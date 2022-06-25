@@ -95,9 +95,14 @@ class ADB:
     def message_explicit(self, message, level = "primary"):
         """
         Sends a message in explicit mode
-        """
 
-        if self.explicit_enabled and not self.is_continuing and self.lineinfo[0] == self.filename:
+        Explicit messaging only gets shown in two scenarios if explicit mode is enabled:
+            1. The user is NOT continuing and they're in the same file
+            2. The user is stepping through a function call
+        """
+        if self.explicit_enabled and \
+            (not self.is_continuing and self.lineinfo[0] == self.filename) or \
+            (self.is_stepping):
             match(level):
                 case "primary":
                     print("{}- {}".format(self.make_tab_level(), message))
@@ -240,9 +245,12 @@ class ADB:
         from os.path import exists
 
         self.lineinfo = lineinfo
-
+        
         # If the program text isn't already loaded and the file actually exists
         # (isn't a stream line <input> or <command>)
+        if lineinfo[0][0] == '<' and lineinfo[0][-1] == '>':
+            return
+
         if not self.program_text.get(lineinfo[0]) and exists(lineinfo[0]):
             with open(lineinfo[0], "r") as f:
                 self.program_text[lineinfo[0]] = f.readlines()
@@ -254,6 +262,7 @@ class ADB:
         """
         Print the current line nicely
         """
+
         pt = self.program_text[self.lineinfo[0]]
         prog_line = pt[self.lineinfo[1] - 1][:-1].strip()
         outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
@@ -396,9 +405,14 @@ class ADB:
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
+
+                import asteroid.walk
+                asteroid.walk.debugging = False
                 
                 repl(new=False)
-                
+
+                asteroid.walk.debugging = True
+
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
             
@@ -597,12 +611,12 @@ class ADB:
         """
 
         # If we're not on the intended file, just return
-        if self.lineinfo[0] != self.filename:
-            pass
+        # if self.lineinfo[0] != self.filename:
+        #     return
 
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
-        elif self.has_breakpoint_here() and not self.is_next:
+        if self.has_breakpoint_here() and not self.is_next:
             self.message("Breakpoint")
             self.tick()
 
