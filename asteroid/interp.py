@@ -35,9 +35,9 @@ def load_prologue():
                         .format(prologue_file_base))
     
     with open(prologue_file) as f:
-        state.modules.append(prologue_name)
+        state.modules.append(prologue_file)
         data = f.read()
-        pparser = Parser(prologue_name)
+        pparser = Parser(prologue_file)
         (LIST, pstmts) = pparser.parse(data)
 
     state.AST = ('list', pstmts)
