@@ -28,8 +28,8 @@ class DebuggerLexer:
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
             ('HELP',        r'\bh\b|\bhelp\b'),
-            ('UP',          r'<'),
-            ('DOWN',        r'>'),
+            ('UP',          r'\<'),
+            ('DOWN',        r'\>'),
 
             ('IF',          r'\bif\b'),
 
@@ -111,12 +111,13 @@ class DebuggerParser:
             return self.macro()
         else:
             cmds = [self.command()]
-            while self.dlx.pointer().type == 'SEMI':
-                self.dlx.match('SEMI')
-                if self.dlx.pointer().type != 'EOF':
-                    cmds += [self.command()]
-                else:
+            while self.dlx.pointer().type in ['SEMI']:
+                self.dlx.match(self.dlx.pointer().type)
+                cmds += [self.command()]
+
+                if self.dlx.pointer().type == 'EOF':
                     break
+
             return ('LINE', cmds)
     
     def macro(self):
@@ -150,8 +151,7 @@ class DebuggerParser:
         while self.dlx.pointer().type == 'NUM':
             if first:
                 first = False
-            else:
-                self.dlx.match('COMMA')
+            
             nums.append(self.dlx.match('NUM').value)
 
             if self.dlx.pointer().type == 'IF':
@@ -163,6 +163,15 @@ class DebuggerParser:
                 conds.append(code.value)
             else:
                 conds.append(None)
+
+            if not first:
+                if self.dlx.pointer().type == 'COMMA':
+                    self.dlx.match('COMMA')
+                    continue
+                elif self.dlx.pointer().type == 'EOF':
+                    self.dlx.match('EOF')
+                    break
+
         return ('BREAK', list(map(int, nums)), conds)
 
     def delete_cmd(self):
