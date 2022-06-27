@@ -79,7 +79,10 @@ class ADB:
         self.command_queue = []
 
         #############################
-        self.stack_pointer = 0
+        # Stack frame information
+        self.config_offset = 0          # The current config we're using
+        self.original_config = None     # The original config we started with
+        self.original_lineinfo = None   # The original lineinfo we started with
     
     def reset_defaults(self):
         """
@@ -92,6 +95,13 @@ class ADB:
         self.top_level = True
         self.explicit_enabled = False
         self.call_stack = []
+
+    def reset_config(self):
+        if self.original_config:
+            state.symbol_table.set_config(self.original_config)
+            self.original_config = None
+            self.original_lineinfo = None
+            self.config_offset = 0
 
     def make_tab_level(self):
         """
@@ -288,11 +298,13 @@ class ADB:
         outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
 
         # Display the call stack
-        if len(self.call_stack) > 0:
+        if len(self.call_stack) > 0 and (self.config_offset < len(self.call_stack)):
             outline += " ("
-            for c in self.call_stack[:-1]:
+
+            offset = -self.config_offset - 1
+            for c in self.call_stack[:offset]:
                 outline += c + "->"
-            outline += self.call_stack[-1] + ")"
+            outline += self.call_stack[offset] + ")"
 
         # If the line is empty don't bother showing it
         if prog_line != "":
@@ -517,18 +529,55 @@ class ADB:
                 Major issue:
                     We don't save the "real" config anywhere... AA!!!
                 """
-                stack = state.trace_stack
-                if self.stack_pointer == 0:
+                if self.config_offset == len(state.trace_stack) - 1:
                     self.message("At topmost frame")
                 else:
-                    ix = self.stack_pointer
-                    print(len(stack), len(state.symbol_table.saved_configs), ix)
+                    self.config_offset += 1
+
+                    # We're at the bottommost frame and want to go up, but need
+                    # to save the original config
+                    if self.original_config == None:
+                        self.original_config = state.symbol_table.get_config()
+                        self.original_lineinfo = state.lineinfo
+                    
+                    # Get the associated module and line for this frame
+                    (module, line, _) = state.trace_stack[-self.config_offset]
+                    
+                    # Set the config
+                    state.symbol_table.set_config(
+                        state.symbol_table.saved_configs[-self.config_offset]
+                    )
+
+                    self.lineinfo = (module, line)
+
+                    self.print_current_line()
 
             # Move down a stack frame
             case ('DOWN',):
                 stack = state.trace_stack
-                if len(stack) == 1:
+                if self.config_offset == 0:
                     self.message("At bottommost frame")
+                else:
+                    self.config_offset -= 1
+                    bottom_level = (self.config_offset == 0)
+
+                    if bottom_level:
+                        if self.original_config:
+                            state.symbol_table.set_config(self.original_config)
+                            self.lineinfo = self.original_lineinfo
+                    else:
+                        # We're at the bottommost frame and want to go up, but need
+                        # to save the original config
+                        (module, line, _) = state.trace_stack[-self.config_offset]
+                        
+                        state.symbol_table.set_config(
+                            state.symbol_table.saved_configs[-self.config_offset]
+                        
+                        )
+                        self.lineinfo = (module, line)
+                        
+
+                    self.print_current_line()
 
             # Quit command
             case ('QUIT', ):        raise SystemExit()
@@ -568,6 +617,7 @@ class ADB:
 
                     # Exit if necessary
                     if exit_loop:
+                        self.reset_config()
                         break;
             
             # Intercept debugger command errors
@@ -591,6 +641,8 @@ class ADB:
         while self.command_queue:
             exit_loop = self.walk_command(self.command_queue.pop(0))
             if exit_loop:
+                if self.original_config:
+                    self.reset_config()
                 break
 
         # Print the current line with lineinfo
