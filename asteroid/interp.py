@@ -108,9 +108,10 @@ def interp(input_stream,
             sys.exit(1)
 
     except  KeyboardInterrupt as e:
-        dump_trace()
         if debugger:
             raise e
+
+        dump_trace()
         print("error: keyboard interrupt")
         # needed for REPL
         if not exceptions:
