@@ -55,9 +55,13 @@ class ADB:
         #############################
         self.tab_level = 0
 
-        # File information
+        # Lineinfo
         self.lineinfo = None
+
+        # Name-content file dictionary
         self.program_text = {}
+
+        # The original filename
         self.filename = None
         
         #############################
@@ -137,6 +141,7 @@ class ADB:
                 import asteroid.walk
                 asteroid.walk.debugging = False
 
+                # Reinitialize the state and reload the prologue
                 state.initialize()
                 load_prologue()
 
@@ -186,14 +191,14 @@ class ADB:
         # Condition 1: Is there a breakpoint at this line?
         breakpoint_at_line = (self.lineinfo[1] in self.breakpoints)
 
-        # Condition 2
+        # Condition 2, are we in the original file (TODO: Expand this)
         in_same_file = (self.lineinfo[0] == self.filename)
 
         # Preliminary check
         if not (breakpoint_at_line and in_same_file):
             return False
         
-        # Check the break condition
+        # Get the break condition for this breakpoint
         break_cond = self.breakpoints.get(self.lineinfo[1])
 
         # Assume the break condition is true until proven false
@@ -270,10 +275,16 @@ class ADB:
         Print the current line nicely
         """
 
+        # Get the program text
         pt = self.program_text[self.lineinfo[0]]
+
+        # Isolate the current line
         prog_line = pt[self.lineinfo[1] - 1][:-1].strip()
+
+        # Format it nicely
         outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
 
+        # Display the call stack
         if len(self.call_stack) > 0:
             outline += " ("
             for c in self.call_stack[:-1]:
@@ -292,8 +303,13 @@ class ADB:
         """
         self.message("Breakpoints")
         
+        # For eaxch breakpoint
         for b in self.breakpoints:
+
+            # Get the condition
             c = self.breakpoints[b]
+
+            # Print the breakpoint number and condition if available
             print("* {} {}".format(
                 b, ": " + c if c else ''))
 
@@ -302,27 +318,46 @@ class ADB:
         List the program contents
         """
         self.message("Program Listing")
-        start_of_line = "  "
 
+        # Get the program text for the current file
         pt = self.program_text[self.lineinfo[0]]
 
+        # Length around the current line to display if relative
         length = 4
+
+        # Relative offset for the file listing
         start = 0
 
         if relative:
             lineno = self.lineinfo[1]
 
+            # Compute the start and end of relative listing
             start = (lineno - length) if lineno >= length else 0
             end = lineno + length if lineno < len(pt) - 2 else len(pt)
+
+            # Set the program text to the slice between start and end
             pt = pt[start:end]
 
+        # Start of line is blank by default
+        start_of_line = "  "
+
+        # GO through each line in the program text
         for ix, l in enumerate(pt):
+
+            # If the offset line number is in breakpoints
             if ix+1+start in self.breakpoints:
+                # Set the special start of line
                 start_of_line = "* "
+
+            # If the offset linenumber is the current line
             if self.lineinfo[1] == ix+1+start:
+                # Set the special start of line
                 start_of_line = "> "
 
+            # Print the given line
             print(start_of_line, ix+1+start, l[:-1])
+
+            # Reset the start of line
             start_of_line = "  "
 
     def set_config(self, step=False, cont=False, next=False):
@@ -455,6 +490,7 @@ class ADB:
                     for c in command_description_table:
                         print("* {}".format(c))
 
+            # Macro/Unknown
             case ('NAME', v):
                 # If the command name is in macros
                 if v in self.macros:                    
@@ -462,75 +498,21 @@ class ADB:
                 else:
                     raise ValueError("Unknown macro: {}".format(str(v)))
 
+            # Move up a stack frame
             case ('UP',):
-                """OWM
-                How will stack frame traversal work?
-
-                Some kind of loop where we run commands UNTIL an exit_loop is caused. then just
-                run as normal
-
-                Going to need to keep a list of contexts
-
-                Save the original config then reset it afterwards
-                Need to keep track of when we run out of scopes to go up.
-
-                self.trace_stack = [(module,1,"<toplevel>")]
-
-                old_config = state.symbol_table.get_config()
-                """
                 stack = state.trace_stack
                 if len(stack) == 1:
                     self.message("At topmost frame")
                 else:
-                    """
-                    The issue with frame jumping is that we don't actually
-                    store currently inactive frames anywhere except the locally
-                    saved scope in `handle_call`.
-
-                    So we need to do two things.
-                    1) Have some guard to exit the recursive loops of up/down
-                    2) Some way of keeping track of the respective scopes
-                    """
                     pass
-                    # # Save everything
-                    # old_lineinfo = self.lineinfo
-                    # (old_scoped_symtab, old_globals, old_global_scope) = state.symbol_table.get_config()
-                    # old_stack = stack
 
-                    # # Set new lineinfo
-                    # self.lineinfo = (old_stack[-1][0], old_stack[-1][1])
-
-                    # # Set new trace_stack
-                    # state.trace_stack = old_stack[:-1]
-
-                    # # Set new config
-                    # print(old_scoped_symtab)
-                    # state.symbol_table.set_config(
-                    #     (old_scoped_symtab[:-1], old_globals, old_global_scope)
-                    # )
-
-                    # # Print the current line with lineinfo
-                    # self.print_current_line()
-
-                    # # Main command loop
-                    # self.main_command_loop()
-
-                    # # Reset old config
-                    # state.symbol_table.set_config(
-                    #     (old_scoped_symtab, old_globals, old_global_scope)
-                    # )
-
-                    # # Reset trace_stack
-                    # state.trace_stack = old_stack
-
-                    # # Reset lineinfo
-                    # self.lineinfo = old_lineinfo
-
+            # Move down a stack frame
             case ('DOWN',):
                 stack = state.trace_stack
                 if len(stack) == 1:
                     self.message("At bottommost frame")
 
+            # Quit command
             case ('QUIT', ):        raise SystemExit()
 
             # Macro/Unknown
@@ -540,6 +522,9 @@ class ADB:
         return exit_loop
 
     def main_command_loop(self):
+        """
+        Main command loop for ADB
+        """
         exit_loop = False
 
         # Main command loop
