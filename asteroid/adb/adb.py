@@ -97,6 +97,9 @@ class ADB:
         self.call_stack = []
 
     def reset_config(self):
+        """
+        Reset the symbol table's original config
+        """
         if self.original_config:
             state.symbol_table.set_config(self.original_config)
             self.original_config = None
