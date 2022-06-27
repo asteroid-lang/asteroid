@@ -1045,7 +1045,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Note: we have to do this here because unifying
     # over the body patterns can introduce variable declarations,
     # think conditional pattern matching.
-    save_symtab = state.symbol_table.get_config()
+    state.symbol_table.saved_configs.append(
+        state.symbol_table.get_config()
+    )
+
     state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
 
@@ -1134,7 +1137,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         debugger.set_lineinfo(state.lineinfo)
 
     state.symbol_table.pop_scope()
-    state.symbol_table.set_config(save_symtab)
+    state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
 
     state.trace_stack.pop()
 
