@@ -168,7 +168,7 @@ class ADB:
                 
                 # Give us one final tick before restarting
                 # This gives us one last tick before EOF is reached
-                self.lineinfo = (self.filename, len(self.program_text[self.filename]))
+                self.set_lineinfo( (self.filename, len(self.program_text[self.filename])) )
                 self.tick()
                 print()
 
@@ -548,7 +548,7 @@ class ADB:
                         state.symbol_table.saved_configs[-self.config_offset]
                     )
 
-                    self.lineinfo = (module, line)
+                    self.set_lineinfo( (module, line) )
 
                     self.print_current_line()
 
@@ -564,7 +564,7 @@ class ADB:
                     if bottom_level:
                         if self.original_config:
                             state.symbol_table.set_config(self.original_config)
-                            self.lineinfo = self.original_lineinfo
+                            self.set_lineinfo( (self.original_lineinfo) )
                     else:
                         # We're at the bottommost frame and want to go up, but need
                         # to save the original config
@@ -574,7 +574,7 @@ class ADB:
                             state.symbol_table.saved_configs[-self.config_offset]
                         
                         )
-                        self.lineinfo = (module, line)
+                        self.set_lineinfo( (module, line) )
                         
 
                     self.print_current_line()
