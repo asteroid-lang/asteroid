@@ -77,6 +77,9 @@ class ADB:
         #############################
         # The queue of commands being executed
         self.command_queue = []
+
+        #############################
+        self.stack_pointer = 0
     
     def reset_defaults(self):
         """
@@ -500,11 +503,26 @@ class ADB:
 
             # Move up a stack frame
             case ('UP',):
+                """
+                The trace stack always has another thing on top. 
+
+                So, if you're 3 calls deep, your thing looks like:
+                    trace_stack = [a,b,c]
+                    stack_pointer = 3
+                    saved_configs = [ac, bc, cc]
+
+                if you're at the bottommost frame, (stack pointer is 
+                len(saved_configs)) + 1
+
+                Major issue:
+                    We don't save the "real" config anywhere... AA!!!
+                """
                 stack = state.trace_stack
-                if len(stack) == 1:
+                if self.stack_pointer == 0:
                     self.message("At topmost frame")
                 else:
-                    pass
+                    ix = self.stack_pointer
+                    print(len(stack), len(state.symbol_table.saved_configs), ix)
 
             # Move down a stack frame
             case ('DOWN',):

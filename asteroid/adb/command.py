@@ -28,8 +28,8 @@ class DebuggerLexer:
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
             ('HELP',        r'\bh\b|\bhelp\b'),
-            ('UP',          r'\bup\b'),
-            ('DOWN',        r'\bdown\b'),
+            ('UP',          r'<'),
+            ('DOWN',        r'>'),
 
             ('IF',          r'\bif\b'),
 
