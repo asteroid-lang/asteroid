@@ -1033,7 +1033,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     if debugging:
         debugger.call_stack.append(fname)
-        debugger.stack_pointer += 1
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1148,7 +1147,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     )
 
     if debugging:
-        debugger.stack_pointer -= 1
         debugger.call_stack.pop()
 
     return return_value
