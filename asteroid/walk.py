@@ -1118,7 +1118,19 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     global function_return_value
     try:
         function_return_value.append(None)
-        walk(stmts)
+        # TODO: (OWM)- Make this cleaner
+        # We destructure the list here to assure that
+        # we can properly set the top level flag
+        # on each new line statement in a function call.
+        # This gives us that "n(ext)" behavior within
+        # functions
+        for s in stmts[1]:
+            if debugging: debugger.set_top_level(True)
+
+            walk(s)
+
+            if debugging: debugger.set_top_level(False)
+
         val = function_return_value.pop()
         if val:
             return_value = val
