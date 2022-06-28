@@ -1118,14 +1118,26 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     global function_return_value
     try:
         function_return_value.append(None)
+
+        # Flag to tell us if we actually want to step
+        # through to the net line of the function call
+
+        # We only want to do this if we're debugging
+        # and we've stepped through to this point or
+        # have continued to this point. Basically, this
+        # flag tells us if we've stepped or continued 
+        # into this function call, effectively telling
+        # the debugger to treat it as the top level
+
+        stepping = debugging and \
+            (debugger.is_stepping or debugger.is_continuing)
+
         # TODO: (OWM)- Make this cleaner
         # We destructure the list here to assure that
         # we can properly set the top level flag
         # on each new line statement in a function call.
         # This gives us that "n(ext)" behavior within
         # functions
-        stepping = debugger.is_stepping or debugger.is_continuing
-
         for s in stmts[1]:
             if debugging and stepping: debugger.set_top_level(True)
 
