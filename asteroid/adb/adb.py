@@ -168,6 +168,8 @@ class ADB:
                     initialize_state=False,
                     exceptions=True,
                     debugger=self)
+
+                asteroid.walk.debugging = True
                 
                 # Give us one final tick before restarting
                 # This gives us one last tick before EOF is reached
@@ -228,6 +230,8 @@ class ADB:
             old_explicit = self.explicit_enabled
             self.explicit_enabled = False
 
+            import asteroid.walk
+            asteroid.walk.debugging = False
             # interpret the break conition
             try:
                 interp(break_cond,
@@ -247,9 +251,14 @@ class ADB:
             else:
                 break_cond_met = map2boolean(function_return_value[-1])[1]
 
+            asteroid.walk.debugging = True
+
             # Reenable everything
             self.explicit_enabled = old_explicit
             self.set_lineinfo(old_lineinfo)
+
+            # Reset the state's internal lineinfo
+            state.lineinfo = old_lineinfo
 
         # If there's no break cond, then by default it is true
         else:
@@ -411,10 +420,18 @@ class ADB:
 
             # Literal commands
             case ('EVAL', value):
+                # Save the old lineinfo and explicit state
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
+
+                # Set the explicit state to false
                 self.explicit_enabled = False
 
+                # Set the debugging flag to false
+                import asteroid.walk
+                asteroid.walk.debugging = False
+
+                # Run the asteroid code
                 try:
                     interp(value,
                         input_name = "<EVAL>",
@@ -428,9 +445,16 @@ class ADB:
                     print("Command error: {}".format(e))
                 else:
                     print(term2string(function_return_value[-1]))
-                
+
+                # Reset debugging state
+                asteroid.walk.debugging = True
+
+                # Reset explicit mode and lineinfo
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
+
+                # Reset the state's internal lineinfo
+                state.lineinfo = old_lineinfo
             
             # Step
             case ('STEP', ):
