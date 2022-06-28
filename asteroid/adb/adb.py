@@ -548,7 +548,39 @@ class ADB:
             # Macro/Unknown
             case ('NAME', v):
                 # If the command name is in macros
-                if v in self.macros:                    
+
+                if v == 'where':
+                    staq = state.trace_stack[1:].copy()
+
+                    if len(self.call_stack) > 0:
+                        staq.append((*state.lineinfo, "<bottom>"))
+
+                    start_of_line = ""
+                    if len(staq) == 0:
+                        print("-> <toplevel>")
+
+                    for i, s in enumerate(staq):
+                        # There's only the top level
+                        if len(staq) == 1:
+                            start_of_line = "->"
+
+                        # We're at the bottom
+                        elif (self.config_offset == 0 and len(staq) > 0) and i == len(staq) - 1:
+                            start_of_line = "->"
+
+                        # We're traversing frames
+                        elif self.config_offset != 0:
+                            if i == (len(staq) - self.config_offset) - 1:
+                                start_of_line = "->"
+
+                        if s[2] == "<bottom>":
+                            print("{} {} {}".format(start_of_line, s[0], s[1]))
+                        else:
+                            print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
+
+                        start_of_line = "*"
+
+                elif v in self.macros:                    
                     self.command_queue += self.macros[v]
                 else:
                     raise ValueError("Unknown macro: {}".format(str(v)))
