@@ -301,33 +301,37 @@ class ADB:
             # Always add an EOF specifier
             self.program_text[lineinfo[0]].append("[EOF]\n")
 
-    def print_current_line(self):
+    def print_given_line(self, lineinfo, header=True):
         """
         Print the current line nicely
         """
 
         # Get the program text
-        pt = self.program_text[self.lineinfo[0]]
+        pt = self.program_text[lineinfo[0]]
 
         # Isolate the current line
-        prog_line = pt[self.lineinfo[1] - 1][:-1].strip()
+        prog_line = pt[lineinfo[1] - 1][:-1].strip()
 
-        # Format it nicely
-        outline =  ("[" + self.lineinfo[0] + " (" + str(self.lineinfo[1]) + ")]")
+        outline = ""
 
-        # Display the call stack
-        if len(self.call_stack) > 0 and (self.config_offset < len(self.call_stack)):
-            outline += " ("
+        if header:
+            # Format it nicely
+            outline =  ("[" + lineinfo[0] + " (" + str(lineinfo[1]) + ")]")
 
-            offset = -self.config_offset - 1
-            for c in self.call_stack[:offset]:
-                outline += c + "->"
-            outline += self.call_stack[offset] + ")"
+            # Display the call stack
+            if len(self.call_stack) > 0 and (self.config_offset < len(self.call_stack)):
+                outline += " ("
+
+                offset = -self.config_offset - 1
+                for c in self.call_stack[:offset]:
+                    outline += c + "->"
+                outline += self.call_stack[offset] + ")"
 
         # If the line is empty don't bother showing it
-        if prog_line != "":
+        if prog_line != "" and header:
             outline += ("\n-->> " + prog_line)
-
+        elif prog_line != "" and not header:
+            outline += ("    " + prog_line)
         print(outline)
 
     def list_breakpoints(self):
@@ -576,28 +580,30 @@ class ADB:
                     if len(self.call_stack) > 0:
                         staq.append((*state.lineinfo, "<bottom>"))
 
-                    start_of_line = ""
+                    start_of_line = "*"
                     if len(staq) == 0:
                         print("-> <toplevel>")
 
                     for i, s in enumerate(staq):
                         # There's only the top level
                         if len(staq) == 1:
-                            start_of_line = "->"
+                            start_of_line = ">"
 
                         # We're at the bottom
                         elif (self.config_offset == 0 and len(staq) > 0) and i == len(staq) - 1:
-                            start_of_line = "->"
+                            start_of_line = ">"
 
                         # We're traversing frames
                         elif self.config_offset != 0:
                             if i == (len(staq) - self.config_offset) - 1:
-                                start_of_line = "->"
+                                start_of_line = ">"
 
                         if s[2] == "<bottom>":
                             print("{} {} {}".format(start_of_line, s[0], s[1]))
+                            self.print_given_line( (s[0], s[1]) , header=False)
                         else:
                             print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
+                            self.print_given_line( (s[0], s[1]) , header=False)
 
                         start_of_line = "*"
 
@@ -643,7 +649,7 @@ class ADB:
 
                     self.set_lineinfo( (module, line) )
 
-                    self.print_current_line()
+                    self.print_given_line(self.lineinfo)
 
             # Move down a stack frame
             case ('DOWN',):
@@ -670,7 +676,7 @@ class ADB:
                         self.set_lineinfo( (module, line) )
                         
 
-                    self.print_current_line()
+                    self.print_given_line(self.lineinfo)
 
             # Quit command
             case ('QUIT', ):        raise SystemExit()
@@ -739,7 +745,7 @@ class ADB:
                 break
 
         # Print the current line with lineinfo
-        self.print_current_line()
+        self.print_given_line(self.lineinfo)
 
         # Main command loop
         self.main_command_loop()
