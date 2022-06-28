@@ -71,7 +71,7 @@ class ADB:
         #############################
         # Dictionary of macros
         self.macros = {
-            'px': [('CONTINUE',), ('EXPLICIT',), ('EVAL', "io@println(\"x=\"+x)")]
+            'px': [('EVAL', "io@println(\"x=\"+x)")]
         }
 
         #############################
@@ -448,7 +448,12 @@ class ADB:
                 except Exception as e:
                     print("Command error: {}".format(e))
                 else:
-                    print(term2string(function_return_value[-1]))
+                    # Check if there's actually a return value in
+                    # the register
+                    if function_return_value[-1]:
+
+                        # Print the return value
+                        print(term2string(function_return_value[-1]))
 
                 # Reset debugging state
                 asteroid.walk.debugging = True
