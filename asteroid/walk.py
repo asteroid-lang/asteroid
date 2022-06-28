@@ -1124,6 +1124,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # on each new line statement in a function call.
         # This gives us that "n(ext)" behavior within
         # functions
+        stepping = debugger.is_stepping
+
         for s in stmts[1]:
             if debugging and stepping: debugger.set_top_level(True)
 
