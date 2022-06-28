@@ -230,6 +230,8 @@ class ADB:
             old_explicit = self.explicit_enabled
             self.explicit_enabled = False
 
+            old_state_lineinfo = state.lineinfo
+
             import asteroid.walk
             asteroid.walk.debugging = False
             # interpret the break conition
@@ -258,7 +260,7 @@ class ADB:
             self.set_lineinfo(old_lineinfo)
 
             # Reset the state's internal lineinfo
-            state.lineinfo = old_lineinfo
+            state.lineinfo = old_state_lineinfo
 
         # If there's no break cond, then by default it is true
         else:
@@ -424,6 +426,8 @@ class ADB:
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
 
+                old_state_lineinfo = state.lineinfo
+
                 # Set the explicit state to false
                 self.explicit_enabled = False
 
@@ -454,7 +458,7 @@ class ADB:
                 self.set_lineinfo(old_lineinfo)
 
                 # Reset the state's internal lineinfo
-                state.lineinfo = old_lineinfo
+                state.lineinfo = old_state_lineinfo
             
             # Step
             case ('STEP', ):
