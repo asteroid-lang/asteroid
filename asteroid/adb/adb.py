@@ -614,20 +614,6 @@ class ADB:
 
             # Move up a stack frame
             case ('UP',):
-                """
-                The trace stack always has another thing on top. 
-
-                So, if you're 3 calls deep, your thing looks like:
-                    trace_stack = [a,b,c]
-                    stack_pointer = 3
-                    saved_configs = [ac, bc, cc]
-
-                if you're at the bottommost frame, (stack pointer is 
-                len(saved_configs)) + 1
-
-                Major issue:
-                    We don't save the "real" config anywhere... AA!!!
-                """
                 if self.config_offset == len(state.trace_stack) - 1:
                     self.message("At topmost frame")
                 else:
