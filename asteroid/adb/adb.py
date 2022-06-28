@@ -191,16 +191,20 @@ class ADB:
                 print("\nERROR: {}: {}: {}".format(module, lineno, e))
                 dump_trace()
 
-                # If the error occured in our file, show the offending line
-                if self.lineinfo and (module == self.lineinfo[0]):
-                    print("    ==>> " + self.program_text[module][lineno - 1].strip())
-                    print()
-                    self.message("Error occured, restarting session")
-                    self.reset_defaults()
-                    continue
-                else:
-                    # Otherwhise, just break
-                    break
+                # Set out lineinfo here to be sure that the file is in
+                # our program_text dictionary
+                self.set_lineinfo( (module, lineno) )
+
+                print("    ==>> " + self.program_text[module][lineno - 1].strip())
+                print()
+                self.message("Error occured, session will restart after commands")
+                
+                # TODO: (OWM) REFACTOR ERROR HANDLING ON TICK. THIS DOESN'T
+                # WORK AND ISNT SUSTAINABLE
+                self.tick()
+                self.reset_defaults()
+
+                continue
 
     def has_breakpoint_here(self):
         """

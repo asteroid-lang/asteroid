@@ -1025,7 +1025,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
-    # TODO: FIX THIS!!!!
+    # TODO: (OWM) FIX THIS!!!!
     if actual_val_args[0] == 'struct':
         message_explicit("Call: {} on (struct...)", [fname])
     else:
@@ -1079,7 +1079,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
-            # TODO: Do we need this message here?
+            # TODO: (OWM) Do we need this message here?
             #   If our other messaging is good, we shouldn't, it should be obvious
             if actual_val_args[0] != 'struct':
                 #message_explicit("Failed to match function body", level="secondary")
