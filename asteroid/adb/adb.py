@@ -499,17 +499,26 @@ class ADB:
 
             # REPL (!)
             case ('BANG', ):
+                # Keep our lineinfo, and explicit state. Disable explicit state
                 old_lineinfo = self.lineinfo
                 old_explicit = self.explicit_enabled
                 self.explicit_enabled = False
 
+                # Save the *state*'s old lineinfo
+                old_state_lineinfo = state.lineinfo
+
+                # Turn off debugging
                 import asteroid.walk
                 asteroid.walk.debugging = False
                 
+                # Run the repl
                 repl(new=False)
 
+                # Restore debugging flag and give state its old lineinfo
                 asteroid.walk.debugging = True
+                state.lineinfo = old_state_lineinfo
 
+                # Reenable explicit and reset lineinfo
                 self.explicit_enabled = old_explicit
                 self.set_lineinfo(old_lineinfo)
             
@@ -549,7 +558,19 @@ class ADB:
             case ('NAME', v):
                 # If the command name is in macros
 
+                """
+                Putting this functionality here so I don't have to bother with the parser/lexer until
+                the functionality is done
+                
+                We want to be able to display a list of stack frames with the current one being highlighted
+                with an arrow or something. The issue here is that the top level and bottom level aren't
+                easy to integrate with the call stack.
+
+                This solution (kind of) works but it's incredibly messy and definately has some bugs.
+                    * Fixed 
+                """
                 if v == 'where':
+                    self.message("Available Frames")
                     staq = state.trace_stack[1:].copy()
 
                     if len(self.call_stack) > 0:
