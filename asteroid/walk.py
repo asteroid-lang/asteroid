@@ -1125,11 +1125,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # This gives us that "n(ext)" behavior within
         # functions
         for s in stmts[1]:
-            if debugging: debugger.set_top_level(True)
+            if debugging and stepping: debugger.set_top_level(True)
 
             walk(s)
 
-            if debugging: debugger.set_top_level(False)
+            if debugging and stepping: debugger.set_top_level(False)
 
         val = function_return_value.pop()
         if val:
