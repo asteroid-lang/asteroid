@@ -80,7 +80,7 @@ class ADB:
 
         #############################
         # Stack frame information
-        self.config_offset = 0          # The current config we're using
+        self.config_offset = 0          # The index of the current config we're using
         self.original_config = None     # The original config we started with
         self.original_lineinfo = None   # The original lineinfo we started with
     
@@ -665,7 +665,8 @@ class ADB:
                     self.print_given_line(self.lineinfo)
 
             # Quit command
-            case ('QUIT', ):        raise SystemExit()
+            case ('QUIT', ):
+                raise SystemExit()
 
             # Macro/Unknown
             case _:

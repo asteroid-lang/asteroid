@@ -1025,11 +1025,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
-    # TODO: (OWM) FIX THIS!!!!
-    if actual_val_args[0] == 'struct':
-        message_explicit("Call: {} on (struct...)", [fname])
-    else:
-        message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+    message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
 
     if debugging:
         debugger.call_stack.append(fname)
