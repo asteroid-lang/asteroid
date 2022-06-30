@@ -137,6 +137,20 @@ class ADB:
         """
         print("----- {} -----".format(message))
 
+    def handle_run_exception(self, e):
+        # Handle exceptions from the interpretation session
+        (module, lineno) = state.lineinfo
+        print("\nERROR: {}: {}: {}".format(module, lineno, e))
+        dump_trace()
+        
+        # Set out lineinfo here to be sure that the file is in
+        # our program_text dictionary
+        self.set_lineinfo( (module, lineno) )
+        
+        print("    ==>> " + self.program_text[module][lineno - 1].strip())
+        print()
+        self.message("Error occured, session will restart after commands")
+
     def run(self, filename):
         """
         This function runs the given filename through the asteroid debugger
@@ -186,24 +200,20 @@ class ADB:
                 break;
 
             except Exception as e:
-                # Handle exceptions from the interpretation session
-                (module, lineno) = state.lineinfo
-                print("\nERROR: {}: {}: {}".format(module, lineno, e))
-                dump_trace()
+                # Handle the runtime exception
+                self.handle_run_exception(e)
 
-                # Set out lineinfo here to be sure that the file is in
-                # our program_text dictionary
-                self.set_lineinfo( (module, lineno) )
-
-                print("    ==>> " + self.program_text[module][lineno - 1].strip())
-                print()
-                self.message("Error occured, session will restart after commands")
+                # One last tick so the user can play around in
+                # the error scope/line
+                try:
+                    self.tick()
+                except (EOFError, KeyboardInterrupt):
+                    # If the user tries to exit with CTRL+C/D, exit
+                    break;
                 
-                # TODO: (OWM) REFACTOR ERROR HANDLING ON TICK. THIS DOESN'T
-                # WORK AND ISNT SUSTAINABLE
-                self.tick()
+                # Reset the debugger's default state
+                self.message("Session restarted")
                 self.reset_defaults()
-
                 continue
 
     def has_breakpoint_here(self):
