@@ -415,6 +415,213 @@ class ADB:
         self.is_continuing = cont
         self.is_next = next
 
+    def display_macros(self):
+        """
+        Displays all currently active macros
+        """
+        for m in self.macros:
+            print("* {} : {}".format(
+                m, self.macros[m]
+            ))
+
+    def set_new_macro(self, name, l):
+        """
+        Sets a new macro
+        """
+        self.macros[name] = l
+        self.message("Macro {}".format(name))
+
+    def do_eval_command(self, value):
+        """
+        Evaluates a given value
+        """
+        # Save the old lineinfo and explicit state
+        old_lineinfo = self.lineinfo
+        old_explicit = self.explicit_enabled
+        old_state_lineinfo = state.lineinfo
+        
+        # Set the explicit state to false
+        self.explicit_enabled = False
+        
+        # Set the debugging flag to false
+        import asteroid.walk
+        asteroid.walk.debugging = False
+        
+        # Run the asteroid code
+        try:
+            interp(value,
+                input_name = "<EVAL>",
+                redundancy=False,
+                prologue=False,
+                initialize_state=False,
+                debugger=None,
+                exceptions=True)
+        except Exception as e:
+            print("Command error: {}".format(e))
+        else:
+            # Check if there's actually a return value in
+            # the register
+            if function_return_value[-1]:
+                # Print the return value
+                print(term2string(function_return_value[-1]))
+
+        # Reset debugging state
+        asteroid.walk.debugging = True
+        
+        # Reset explicit mode and lineinfo
+        self.explicit_enabled = old_explicit
+        self.set_lineinfo(old_lineinfo)
+        
+        # Reset the state's internal lineinfo
+        state.lineinfo = old_state_lineinfo
+
+    def do_repl_command(self):
+        """
+        Runs a repl in the current stack frame
+        """
+        # Keep our lineinfo, and explicit state. Disable explicit state
+        old_lineinfo = self.lineinfo
+        old_explicit = self.explicit_enabled
+        self.explicit_enabled = False
+
+        # Save the *state*'s old lineinfo
+        old_state_lineinfo = state.lineinfo
+
+        # Turn off debugging
+        import asteroid.walk
+        asteroid.walk.debugging = False
+        
+        # Run the repl
+        repl(new=False)
+
+        # Restore debugging flag and give state its old lineinfo
+        asteroid.walk.debugging = True
+        state.lineinfo = old_state_lineinfo
+
+        # Reenable explicit and reset lineinfo
+        self.explicit_enabled = old_explicit
+        self.set_lineinfo(old_lineinfo)
+
+    def do_help_command(self, name):
+        """
+        Lists help options and prints help info
+        """
+        from asteroid.adb.help import command_description_table
+        
+        # If a command name is supplied
+        if name:
+            # Get the command description for that name
+            help_msg = command_description_table.get(name)
+            # if there's a description, print the info
+            if help_msg:
+                self.message("Info for {}".format(name))
+                print(help_msg)
+            # Else, print an error
+            else:
+                self.message("Unknown command for help: {}".format(
+                    name
+                ))
+        
+        # If no command is supplied, then just print out the default command menu
+        else:
+            print("Type 'help NAME' to get help for a command")
+            for c in command_description_table:
+                print("* {}".format(c))
+
+    def move_frame_up(self):
+        """
+        Moves the context to the next higher stack frame
+        """
+        if self.config_offset == len(state.trace_stack) - 1:
+            self.message("At topmost frame")
+        else:
+            self.config_offset += 1
+            # We're at the bottommost frame and want to go up, but need
+            # to save the original config
+            if self.original_config == None:
+                self.original_config = state.symbol_table.get_config()
+                self.original_lineinfo = state.lineinfo
+            
+            # Get the associated module and line for this frame
+            (module, line, _) = state.trace_stack[-self.config_offset]
+            
+            # Set the config
+            state.symbol_table.set_config(
+                state.symbol_table.saved_configs[-self.config_offset]
+            )
+            self.set_lineinfo( (module, line) )
+            self.print_given_line(self.lineinfo)
+
+    def move_frame_down(self):
+        """
+        Moves the context to the next lowest stack frame
+        """
+        stack = state.trace_stack
+        
+        if self.config_offset == 0:
+            self.message("At bottommost frame")
+        
+        else:
+            self.config_offset -= 1
+            bottom_level = (self.config_offset == 0)
+        
+            if bottom_level:
+                if self.original_config:
+                    state.symbol_table.set_config(self.original_config)
+                    self.set_lineinfo( (self.original_lineinfo) )
+            else:
+                # We're at the bottommost frame and want to go up, but need
+                # to save the original config
+                (module, line, _) = state.trace_stack[-self.config_offset]
+                
+                state.symbol_table.set_config(
+                    state.symbol_table.saved_configs[-self.config_offset])
+
+                self.set_lineinfo( (module, line) )
+                
+            self.print_given_line(self.lineinfo)
+
+    # TODO: (OWM) CLEAN THIS UP!
+    def do_where_command(self):
+        """
+        Displays a list of available frames and shows the user
+        where they currently are
+        """
+        self.message("Available Frames")
+        stack_copy = state.trace_stack[1:].copy()
+        
+        if len(self.call_stack) > 0:
+            stack_copy.append((*state.lineinfo, "<bottom>"))
+        
+        start_of_line = "*"
+        
+        if len(stack_copy) == 0:
+            print("-> <toplevel>")
+        
+        # For each list in the stack
+        for i, s in enumerate(stack_copy):
+            # There's only the top level
+            if len(stack_copy) == 1:
+                start_of_line = ">"
+        
+            # We're at the bottom of the stack
+            elif (self.config_offset == 0 and len(stack_copy) > 0) and i == len(stack_copy) - 1:
+                start_of_line = ">"
+        
+            # We're traversing frames
+            elif self.config_offset != 0:
+                if i == (len(stack_copy) - self.config_offset) - 1:
+                    start_of_line = ">"
+            # Bottom of stack
+            if s[2] == "<bottom>":
+                print("{} {} {}".format(start_of_line, s[0], s[1]))
+                self.print_given_line( (s[0], s[1]) , header=False)
+        
+            else:
+                print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
+                self.print_given_line( (s[0], s[1]) , header=False)
+            start_of_line = "*"
+
     def walk_command(self, cmd):
         """
         Walk a given command
@@ -428,61 +635,29 @@ class ADB:
         match(cmd):
 
             # Macro display
-            case ('MACRO',):
-                for m in self.macros:
-                    print("* {} : {}".format(
-                        m, self.macros[m]
-                    ))
-            # Macros
-            case ('MACRO', name, l):
-                self.macros[name] = l
-                self.message("Macro {}".format(name))
-
-            # Literal commands
-            case ('EVAL', value):
-                # Save the old lineinfo and explicit state
-                old_lineinfo = self.lineinfo
-                old_explicit = self.explicit_enabled
-
-                old_state_lineinfo = state.lineinfo
-
-                # Set the explicit state to false
-                self.explicit_enabled = False
-
-                # Set the debugging flag to false
-                import asteroid.walk
-                asteroid.walk.debugging = False
-
-                # Run the asteroid code
-                try:
-                    interp(value,
-                        input_name = "<EVAL>",
-                        redundancy=False,
-                        prologue=False,
-                        initialize_state=False,
-                        debugger=None,
-                        exceptions=True)
-
-                except Exception as e:
-                    print("Command error: {}".format(e))
-                else:
-                    # Check if there's actually a return value in
-                    # the register
-                    if function_return_value[-1]:
-
-                        # Print the return value
-                        print(term2string(function_return_value[-1]))
-
-                # Reset debugging state
-                asteroid.walk.debugging = True
-
-                # Reset explicit mode and lineinfo
-                self.explicit_enabled = old_explicit
-                self.set_lineinfo(old_lineinfo)
-
-                # Reset the state's internal lineinfo
-                state.lineinfo = old_state_lineinfo
+            case ('MACRO',):            self.display_macros()
             
+            # Macros
+            case ('MACRO', name, l):    self.set_new_macro(name, l)
+
+            # Eval command
+            case ('EVAL', value):       self.do_eval_command(value)
+
+            # REPL (!)
+            case ('BANG', ):            self.do_repl_command()
+
+            # Help menu
+            case ('HELP', name):        self.do_help_command(name)
+
+            # Move up a stack frame
+            case ('UP',):               self.move_frame_up()
+
+            # Move down a stack frame
+            case ('DOWN',):             self.move_frame_down()
+
+            # Stack frame listing
+            case ('WHERE',):            self.do_where_command()
+
             # Step
             case ('STEP', ):
                 self.set_config(step=True)
@@ -510,31 +685,6 @@ class ADB:
             case ('DELETE', nums):
                 for n in nums:
                     self.breakpoints.pop(n)
-
-            # REPL (!)
-            case ('BANG', ):
-                # Keep our lineinfo, and explicit state. Disable explicit state
-                old_lineinfo = self.lineinfo
-                old_explicit = self.explicit_enabled
-                self.explicit_enabled = False
-
-                # Save the *state*'s old lineinfo
-                old_state_lineinfo = state.lineinfo
-
-                # Turn off debugging
-                import asteroid.walk
-                asteroid.walk.debugging = False
-                
-                # Run the repl
-                repl(new=False)
-
-                # Restore debugging flag and give state its old lineinfo
-                asteroid.walk.debugging = True
-                state.lineinfo = old_state_lineinfo
-
-                # Reenable explicit and reset lineinfo
-                self.explicit_enabled = old_explicit
-                self.set_lineinfo(old_lineinfo)
             
             # Longlist, List, Quit, Explicit, Unexplicit
             case ('LONGLIST',):     self.list_program()
@@ -542,138 +692,9 @@ class ADB:
             case ('EXPLICIT', ):    self.explicit_enabled = True
             case ('UNEXPLICIT', ):  self.explicit_enabled = False
 
-            # Help menu
-            case ('HELP', name):
-                from asteroid.adb.help import command_description_table
-                
-                # If a command name is supplied
-                if name:
-                    # Get the command description for that name
-                    help_msg = command_description_table.get(name)
-
-                    # if there's a description, print the info
-                    if help_msg:
-                        self.message("Info for {}".format(name))
-                        print(help_msg)
-
-                    # Else, print an error
-                    else:
-                        self.message("Unknown command for help: {}".format(
-                            name
-                        ))
-
-                # If no command is supplied, then just print out the default command menu
-                else:
-                    print("Type 'help NAME' to get help for a command")
-                    for c in command_description_table:
-                        print("* {}".format(c))
-
-            # Move up a stack frame
-            case ('UP',):
-                if self.config_offset == len(state.trace_stack) - 1:
-                    self.message("At topmost frame")
-                else:
-                    self.config_offset += 1
-
-                    # We're at the bottommost frame and want to go up, but need
-                    # to save the original config
-                    if self.original_config == None:
-                        self.original_config = state.symbol_table.get_config()
-                        self.original_lineinfo = state.lineinfo
-                    
-                    # Get the associated module and line for this frame
-                    (module, line, _) = state.trace_stack[-self.config_offset]
-                    
-                    # Set the config
-                    state.symbol_table.set_config(
-                        state.symbol_table.saved_configs[-self.config_offset]
-                    )
-
-                    self.set_lineinfo( (module, line) )
-
-                    self.print_given_line(self.lineinfo)
-
-            # Move down a stack frame
-            case ('DOWN',):
-                stack = state.trace_stack
-                if self.config_offset == 0:
-                    self.message("At bottommost frame")
-                else:
-                    self.config_offset -= 1
-                    bottom_level = (self.config_offset == 0)
-
-                    if bottom_level:
-                        if self.original_config:
-                            state.symbol_table.set_config(self.original_config)
-                            self.set_lineinfo( (self.original_lineinfo) )
-                    else:
-                        # We're at the bottommost frame and want to go up, but need
-                        # to save the original config
-                        (module, line, _) = state.trace_stack[-self.config_offset]
-                        
-                        state.symbol_table.set_config(
-                            state.symbol_table.saved_configs[-self.config_offset]
-                        
-                        )
-                        self.set_lineinfo( (module, line) )
-                        
-
-                    self.print_given_line(self.lineinfo)
-
-            # Stack frame listing
-            # TODO: (OWM) CLEAN THIS UP!
-            case ('WHERE',):
-                self.message("Available Frames")
-                stack_copy = state.trace_stack[1:].copy()
-                
-                if len(self.call_stack) > 0:
-                    stack_copy.append((*state.lineinfo, "<bottom>"))
-                
-                start_of_line = "*"
-                
-                if len(stack_copy) == 0:
-                    print("-> <toplevel>")
-                
-                # For each list in the stack
-                for i, s in enumerate(stack_copy):
-                    # There's only the top level
-                    if len(stack_copy) == 1:
-                        start_of_line = ">"
-                
-                    # We're at the bottom of the stack
-                    elif (self.config_offset == 0 and len(stack_copy) > 0) and i == len(stack_copy) - 1:
-                        start_of_line = ">"
-                
-                    # We're traversing frames
-                    elif self.config_offset != 0:
-                        if i == (len(stack_copy) - self.config_offset) - 1:
-                            start_of_line = ">"
-
-                    # Bottom of stack
-                    if s[2] == "<bottom>":
-                        print("{} {} {}".format(start_of_line, s[0], s[1]))
-                        self.print_given_line( (s[0], s[1]) , header=False)
-                
-                    else:
-                        print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
-                        self.print_given_line( (s[0], s[1]) , header=False)
-                    start_of_line = "*"
-
             # Macro/Unknown
             case ('NAME', v):
                 # If the command name is in macros
-
-                """
-                Putting this functionality here so I don't have to bother with the parser/lexer until
-                the functionality is done
-                
-                We want to be able to display a list of stack frames with the current one being highlighted
-                with an arrow or something. The issue here is that the top level and bottom level aren't
-                easy to integrate with the call stack.
-
-                This solution (kind of) works but it's incredibly messy and definately has some bugs.
-                    * Fixed 
-                """
                 if v in self.macros:                    
                     self.command_queue += self.macros[v]
                 else:
