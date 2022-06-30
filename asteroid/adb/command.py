@@ -28,6 +28,7 @@ class DebuggerLexer:
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
             ('HELP',        r'\bh\b|\bhelp\b'),
+            ('WHERE',       r'\bwhere\b|\bw\b'),
             ('UP',          r'\<'),
             ('DOWN',        r'\>'),
 
@@ -202,7 +203,7 @@ class DebuggerParser:
             case 'HELP':    return self.help_cmd()
 
             case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | \
-                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN':
+                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
