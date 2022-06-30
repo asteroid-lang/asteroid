@@ -634,12 +634,13 @@ class ADB:
                 if len(stack_copy) == 0:
                     print("-> <toplevel>")
                 
+                # For each list in the stack
                 for i, s in enumerate(stack_copy):
                     # There's only the top level
                     if len(stack_copy) == 1:
                         start_of_line = ">"
                 
-                    # We're at the bottom
+                    # We're at the bottom of the stack
                     elif (self.config_offset == 0 and len(stack_copy) > 0) and i == len(stack_copy) - 1:
                         start_of_line = ">"
                 
@@ -647,7 +648,8 @@ class ADB:
                     elif self.config_offset != 0:
                         if i == (len(stack_copy) - self.config_offset) - 1:
                             start_of_line = ">"
-                
+
+                    # Bottom of stack
                     if s[2] == "<bottom>":
                         print("{} {} {}".format(start_of_line, s[0], s[1]))
                         self.print_given_line( (s[0], s[1]) , header=False)
@@ -770,10 +772,6 @@ class ADB:
         Explicit mode is a mode in which extra steps in
         computations are revealed to the user
         """
-
-        # If we're not on the intended file, just return
-        # if self.lineinfo[0] != self.filename:
-        #     return
 
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
