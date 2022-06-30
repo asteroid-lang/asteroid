@@ -568,60 +568,6 @@ class ADB:
                     for c in command_description_table:
                         print("* {}".format(c))
 
-            # Macro/Unknown
-            case ('NAME', v):
-                # If the command name is in macros
-
-                """
-                Putting this functionality here so I don't have to bother with the parser/lexer until
-                the functionality is done
-                
-                We want to be able to display a list of stack frames with the current one being highlighted
-                with an arrow or something. The issue here is that the top level and bottom level aren't
-                easy to integrate with the call stack.
-
-                This solution (kind of) works but it's incredibly messy and definately has some bugs.
-                    * Fixed 
-                """
-                if v == 'where':
-                    self.message("Available Frames")
-                    staq = state.trace_stack[1:].copy()
-
-                    if len(self.call_stack) > 0:
-                        staq.append((*state.lineinfo, "<bottom>"))
-
-                    start_of_line = "*"
-                    if len(staq) == 0:
-                        print("-> <toplevel>")
-
-                    for i, s in enumerate(staq):
-                        # There's only the top level
-                        if len(staq) == 1:
-                            start_of_line = ">"
-
-                        # We're at the bottom
-                        elif (self.config_offset == 0 and len(staq) > 0) and i == len(staq) - 1:
-                            start_of_line = ">"
-
-                        # We're traversing frames
-                        elif self.config_offset != 0:
-                            if i == (len(staq) - self.config_offset) - 1:
-                                start_of_line = ">"
-
-                        if s[2] == "<bottom>":
-                            print("{} {} {}".format(start_of_line, s[0], s[1]))
-                            self.print_given_line( (s[0], s[1]) , header=False)
-                        else:
-                            print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
-                            self.print_given_line( (s[0], s[1]) , header=False)
-
-                        start_of_line = "*"
-
-                elif v in self.macros:                    
-                    self.command_queue += self.macros[v]
-                else:
-                    raise ValueError("Unknown macro: {}".format(str(v)))
-
             # Move up a stack frame
             case ('UP',):
                 if self.config_offset == len(state.trace_stack) - 1:
@@ -673,6 +619,63 @@ class ADB:
                         
 
                     self.print_given_line(self.lineinfo)
+
+            # Stack frame listing
+            # TODO: (OWM) CLEAN THIS UP!
+            case ('WHERE',):
+                self.message("Available Frames")
+                stack_copy = state.trace_stack[1:].copy()
+                
+                if len(self.call_stack) > 0:
+                    stack_copy.append((*state.lineinfo, "<bottom>"))
+                
+                start_of_line = "*"
+                
+                if len(stack_copy) == 0:
+                    print("-> <toplevel>")
+                
+                for i, s in enumerate(stack_copy):
+                    # There's only the top level
+                    if len(stack_copy) == 1:
+                        start_of_line = ">"
+                
+                    # We're at the bottom
+                    elif (self.config_offset == 0 and len(stack_copy) > 0) and i == len(stack_copy) - 1:
+                        start_of_line = ">"
+                
+                    # We're traversing frames
+                    elif self.config_offset != 0:
+                        if i == (len(stack_copy) - self.config_offset) - 1:
+                            start_of_line = ">"
+                
+                    if s[2] == "<bottom>":
+                        print("{} {} {}".format(start_of_line, s[0], s[1]))
+                        self.print_given_line( (s[0], s[1]) , header=False)
+                
+                    else:
+                        print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
+                        self.print_given_line( (s[0], s[1]) , header=False)
+                    start_of_line = "*"
+
+            # Macro/Unknown
+            case ('NAME', v):
+                # If the command name is in macros
+
+                """
+                Putting this functionality here so I don't have to bother with the parser/lexer until
+                the functionality is done
+                
+                We want to be able to display a list of stack frames with the current one being highlighted
+                with an arrow or something. The issue here is that the top level and bottom level aren't
+                easy to integrate with the call stack.
+
+                This solution (kind of) works but it's incredibly messy and definately has some bugs.
+                    * Fixed 
+                """
+                if v in self.macros:                    
+                    self.command_queue += self.macros[v]
+                else:
+                    raise ValueError("Unknown macro: {}".format(str(v)))
 
             # Quit command
             case ('QUIT', ):
