@@ -634,29 +634,20 @@ class ADB:
         # Match command to behavior
         match(cmd):
 
-            # Macro display
-            case ('MACRO',):            self.display_macros()
-            
-            # Macros
-            case ('MACRO', name, l):    self.set_new_macro(name, l)
+            case ('MACRO',):          self.display_macros()
+            case ('MACRO', name, l):  self.set_new_macro(name, l)
+            case ('EVAL', value):     self.do_eval_command(value)
+            case ('BANG', ):          self.do_repl_command()
+            case ('HELP', name):      self.do_help_command(name)
+            case ('UP',):             self.move_frame_up()
+            case ('DOWN',):           self.move_frame_down()
+            case ('WHERE',):          self.do_where_command()
 
-            # Eval command
-            case ('EVAL', value):       self.do_eval_command(value)
-
-            # REPL (!)
-            case ('BANG', ):            self.do_repl_command()
-
-            # Help menu
-            case ('HELP', name):        self.do_help_command(name)
-
-            # Move up a stack frame
-            case ('UP',):               self.move_frame_up()
-
-            # Move down a stack frame
-            case ('DOWN',):             self.move_frame_down()
-
-            # Stack frame listing
-            case ('WHERE',):            self.do_where_command()
+            # Longlist, List, Quit, Explicit, Unexplicit
+            case ('LONGLIST',):     self.list_program()
+            case ('LIST',):         self.list_program(relative=True)
+            case ('EXPLICIT', ):    self.explicit_enabled = True
+            case ('UNEXPLICIT', ):  self.explicit_enabled = False
 
             # Step
             case ('STEP', ):
@@ -685,12 +676,6 @@ class ADB:
             case ('DELETE', nums):
                 for n in nums:
                     self.breakpoints.pop(n)
-            
-            # Longlist, List, Quit, Explicit, Unexplicit
-            case ('LONGLIST',):     self.list_program()
-            case ('LIST',):         self.list_program(relative=True)
-            case ('EXPLICIT', ):    self.explicit_enabled = True
-            case ('UNEXPLICIT', ):  self.explicit_enabled = False
 
             # Macro/Unknown
             case ('NAME', v):
@@ -710,7 +695,7 @@ class ADB:
 
         return exit_loop
 
-    def main_command_loop(self):
+    def command_loop(self):
         """
         Main command loop for ADB
         """
@@ -771,7 +756,7 @@ class ADB:
         self.print_given_line(self.lineinfo)
 
         # Main command loop
-        self.main_command_loop()
+        self.command_loop()
 
         # Reset the tab level
         self.tab_level = 0
