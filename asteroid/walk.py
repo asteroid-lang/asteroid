@@ -142,11 +142,9 @@ def unify(term, pattern, unifying = True ):
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
             message_explicit("Matched!", level="tertiary")
-            #decrease_debugger_tab_level()
             return [] # return empty unifier
         else:
             message_explicit("Failed!", level="tertiary")
-            #decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
@@ -209,14 +207,10 @@ def unify(term, pattern, unifying = True ):
             [pid, gen_t2s( ('tuple', pl) ), tid, gen_t2s( ('tuple', tl) )]
         )
         
-        #increase_debugger_tab_level()
-
         unifiers = []
         for i in range(len(pl)):
             unifiers += unify(tl[i], pl[i])
         
-        #decrease_debugger_tab_level()
-
         return unifiers
 
     elif pattern[0] == 'string' and term[0] != 'string':
@@ -251,8 +245,6 @@ def unify(term, pattern, unifying = True ):
             [gen_t2s(cond_exp)]
         )
 
-        #increase_debugger_tab_level()
-
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
@@ -270,13 +262,11 @@ def unify(term, pattern, unifying = True ):
             state.symbol_table.pop_scope()
 
         if bool_val[1]:
-            #decrease_debugger_tab_level()
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)]
             )
             return unifiers
         else:
-            #decrease_debugger_tab_level()
             message_explicit("Condition ({}) failed",
                 [gen_t2s(cond_exp)]
             )
@@ -407,10 +397,8 @@ def unify(term, pattern, unifying = True ):
             [gen_t2s(name_exp), gen_t2s(p)]
         )
 
-        #increase_debugger_tab_level()
         # name_exp can be an id or an index expression.
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
-        #decrease_debugger_tab_level()
 
         return unifiers
 
@@ -483,12 +471,8 @@ def unify(term, pattern, unifying = True ):
         unifiers = []
         data = data_only(obj_memory)
 
-        #increase_debugger_tab_level()
-
         for i in range(len(data)):
             unifiers += unify(data[i], pattern_list[i], unifying)
-
-        #decrease_debugger_tab_level()
 
         return unifiers
 
@@ -515,7 +499,6 @@ def unify(term, pattern, unifying = True ):
         message_explicit("Matching {} to {}",
             [gen_t2s(term), gen_t2s(pattern)]
         )
-        #increase_debugger_tab_level()
 
         # if we are unifying or we are not evaluating subsumption
         #  to another head-tail
@@ -525,14 +508,12 @@ def unify(term, pattern, unifying = True ):
 
             if LIST != 'list':
                 message_explicit("Failed", level="secondary")
-                #decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "head-tail operator expected type 'list' got type '{}'"
                     .format(LIST))
 
             if not len(list_val):
                 message_explicit("Failed", level="secondary")
-                #decrease_debugger_tab_level()
 
                 raise PatternMatchFailed(
                     "head-tail operator expected a non-empty list")
@@ -546,7 +527,6 @@ def unify(term, pattern, unifying = True ):
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
             message_explicit("Success!", level="secondary")
-            #decrease_debugger_tab_level()
 
             return unifier
 
@@ -561,7 +541,6 @@ def unify(term, pattern, unifying = True ):
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is not redundant
                 message_explicit("Failed", level="secondary")
-                #decrease_debugger_tab_level()
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
@@ -580,7 +559,6 @@ def unify(term, pattern, unifying = True ):
 
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
                 message_explicit("Success!", level="secondary")
-                #decrease_debugger_tab_level()
                 return unifier
 
     elif pattern[0] == 'deref':  # ('deref', v)
@@ -591,9 +569,7 @@ def unify(term, pattern, unifying = True ):
             [gen_t2s(pattern[1])]
         )
 
-        #increase_debugger_tab_level()
         p = walk(pattern[1])
-        #decrease_debugger_tab_level()
 
         message_explicit("{} -> {}",
             [gen_t2s(pattern),
@@ -625,15 +601,12 @@ def unify(term, pattern, unifying = True ):
         message_explicit("[Begin] constraint pattern")    
 
         state.constraint_lvl += 1
-        #increase_debugger_tab_level()
         
         try:
             unifier = unify(term,pattern[1])
         except PatternMatchFailed as p:
-            #decrease_debugger_tab_level()
             raise p
         
-        #decrease_debugger_tab_level()
         state.constraint_lvl -= 1
 
         message_explicit("[End] constraint pattern")
@@ -1069,8 +1042,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         message_explicit("Attempting to match {} with pattern {}",
             [gen_t2s(actual_val_args), gen_t2s(p)], level="secondary")
         
-        #increase_debugger_tab_level()
-
         try:
             unifiers = unify(actual_val_args, p)
             unified = True
@@ -1083,10 +1054,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
             unifiers = []
             unified = False
-            #decrease_debugger_tab_level()
 
         if unified:
-            #decrease_debugger_tab_level()
 
             if actual_val_args[0] != 'struct':
                 message_explicit("Success! Matched function body", level="tertiary")
@@ -1282,9 +1251,7 @@ def unify_stmt(node):
         [gen_t2s(term)]
     )
 
-    #increase_debugger_tab_level()
     unifiers = unify(term, pattern)
-    #decrease_debugger_tab_level()
 
     declare_unifiers(unifiers)
 
@@ -1415,10 +1382,8 @@ def try_stmt(node):
         except PatternMatchFailed:
             pass
         else:
-            #increase_debugger_tab_level()
             declare_unifiers(unifiers)
             walk(catch_stmts)
-            #decrease_debugger_tab_level()
 
             return
 
@@ -1493,8 +1458,6 @@ def for_stmt(node):
     notify_debugger()
     message_explicit("For loop")
 
-    #increase_debugger_tab_level()
-
     (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
     assert_match(FOR, 'for')
 
@@ -1531,15 +1494,11 @@ def for_stmt(node):
                 declare_unifiers(unifiers)
                 
                 message_explicit("Walking body")
-                #increase_debugger_tab_level()
 
                 walk(stmt_list)
                 
-                #decrease_debugger_tab_level()
     except Break:
         pass
-
-    #decrease_debugger_tab_level()
 
 #########################################################################
 def if_stmt(node):
