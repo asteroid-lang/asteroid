@@ -53,7 +53,7 @@ class ADB:
         self.call_stack = []
 
         #############################
-        self.tab_level = 0
+        self.tab_level_stack = [0]
 
         # Lineinfo
         self.lineinfo = None
@@ -110,7 +110,7 @@ class ADB:
         """
         Make the tab level for nested messaging
         """
-        return self.tab_level*"  "
+        return self.tab_level_stack[-1]*"  "
 
     def message_explicit(self, message, level = "primary"):
         """
@@ -588,7 +588,7 @@ class ADB:
         where they currently are
         """
         self.message("Available Frames")
-        stack_copy = state.trace_stack[1:].copy()
+        copy = state.trace_stack[1:].copy()
         
         if len(self.call_stack) > 0:
             stack_copy.append((*state.lineinfo, "<bottom>"))
@@ -689,7 +689,9 @@ class ADB:
             case ('QUIT', ):
                 raise SystemExit()
 
-            # Macro/Unknown
+            case []:
+                pass
+
             case _:
                 raise ValueError("Unknown command: {}".format(str(cmd)))
 
@@ -750,8 +752,8 @@ class ADB:
             if exit_loop:
                 if self.original_config:
                     self.reset_config()
-                break
-
+                return
+        
         # Print the current line with lineinfo
         self.print_given_line(self.lineinfo)
 
@@ -759,7 +761,7 @@ class ADB:
         self.command_loop()
 
         # Reset the tab level
-        self.tab_level = 0
+        self.tab_level_stack = [0]
     
     def notify(self):
         """
