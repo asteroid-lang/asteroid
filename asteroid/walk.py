@@ -55,13 +55,13 @@ def gen_t2s(node):
 
 def increase_debugger_tab_level():
     if debugging:
-        debugger.tab_level += 1
+        debugger.tab_level_stack[-1] += 1
 
 def decrease_debugger_tab_level():
     if debugging:
-        debugger.tab_level -=1
-        if debugger.tab_level < 0:
-            debugger.tab_level = 0
+        debugger.tab_level_stack[-1] -=1
+        if debugger.tab_level_stack[-1] < 0:
+            debugger.tab_level_stack[-1] = 0
 
 def notify_debugger():
     if debugging:
@@ -999,6 +999,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     old_lineinfo = state.lineinfo
 
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+    increase_debugger_tab_level()
 
     if debugging:
         debugger.call_stack.append(fname)
@@ -1132,6 +1133,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    decrease_debugger_tab_level()
+
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname]
@@ -1244,11 +1247,11 @@ def unify_stmt(node):
     term = walk(exp)
 
     message_explicit("pattern: {}",
-        [gen_t2s(pattern)]
+        [gen_t2s(pattern)], level="secondary"
     )
 
     message_explicit("term: {}",
-        [gen_t2s(term)]
+        [gen_t2s(term)], level="secondary"
     )
 
     unifiers = unify(term, pattern)
