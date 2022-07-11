@@ -215,7 +215,7 @@ class DebuggerParser:
                 return ('NAME', n)
 
             case 'EOF':
-                return ('EOL', )
+                return ('NOOP',)
 
             case 'SEMI':
                 return ('NOOP', )
