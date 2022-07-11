@@ -687,7 +687,7 @@ class ADB:
             case ('QUIT', ):
                 raise SystemExit()
 
-            case []:
+            case ('NOOP', ) | ('EOL', ):
                 pass
 
             case _:

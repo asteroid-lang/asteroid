@@ -110,14 +110,16 @@ class DebuggerParser:
     def line(self):
         if self.dlx.pointer().type == 'MACRO':
             return self.macro()
+
         else:
             cmds = [self.command()]
             while self.dlx.pointer().type in ['SEMI']:
-                self.dlx.match(self.dlx.pointer().type)
-                cmds += [self.command()]
+                self.dlx.match('SEMI')
 
                 if self.dlx.pointer().type == 'EOF':
                     break
+
+                cmds += [self.command()]
 
             return ('LINE', cmds)
     
@@ -213,7 +215,10 @@ class DebuggerParser:
                 return ('NAME', n)
 
             case 'EOF':
-                return []
+                return ('EOL', )
+
+            case 'SEMI':
+                return ('NOOP', )
 
             case _:
                 raise ValueError("Unknown command: {}".format(
