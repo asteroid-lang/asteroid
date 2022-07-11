@@ -462,8 +462,12 @@ class ADB:
             # Check if there's actually a return value in
             # the register
             if function_return_value[-1]:
-                # Print the return value
-                print(term2string(function_return_value[-1]))
+                # Get the last return value (type, value)
+                retval = function_return_value[-1]
+
+                # If it isn't none, print out the value
+                if retval[1] != None:
+                    print(term2string(function_return_value[-1]))
 
         # Reset debugging state
         asteroid.walk.debugging = True
