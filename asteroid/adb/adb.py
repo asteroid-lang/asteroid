@@ -588,7 +588,7 @@ class ADB:
         where they currently are
         """
         self.message("Available Frames")
-        copy = state.trace_stack[1:].copy()
+        stack_copy = state.trace_stack[1:].copy()
         
         if len(self.call_stack) > 0:
             stack_copy.append((*state.lineinfo, "<bottom>"))
@@ -687,7 +687,7 @@ class ADB:
             case ('QUIT', ):
                 raise SystemExit()
 
-            case ('NOOP', ) | ('EOL', ):
+            case ('NOOP', ):
                 pass
 
             case _:
