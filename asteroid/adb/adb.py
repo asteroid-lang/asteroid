@@ -581,7 +581,7 @@ class ADB:
                 
             self.print_given_line(self.lineinfo)
 
-    # TODO: (OWM) CLEAN THIS UP!
+    # This function is super spaghetti but the behavior is complicated
     def do_where_command(self):
         """
         Displays a list of available frames and shows the user
@@ -612,6 +612,7 @@ class ADB:
             elif self.config_offset != 0:
                 if i == (len(stack_copy) - self.config_offset) - 1:
                     start_of_line = ">"
+
             # Bottom of stack
             if s[2] == "<bottom>":
                 print("{} {} {}".format(start_of_line, s[0], s[1]))
@@ -633,7 +634,6 @@ class ADB:
 
         # Match command to behavior
         match(cmd):
-
             case ('MACRO',):          self.display_macros()
             case ('MACRO', name, l):  self.set_new_macro(name, l)
             case ('EVAL', value):     self.do_eval_command(value)
@@ -642,12 +642,10 @@ class ADB:
             case ('UP',):             self.move_frame_up()
             case ('DOWN',):           self.move_frame_down()
             case ('WHERE',):          self.do_where_command()
-
-            # Longlist, List, Quit, Explicit, Unexplicit
-            case ('LONGLIST',):     self.list_program()
-            case ('LIST',):         self.list_program(relative=True)
-            case ('EXPLICIT', ):    self.explicit_enabled = True
-            case ('UNEXPLICIT', ):  self.explicit_enabled = False
+            case ('LONGLIST',):       self.list_program()
+            case ('LIST',):           self.list_program(relative=True)
+            case ('EXPLICIT', ):      self.explicit_enabled = True
+            case ('UNEXPLICIT', ):    self.explicit_enabled = False
 
             # Step
             case ('STEP', ):
