@@ -1001,9 +1001,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
     increase_debugger_tab_level()
 
-    if debugging:
-        debugger.call_stack.append(fname)
-
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
@@ -1139,9 +1136,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname]
     )
-
-    if debugging:
-        debugger.call_stack.pop()
 
     return return_value
 

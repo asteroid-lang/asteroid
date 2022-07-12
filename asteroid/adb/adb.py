@@ -49,10 +49,6 @@ class ADB:
         self.explicit_enabled = False
 
         #############################
-        # List of function calls
-        self.call_stack = []
-
-        #############################
         self.tab_level_stack = [0]
 
         # Lineinfo
@@ -94,7 +90,6 @@ class ADB:
         self.is_next = True
         self.top_level = True
         self.explicit_enabled = False
-        self.call_stack = []
 
     def reset_config(self):
         """
@@ -324,18 +319,21 @@ class ADB:
 
         outline = ""
 
+        # The current call stack
+        call_stack = [s[-1] for s in state.trace_stack][1:]
+
         if header:
             # Format it nicely
             outline =  ("[" + lineinfo[0] + " (" + str(lineinfo[1]) + ")]")
 
             # Display the call stack
-            if len(self.call_stack) > 0 and (self.config_offset < len(self.call_stack)):
+            if len(call_stack) > 0 and (self.config_offset < len(call_stack)):
                 outline += " ("
 
                 offset = -self.config_offset - 1
-                for c in self.call_stack[:offset]:
+                for c in call_stack[:offset]:
                     outline += c + "->"
-                outline += self.call_stack[offset] + ")"
+                outline += call_stack[offset] + ")"
 
         # If the line is empty don't bother showing it
         if prog_line != "" and header:
@@ -593,8 +591,12 @@ class ADB:
         """
         self.message("Available Frames")
         stack_copy = state.trace_stack[1:].copy()
-        
-        if len(self.call_stack) > 0:
+
+        # The call stack
+        call_stack = [s[-1] for s in state.trace_stack][1:]
+
+
+        if len(call_stack) > 0:
             stack_copy.append((*state.lineinfo, "<bottom>"))
         
         start_of_line = "*"
