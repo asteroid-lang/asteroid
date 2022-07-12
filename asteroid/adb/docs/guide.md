@@ -61,20 +61,35 @@ eval("x")
 `!` Open up a repl
 
 ### Help
+`h(elp) (command)?` gives help for a given command. Running just `help` shows all available commands.
+Example:
+```
+h macro
+help break
+```
 
 ### < (Up)
+`<` move up one stack frame
 
 ### > (Down)
+`>` move down one stack frame
 
 ### Where
+`w(here)` displays the frame stack and the currently active frame.
 
 ### Longlist
+`ll (longlist)` lists the entire program
 
 ### List
+`l(ist)` lists the lines around the currently executing line
 
 ### Explicit
+`e(xplicit)` enables explicit mode
 
 ### Unexplicit
+`u(nexplicit)` disables explicit mode
+
+# Explicit Mode
 
 ---
 
