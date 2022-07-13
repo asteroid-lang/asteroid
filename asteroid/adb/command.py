@@ -25,8 +25,11 @@ class DebuggerLexer:
             ('LIST',        r'\blist\b|\bl\b'),
             ('LONGLIST',    r'\blonglist\b|\bll\b'),
             ('QUIT',        r'\bquit\b|\bq\b'),
+            
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
-            ('UNEXPLICIT',  r'\bunexplicit\b|\bu\b'),
+            ('ON',          r'\bon\b'),
+            ('OFF',         r'\boff\b'),
+
             ('HELP',        r'\bh\b|\bhelp\b'),
             ('WHERE',       r'\bwhere\b|\bw\b'),
             ('UP',          r'\<'),
@@ -196,15 +199,26 @@ class DebuggerParser:
             self.dlx.next()
         
         return ('HELP', n)
+
+    def explicit_cmd(self):
+        self.dlx.match('EXPLICIT')
+
+        set_exp = None
+        if self.dlx.pointer().type in ['ON', 'OFF']:
+            set_exp = (self.dlx.pointer().type == 'ON')
+            self.dlx.next()
+
+        return ('EXPLICIT', set_exp)
     
     def command(self):
         match(self.dlx.pointer().type):
-            case 'EVAL':    return self.eval_cmd()
-            case 'BREAK':   return self.break_cmd()
-            case 'DELETE':  return self.delete_cmd()
-            case 'HELP':    return self.help_cmd()
+            case 'EVAL':     return self.eval_cmd()
+            case 'BREAK':    return self.break_cmd()
+            case 'DELETE':   return self.delete_cmd()
+            case 'HELP':     return self.help_cmd()
+            case 'EXPLICIT': return self.explicit_cmd()
 
-            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'EXPLICIT' | 'UNEXPLICIT' | \
+            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | \
                  'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)

@@ -650,8 +650,15 @@ class ADB:
             case ('WHERE',):          self.do_where_command()
             case ('LONGLIST',):       self.list_program()
             case ('LIST',):           self.list_program(relative=True)
-            case ('EXPLICIT', ):      self.explicit_enabled = True
-            case ('UNEXPLICIT', ):    self.explicit_enabled = False
+
+            case ('EXPLICIT', set_explicit):
+                if set_explicit == False:
+                    self.explicit_enabled = False
+                elif set_explicit == True:
+                    self.explicit_enabled = True
+                else:
+                    self.explicit_enabled = not self.explicit_enabled
+
 
             # Step
             case ('STEP', ):
