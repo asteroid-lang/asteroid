@@ -659,7 +659,6 @@ class ADB:
                 else:
                     self.explicit_enabled = not self.explicit_enabled
 
-
             # Step
             case ('STEP', ):
                 self.set_config(step=True)
