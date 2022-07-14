@@ -248,6 +248,7 @@ def unify(term, pattern, unifying = True ):
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
+        increase_debugger_tab_level()
         unifiers = unify(term, pexp, unifying)
 
         if state.constraint_lvl:
@@ -262,6 +263,7 @@ def unify(term, pattern, unifying = True ):
             state.symbol_table.pop_scope()
 
         if bool_val[1]:
+            decrease_debugger_tab_level()
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)]
             )
@@ -270,6 +272,7 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Condition ({}) failed",
                 [gen_t2s(cond_exp)]
             )
+            decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -573,7 +576,7 @@ def unify(term, pattern, unifying = True ):
 
         message_explicit("{} -> {}",
             [gen_t2s(pattern),
-            gen_t2s(p)]
+            gen_t2s(p)], "secondary"
         )
 
         return unify(term,p,unifying)
@@ -603,8 +606,11 @@ def unify(term, pattern, unifying = True ):
         state.constraint_lvl += 1
         
         try:
+            increase_debugger_tab_level()
             unifier = unify(term,pattern[1])
+            decrease_debugger_tab_level()
         except PatternMatchFailed as p:
+            decrease_debugger_tab_level()
             raise p
         
         state.constraint_lvl -= 1
@@ -615,6 +621,7 @@ def unify(term, pattern, unifying = True ):
     elif not match(term[0], pattern[0]):  # nodes are not the same
         message_explicit("Fail: {} and {} are not the same",
             [term[0], pattern[0]], level="secondary")
+
 
         raise PatternMatchFailed(
             "nodes '{}' and '{}' are not the same"
@@ -1186,7 +1193,7 @@ def declare_unifiers(unifiers):
                 terms += [gen_t2s(lval), gen_t2s(value)]
 
             (lval, value) = l[-1]
-            fstring += "{} = {}, "
+            fstring += "{} = {}"
             terms += [gen_t2s(lval), gen_t2s(value)]
 
             message_explicit(fstring, terms)
