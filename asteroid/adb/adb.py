@@ -790,7 +790,6 @@ class ADB:
         Explicit mode is a mode in which extra steps in
         computations are revealed to the user
         """
-
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
         if self.has_breakpoint_here() and not self.is_next:
