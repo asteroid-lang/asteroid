@@ -1077,6 +1077,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
+    # TODO: (OWM) CLEAN THIS UP, YOU'RE REPEATING THE CODE AT
+    # THE BOTTOM OF THE FUNCTION
+
     # Check for useless patterns
     try:
         if state.eval_redundancy:
