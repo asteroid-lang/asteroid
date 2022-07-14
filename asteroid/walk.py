@@ -1078,11 +1078,31 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         state.symbol_table.enter_sym('this', obj_ref)
 
     # Check for useless patterns
-    if state.eval_redundancy:
-        old_state = debugging
-        debugging = False
-        check_redundancy(body_list, fname)
+    try:
+        if state.eval_redundancy:
+            old_state = debugging
+            debugging = False
+            check_redundancy(body_list, fname)
+            debugging = old_state
+
+    except RedundantPatternFound as r:
         debugging = old_state
+
+        # coming back from a function call - restore caller's env
+        state.lineinfo = old_lineinfo
+
+        # Keep debugger up to date
+        if debugging:
+            debugger.set_lineinfo(state.lineinfo)
+
+        state.symbol_table.pop_scope()
+        state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
+
+        state.trace_stack.pop()
+
+        decrease_debugger_tab_level()
+
+        raise r
 
     # execute the function
     global function_return_value
@@ -1112,8 +1132,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             if stepping: debugger.set_top_level(True)
 
             walk(s)
-
-            if stepping: debugger.set_top_level(False)
 
         val = function_return_value.pop()
         if val:
@@ -1294,6 +1312,9 @@ def throw_stmt(node):
 def try_stmt(node):
     notify_debugger()
 
+    if debugging:
+        old_tl = debugger.top_level
+
     (TRY,
      (STMT_LIST, try_stmts),
      (CATCH_LIST, (LIST, catch_list))) = node
@@ -1310,8 +1331,6 @@ def try_stmt(node):
             if stepping: debugger.set_top_level(True)
 
             walk(s)
-
-            if stepping: debugger.set_top_level(False)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
     # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
@@ -1382,6 +1401,7 @@ def try_stmt(node):
 
     else:
         # no exceptions found in the try statements
+        if debugging: debugger.top_level = old_tl
         return
 
     message_explicit("Exception Caught: {}", [str(inst_val)])
@@ -1400,10 +1420,9 @@ def try_stmt(node):
             declare_unifiers(unifiers)
             for s in catch_stmts[1]:
                 if stepping: debugger.set_top_level(True)
-                walk(s)
+                walk(s)     
 
-                if stepping: debugger.set_top_level(False)
-            
+            if debugging: debugger.top_level = old_tl       
             return
 
     # no exception handler found - rethrow the exception
