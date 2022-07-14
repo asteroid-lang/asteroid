@@ -1083,13 +1083,13 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Check for useless patterns
     try:
         if state.eval_redundancy:
-            old_state = debugging
+            old_debugging = debugging
             debugging = False
             check_redundancy(body_list, fname)
-            debugging = old_state
+            debugging = old_debugging
 
     except RedundantPatternFound as r:
-        debugging = old_state
+        debugging = old_debugging
 
         # coming back from a function call - restore caller's env
         state.lineinfo = old_lineinfo
@@ -1308,6 +1308,7 @@ def throw_stmt(node):
     assert_match(THROW, 'throw')
     
     throw_object = walk(object)
+    message_explicit("Throwing {}", [gen_t2s(throw_object)])
 
     raise ThrowValue(throw_object)
 
