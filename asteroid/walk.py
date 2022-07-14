@@ -1298,9 +1298,20 @@ def try_stmt(node):
      (STMT_LIST, try_stmts),
      (CATCH_LIST, (LIST, catch_list))) = node
 
+    # did we step into the try block?
+    stepping = debugging and \
+        (debugger.is_stepping or debugger.is_continuing)
+
     try:
         message_explicit("Try block")
-        walk(try_stmts)
+
+        # Each statement in the try block is "top level"
+        for s in try_stmts[1]:
+            if stepping: debugger.set_top_level(True)
+
+            walk(s)
+
+            if stepping: debugger.set_top_level(False)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
     # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
@@ -1387,8 +1398,12 @@ def try_stmt(node):
             pass
         else:
             declare_unifiers(unifiers)
-            walk(catch_stmts)
+            for s in catch_stmts[1]:
+                if stepping: debugger.set_top_level(True)
+                walk(s)
 
+                if stepping: debugger.set_top_level(False)
+            
             return
 
     # no exception handler found - rethrow the exception
