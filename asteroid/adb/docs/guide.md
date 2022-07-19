@@ -98,7 +98,7 @@ patterns to enforce a type:
 We see the simple 4 line program. We have a pattern that is essentially the
 range (0,10) and two variable declarations with typematches.
 ```
-[/home/oliver/example2.ast (1)]
+[/home/user/example2.ast (1)]
 -->> let p = pattern %[(x:%integer) if x > 0 and x < 10]%.
 (ADB) ll
 ----- Program Listing -----
@@ -116,7 +116,7 @@ condition, the internal variable `x` being unified, the
 condition being met, and finally `z` being set to 9 as 9 succeeded
 the typematch.
 ```
-[/home/oliver/example2.ast (3)]
+[/home/user/example2.ast (3)]
 -->> let z:*p = 9.
 (ADB) e
 (ADB)[e] n
@@ -141,7 +141,7 @@ pattern, the typematch to integer, but, when we get to the conditional
 part of the pattern, we see a failure. With explicit mode, we can see
 exactly *where* in the pattern the failure occurs.
 ```
-[/home/oliver/example2.ast (4)]
+[/home/user/example2.ast (4)]
 -->> let y:*p = 11.
 (ADB)[e] n
  ** pattern: y:*p
@@ -152,16 +152,16 @@ exactly *where* in the pattern the failure occurs.
 - [Begin] constraint pattern
   - Conditional match: if (x > 0 and x < 10)
     - Matching term x to pattern %integer
-    - Typematch 11 to type integer
+    - Typematch 11 to typew integer
      ** Success!
     - x = 11, 
-    - Condition (x > 0 and x < 10) failed
+  - Condition (x > 0 and x < 10) failed
 
-ERROR: /home/oliver/example2.ast: 4: pattern match failed: conditional pattern match failed
+ERROR: /home/user/example2.ast: 4: pattern match failed: conditional pattern match failed
     ==>> let y:*p = 11.
 
 ----- Error occured, session will restart after commands -----
-[/home/oliver/example2.ast (4)]
+[/home/user/example2.ast (4)]
 -->> let y:*p = 11.
 (ADB)[e] 
 ```
