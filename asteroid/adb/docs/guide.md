@@ -15,6 +15,30 @@ mechanics of Asteroid to give developers a better idea of what's going on. Expli
 details many of the steps of pattern matching, function calling, statement execution, and
 return values.
 
+The debugger's prompt `(ADB)` allows the user to enter commands to effect the source environment
+and debugger behavior.
+
+Example:
+```
+[/home/user/test.ast (1)]
+-->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
+(ADB) ll
+----- Program Listing -----
+>  1 let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
+   2 
+   3 let d = pattern %[(x:*p, y:*p, z:*p)]%.
+   4 let x:*p = 99.
+   5 
+   6 let t:*d = (1,2,993).
+   7 [EOF]
+(ADB) break 6
+(ADB) c
+----- Breakpoint -----
+[/home/user/test.ast (6)]
+-->> let t:*d = (1,2,993).
+(ADB) 
+```
+
 ## Usage
 `TDB`
 
@@ -110,11 +134,17 @@ range (0,10) and two variable declarations with typematches.
 (ADB) n
 ```
 
-Here we see explicit mode being enabled and a simple typematch
+Here we see explicit mode being enabled using the `e` command 
+and a simple typematch
 occuring. We can see the constraint-only pattern, the internal
 condition, the internal variable `x` being unified, the
 condition being met, and finally `z` being set to 9 as 9 succeeded
 the typematch.
+
+During unification, explicit mode shows the user the exact
+term and pattern which will be matched. Seen as `** pattern:` and
+`** term:`.
+
 ```
 [/home/user/example2.ast (3)]
 -->> let z:*p = 9.
