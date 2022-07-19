@@ -1,3 +1,6 @@
+# TODO
+* convert conditional matches to new format
+
  # Quick Start
 The Asteroid Debugger (ADB) is a source code debugger for the Asteroid programming language.
 
@@ -10,8 +13,8 @@ It supports the following:
 * Macros
 * REPL Instances
 
-ADB features an "explicit" mode which details much of the pattern matching and underlying
-mechanics of Asteroid to give developers a better idea of what's going on. Explicit mode
+ADB features a unique "explicit" mode which details much of the pattern matching and underlying
+mechanics of Asteroid allow developers to debug pattern matches. Explicit mode
 details many of the steps of pattern matching, function calling, statement execution, and
 return values.
 
