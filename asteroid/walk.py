@@ -262,8 +262,9 @@ def unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
+        decrease_debugger_tab_level()
+
         if bool_val[1]:
-            decrease_debugger_tab_level()
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)]
             )
@@ -291,7 +292,6 @@ def unify(term, pattern, unifying = True ):
         # Otherwise if the term is not another cmatch the clauses are correctly ordered.
         raise PatternMatchFailed(
             "conditional patterns not supported.")
-
 
     elif pattern[0] == 'typematch':
         typematch = pattern[1]
