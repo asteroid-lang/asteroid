@@ -15,10 +15,29 @@ mechanics of Asteroid to give developers a better idea of what's going on. Expli
 details many of the steps of pattern matching, function calling, statement execution, and
 return values.
 
+## Debugging sessions
 The debugger's prompt `(ADB)` allows the user to enter commands to effect the source environment
 and debugger behavior.
 
-Example:
+Each debugging session will have a few pieces of information:
+
+__Filename and line number__
+```
+[/home/user/test.ast (1)]
+```
+
+__The current line which will be executed__
+```
+-->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
+```
+
+__The command prompt__
+```
+(ADB)
+```
+
+ADB runs like any other debugger, here's a small example session where
+we see running commands, listing the program, and setting and continuing to breakpoints.
 ```
 [/home/user/test.ast (1)]
 -->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
