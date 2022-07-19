@@ -1,4 +1,4 @@
-# Quick Start
+ # Quick Start
 The Asteroid Debugger (ADB) is a source code debugger for the Asteroid programming language.
 
 It supports the following:
@@ -55,14 +55,28 @@ These shortenings are shown in parenthesis (`c(ommand)`).
 ### Next
 `n(ext)` continue onto the next executing line at the current scope.
 
-### Break
-`b(reak) (number)*` set a breakpoint at one or more lines. Running without any arguments
+### Breakpoints
+`b(reak) number*` set a breakpoint at one or more lines. Running without any arguments
 lists your breakpoints.
 
 Example: `b 1 2 3`, `break`.
 
+Conditional breakpoints can be set in the same way, just attach `if eval("condition")`
+after each breakpoint number.
+
+Example:
+```
+-- Set a conditional breakpoint on 10 and normal breakpoints on 11, 15, and 23.
+b 10 if eval("x == 123") 11 15 23
+```
+
 ### Delete
 `d(elete) (number)+` `del(ete) (number)+` delete a list of breakpoints.
+
+Example:
+```
+del 1 5 8 9
+```
 
 ### Macro
 `macro (name) (command list)`. Define a macro. Running just `macro` lists your macros.
