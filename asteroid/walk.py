@@ -240,17 +240,17 @@ def unify(term, pattern, unifying = True ):
 
         (IF_EXP, cond_exp, pexp, else_exp) = pattern
 
-        # Explicit messaging
-        message_explicit("Conditional match: if ({})",
-            [gen_t2s(cond_exp)]
-        )
-
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
         increase_debugger_tab_level()
         unifiers = unify(term, pexp, unifying)
 
+        # Explicit messaging
+        message_explicit("Conditional match: if ({})",
+            [gen_t2s(cond_exp)]
+        )
+        
         if state.constraint_lvl:
             state.symbol_table.push_scope({})
 
