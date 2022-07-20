@@ -77,8 +77,8 @@ class ADB:
         #############################
         # Stack frame information
         self.config_offset = 0          # The index of the current config we're using
-        self.original_config = None     # The original config we started with
-        self.original_lineinfo = None   # The original lineinfo we started with
+        self.original_config = None     # The original config we started with (before moving between frames)
+        self.original_lineinfo = None   # The original lineinfo we started with (before moving between frames)
     
     def reset_defaults(self):
         """
@@ -595,12 +595,13 @@ class ADB:
         # The call stack
         call_stack = [s[-1] for s in state.trace_stack][1:]
 
-
+        # If we're inside of some scope, append a "bottom" to the stack copy
         if len(call_stack) > 0:
             stack_copy.append((*state.lineinfo, "<bottom>"))
         
         start_of_line = "*"
         
+        # If we're just at the top level, just note that
         if len(stack_copy) == 0:
             print("-> <toplevel>")
         
