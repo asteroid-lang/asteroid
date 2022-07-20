@@ -243,7 +243,6 @@ def unify(term, pattern, unifying = True ):
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
-        increase_debugger_tab_level()
         unifiers = unify(term, pexp, unifying)
 
         # Explicit messaging
@@ -262,8 +261,6 @@ def unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-        decrease_debugger_tab_level()
-
         if bool_val[1]:
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)]
@@ -273,7 +270,6 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Condition ({}) failed",
                 [gen_t2s(cond_exp)]
             )
-            decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -601,16 +597,13 @@ def unify(term, pattern, unifying = True ):
         return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] == 'constraint':
-        message_explicit("[Begin] constraint pattern")    
+        message_explicit("[Begin] constraint pattern: {}", [gen_t2s(pattern[1])])    
 
         state.constraint_lvl += 1
         
         try:
-            increase_debugger_tab_level()
             unifier = unify(term,pattern[1])
-            decrease_debugger_tab_level()
         except PatternMatchFailed as p:
-            decrease_debugger_tab_level()
             raise p
         
         state.constraint_lvl -= 1
@@ -1006,7 +999,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     old_lineinfo = state.lineinfo
 
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
-    increase_debugger_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1103,8 +1095,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
         state.trace_stack.pop()
 
-        decrease_debugger_tab_level()
-
         raise r
 
     # execute the function
@@ -1157,8 +1147,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
 
     state.trace_stack.pop()
-
-    decrease_debugger_tab_level()
 
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
