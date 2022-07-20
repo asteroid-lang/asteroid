@@ -53,12 +53,9 @@ def message_explicit(fmt_message, terms=None, level="primary"):
 def gen_t2s(node):
     yield term2string(node)
 
-def push_tab_level(inc=False):
+def push_tab_level():
     if debugging:
         bottom = debugger.tab_level_stack[-1]
-
-        if inc:
-            bottom += 1
         debugger.tab_level_stack.append(bottom)
 
 def pop_tab_level():
@@ -186,16 +183,9 @@ def unify(term, pattern, unifying = True ):
             )
 
             unifier = []
-
-            # Increase the tab level
-            push_tab_level(inc=True)
-            
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
-
-            # Reset the tab level
-            pop_tab_level()
 
             return unifier
     
@@ -423,9 +413,7 @@ def unify(term, pattern, unifying = True ):
         )
 
         # name_exp can be an id or an index expression.
-        push_tab_level(inc=True)
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
-        pop_tab_level()
 
         return unifiers
 
@@ -1030,8 +1018,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
+    push_tab_level()
+
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
-    push_tab_level(inc=True)
+    increase_debugger_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1266,12 +1256,14 @@ def assert_stmt(node):
     message_explicit("Asserting: {}", [gen_t2s(exp)])
 
     # Push a new tab level
-    push_tab_level(inc=True)
+    push_tab_level()
+    increase_debugger_tab_level()
 
     exp_val = walk(exp)
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
 
+    # Pop the tab level
     pop_tab_level()
 
     message_explicit("Assert Succeeded")
