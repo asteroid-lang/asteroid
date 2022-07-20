@@ -1260,11 +1260,12 @@ def assert_stmt(node):
     increase_debugger_tab_level()
 
     exp_val = walk(exp)
-    # mapping asteroid assert into python assert
-    assert exp_val[1], 'assert failed'
-
+    
     # Pop the tab level
     pop_tab_level()
+
+    # mapping asteroid assert into python assert
+    assert exp_val[1], 'assert failed'
 
     message_explicit("Assert Succeeded")
 
