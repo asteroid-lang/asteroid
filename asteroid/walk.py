@@ -183,9 +183,17 @@ def unify(term, pattern, unifying = True ):
             )
 
             unifier = []
+
+            # Increase the tab level
+            push_tab_level()
+            increase_debugger_tab_level()
+            
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+
+            # Reset the tab level
+            pop_tab_level()
 
             return unifier
     
@@ -413,7 +421,10 @@ def unify(term, pattern, unifying = True ):
         )
 
         # name_exp can be an id or an index expression.
+        push_tab_level()
+        increase_debugger_tab_level()
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
+        pop_tab_level()
 
         return unifiers
 
@@ -1257,12 +1268,12 @@ def assert_stmt(node):
 
     # Push a new tab level
     push_tab_level()
+    increase_debugger_tab_level()
 
     exp_val = walk(exp)
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
 
-    # Pop the tab level
     pop_tab_level()
 
     message_explicit("Assert Succeeded")
