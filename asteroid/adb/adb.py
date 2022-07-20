@@ -105,7 +105,7 @@ class ADB:
         """
         Make the tab level for nested messaging
         """
-        return self.tab_level_stack[-1]*"  "
+        return self.tab_level_stack[-1]*"|   "
 
     def message_explicit(self, message, level = "primary"):
         """
