@@ -53,6 +53,17 @@ def message_explicit(fmt_message, terms=None, level="primary"):
 def gen_t2s(node):
     yield term2string(node)
 
+def push_tab_level():
+    if debugging:
+        bottom = debugger.tab_level_stack[-1]
+        debugger.tab_level_stack.append(bottom)
+
+def pop_tab_level():
+    if debugging:
+        debugger.tab_level_stack.pop()
+        if debugger.tab_level_stack == []:
+            debugger.tab_level_stack = [0]
+
 def increase_debugger_tab_level():
     if debugging:
         debugger.tab_level_stack[-1] += 1
@@ -243,6 +254,8 @@ def unify(term, pattern, unifying = True ):
         if else_exp[0] != 'null':
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
+        increase_debugger_tab_level()
+
         unifiers = unify(term, pexp, unifying)
 
         # Explicit messaging
@@ -261,6 +274,8 @@ def unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
+        decrease_debugger_tab_level()
+
         if bool_val[1]:
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)]
@@ -270,6 +285,7 @@ def unify(term, pattern, unifying = True ):
             message_explicit("Condition ({}) failed",
                 [gen_t2s(cond_exp)]
             )
+            decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -602,10 +618,14 @@ def unify(term, pattern, unifying = True ):
         state.constraint_lvl += 1
         
         try:
+            increase_debugger_tab_level()
             unifier = unify(term,pattern[1])
+            decrease_debugger_tab_level()
+
         except PatternMatchFailed as p:
+            decrease_debugger_tab_level()
             raise p
-        
+
         state.constraint_lvl -= 1
 
         message_explicit("[End] constraint pattern")
@@ -998,7 +1018,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
+    push_tab_level()
+
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+    increase_debugger_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1043,8 +1066,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             unifiers = unify(actual_val_args, p)
             unified = True
         except PatternMatchFailed:
-            # TODO: (OWM) Do we need this message here?
-            #   If our other messaging is good, we shouldn't, it should be obvious
+
             if actual_val_args[0] != 'struct':
                 #message_explicit("Failed to match function body", level="secondary")
                 pass
@@ -1069,9 +1091,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
-    # TODO: (OWM) CLEAN THIS UP, YOU'RE REPEATING THE CODE AT
-    # THE BOTTOM OF THE FUNCTION
-
     # Check for useless patterns
     try:
         if state.eval_redundancy:
@@ -1080,6 +1099,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             check_redundancy(body_list, fname)
             debugging = old_debugging
 
+    # Reset settings
     except RedundantPatternFound as r:
         debugging = old_debugging
 
@@ -1094,6 +1114,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
 
         state.trace_stack.pop()
+
+        decrease_debugger_tab_level()
 
         raise r
 
@@ -1115,12 +1137,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         stepping = debugging and \
             (debugger.is_stepping or debugger.is_continuing)
 
-        # TODO: (OWM)- Make this cleaner
-        # We destructure the list here to assure that
-        # we can properly set the top level flag
-        # on each new line statement in a function call.
-        # This gives us that "n(ext)" behavior within
-        # functions
         for s in stmts[1]:
             if stepping: debugger.set_top_level(True)
 
@@ -1152,6 +1168,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname]
     )
+
+    pop_tab_level()
 
     return return_value
 
@@ -1237,9 +1255,15 @@ def assert_stmt(node):
 
     message_explicit("Asserting: {}", [gen_t2s(exp)])
 
+    # Push a new tab level
+    push_tab_level()
+
     exp_val = walk(exp)
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
+
+    # Pop the tab level
+    pop_tab_level()
 
     message_explicit("Assert Succeeded")
 
