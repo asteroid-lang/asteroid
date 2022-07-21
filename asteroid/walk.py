@@ -119,7 +119,7 @@ def unify(term, pattern, unifying = True):
     try:
         return __unify(term, pattern, unifying)
     except PatternMatchFailed as r:
-        #pop_tab_level()
+        pop_tab_level()
         raise r
     except Exception as e:
         raise e
