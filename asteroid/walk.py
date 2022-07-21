@@ -114,7 +114,17 @@ def match(tag1, tag2):
     else:
         return False
 ###########################################################################################
-def unify(term, pattern, unifying = True ):
+# TODO: (OWM) THIS IS TESTING, NOT FINAL
+def unify(term, pattern, unifying = True):
+    try:
+        return __unify(term, pattern, unifying)
+    except PatternMatchFailed as r:
+        #pop_tab_level()
+        raise r
+    except Exception as e:
+        raise e
+
+def __unify(term, pattern, unifying = True ):
     '''
     unify term and pattern recursively and return the unifier.
     this unification allows for the same variable to appear
