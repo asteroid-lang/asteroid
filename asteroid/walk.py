@@ -54,9 +54,6 @@ def gen_t2s(node):
     yield term2string(node)
 
 def increase_tab_level():
-    """
-    Push a new tab level to the stack.
-    """
     if debugging:
         debugger.tab_level += 1
 
