@@ -633,7 +633,6 @@ def __unify(term, pattern, unifying = True ):
             decrease_tab_level()
 
         except PatternMatchFailed as p:
-            decrease_tab_level()
             raise p
 
         state.constraint_lvl -= 1
@@ -1122,8 +1121,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
 
         state.trace_stack.pop()
-
-        decrease_tab_level()
 
         raise r
 
