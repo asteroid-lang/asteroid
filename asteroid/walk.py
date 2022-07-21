@@ -54,8 +54,12 @@ def gen_t2s(node):
     yield term2string(node)
 
 def push_tab_level():
+    """
+    Push a new tab level to the stack.
+    """
     if debugging:
-        bottom = debugger.tab_level_stack[-1]
+        bottom = debugger.tab_level_stack[-1] + 1
+
         debugger.tab_level_stack.append(bottom)
 
 def pop_tab_level():
@@ -63,16 +67,6 @@ def pop_tab_level():
         debugger.tab_level_stack.pop()
         if debugger.tab_level_stack == []:
             debugger.tab_level_stack = [0]
-
-def increase_debugger_tab_level():
-    if debugging:
-        debugger.tab_level_stack[-1] += 1
-
-def decrease_debugger_tab_level():
-    if debugging:
-        debugger.tab_level_stack[-1] -=1
-        if debugger.tab_level_stack[-1] < 0:
-            debugger.tab_level_stack[-1] = 0
 
 def notify_debugger():
     if debugging:
@@ -271,7 +265,7 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(cond_exp)]
         )
 
-        increase_debugger_tab_level()
+        push_tab_level()
 
         if state.constraint_lvl:
             state.symbol_table.push_scope({})
@@ -284,7 +278,7 @@ def __unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-        decrease_debugger_tab_level()
+        pop_tab_level()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
@@ -295,7 +289,6 @@ def __unify(term, pattern, unifying = True ):
             message_explicit("Condition ({}) failed",
                 [gen_t2s(cond_exp)]
             )
-            decrease_debugger_tab_level()
             raise PatternMatchFailed(
                 "conditional pattern match failed")
 
@@ -628,12 +621,12 @@ def __unify(term, pattern, unifying = True ):
         state.constraint_lvl += 1
         
         try:
-            increase_debugger_tab_level()
+            push_tab_level()
             unifier = unify(term,pattern[1])
-            decrease_debugger_tab_level()
+            pop_tab_level()
 
         except PatternMatchFailed as p:
-            decrease_debugger_tab_level()
+            pop_tab_level()
             raise p
 
         state.constraint_lvl -= 1
@@ -1028,10 +1021,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
-    push_tab_level()
-
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
-    increase_debugger_tab_level()
+    push_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1125,7 +1116,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
         state.trace_stack.pop()
 
-        decrease_debugger_tab_level()
+        pop_tab_level()
 
         raise r
 
@@ -1267,7 +1258,6 @@ def assert_stmt(node):
 
     # Push a new tab level
     push_tab_level()
-    increase_debugger_tab_level()
 
     exp_val = walk(exp)
     
