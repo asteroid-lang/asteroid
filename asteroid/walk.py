@@ -53,20 +53,19 @@ def message_explicit(fmt_message, terms=None, level="primary"):
 def gen_t2s(node):
     yield term2string(node)
 
-def push_tab_level():
+def increase_tab_level():
     """
     Push a new tab level to the stack.
     """
     if debugging:
-        bottom = debugger.tab_level_stack[-1] + 1
+        debugger.tab_level += 1
 
-        debugger.tab_level_stack.append(bottom)
-
-def pop_tab_level():
+def decrease_tab_level():
     if debugging:
-        debugger.tab_level_stack.pop()
-        if debugger.tab_level_stack == []:
-            debugger.tab_level_stack = [0]
+        debugger.tab_level -= 1
+
+        if debugger.tab_level < 0:
+            debugger.tab_level_stack = 0
 
 def notify_debugger():
     if debugging:
@@ -110,10 +109,19 @@ def match(tag1, tag2):
 ###########################################################################################
 # TODO: (OWM) THIS IS TESTING, NOT FINAL
 def unify(term, pattern, unifying = True):
+    '''
+    Proxy function for unify to make the debugger's formatting
+    work properly
+
+    OWM - This proxy function allows us to wrap unification
+    in an except block and catch when PatternMatchFailed exceptions
+    occur. In this situation, we need to decrease the tab level
+    and then re-raise the exception
+    '''
     try:
         return __unify(term, pattern, unifying)
     except PatternMatchFailed as r:
-        pop_tab_level()
+        decrease_tab_level()
         raise r
     except Exception as e:
         raise e
@@ -223,6 +231,8 @@ def __unify(term, pattern, unifying = True ):
         )
         
         unifiers = []
+        increase_tab_level()
+
         for i in range(len(pl)):
             unifiers += unify(tl[i], pl[i])
         
@@ -263,7 +273,7 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(cond_exp)]
         )
 
-        push_tab_level()
+        increase_tab_level()
 
         unifiers = unify(term, pexp, unifying)
 
@@ -278,7 +288,7 @@ def __unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-        pop_tab_level()
+        decrease_tab_level()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
@@ -621,12 +631,12 @@ def __unify(term, pattern, unifying = True ):
         state.constraint_lvl += 1
         
         try:
-            push_tab_level()
+            increase_tab_level()
             unifier = unify(term,pattern[1])
-            pop_tab_level()
+            decrease_tab_level()
 
         except PatternMatchFailed as p:
-            pop_tab_level()
+            decrease_tab_level()
             raise p
 
         state.constraint_lvl -= 1
@@ -1022,7 +1032,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     old_lineinfo = state.lineinfo
 
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
-    push_tab_level()
+    increase_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
@@ -1116,7 +1126,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
         state.trace_stack.pop()
 
-        pop_tab_level()
+        decrease_tab_level()
 
         raise r
 
@@ -1170,7 +1180,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             fname]
     )
 
-    pop_tab_level()
+    decrease_tab_level()
 
     return return_value
 
@@ -1257,12 +1267,12 @@ def assert_stmt(node):
     message_explicit("Asserting: {}", [gen_t2s(exp)])
 
     # Push a new tab level
-    push_tab_level()
+    increase_tab_level()
 
     exp_val = walk(exp)
     
     # Pop the tab level
-    pop_tab_level()
+    decrease_tab_level()
 
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'

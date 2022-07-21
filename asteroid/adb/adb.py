@@ -49,7 +49,7 @@ class ADB:
         self.explicit_enabled = False
 
         #############################
-        self.tab_level_stack = [0]
+        self.tab_level = 0
 
         # Lineinfo
         self.lineinfo = None
@@ -105,7 +105,7 @@ class ADB:
         """
         Make the tab level for nested messaging
         """
-        return self.tab_level_stack[-1]*"|   "
+        return self.tab_level*"|   "
 
     def message_explicit(self, message, level = "primary"):
         """
@@ -118,13 +118,15 @@ class ADB:
         if self.explicit_enabled and \
             (not self.is_continuing and self.lineinfo[0] == self.filename) or \
             (self.is_stepping):
+
+            tl = self.make_tab_level()
             match(level):
                 case "primary":
-                    print("{}- {}".format(self.make_tab_level(), message))
+                    print("{}- {}".format(tl, message))
                 case "secondary":
-                    print("{} ** {}".format(self.make_tab_level(), message))
+                    print("{} ** {}".format(tl, message))
                 case "tertiary":
-                    print("{}  * {}".format(self.make_tab_level(), message))
+                    print("{}  * {}".format(tl, message))
 
     def message(self, message):
         """
@@ -772,7 +774,7 @@ class ADB:
         self.command_loop()
 
         # Reset the tab level
-        self.tab_level_stack = [0]
+        self.tab_level = 0
     
     def notify(self):
         """
