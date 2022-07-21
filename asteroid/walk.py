@@ -115,11 +115,18 @@ def unify(term, pattern, unifying = True):
     occur. In this situation, we need to decrease the tab level
     and then re-raise the exception
     '''
+
+    # Try to call the actual unify function
     try:
         return __unify(term, pattern, unifying)
+
+    # If there's a pattern match failed, decrease
+    # the tab level and reraise the exception
     except PatternMatchFailed as r:
         decrease_tab_level()
         raise r
+
+    # If there's a normal exception, reraise it
     except Exception as e:
         raise e
 
