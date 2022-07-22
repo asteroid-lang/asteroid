@@ -199,8 +199,14 @@ def __unify(term, pattern, unifying = True ):
             )
 
             unifier = []
+
+            increase_tab_level()
+
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
+
+            decrease_tab_level()
+
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
 
             return unifier
@@ -429,8 +435,13 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(name_exp), gen_t2s(p)]
         )
 
+        increase_tab_level()
         # name_exp can be an id or an index expression.
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
+
+        decrease_tab_level()
+
+        message_explicit("Matched!")
 
         return unifiers
 
