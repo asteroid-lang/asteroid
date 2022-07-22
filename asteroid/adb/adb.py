@@ -66,9 +66,7 @@ class ADB:
         
         #############################
         # Dictionary of macros
-        self.macros = {
-            'px': [('EVAL', "io@self.dprintln(\"x=\"+x)")]
-        }
+        self.macros = {}
 
         #############################
         # The queue of commands being executed
