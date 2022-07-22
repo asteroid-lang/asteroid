@@ -62,7 +62,7 @@ def decrease_tab_level():
         debugger.tab_level -= 1
 
         if debugger.tab_level < 0:
-            debugger.tab_level_stack = 0
+            debugger.tab_level = 0
 
 def notify_debugger():
     if debugging:
@@ -1088,22 +1088,26 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             [gen_t2s(actual_val_args), gen_t2s(p)], level="secondary")
         
         try:
+            increase_tab_level()
+            
             unifiers = unify(actual_val_args, p)
             unified = True
-        except PatternMatchFailed:
 
+            decrease_tab_level()
+            
             if actual_val_args[0] != 'struct':
-                #message_explicit("Failed to match function body", level="secondary")
+                message_explicit("Success! Matched function body", level="secondary")
+
+        except PatternMatchFailed:
+            increase_tab_level()
+            if actual_val_args[0] != 'struct':
+                message_explicit("Failed to match function body", level="tertiary")
                 pass
 
             unifiers = []
             unified = False
 
         if unified:
-
-            if actual_val_args[0] != 'struct':
-                message_explicit("Success! Matched function body", level="tertiary")
-            
             break
 
     if not unified:
@@ -1145,6 +1149,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # execute the function
     global function_return_value
     try:
+        increase_tab_level()
+
         function_return_value.append(None)
 
         # Flag to tell us if we actually want to step
@@ -1170,10 +1176,14 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             return_value = val
         else:
             return_value = ('none', None)
+
     except ReturnValue as val:
         # we got here because a return statement threw a return object
         function_return_value.pop()
         return_value = val.value
+
+    decrease_tab_level()
+    decrease_tab_level()
 
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
@@ -1191,9 +1201,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname]
     )
-
-    decrease_tab_level()
-
+    
     return return_value
 
 #########################################################################
@@ -2052,6 +2060,8 @@ def set_ret_val(node):
     (SET_RET_VAL, exp) = node
     assert_match(SET_RET_VAL,'set-ret-val')
 
+    was_at_top = debugging and debugger.top_level
+
     # This call allows us to have statement-level expressions
     # act like statements to the debugger
     notify_debugger()
@@ -2060,6 +2070,9 @@ def set_ret_val(node):
     val = walk(exp)
     function_return_value.pop()
     function_return_value.append(val)
+
+    if was_at_top:
+        debugger.message("Returned: {}".format(term2string(val)))
 
     return
 
