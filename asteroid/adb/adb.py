@@ -202,11 +202,10 @@ class ADB:
             
             except (EOFError, KeyboardInterrupt):
                 # If the user tries to exit with CTRL+C/D, exit
-                import uuid
+                # import uuid
 
-                print(self.msgs)
-                with open("log" + str(uuid.uuid4()) + ".txt", "w+") as f:
-                    f.write("\n".join(self.msgs))
+                # with open("log" + str(uuid.uuid4()) + ".txt", "w+") as f:
+                #     f.write("\n".join(self.msgs))
 
                 break;
 
