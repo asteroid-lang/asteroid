@@ -412,7 +412,10 @@ def __unify(term, pattern, unifying = True ):
                 message_explicit("Success!", level="secondary")
                 return []
             else:
-                message_explicit("Failure!", level="secondary")
+                message_explicit("Failure", level="secondary")
+                
+                # Padding tab level
+                increase_tab_level()
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
@@ -420,9 +423,15 @@ def __unify(term, pattern, unifying = True ):
         else:
             if state.symbol_table.lookup_sym(typematch)[0] != 'struct':
                 message_explicit("Failure", level="secondary")
+
+                # Padding tab level
+                increase_tab_level()
                 raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
             else:
                 message_explicit("Failure", level="secondary")
+                
+                # Padding tab level
+                increase_tab_level()
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
@@ -1095,7 +1104,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
                 message_explicit("Success! Matched function body", level="secondary")
 
         except PatternMatchFailed:
-            increase_tab_level()
             if actual_val_args[0] != 'struct':
                 message_explicit("Failed to match function body", level="tertiary")
                 pass
