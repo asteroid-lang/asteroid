@@ -104,7 +104,6 @@ def match(tag1, tag2):
     else:
         return False
 ###########################################################################################
-# TODO: (OWM) THIS IS TESTING, NOT FINAL
 def unify(term, pattern, unifying = True):
     '''
     Proxy function for unify to make the debugger's formatting
@@ -113,7 +112,8 @@ def unify(term, pattern, unifying = True):
     OWM - This proxy function allows us to wrap unification
     in an except block and catch when PatternMatchFailed exceptions
     occur. In this situation, we need to decrease the tab level
-    and then re-raise the exception
+    and then re-raise the exception. Being able to "unravel"
+    tab levels is essential to making things look good.
     '''
 
     # Try to call the actual unify function
@@ -645,13 +645,9 @@ def __unify(term, pattern, unifying = True ):
 
         state.constraint_lvl += 1
         
-        try:
-            increase_tab_level()
-            unifier = unify(term,pattern[1])
-            decrease_tab_level()
-
-        except PatternMatchFailed as p:
-            raise p
+        increase_tab_level()
+        unifier = unify(term,pattern[1])
+        decrease_tab_level()
 
         state.constraint_lvl -= 1
 
