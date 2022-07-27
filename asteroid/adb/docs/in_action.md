@@ -1,12 +1,16 @@
 # ADB in action
-### Explicit
-`e(xplicit) (on|off)?` By default, this command run without an argument toggles
-explicit mode. If given a literal `on` or `off`, explicit mode will be switched
-to the corresponding state.
-
 # Explicit Mode
 Explicit mode is a feature of ADB that allows the user to understand and inspect
-Asteroid's pattern matching.
+Asteroid's pattern matching. Pattern matching in Asteroid is generally silent,
+meaning you only really see the details of it when an error occurs. Explicit mode,
+however, allows you to see every mattern matching operation that Asteroid carries
+out.
+
+>> Rewrite this
+It is reccomended to step through functions to the specific line you are interested
+in while in explicit mode as opposed to over them as going over a function in explicit 
+mode (using the `next` command) can produce output that may be overly long and
+difficult to read.
 
 Let's take a look at a debugging session on a program that uses first-class 
 patterns to enforce a type:
