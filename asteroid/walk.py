@@ -1051,6 +1051,14 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     old_lineinfo = state.lineinfo
 
     message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+
+    # We want to return back to whatever tab level the function
+    # call started at, so, we grab this here to reset to at
+    # the return. This allows recursive functions to have
+    # the proper formatting
+    if debugging:
+        cur_tab_level = debugger.tab_level
+
     increase_tab_level()
 
     (FUNCTION_VAL, body_list, closure) = fval
@@ -1152,11 +1160,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     # execute the function
     global function_return_value
-    try:
-        increase_tab_level()
 
+    try:
         function_return_value.append(None)
 
+        increase_tab_level()
         # Flag to tell us if we actually want to step
         # through to the net line of the function call
 
@@ -1186,9 +1194,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         function_return_value.pop()
         return_value = val.value
 
-    decrease_tab_level()
-    decrease_tab_level()
-
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
 
@@ -1201,11 +1206,14 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
+    if debugging:
+        debugger.tab_level = cur_tab_level
+
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname]
     )
-    
+
     return return_value
 
 #########################################################################
@@ -2074,6 +2082,8 @@ def set_ret_val(node):
     val = walk(exp)
     function_return_value.pop()
     function_return_value.append(val)
+
+    was_at_top = was_at_top and debugging and not debugger.explicit_enabled
 
     if was_at_top:
         debugger.message("Returned: {}".format(term2string(val)))
