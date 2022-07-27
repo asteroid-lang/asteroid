@@ -1224,18 +1224,12 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 def declare_unifiers(unifiers):
     # walk the unifiers and bind name-value pairs into the symtab
 
-    if debugging:
-        l = []
-
     # TODO: check for repeated names in the unfiers
     for unifier in unifiers:
 
         #lhh
         #print("unifier: {}".format(unifier))
         (lval, value) = unifier
-
-        if debugging:
-            l.append( (lval, value) )
 
         if lval[0] == 'id':
             if lval[1] == 'this':
@@ -1257,19 +1251,28 @@ def declare_unifiers(unifiers):
         else:
             raise ValueError("unknown unifier type '{}'".format(lval[0]))
     
+    # Explicit messaging for unifiers
     if debugging and debugger.explicit_enabled:
-        # If we've actually unified anything
+        l = [(lval, value) for u in unifiers]
+
+        # if we've unified anything
         if l:
+            # Create our format string and list of terms
             fstring = ""
             terms = []
+
+            # For each unifier except the last one
             for (lval, value) in l[:-1]:
+                # Add to our format string and our terms
                 fstring += "{} = {}, "
                 terms += [gen_t2s(lval), gen_t2s(value)]
 
+            # Get the last unifier and add it to the terms and fstring
             (lval, value) = l[-1]
             fstring += "{} = {}"
             terms += [gen_t2s(lval), gen_t2s(value)]
 
+            # Print our message
             message_explicit(fstring, terms)
 #########################################################################
 # node functions
@@ -2088,7 +2091,7 @@ def set_ret_val(node):
     function_return_value.pop()
     function_return_value.append(val)
 
-    was_at_top = was_at_top_before /
+    was_at_top = was_at_top_before \
         and debugging and not debugger.explicit_enabled and debugger.is_next
 
     if was_at_top:
