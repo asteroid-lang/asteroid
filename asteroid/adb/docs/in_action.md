@@ -95,9 +95,15 @@ ERROR: /home/user/example1.ast: 4: pattern match failed: conditional pattern mat
 ```
 
 ## Another example
+Here we have a simple program with one major assert which will help us demonstrate how we can
+read the explicit mode information to decipher failed pattern matches.
 
-... By following the tab leveling and pattern tree, we can see the exact point where the
-error occurs
+We have two patterns, `p` and `d`. `d` is composed of three `p`'s. `p` is the range of numbers
+(0,100).
+
+In the assert, we see that we are trying to match a tuple of two numbers and a string against `d`.
+By the definition of `d` we can see that this will fail. But, let this be a proxy for a more
+complicated example. Let's investigate exactly *why* this pattern match fails.
 
 ```
 [/home/user/example2.ast (1)]
@@ -113,6 +119,14 @@ error occurs
 [/home/user/example2.ast (2)]
 -->> let d = pattern %[(a:*p, b:*p, c:*p)]%.
 (ADB) s
+```
+
+By following the tab leveling and pattern tree, we can see the exact point where the pattern match fails.
+
+We see that within the first constraint pattern, on the last item in the tuple, we have a failed
+typematch. This makes sense as `d` is composed of three `p`'s. All of which are integers.
+
+```
 [/home/user/example2.ast (4)]
 -->> assert(not ((1,2,"A") is *d)).
 (ADB) e
