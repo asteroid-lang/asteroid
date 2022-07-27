@@ -209,6 +209,7 @@ def __unify(term, pattern, unifying = True ):
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
 
+            message_explicit("Matched!")
             return unifier
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
@@ -449,8 +450,8 @@ def __unify(term, pattern, unifying = True ):
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
 
         decrease_tab_level()
-
-        message_explicit("Matched!")
+        
+        message_explicit("Matched ({} and {})", [gen_t2s(unifiers[0][0]), gen_t2s(unifiers[0][1])])
 
         return unifiers
 
@@ -1112,6 +1113,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
                 message_explicit("Success! Matched function body", level="secondary")
 
         except PatternMatchFailed:
+            increase_tab_level()
             if actual_val_args[0] != 'struct':
                 message_explicit("Failed to match function body", level="tertiary")
                 pass
@@ -1121,6 +1123,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
         if unified:
             break
+
+    decrease_tab_level()
 
     if not unified:
         raise ValueError("actual argument '{}' not recognized by function '{}'"
@@ -1207,7 +1211,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.trace_stack.pop()
 
     if debugging:
-        debugger.tab_level = cur_tab_level
+        debugger.tab_level = cur_tab_level 
 
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
@@ -2072,7 +2076,8 @@ def set_ret_val(node):
     (SET_RET_VAL, exp) = node
     assert_match(SET_RET_VAL,'set-ret-val')
 
-    was_at_top = debugging and debugger.top_level
+    # Check if the user is at the top level to decide if we give
+    was_at_top_before = debugging and debugger.top_level
 
     # This call allows us to have statement-level expressions
     # act like statements to the debugger
@@ -2083,7 +2088,8 @@ def set_ret_val(node):
     function_return_value.pop()
     function_return_value.append(val)
 
-    was_at_top = was_at_top and debugging and not debugger.explicit_enabled
+    was_at_top = was_at_top_before /
+        and debugging and not debugger.explicit_enabled and debugger.is_next
 
     if was_at_top:
         debugger.message("Returned: {}".format(term2string(val)))
