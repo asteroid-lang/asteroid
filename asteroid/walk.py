@@ -441,8 +441,8 @@ def __unify(term, pattern, unifying = True ):
     elif pattern[0] == 'named-pattern':
         # unpack pattern
         (NAMED_PATTERN, name_exp, p) = pattern
-        message_explicit("Matching term {} to pattern {}",
-            [gen_t2s(name_exp), gen_t2s(p)]
+        message_explicit("Matching term {} and pattern {} to [{}]",
+            [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)]
         )
 
         increase_tab_level()
