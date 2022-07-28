@@ -209,11 +209,13 @@ def __unify(term, pattern, unifying = True ):
 
             unifier = []
 
+            # Tab leveling
             increase_tab_level()
 
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
 
+            # Tab leveling
             decrease_tab_level()
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
@@ -254,8 +256,15 @@ def __unify(term, pattern, unifying = True ):
         increase_tab_level()
 
         for i in range(len(pl)):
-            unifiers += unify(tl[i], pl[i])
+            # OWM: We can't actually unify function-vals. If we know the type is
+            # the same, can we just assume the function-val is the same?
+
+            if tl[i][0] != 'function-val':
+                unifiers += unify(tl[i], pl[i])
         
+        decrease_tab_level()
+
+        message_explicit("Objects matched")
         return unifiers
 
     elif pattern[0] == 'string' and term[0] != 'string':
