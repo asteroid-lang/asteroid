@@ -57,15 +57,19 @@ def gen_t2s(node):
     yield term2string(node)
 
 def increase_tab_level():
-    if debugging:
+    if explicit_enabled():
         debugger.tab_level += 1
 
 def decrease_tab_level():
-    if debugging:
+    if explicit_enabled():
         debugger.tab_level -= 1
 
         if debugger.tab_level < 0:
             debugger.tab_level = 0
+
+def set_tab_level(num):
+    if debugging:
+        debugger.tab_level = num
 
 def notify_debugger():
     if debugging:
@@ -1055,15 +1059,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # function calls between files.
     old_lineinfo = state.lineinfo
 
-    message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
-
-    # We want to return back to whatever tab level the function
-    # call started at, so, we grab this here to reset to at
-    # the return. This allows recursive functions to have
-    # the proper formatting
-    if debugging:
-        cur_tab_level = debugger.tab_level
-
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
@@ -1082,19 +1077,21 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
 
-    #lhh
-    #print('in handle_call')
-    #print("calling: {}\nwith: {}\n\n".format(fval,actual_val_args))
+    # Explicit message
+    message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+
+    # We want to return back to whatever tab level the function
+    # call started at, so, we grab this here to reset to at
+    # the return. This allows recursive functions to have
+    # the proper formatting
+    if debugging:
+        cur_tab_level = debugger.tab_level
+
+    increase_tab_level()
 
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
-
-    # We use this variable to keep track of the tab level at the start of the
-    # call. Since we can fail in any part of the pattern, it is important to
-    # keep track of our original tab level so that we can reset it on pattern
-    # failure
-    increase_tab_level()
 
     for i in range(0, len(body_list_val), 2):
         # Process lineinfo
@@ -1121,16 +1118,14 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             decrease_tab_level()
             
             # Do our explicit message
-            if actual_val_args[0] != 'struct':
-                message_explicit("Success! Matched function body", level="primary")
+            message_explicit("Success! Matched function body", level="primary")
 
         except PatternMatchFailed:
             # Do our explicit message
             if explicit_enabled():
                 debugger.tab_level = cur_tab_level + 1
 
-            if actual_val_args[0] != 'struct':
-                message_explicit("Failed to match function body", level="tertiary")
+            message_explicit("Failed to match function body", level="tertiary")
 
             unifiers = []
             unified = False
