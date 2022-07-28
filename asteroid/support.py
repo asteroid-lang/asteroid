@@ -366,7 +366,7 @@ def term2string(term):
 
     elif TYPE == 'index':
         (INDEX, base, ix) = term
-        return term2string(base) #+ "@ " + term2string(ix)
+        return term2string(base) + "@ " + term2string(ix)
 
     elif TYPE == 'foreign':
         return "(foreign ...)"
