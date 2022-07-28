@@ -19,6 +19,9 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
+def explicit_enabled():
+    return debugging and debugger.explicit_enabled
+
 def message_explicit(fmt_message, terms=None, level="primary"):
     """
     Message explicit expects 1-3 arguments
@@ -35,7 +38,7 @@ def message_explicit(fmt_message, terms=None, level="primary"):
     """
     from types import GeneratorType
 
-    if debugging and debugger.explicit_enabled:
+    if explicit_enabled():
         if not terms:
             debugger.message_explicit(fmt_message, level)
         else:
@@ -177,11 +180,13 @@ def __unify(term, pattern, unifying = True ):
                 .format(pattern, term))
 
     elif isinstance(term, (int, float, bool)):
+        message_explicit("Literal match: {} and {}", [pattern, term], level="primary")
+
         if term == pattern:
-            message_explicit("Literal match: {} and {}", [pattern, term], level="secondary")
-            message_explicit("Matched!", level="tertiary")
+            message_explicit("Matched!", level="secondary")
             return [] # return an empty unifier
         else:
+            message_explicit("Failed! {} != {}", [pattern, term], level="secondary")
             raise PatternMatchFailed(
                 "'{}' is not the same as '{}'"
                 .format(term, pattern))
@@ -667,8 +672,7 @@ def __unify(term, pattern, unifying = True ):
     elif not match(term[0], pattern[0]):  # nodes are not the same
         message_explicit("Fail: {} and {} are not the same",
             [term[0], pattern[0]], level="secondary")
-
-
+        
         raise PatternMatchFailed(
             "nodes '{}' and '{}' are not the same"
             .format(term[0], pattern[0]))
@@ -1060,8 +1064,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if debugging:
         cur_tab_level = debugger.tab_level
 
-    increase_tab_level()
-
     (FUNCTION_VAL, body_list, closure) = fval
     assert_match(FUNCTION_VAL, 'function-val')
 
@@ -1088,6 +1090,12 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
 
+    # We use this variable to keep track of the tab level at the start of the
+    # call. Since we can fail in any part of the pattern, it is important to
+    # keep track of our original tab level so that we can reset it on pattern
+    # failure
+    increase_tab_level()
+
     for i in range(0, len(body_list_val), 2):
         # Process lineinfo
         lineinfo = body_list_val[ i ]
@@ -1099,30 +1107,38 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         message_explicit("Attempting to match {} with pattern {}",
-            [gen_t2s(actual_val_args), gen_t2s(p)], level="secondary")
+            [gen_t2s(actual_val_args), gen_t2s(p)], level="primary")
         
         try:
+            # Increase the tab level
             increase_tab_level()
             
+            # Attempt to unify the actual args and the pattern
             unifiers = unify(actual_val_args, p)
             unified = True
 
+            # Reset the tab level
             decrease_tab_level()
             
+            # Do our explicit message
             if actual_val_args[0] != 'struct':
-                message_explicit("Success! Matched function body", level="secondary")
+                message_explicit("Success! Matched function body", level="primary")
 
         except PatternMatchFailed:
-            increase_tab_level()
+            # Do our explicit message
+            if explicit_enabled():
+                debugger.tab_level = cur_tab_level + 1
+
             if actual_val_args[0] != 'struct':
                 message_explicit("Failed to match function body", level="tertiary")
-                pass
 
             unifiers = []
             unified = False
 
         if unified:
             break
+
+    if debugging: debugger.tab_level = cur_tab_level + 1
 
     decrease_tab_level()
 
@@ -1252,7 +1268,7 @@ def declare_unifiers(unifiers):
             raise ValueError("unknown unifier type '{}'".format(lval[0]))
     
     # Explicit messaging for unifiers
-    if debugging and debugger.explicit_enabled:
+    if explicit_enabled():
         l = [(lval, value) for u in unifiers]
 
         # if we've unified anything
