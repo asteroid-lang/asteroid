@@ -1,45 +1,36 @@
+# TODO
+* convert conditional matches to new format
+* Refactor language and "we see"
+* Add a function example
+
 # ADB in action
-# Explicit Mode
+This document covers some of the finer details of ADB. In particular, the explicit
+mode feature and how it allows for pattern debugging.
+
+## Explicit Mode
 Explicit mode is a feature of ADB that allows the user to understand and inspect
-Asteroid's pattern matching. Pattern matching in Asteroid is generally silent,
-meaning you only really see the details of it when an error occurs. Explicit mode,
-however, allows you to see every mattern matching operation that Asteroid carries
-out.
+Asteroid's pattern matching. Pattern matching in Asteroid is generally silent. You
+only really see the details of a pattern match when an error occurs. Explicit mode,
+however, allows you to see every mattern matching operation that Asteroid executes.
 
->> Rewrite this
-It is reccomended to step through functions to the specific line you are interested
-in while in explicit mode as opposed to over them as going over a function in explicit 
-mode (using the `next` command) can produce output that may be overly long and
-difficult to read.
-
+## Example session
 Let's take a look at a debugging session on a program that uses first-class 
 patterns to enforce a type:
 
-We see the simple 4 line program. We have a pattern that is essentially the
-range (0,10) and two variable declarations with typematches.
 ```
 [/home/user/example1.ast (1)]
 -->> let p = pattern %[(x:%integer) if x > 0 and x < 10]%.
-(ADB) ll
+(ADB) longlist
 ----- Program Listing -----
 >  1 let p = pattern %[(x:%integer) if x > 0 and x < 10]%.
    2 
    3 let z:*p = 9.
    4 let y:*p = 11.
    5 [EOF]
-(ADB) n
+(ADB) next
 ```
-
-Here we see explicit mode being enabled using the `e` command 
-and a simple typematch
-occuring. We can see the constraint-only pattern, the internal
-condition, the internal variable `x` being unified, the
-condition being met, and finally `z` being set to 9 as 9 succeeded
-the typematch.
-
-During unification, explicit mode shows the user the exact
-term and pattern which will be matched. Seen as `** pattern:` and
-`** term:`.
+We see the simple 4 line program. We have a pattern that is essentially the
+mathematical range (0,10) and two variable declarations with typematches.
 
 ```
 [/home/user/example1.ast (3)]
@@ -67,10 +58,18 @@ term and pattern which will be matched. Seen as `** pattern:` and
 (ADB)[e] n
 ```
 
-Here we see something similar. We can see the constraint-only
-pattern, the typematch to integer, but, when we get to the conditional
-part of the pattern, we see a failure. With explicit mode, we can see
-exactly *where* in the pattern the failure occurs.
+Here we see explicit mode being enabled using the `e` command 
+and a simple typematch occuring.
+
+We can see the constraint-only pattern, the conditional match, 
+the internal variable `x` being unified, the condition being
+met, and finally `z` being set to 9 as 9 succeeded
+the typematch.
+
+During unification, explicit mode shows the user the exact
+term and pattern which will be matched. Seen as `** pattern:` and
+`** term:`.
+
 ```
 [/home/user/example1.ast (4)]
 -->> let y:*p = 11.
@@ -97,6 +96,11 @@ ERROR: /home/user/example1.ast: 4: pattern match failed: conditional pattern mat
 -->> let y:*p = 11.
 (ADB)[e] 
 ```
+
+Here we see something similar. We can see the constraint-only
+pattern, the typematch to integer, but, when we get to the conditional
+part of the pattern, we see a failure. With explicit mode, we can see
+exactly *where* in the pattern the failure occurs.
 
 ## Another example
 Here we have a simple program with one major assert which will help us demonstrate how we can
@@ -179,3 +183,9 @@ typematch. This makes sense as `d` is composed of three `p`'s. All of which are 
 -->> [EOF]
 (ADB)[e] 
 ```
+
+## Tips
+* It is reccomended to step through functions to the specific line you are interested
+in while in explicit mode as opposed to over them as going over a function in explicit 
+mode (using the `next` command) can produce output that may be overly long and
+difficult to read.
