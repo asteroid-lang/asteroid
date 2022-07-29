@@ -77,7 +77,9 @@ class ADB:
         self.config_offset = 0          # The index of the current config we're using
         self.original_config = None     # The original config we started with (before moving between frames)
         self.original_lineinfo = None   # The original lineinfo we started with (before moving between frames)
-
+        
+        #############################
+        # List of messages displayed by the debugger
         self.msgs = []
     
     def reset_defaults(self):
