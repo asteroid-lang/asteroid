@@ -13,7 +13,8 @@ It supports the following:
 ADB features a unique "explicit" mode which details much of the pattern matching and underlying
 mechanics of Asteroid allow developers to debug pattern matches. Explicit mode
 details many of the steps of pattern matching, function calling, statement execution, and
-return values.
+return values. To learn more about explicit mode and its many features, see: [ADB in action](in_action.md)
+
 
 ## Debugging sessions
 The debugger's prompt `(ADB)` allows the user to enter commands to effect the source environment
@@ -51,7 +52,7 @@ we see running commands, listing the program, and setting and continuing to brea
    6 let t:*d = (1,2,993).
    7 [EOF]
 (ADB) break 6
-(ADB) c
+(ADB) continue
 ----- Breakpoint -----
 [/home/user/test.ast (6)]
 -->> let t:*d = (1,2,993).
@@ -59,7 +60,7 @@ we see running commands, listing the program, and setting and continuing to brea
 ```
 
 ## Usage
-`TDB`
+`TBD`
 
 ## Commands
 Below is a list of the commands available to the debugger. Most of which can be shortened.
@@ -125,10 +126,10 @@ h macro
 help break
 ```
 
-### < (Up)
+### <
 `<` move up one stack frame
 
-### > (Down)
+### >
 `>` move down one stack frame
 
 ### Where
@@ -144,3 +145,16 @@ help break
 `e(xplicit) (on|off)?` By default, this command run without an argument toggles
 explicit mode. If given a literal `on` or `off`, explicit mode will be switched
 to the corresponding state.
+
+Explicit:
+```
+-- Toggle Explicit mode
+explicit
+e
+
+-- Turn on/off
+explicit on
+e on
+explicit off
+e off
+```
