@@ -13,6 +13,11 @@ Asteroid's pattern matching. Pattern matching in Asteroid is generally silent. Y
 only really see the details of a pattern match when an error occurs. Explicit mode,
 however, allows you to see every mattern matching operation that Asteroid executes.
 
+Explicit mode aims to be readable. That being said, pattern matching, especially
+list-based pattern matching, is complicated. Sometimes the messages from explicit
+mode can be dense and difficult to read. Some reading tips are included at the
+end of this document.
+
 ## Example session
 Let's take a look at a debugging session on a program that uses first-class 
 patterns to enforce a type:
@@ -106,13 +111,6 @@ exactly *where* in the pattern the failure occurs.
 Here we have a simple program with one major assert which will help us demonstrate how we can
 read the explicit mode information to decipher failed pattern matches.
 
-We have two patterns, `p` and `d`. `d` is composed of three `p`'s. `p` is the range of numbers
-(0,100).
-
-In the assert, we see that we are trying to match a tuple of two numbers and a string against `d`.
-By the definition of `d` we can see that this will fail. But, let this be a proxy for a more
-complicated example. Let's investigate exactly *why* this pattern match fails.
-
 ```
 [/home/user/example2.ast (1)]
 -->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
@@ -129,10 +127,12 @@ complicated example. Let's investigate exactly *why* this pattern match fails.
 (ADB) s
 ```
 
-By following the tab leveling and pattern tree, we can see the exact point where the pattern match fails.
+We have two patterns, `p` and `d`. `d` is composed of three `p`'s. `p` is the range of numbers
+(0,100).
 
-We see that within the first constraint pattern, on the last item in the tuple, we have a failed
-typematch. This makes sense as `d` is composed of three `p`'s. All of which are integers.
+In the assert, we see that we are trying to match a tuple of two numbers and a string against `d`.
+By the definition of `d` we can see that this will fail. But, let this be a proxy for a more
+complicated example. Let's investigate exactly *why* this pattern match fails.
 
 ```
 [/home/user/example2.ast (4)]
@@ -184,8 +184,36 @@ typematch. This makes sense as `d` is composed of three `p`'s. All of which are 
 (ADB)[e] 
 ```
 
+By following the tab leveling and pattern tree, we can see the exact point where the pattern match fails.
+
+We see that within the first constraint pattern, on the last item in the tuple, we have a failed
+typematch. This makes sense as `d` is composed of three `p`'s. All of which are integers.
+
+
 ## Tips
 * It is reccomended to step through functions to the specific line you are interested
 in while in explicit mode as opposed to over them as going over a function in explicit 
 mode (using the `next` command) can produce output that may be overly long and
 difficult to read.
+
+* Using the tab leveling and associated bars is essential for following complex pattern
+matches. Every type of pattern match that can have other internal matches (constraint
+patterns, lists, typematches, etc.) has a new tab level given to it. Additionally, if
+a match succeeds there is often a message like "Matched" at the same tab level as the
+original "Matching" message.
+   Example:
+   ```
+   - Matching term b to pattern *p                                   <-- Start of match
+   |   - Dereferencing p
+   |    ** *p -> %[x:%integer if (condition...)]%
+   |   - [Begin] constraint pattern: x:%integer if (condition...)    <-- Start of constraint pattern
+   |   |   - Conditional match: if (x > 0 and x < 100)               <-- Start of conditional match
+   |   |   |   - Matching term x to pattern %integer                 <-- Start of internal match for conditional
+   |   |   |   |   - Typematch 2 to type integer
+   |   |   |   |    ** Success!
+   |   |   |   - Matched!                                            <-- End of internal match for conditional
+   |   |   |   - x = 2
+   |   |   - Condition met, x > 0 and x < 100                        <-- End of conditional match
+   |   - [End] constraint pattern                                    <-- End of constraint pattern
+   - Matched!                                                        <-- End of match
+   ```
