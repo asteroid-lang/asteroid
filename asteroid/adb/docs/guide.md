@@ -1,7 +1,4 @@
-# TODO
-* convert conditional matches to new format
-
- # Quick Start
+# ADB Reference Guide
 The Asteroid Debugger (ADB) is a source code debugger for the Asteroid programming language.
 
 It supports the following:
