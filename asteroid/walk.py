@@ -1352,7 +1352,10 @@ def unify_stmt(node):
     term = walk(exp)
 
     #TODO: (OWM) Do we need this?
-    message_explicit("pattern: {}, term: {}",
+    message_explicit("pattern: {}",
+        [gen_t2s(pattern), gen_t2s(term)], level="secondary")
+
+    message_explicit("term: {}",
         [gen_t2s(pattern), gen_t2s(term)], level="secondary")
 
     unifiers = unify(term, pattern)

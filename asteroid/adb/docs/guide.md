@@ -66,6 +66,12 @@ we see running commands, listing the program, and setting and continuing to brea
 Below is a list of the commands available to the debugger. Most of which can be shortened.
 These shortenings are shown in parenthesis (`c(ommand)`).
 
+### List
+`l(ist)` lists the lines around the currently executing line
+
+### Longlist
+`ll (longlist)` lists the entire program
+
 ### Step
 `s(tep)` through to the next statement or through function call.
 
@@ -134,12 +140,6 @@ help break
 
 ### Where
 `w(here)` displays the frame stack and the currently active frame.
-
-### Longlist
-`ll (longlist)` lists the entire program
-
-### List
-`l(ist)` lists the lines around the currently executing line
 
 ### Explicit
 `e(xplicit) (on|off)?` By default, this command run without an argument toggles
