@@ -2101,10 +2101,6 @@ def set_ret_val(node):
     # Check if the user is at the top level to decide if we give
     was_at_top_before = debugging and debugger.top_level
 
-    # This call allows us to have statement-level expressions
-    # act like statements to the debugger
-    notify_debugger()
-
     global function_return_value
     val = walk(exp)
     function_return_value.pop()
@@ -2117,6 +2113,15 @@ def set_ret_val(node):
         debugger.message("Returned: {}".format(term2string(val)))
 
     return
+
+def top_level_exp_stmt(node):
+
+    (TOP_LEVEL_EXP, exp) = node
+    assert_match(TOP_LEVEL_EXP, 'top-level-exp')
+
+    notify_debugger()
+
+    return walk(exp)
 
 #########################################################################
 # walk
@@ -2181,6 +2186,7 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
+    'top-level-exp' : top_level_exp_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'import_list'   : import_list_stmt,

@@ -113,7 +113,8 @@ class Parser:
             if self.lexer.peek().type in stmt_lookahead:
                 sl += [stmt]
 
-            # Else, set the ret val
+            # Else, the last stmt in a list can contain an implicit return
+            # Set the node accordingly
             else:
                 sl += [('set-ret-val', stmt)]
 
@@ -406,7 +407,7 @@ class Parser:
         elif tt in exp_lookahead:
             v = self.exp()
             self.lexer.match_optional('DOT')
-            return v
+            return ('top-level-exp', v)
 
         else:
             raise SyntaxError("syntax error at '{}'"
