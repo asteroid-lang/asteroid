@@ -25,6 +25,8 @@ class DebuggerLexer:
             ('LIST',        r'\blist\b|\bl\b'),
             ('LONGLIST',    r'\blonglist\b|\bll\b'),
             ('QUIT',        r'\bquit\b|\bq\b'),
+
+            ('RETURN',      r'\breturn\b|\bret\b|\br\b'),
             
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('ON',          r'\bon\b'),
@@ -218,7 +220,7 @@ class DebuggerParser:
             case 'HELP':     return self.help_cmd()
             case 'EXPLICIT': return self.explicit_cmd()
 
-            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | \
+            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETURN' | \
                  'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
@@ -228,11 +230,8 @@ class DebuggerParser:
                 n = self.dlx.match('NAME').value
                 return ('NAME', n)
 
-            case 'EOF':
+            case 'EOF' | 'SEMI':
                 return ('NOOP',)
-
-            case 'SEMI':
-                return ('NOOP', )
 
             case _:
                 raise ValueError("Unknown command: {}".format(
