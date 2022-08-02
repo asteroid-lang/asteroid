@@ -40,6 +40,10 @@ class ADB:
         # OR next top level statement (next)
         self.is_next = True
 
+        # OR we're just continuing to the return of the current
+        # function call
+        self.is_return = False
+
         #############################
         # If our program is executing at the top level
         self.top_level = True
@@ -647,6 +651,14 @@ class ADB:
                 self.print_given_line( (s[0], s[1]) , header=False)
             start_of_line = "*"
 
+    def set_return(self, ret):
+        if not ret:
+            self.is_return = False
+            return
+ 
+        if len(state.trace_stack) == 1:
+            self.message("Return command is only available within a function call")
+
     def walk_command(self, cmd):
         """
         Walk a given command
@@ -658,16 +670,20 @@ class ADB:
 
         # Match command to behavior
         match(cmd):
-            case ('MACRO',):          self.display_macros()
-            case ('MACRO', name, l):  self.set_new_macro(name, l)
-            case ('EVAL', value):     self.do_eval_command(value)
-            case ('BANG', ):          self.do_repl_command()
-            case ('HELP', name):      self.do_help_command(name)
-            case ('UP',):             self.move_frame_up()
-            case ('DOWN',):           self.move_frame_down()
-            case ('WHERE',):          self.do_where_command()
-            case ('LONGLIST',):       self.list_program()
-            case ('LIST',):           self.list_program(relative=True)
+            case ('MACRO',):            self.display_macros()
+            case ('MACRO', name, l):    self.set_new_macro(name, l)
+            case ('EVAL', value):       self.do_eval_command(value)
+            case ('BANG', ):            self.do_repl_command()
+            case ('HELP', name):        self.do_help_command(name)
+            case ('UP',):               self.move_frame_up()
+            case ('DOWN',):             self.move_frame_down()
+            case ('WHERE',):            self.do_where_command()
+            case ('LONGLIST',):         self.list_program()
+            case ('LIST',):             self.list_program(relative=True)
+
+            case ('RETURN',):
+                self.set_return(True)
+                exit_loop = True
 
             case ('EXPLICIT', set_explicit):
                 if set_explicit == False:
