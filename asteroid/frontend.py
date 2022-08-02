@@ -105,8 +105,19 @@ class Parser:
         sl = []
         while self.lexer.peek().type in stmt_lookahead:
             sl += [('lineinfo', state.lineinfo)]
-            sl += [('clear-ret-val',)]
-            sl += [self.stmt()]
+
+            # Get the statment
+            stmt = self.stmt()
+
+            # If there's another stmt coming up, don't set the ret val
+            if self.lexer.peek().type in stmt_lookahead:
+                sl += [stmt]
+
+            # Else, set the ret val
+            else:
+                sl += [('set-ret-val', stmt)]
+
+
         return ('list', sl)
 
     ###########################################################################################
@@ -396,7 +407,7 @@ class Parser:
         elif tt in exp_lookahead:
             v = self.exp()
             self.lexer.match_optional('DOT')
-            return ('set-ret-val', v)
+            return v
 
         else:
             raise SyntaxError("syntax error at '{}'"
