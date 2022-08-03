@@ -741,7 +741,7 @@ class ADB:
 
         return exit_loop
 
-    def command_loop(self):
+    def command_loop(self, in_pattern=False):
         """
         Main command loop for ADB
         """
@@ -749,8 +749,14 @@ class ADB:
 
         # Main command loop
         while not exit_loop:
-            # Format the input symbol to reflect explicitness
-            query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
+
+            # in_pattern in explicit mode is a flag for currently stepping
+            # through a pattern
+            if in_pattern:
+                query_symbol = "[Pattern] "
+            else:
+                # Format the input symbol to reflect explicitness
+                query_symbol = "(ADB)[e] " if self.explicit_enabled else "(ADB) "
 
             # Get the command
             cmd = input(query_symbol)
@@ -776,6 +782,11 @@ class ADB:
             # Intercept debugger command errors
             except ValueError as e:
                 self.dprint("Debugger command error [{}]".format(e))
+
+            # If we are in a pattern but disabled explicit mode, that's
+            # grounds for loop exiting
+            if in_pattern and not self.explicit_enabled:
+                exit_loop = True
 
         return exit_loop
 
@@ -807,6 +818,10 @@ class ADB:
         # Reset the tab level
         self.tab_level = 0
     
+    def notify_explicit(self):
+        if self.is_stepping and self.explicit_enabled:
+            self.command_loop(in_pattern=True)
+
     def notify(self):
         """
         Notify the debugger that a potential tick-point has

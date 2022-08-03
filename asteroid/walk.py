@@ -81,6 +81,16 @@ def notify_debugger():
         # Reset our lineinfo
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
+
+def notify_explicit():
+    if debugging and explicit_enabled:
+        old_lineinfo = state.lineinfo
+        
+        debugger.notify_explicit()
+
+        # Reset our lineinfo
+        state.lineinfo = old_lineinfo
+        debugger.set_lineinfo(state.lineinfo)
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
@@ -214,6 +224,7 @@ def __unify(term, pattern, unifying = True ):
 
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
+                notify_explicit()
 
             # Tab leveling
             decrease_tab_level()
@@ -227,6 +238,7 @@ def __unify(term, pattern, unifying = True ):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
         message_explicit("Evaluating named pattern")
+        notify_explicit()
         return unify(term[2],pattern,unifying)
 
     elif ((not unifying) and (term[0] == 'deref')):
@@ -261,6 +273,8 @@ def __unify(term, pattern, unifying = True ):
 
             if tl[i][0] != 'function-val':
                 unifiers += unify(tl[i], pl[i])
+
+            notify_explicit()
         
         decrease_tab_level()
 
@@ -1128,6 +1142,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             
             # Do our explicit message
             message_explicit("Success! Matched function body", level="primary")
+            notify_explicit()
 
         except PatternMatchFailed:
             # Do our explicit message
@@ -1135,6 +1150,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
                 debugger.tab_level = cur_tab_level + 1
 
             message_explicit("Failed to match function body", level="tertiary")
+            notify_explicit()
 
             unifiers = []
             unified = False
