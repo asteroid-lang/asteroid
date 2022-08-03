@@ -116,6 +116,7 @@ class Parser:
             # Else, the last stmt in a list can contain an implicit return
             # Set the node accordingly
             else:
+                sl += [('clear-ret-val',)]
                 sl += [('set-ret-val', stmt)]
 
         return ('list', sl)
