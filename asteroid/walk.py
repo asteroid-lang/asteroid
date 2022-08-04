@@ -54,13 +54,24 @@ def message_explicit(fmt_message, terms=None, level="primary"):
             debugger.message_explicit(expressed_string, level)
 
 def gen_t2s(node):
+    """
+    Generator function for term2string. This cuts down on
+    runtime as it defers term2string computations to when
+    they're actually needed.
+    """
     yield term2string(node)
 
 def increase_tab_level():
+    """
+    Increase the debugger's tab level by one
+    """
     if explicit_enabled():
         debugger.tab_level += 1
 
 def decrease_tab_level():
+    """
+    Decrease the debugger's tab level by one
+    """
     if explicit_enabled():
         debugger.tab_level -= 1
 
@@ -212,7 +223,8 @@ def __unify(term, pattern, unifying = True ):
             message_explicit("Matching lists: {} and {}",
                 [gen_t2s( ('list', pattern) ), gen_t2s( ('list', term) )]
             )
-
+            notify_explicit()
+            
             unifier = []
 
             # Tab leveling
@@ -220,7 +232,6 @@ def __unify(term, pattern, unifying = True ):
 
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
-                notify_explicit()
 
             # Tab leveling
             decrease_tab_level()
@@ -259,9 +270,10 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Matching objects {}{} and {}{}",
             [pid, gen_t2s( ('tuple', pl) ), tid, gen_t2s( ('tuple', tl) )]
         )
-        
-        unifiers = []
+
         increase_tab_level()
+
+        unifiers = []
 
         for i in range(len(pl)):
             # OWM: We can't actually unify function-vals. If we know the type is
@@ -473,6 +485,8 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)]
         )
 
+        notify_explicit()
+
         increase_tab_level()
         # name_exp can be an id or an index expression.
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
@@ -680,6 +694,7 @@ def __unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'constraint':
         message_explicit("[Begin] constraint pattern: {}", [gen_t2s(pattern[1])])    
+        notify_explicit()
 
         state.constraint_lvl += 1
         
@@ -1141,10 +1156,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             notify_explicit()
 
         except PatternMatchFailed:
-            # Do our explicit message
+            # Reset the tab level
             if explicit_enabled():
                 debugger.tab_level = cur_tab_level + 1
 
+            # Print the explicit messaging
             message_explicit("Failed to match function body", level="tertiary")
             notify_explicit()
 
