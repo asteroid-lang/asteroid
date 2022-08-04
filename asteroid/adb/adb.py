@@ -40,10 +40,6 @@ class ADB:
         # OR next top level statement (next)
         self.is_next = True
 
-        # OR we're just continuing to the return of the current
-        # function call
-        self.is_return = False
-
         #############################
         # If our program is executing at the top level
         self.top_level = True
@@ -97,12 +93,12 @@ class ADB:
         self.top_level = True
         self.explicit_enabled = False
 
-    def reset_config(self):
+    def reset_movement(self):
         """
         Reset the symbol table's original config
         """
         if self.original_config:
-            state.symbol_table.set_config(self.original_config)
+            state.symbol_table.set_movement(self.original_config)
             self.original_config = None
             self.original_lineinfo = None
             self.config_offset = 0
@@ -426,7 +422,7 @@ class ADB:
             # Reset the start of line
             start_of_line = "  "
 
-    def set_config(self, step=False, cont=False, next=False):
+    def set_movement(self, step=False, cont=False, next=False):
         """
         Set the debugger movement configuration
         """
@@ -569,7 +565,7 @@ class ADB:
             (module, line, _) = state.trace_stack[-self.config_offset]
             
             # Set the config
-            state.symbol_table.set_config(
+            state.symbol_table.set_movement(
                 state.symbol_table.saved_configs[-self.config_offset]
             )
             self.set_lineinfo( (module, line) )
@@ -590,14 +586,14 @@ class ADB:
         
             if bottom_level:
                 if self.original_config:
-                    state.symbol_table.set_config(self.original_config)
+                    state.symbol_table.set_movement(self.original_config)
                     self.set_lineinfo( (self.original_lineinfo) )
             else:
                 # We're at the bottommost frame and want to go up, but need
                 # to save the original config
                 (module, line, _) = state.trace_stack[-self.config_offset]
                 
-                state.symbol_table.set_config(
+                state.symbol_table.set_movement(
                     state.symbol_table.saved_configs[-self.config_offset])
 
                 self.set_lineinfo( (module, line) )
@@ -651,14 +647,6 @@ class ADB:
                 self.print_given_line( (s[0], s[1]) , header=False)
             start_of_line = "*"
 
-    def set_return(self, ret):
-        if not ret:
-            self.is_return = False
-            return
- 
-        if len(state.trace_stack) == 1:
-            self.message("Return command is only available within a function call")
-
     def walk_command(self, cmd):
         """
         Walk a given command
@@ -682,7 +670,7 @@ class ADB:
             case ('LIST',):             self.list_program(relative=True)
 
             case ('RETURN',):
-                self.set_return(True)
+                self.message("RETURN NOT IMPLEMENTED YET")
                 exit_loop = True
 
             case ('EXPLICIT', set_explicit):
@@ -695,17 +683,17 @@ class ADB:
 
             # Step
             case ('STEP', ):
-                self.set_config(step=True)
+                self.set_movement(step=True)
                 exit_loop = True
 
             # Continue
             case ('CONTINUE', ):
-                self.set_config(cont=True)
+                self.set_movement(cont=True)
                 exit_loop = True
 
             # Next
             case ('NEXT', ):
-                self.set_config(next=True)
+                self.set_movement(next=True)
                 exit_loop = True
 
             # Break 
@@ -776,7 +764,7 @@ class ADB:
 
                     # Exit if necessary
                     if exit_loop:
-                        self.reset_config()
+                        self.reset_movement()
                         break;
             
             # Intercept debugger command errors
@@ -806,7 +794,7 @@ class ADB:
             exit_loop = self.walk_command(self.command_queue.pop(0))
             if exit_loop:
                 if self.original_config:
-                    self.reset_config()
+                    self.reset_movement()
                 return
         
         # self.dprint the current line with lineinfo
@@ -852,7 +840,7 @@ class ADB:
                 pass
             
         elif self.is_return and len(state.trace_stack) == 1:
-            self.set_config(next=True)
+            self.set_movement(next=True)
         """
 
         if self.has_breakpoint_here() and not self.is_next:

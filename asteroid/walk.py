@@ -67,10 +67,6 @@ def decrease_tab_level():
         if debugger.tab_level < 0:
             debugger.tab_level = 0
 
-def set_tab_level(num):
-    if debugging:
-        debugger.tab_level = num
-
 def notify_debugger():
     if debugging:
         # We need to save the old lineinfo in case we go into a REPL
