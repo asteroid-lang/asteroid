@@ -49,14 +49,22 @@ class ADB:
         self.explicit_enabled = False
 
         #############################
+        # The current level of tabulation
         self.tab_level = 0
 
-        # Lineinfo
+        #############################
+        # Debugger's internal lineinfo
+        # We maintain this separate from the state's lineinfo
+        # to help keep track of the currently executing line.
+        # Between things like imports or function calls to
+        # other modules, the state's lineinfo can fall slightly
+        # behind.
         self.lineinfo = None
 
+        #############################
         # Name-content file dictionary
         self.program_text = {}
-
+        
         # The original filename
         self.filename = None
         
@@ -807,6 +815,9 @@ class ADB:
         self.tab_level = 0
     
     def notify_explicit(self):
+        """
+        Run a command loop ~iff~ we're in explicit mode
+        """
         if self.is_stepping and self.explicit_enabled:
             self.command_loop(in_pattern=True)
 
