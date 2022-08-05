@@ -49,13 +49,13 @@ we see running commands, listing the program, and setting and continuing to brea
    3 let d = pattern %[(x:*p, y:*p, z:*p)]%.
    4 let x:*p = 99.
    5 
-   6 let t:*d = (1,2,993).
+   6 let t:*d = (1,2,3).
    7 [EOF]
 (ADB) break 6
 (ADB) continue
 ----- Breakpoint -----
 [/home/user/test.ast (6)]
--->> let t:*d = (1,2,993).
+-->> let t:*d = (1,2,3).
 (ADB) 
 ```
 
