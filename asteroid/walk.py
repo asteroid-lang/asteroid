@@ -1737,15 +1737,13 @@ def import_list_stmt(node):
     (LIST, inlist) = node
     assert_match(LIST, 'import_list')
 
-    outlist = []
-
     for e in inlist:
-        outlist.append(walk(e))
+        walk(e)
 
     debugging = old_debugging
-    
+
     message_explicit("Import successful!")
-    return ('list', outlist)
+    return
 
 #########################################################################
 def eval_exp(node):
@@ -2122,7 +2120,6 @@ def constraint_exp(node):
 
 #########################################################################
 def set_ret_val(node):
-
     (SET_RET_VAL, exp) = node
     assert_match(SET_RET_VAL,'set-ret-val')
 
@@ -2137,7 +2134,7 @@ def set_ret_val(node):
     was_at_top = was_at_top_before \
         and debugging and not debugger.explicit_enabled and debugger.is_next
 
-    if was_at_top:
+    if was_at_top and val:
         debugger.message("Returned: {}".format(term2string(val)))
 
     return
@@ -2160,8 +2157,12 @@ def walk(node):
 
     if type == 'clear-ret-val':
         # implemented here instead of dictionary for efficiency reasons
-        global function_return_value
-        function_return_value.pop()
+        global function_return_value    
+
+        # If we have no function return value, then append None    
+        if function_return_value != []:
+            function_return_value.pop()
+        
         function_return_value.append(None)
         return
     elif type in dispatch_dict:
