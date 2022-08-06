@@ -27,6 +27,7 @@ def display_help():
     print(" -h    display help")
     print(" -r    disable redundant pattern detector")
     print(" -e    show Python exceptions")
+    print(" -F    functional mode")
 
 def main():
     # defaults for the flags - when the flag is set on the command line
@@ -41,6 +42,7 @@ def main():
         '-h' : False, # display help flag
         '-r' : True,  # redundant pattern dectector
         '-e' : False, # show full exceptions
+        '-F' : False, # functional mode
     }
 
     flag_names = list(flags.keys())
@@ -84,7 +86,8 @@ def main():
            symtab_dump=flags['-s'],
            exceptions=flags['-e'],
            redundancy=flags['-r'],
-           prologue=flags['-p'])'''
+           prologue=flags['-p'],
+           functional_mode=flags['-F'])'''
 
     if flags['-z']:
         # generates pstats into the file 'pstats'
