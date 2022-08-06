@@ -1192,8 +1192,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     try:
         function_return_value.append(None)
-
-        increase_tab_level()
         # Flag to tell us if we actually want to step
         # through to the net line of the function call
 
@@ -1240,7 +1238,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
-            fname]
+            fname],
+            decrease=True
     )
 
     return return_value
