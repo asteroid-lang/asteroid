@@ -22,7 +22,8 @@ debugger = None
 def explicit_enabled():
     return debugging and debugger.explicit_enabled
 
-def message_explicit(fmt_message, terms=None, level="primary"):
+def message_explicit(fmt_message, terms=None, level="primary", 
+    increase=False, decrease=False, notify=False):
     """
     Message explicit expects 1-3 arguments
 
@@ -39,6 +40,9 @@ def message_explicit(fmt_message, terms=None, level="primary"):
     from types import GeneratorType
 
     if explicit_enabled():
+        if decrease:
+            decrease_tab_level()
+
         if not terms:
             debugger.message_explicit(fmt_message, level)
         else:
@@ -52,6 +56,12 @@ def message_explicit(fmt_message, terms=None, level="primary"):
             expressed_string = fmt_message.format(*expressed_terms)
 
             debugger.message_explicit(expressed_string, level)
+        
+        if increase:
+            increase_tab_level()
+
+        if notify:
+            notify_explicit()
 
 def gen_t2s(node):
     """
@@ -183,6 +193,7 @@ def __unify(term, pattern, unifying = True ):
     # a pattern match fail.
     if isinstance(term, str): # apply regular expression match
         message_explicit("Regex match: {} and {}", [pattern, term], level="secondary")
+
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
             message_explicit("Matched!", level="tertiary")
@@ -214,31 +225,25 @@ def __unify(term, pattern, unifying = True ):
                 "term and pattern lists/tuples are not the same length")
         else:
             message_explicit("Matching lists: {} and {}",
-                [gen_t2s( ('list', pattern) ), gen_t2s( ('list', term) )]
-            )
-            notify_explicit()
-            
-            unifier = []
+                [gen_t2s( ('list', pattern) ), gen_t2s( ('list', term) )],
+                increase=True, notify=True)
 
-            # Tab leveling
-            increase_tab_level()
+            unifier = []
 
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
 
-            # Tab leveling
-            decrease_tab_level()
+            message_explicit("Matched!", decrease=True)
 
-            check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
+            # Ensure we have no non-linear patterns
+            check_repeated_symbols(unifier)
 
-            message_explicit("Matched!")
             return unifier
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side name-pattern if evaluating redundant clauses
-        message_explicit("Evaluating named pattern")
-        notify_explicit()
+        message_explicit("Evaluating named pattern", notify=True)
         return unify(term[2],pattern,unifying)
 
     elif ((not unifying) and (term[0] == 'deref')):
@@ -261,10 +266,9 @@ def __unify(term, pattern, unifying = True ):
                 .format(pid,tid))
 
         message_explicit("Matching objects {}{} and {}{}",
-            [pid, gen_t2s( ('tuple', pl) ), tid, gen_t2s( ('tuple', tl) )]
+            [pid, gen_t2s( ('tuple', pl) ), tid, gen_t2s( ('tuple', tl) )],
+            increase=True
         )
-
-        increase_tab_level()
 
         unifiers = []
 
@@ -276,18 +280,17 @@ def __unify(term, pattern, unifying = True ):
             if tl[i][0] != 'function-val':
                 unifiers += unify(tl[i], pl[i])
         
-        decrease_tab_level()
-
-        message_explicit("Objects matched")
+        message_explicit("Objects matched", decrease=True)
         return unifiers
 
     elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
         message_explicit("Matching string {} and non-string {}",
-            [gen_t2s(pattern), gen_t2s(term)]
+            [gen_t2s(pattern), gen_t2s(term)],
+            notify=True
         )
-        notify_explicit()
+
         return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'if-exp':
@@ -314,11 +317,9 @@ def __unify(term, pattern, unifying = True ):
 
         # Explicit messaging
         message_explicit("Conditional match: if ({})",
-            [gen_t2s(cond_exp)]
+            [gen_t2s(cond_exp)],
+            notify=True, increase=True
         )
-        notify_explicit()
-
-        increase_tab_level()
 
         unifiers = unify(term, pexp, unifying)
 
@@ -333,16 +334,15 @@ def __unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-        decrease_tab_level()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
-                [gen_t2s(cond_exp)]
+                [gen_t2s(cond_exp)], decrease=True
             )
             return unifiers
         else:
             message_explicit("Condition ({}) failed",
-                [gen_t2s(cond_exp)]
+                [gen_t2s(cond_exp)], decrease=True
             )
             raise PatternMatchFailed(
                 "conditional pattern match failed")
@@ -447,26 +447,19 @@ def __unify(term, pattern, unifying = True ):
                 message_explicit("Success!", level="secondary")
                 return []
             else:
-                message_explicit("Failure", level="secondary")
-                
-                # Padding tab level
-                increase_tab_level()
+                message_explicit("Failure", level="secondary", increase=True)
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
 
         else:
             if state.symbol_table.lookup_sym(typematch)[0] != 'struct':
-                message_explicit("Failure", level="secondary")
+                message_explicit("Failure", level="secondary", increase=True)
 
-                # Padding tab level
-                increase_tab_level()
                 raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
             else:
-                message_explicit("Failure", level="secondary")
-                
-                # Padding tab level
-                increase_tab_level()
+                message_explicit("Failure", level="secondary", increase=True)
+
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
@@ -476,18 +469,16 @@ def __unify(term, pattern, unifying = True ):
         # unpack pattern
         (NAMED_PATTERN, name_exp, p) = pattern
         message_explicit("Matching term {} and pattern {} to [{}]",
-            [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)]
+            [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)],
+            notify=True, increase=True
         )
-
-        notify_explicit()
-
-        increase_tab_level()
         # name_exp can be an id or an index expression.
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
-
-        decrease_tab_level()
         
-        message_explicit("Matched ({} and {})", [gen_t2s(unifiers[0][0]), gen_t2s(unifiers[0][1])])
+        message_explicit("Matched ({} and {})", 
+            [gen_t2s(unifiers[0][0]), gen_t2s(unifiers[0][1])],
+            decrease=True
+        )
 
         return unifiers
 
@@ -552,11 +543,9 @@ def __unify(term, pattern, unifying = True ):
         # only pattern match on object data members
         message_explicit("Matching object {}{} and pattern {}{}",
             [apply_id,  gen_t2s( ('tuple', data_only(obj_memory)) ),
-            struct_id, gen_t2s( ('tuple', pattern_list) )]
+            struct_id, gen_t2s( ('tuple', pattern_list) )],
+            notify=True
         )
-
-        notify_explicit()
-
         # Running through the list elements indivuidually allows for
         # better debugging information
         unifiers = []
@@ -588,10 +577,9 @@ def __unify(term, pattern, unifying = True ):
 
     elif pattern[0] in ['head-tail', 'raw-head-tail']:
         message_explicit("Matching {} to {}",
-            [gen_t2s(term), gen_t2s(pattern)]
+            [gen_t2s(term), gen_t2s(pattern)],
+            notify=True
         )
-        notify_explicit()
-
         # if we are unifying or we are not evaluating subsumption
         #  to another head-tail
         if unifying or term[0] not in ['head-tail', 'raw-head-tail']:
@@ -692,18 +680,15 @@ def __unify(term, pattern, unifying = True ):
         return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] == 'constraint':
-        message_explicit("[Begin] constraint pattern: {}", [gen_t2s(pattern[1])])    
-        notify_explicit()
-
+        message_explicit("[Begin] constraint pattern: {}",
+            [gen_t2s(pattern[1])],
+            notify=True, increase=True
+        )    
         state.constraint_lvl += 1
-        
-        increase_tab_level()
         unifier = unify(term,pattern[1])
-        decrease_tab_level()
-
         state.constraint_lvl -= 1
 
-        message_explicit("[End] constraint pattern")
+        message_explicit("[End] constraint pattern", decrease=True)
         return [] #Return an empty unifier
 
     elif not match(term[0], pattern[0]):  # nodes are not the same
@@ -1111,7 +1096,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.push_scope({})
 
     # Explicit message
-    message_explicit("Call: {}({})", [fname, gen_t2s(actual_val_args)])
+    message_explicit("Call: {}({})",
+        [fname, gen_t2s(actual_val_args)],
+        increase=True
+    )
 
     # We want to return back to whatever tab level the function
     # call started at, so, we grab this here to reset to at
@@ -1119,8 +1107,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # the proper formatting
     if debugging:
         cur_tab_level = debugger.tab_level
-
-    increase_tab_level()
 
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
@@ -1137,23 +1123,17 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
         message_explicit("Attempting to match {} with pattern {}",
-            [gen_t2s(actual_val_args), gen_t2s(p)], level="primary")
-        
-        notify_explicit()
+            [gen_t2s(actual_val_args), gen_t2s(p)], level="primary",
+            notify=True, increase=True
+        )
         
         try:
-            # Increase the tab level
-            increase_tab_level()
-            
             # Attempt to unify the actual args and the pattern
             unifiers = unify(actual_val_args, p)
             unified = True
 
-            # Reset the tab level
-            decrease_tab_level()
-            
             # Do our explicit message
-            message_explicit("Success! Matched function body", level="primary")
+            message_explicit("Success! Matched function body", level="primary", decrease=True)
 
         except PatternMatchFailed:
             # Reset the tab level
@@ -1161,7 +1141,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
                 debugger.tab_level = cur_tab_level + 1
 
             # Print the explicit messaging
-            message_explicit("Failed to match function body", level="tertiary")
+            message_explicit("Failed to match function body", level="tertiary", decrease=True)
 
             unifiers = []
             unified = False
@@ -1170,8 +1150,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             break
 
     if debugging: debugger.tab_level = cur_tab_level + 1
-
-    decrease_tab_level()
 
     if not unified:
         raise ValueError("actual argument '{}' not recognized by function '{}'"
@@ -1350,20 +1328,14 @@ def assert_stmt(node):
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
 
-    message_explicit("Asserting: {}", [gen_t2s(exp)])
-
-    # Push a new tab level
-    increase_tab_level()
+    message_explicit("Asserting: {}", [gen_t2s(exp)], increase=True)
 
     exp_val = walk(exp)
-    
-    # Pop the tab level
-    decrease_tab_level()
 
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
 
-    message_explicit("Assert Succeeded")
+    message_explicit("Assert Succeeded", decrease=True)
 
 #########################################################################
 def unify_stmt(node):
@@ -1378,7 +1350,6 @@ def unify_stmt(node):
 
     term = walk(exp)
 
-    #TODO: (OWM) Do we need this?
     message_explicit("pattern: {}",
         [gen_t2s(pattern), gen_t2s(term)], level="secondary")
 
@@ -1575,7 +1546,7 @@ def while_stmt(node):
     try:
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
         if cond_val:
-            message_explicit("Condition is True", level="tertiary")
+            message_explicit("Condition met", level="tertiary")
         while cond_val:
             walk(body)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
