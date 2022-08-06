@@ -2184,17 +2184,8 @@ def debug_walk(node, dbg):
     (LIST, inlist) = node
 
     for e in inlist:
-        # We have to differentiate between top level
-        # lists and statements to keep the top level
-        # state correctness
-        if e[0] == 'list':
-            # If we're entering a list, recall debug_walk
-            # so we can have the same logic perpetuate
-            debugger.set_top_level(True)
-            debug_walk(e, dbg)
-        else:
-            debugger.set_top_level(True)
-            walk(e)
+        debugger.set_top_level(True)
+        walk(e)
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
