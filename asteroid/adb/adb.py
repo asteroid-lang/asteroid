@@ -97,7 +97,7 @@ class ADB:
         self.top_level = True
         self.explicit_enabled = False
 
-    def reset_movement(self):
+    def reset_config(self):
         """
         Reset the symbol table's original config
         """
@@ -761,7 +761,7 @@ class ADB:
 
                     # Exit if necessary
                     if exit_loop:
-                        self.reset_movement()
+                        self.reset_config()
                         break;
             
             # Intercept debugger command errors
@@ -791,7 +791,7 @@ class ADB:
             exit_loop = self.walk_command(self.command_queue.pop(0))
             if exit_loop:
                 if self.original_config:
-                    self.reset_movement()
+                    self.reset_config()
                 return
         
         # print the current line with lineinfo
