@@ -1140,6 +1140,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         message_explicit("Attempting to match {} with pattern {}",
             [gen_t2s(actual_val_args), gen_t2s(p)], level="primary")
         
+        notify_explicit()
+        
         try:
             # Increase the tab level
             increase_tab_level()
@@ -1153,7 +1155,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             
             # Do our explicit message
             message_explicit("Success! Matched function body", level="primary")
-            notify_explicit()
 
         except PatternMatchFailed:
             # Reset the tab level
@@ -1162,7 +1163,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
             # Print the explicit messaging
             message_explicit("Failed to match function body", level="tertiary")
-            notify_explicit()
 
             unifiers = []
             unified = False
