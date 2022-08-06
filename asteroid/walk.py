@@ -176,13 +176,6 @@ def __unify(term, pattern, unifying = True ):
           unifying, then we are evaluating subsumption between two patterns for the
           purpose of detecting redundant/useless pattern clauses in functions.
     '''
-    #lhh
-    # print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
-
-    # if unifying:
-    #     print("unifying:\nterm: {}\npattern: {}\n\n".format(term, pattern))
-    # else:
-    #     print("evaluating subsumption:\nterm: {}\npattern: {}\n\n".format(term, pattern))
 
     ### Python value level matching
     # NOTE: in the first rules where we test instances we are comparing
@@ -278,11 +271,10 @@ def __unify(term, pattern, unifying = True ):
         for i in range(len(pl)):
             # OWM: We can't actually unify function-vals. If we know the type is
             # the same, can we just assume the function-val is the same?
+            notify_explicit()
 
             if tl[i][0] != 'function-val':
                 unifiers += unify(tl[i], pl[i])
-
-            notify_explicit()
         
         decrease_tab_level()
 
@@ -295,6 +287,7 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Matching string {} and non-string {}",
             [gen_t2s(pattern), gen_t2s(term)]
         )
+        notify_explicit()
         return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'if-exp':
@@ -323,6 +316,7 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Conditional match: if ({})",
             [gen_t2s(cond_exp)]
         )
+        notify_explicit()
 
         increase_tab_level()
 
@@ -561,6 +555,8 @@ def __unify(term, pattern, unifying = True ):
             struct_id, gen_t2s( ('tuple', pattern_list) )]
         )
 
+        notify_explicit()
+
         # Running through the list elements indivuidually allows for
         # better debugging information
         unifiers = []
@@ -594,6 +590,7 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Matching {} to {}",
             [gen_t2s(term), gen_t2s(pattern)]
         )
+        notify_explicit()
 
         # if we are unifying or we are not evaluating subsumption
         #  to another head-tail
@@ -615,8 +612,8 @@ def __unify(term, pattern, unifying = True ):
 
             list_head = list_val[0]
             list_tail = ('list', list_val[1:])
-
             unifier = []
+
             unifier += unify(list_head, pattern_head, unifying)
             unifier += unify(list_tail, pattern_tail, unifying)
 
@@ -670,6 +667,8 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(pattern),
             gen_t2s(p)], "secondary"
         )
+
+        notify_explicit()
 
         return unify(term,p,unifying)
 
