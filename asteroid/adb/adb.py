@@ -85,11 +85,7 @@ class ADB:
         self.config_offset = 0          # The index of the current config we're using
         self.original_config = None     # The original config we started with (before moving between frames)
         self.original_lineinfo = None   # The original lineinfo we started with (before moving between frames)
-        
-        #############################
-        # List of messages displayed by the debugger
-        self.msgs = []
-    
+
     def reset_defaults(self):
         """
         Resets the debugger's default config
@@ -117,14 +113,6 @@ class ADB:
         """
         return self.tab_level*"|   "
 
-    def dprint(self, *messages):
-        """
-        add to msgs, then self.dprint
-        """
-
-        self.msgs += messages
-        print(*messages)
-
     def message_explicit(self, message, level = "primary"):
         """
         Sends a message in explicit mode
@@ -140,30 +128,30 @@ class ADB:
             tl = self.make_tab_level()
             match(level):
                 case "primary":
-                    self.dprint("{}- {}".format(tl, message))
+                    print("{}- {}".format(tl, message))
                 case "secondary":
-                    self.dprint("{} ** {}".format(tl, message))
+                    print("{} ** {}".format(tl, message))
                 case "tertiary":
-                    self.dprint("{}  * {}".format(tl, message))
+                    print("{}  * {}".format(tl, message))
 
     def message(self, message):
         """
-        self.dprint a formatted message through the debugger
+        print a formatted message through the debugger
         """
-        self.dprint("----- {} -----".format(message))
+        print("----- {} -----".format(message))
 
     def handle_run_exception(self, e):
         # Handle exceptions from the interpretation session
         (module, lineno) = state.lineinfo
-        self.dprint("\nERROR: {}: {}: {}".format(module, lineno, e))
+        print("\nERROR: {}: {}: {}".format(module, lineno, e))
         dump_trace()
         
         # Set out lineinfo here to be sure that the file is in
         # our program_text dictionary
         self.set_lineinfo( (module, lineno) )
         
-        self.dprint("    ==>> " + self.program_text[module][lineno - 1].strip())
-        self.dprint()
+        print("    ==>> " + self.program_text[module][lineno - 1].strip())
+        print()
         self.message("Error occured, session will restart after commands")
 
     def run(self, filename):
@@ -178,6 +166,12 @@ class ADB:
         f = open(filename, 'r')
         input_stream = f.read()
         f.close()
+
+        from asteroid.adb.version import VERSION
+        print("Welcome to ADB version {}.".format(VERSION))
+        print("Type \"help\" to recieve help.")
+        print("ADB is experimental and under active development")
+        print()
 
         # Main debug loop
         while True:
@@ -204,19 +198,13 @@ class ADB:
                 # This gives us one last tick before EOF is reached
                 self.set_lineinfo( (self.filename, len(self.program_text[self.filename])) )
                 self.tick()
-                self.dprint()
+                print()
 
                 # Restart session
                 self.message("End of file reached, restarting session")
                 self.reset_defaults()
             
             except (EOFError, KeyboardInterrupt):
-                # If the user tries to exit with CTRL+C/D, exit
-                # import uuid
-
-                # with open("log" + str(uuid.uuid4()) + ".txt", "w+") as f:
-                #     f.write("\n".join(self.msgs))
-
                 break;
 
             except Exception as e:
@@ -281,7 +269,7 @@ class ADB:
 
             # If an error occurs in the break condition, show the error
             except Exception as e:
-                self.dprint("Breakpoint condition error: {}".format(e))
+                print("Breakpoint condition error: {}".format(e))
 
             # Else, get the value of the expression calculated.
             else:
@@ -333,7 +321,7 @@ class ADB:
 
     def print_given_line(self, lineinfo, header=True):
         """
-        self.dprint the current line nicely
+        print the current line nicely
         """
 
         # Get the program text
@@ -365,7 +353,7 @@ class ADB:
             outline += ("\n-->> " + prog_line)
         elif prog_line != "" and not header:
             outline += ("    " + prog_line)
-        self.dprint(outline)
+        print(outline)
 
     def list_breakpoints(self):
         """
@@ -379,8 +367,8 @@ class ADB:
             # Get the condition
             c = self.breakpoints[b]
 
-            # self.dprint the breakpoint number and condition if available
-            self.dprint("* {} {}".format(
+            # print the breakpoint number and condition if available
+            print("* {} {}".format(
                 b, ": " + c if c else ''))
 
     def list_program(self, relative=False):
@@ -424,8 +412,8 @@ class ADB:
                 # Set the special start of line
                 start_of_line = "> "
 
-            # self.dprint the given line
-            self.dprint(start_of_line, ix+1+start, l[:-1])
+            # print the given line
+            print(start_of_line, ix+1+start, l[:-1])
 
             # Reset the start of line
             start_of_line = "  "
@@ -443,7 +431,7 @@ class ADB:
         Displays all currently active macros
         """
         for m in self.macros:
-            self.dprint("* {} : {}".format(
+            print("* {} : {}".format(
                 m, self.macros[m]
             ))
 
@@ -480,7 +468,7 @@ class ADB:
                 debugger=None,
                 exceptions=True)
         except Exception as e:
-            self.dprint("Command error: {}".format(e))
+            print("Command error: {}".format(e))
         else:
             # Check if there's actually a return value in
             # the register
@@ -488,9 +476,9 @@ class ADB:
                 # Get the last return value (type, value)
                 retval = function_return_value[-1]
 
-                # If it isn't none, self.dprint out the value
+                # If it isn't none, print out the value
                 if retval[1] != None:
-                    self.dprint(term2string(function_return_value[-1]))
+                    print(term2string(function_return_value[-1]))
 
         # Reset debugging state
         asteroid.walk.debugging = True
@@ -531,7 +519,7 @@ class ADB:
 
     def do_help_command(self, name):
         """
-        Lists help options and self.dprints help info
+        Lists help options and prints help info
         """
         from asteroid.adb.help import command_description_table
         
@@ -539,21 +527,22 @@ class ADB:
         if name:
             # Get the command description for that name
             help_msg = command_description_table.get(name)
-            # if there's a description, self.dprint the info
+            # if there's a description, print the info
             if help_msg:
                 self.message("Info for {}".format(name))
-                self.dprint(help_msg)
-            # Else, self.dprint an error
+                print(help_msg)
+            # Else, print an error
             else:
                 self.message("Unknown command for help: {}".format(
                     name
                 ))
         
-        # If no command is supplied, then just self.dprint out the default command menu
+        # If no command is supplied, then just print out the default command menu
         else:
-            self.dprint("Type 'help NAME' to get help for a command")
+            print("Type 'help NAME' to get help for a command")
+            print("Available commands:")
             for c in command_description_table:
-                self.dprint("* {}".format(c))
+                print("* {}".format(c))
 
     def move_frame_up(self):
         """
@@ -628,7 +617,7 @@ class ADB:
         
         # If we're just at the top level, just note that
         if len(stack_copy) == 0:
-            self.dprint("-> <toplevel>")
+            print("-> <toplevel>")
         
         # For each list in the stack
         for i, s in enumerate(stack_copy):
@@ -647,11 +636,11 @@ class ADB:
 
             # Bottom of stack
             if s[2] == "<bottom>":
-                self.dprint("{} {} {}".format(start_of_line, s[0], s[1]))
+                print("{} {} {}".format(start_of_line, s[0], s[1]))
                 self.print_given_line( (s[0], s[1]) , header=False)
         
             else:
-                self.dprint("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
+                print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
                 self.print_given_line( (s[0], s[1]) , header=False)
             start_of_line = "*"
 
@@ -777,7 +766,7 @@ class ADB:
             
             # Intercept debugger command errors
             except ValueError as e:
-                self.dprint("Debugger command error [{}]".format(e))
+                print("Debugger command error [{}]".format(e))
 
             # If we are in a pattern but disabled explicit mode, that's
             # grounds for loop exiting
@@ -805,7 +794,7 @@ class ADB:
                     self.reset_movement()
                 return
         
-        # self.dprint the current line with lineinfo
+        # print the current line with lineinfo
         self.print_given_line(self.lineinfo)
 
         # Main command loop
@@ -878,6 +867,6 @@ if __name__ == "__main__":
     db = ADB()
     import sys
     if len(sys.argv) < 2:
-        self.dprint("No file given to debug")
+        print("No file given to debug")
     else:
         db.run(sys.argv[-1])
