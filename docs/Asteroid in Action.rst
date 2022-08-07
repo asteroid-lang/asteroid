@@ -2,9 +2,18 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
 
 .. highlight:: none
 
@@ -23,11 +32,9 @@ Challenge: Hello, World!
 
 The canonical ``Hello, World!`` program.  The easiest way to write this in Asteroid is,
 ::
-
   load system io.
 
   io @println "Hello, World!".
-
 
 Output::
 
@@ -42,7 +49,6 @@ Challenge: Greet a person
 
 Here is our first solution using a separate function for each of the steps,
 ::
-
   load system io.
 
   io @print ("Enter your name: ").
@@ -50,23 +56,18 @@ Here is our first solution using a separate function for each of the steps,
   io @print ("Hello, "+name+"!").
 
 
-
 Letting the function ``input`` do the prompting,
 ::
-
   load system io.
 
   let name = io @input("Enter your name: ").
   io @println ("Hello, "+name+"!").
 
-
 Doing everything in one step,
 ::
-
   load system io.
 
   io @println ("Hello, "+io @input("Enter your name: ")+"!").
-
 
 Challenge: String length
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -75,12 +76,10 @@ Challenge: String length
 
 In order to print the length of a string we can use the function ``len`` available in the ``util`` module,
 ::
-
   load system io.
 
   load "util".
   io @println (len("Hello!")).
-
 
 Output::
 
@@ -89,11 +88,9 @@ Output::
 
 We can also use the string member function ``length`` in order to compute the length of the string,
 ::
-
   load system io.
 
   io @println ("Hello!" @length()).
-
 
 Output::
 
@@ -108,7 +105,6 @@ Challenge: Unique digits
 In order to accomplish this we take advantage of the string ``explode`` function and the ``sort`` function on lists.
 Finally we use the ``reduce`` function to map a list with repeated digits to a list with unique digits,
 ::
-
   load system io.
 
   function unique with (x,y) do
@@ -124,7 +120,6 @@ Finally we use the ``reduce`` function to map a list with repeated digits to a l
                         @reduce(unique,[]).
   io @println digits.
   assert(digits == ["1","2","3"]).
-
 
 Output::
 
@@ -143,7 +138,6 @@ Challenge: Reverse a string
 
 We use the ``explode`` function to turn a string into a list of characters. Then, we reverse the list and turn it back into a string using the ``join`` function,
 ::
-
   load system io.
 
   let str = "Hello, World!" @explode()
@@ -151,7 +145,6 @@ We use the ``explode`` function to turn a string into a list of characters. Then
                             @join("").
   io @println str.
   assert(str == "!dlroW ,olleH").
-
 
 Output::
 
@@ -163,13 +156,11 @@ Challenge: Removing blanks from a string
 
 > Remove leading, trailing, and double spaces from a given string.
 ::
-
   load system io.
   let str = "   Hello  ,   World    !   " @trim()
                                           @replace("  ","").
   io @println str.
   assert(str == "Hello, World!").
-
 
 Output::
 
@@ -185,7 +176,6 @@ In this task, we will form the ``CamelCase`` variable for names from a given phr
 Names created in this style are built of several words, each of which starts
 with a capital letter.
 ::
-
   load system io.
 
   function title with w do
@@ -208,7 +198,6 @@ with a capital letter.
   io @println camel_str.
   assert(camel_str == "OnceUponATime").
 
-
 Output::
 
     OnceUponATime
@@ -219,7 +208,6 @@ Challenge: Incrementing filenames
 
 > Generate a list of filenames like file1.txt, file2.txt, etc.
 ::
-
   load system io.
 
   let root = "file".
@@ -228,7 +216,6 @@ Challenge: Incrementing filenames
   for i in 1 to 5 do
       io @println (root+i+ext).
   end
-
 
 Output::
 
@@ -246,7 +233,6 @@ Challenge: Random passwords
 
 In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` object maintains a list of items that we can randomly select from using the ``pick`` member function.  As input to the ``Pick`` object, we compute a bunch of lists of characters that are useful for password construction.  The function ``achar`` converts a decimal ASCII code to a single character string.
 ::
-
   load system io.
   load system type.
   load system util.
@@ -270,7 +256,6 @@ In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` o
 
   assert (pwd == "e3zvshdbS43brt#")
 
-
 Output::
 
     e3zvshdbS43brt#
@@ -291,7 +276,6 @@ to RNA happens according to the following table:
 
 We will solve this programming problem using Asteroid's first-class patterns. We could have solved this with just testing equality on DNA characters. However, using first-class patterns is more general and can be applied to problems with a more structured mapping relationship.
 ::
-
   load system io.
 
   let dna2rna_table =
@@ -319,7 +303,6 @@ We will solve this programming problem using Asteroid's first-class patterns. We
 
   assert(rna_seq == "UGGUAGUCAG").
 
-
 Output::
 
     UGGUAGUCAG
@@ -337,7 +320,6 @@ For example, if N is 4, then the letter e becomes a, f is transformed to b,
 etc. The alphabet is looped so that z becomes v, and letters a to d become
 w to z.
 ::
-
   load system io.
   load system util.
 
@@ -379,7 +361,6 @@ w to z.
 
   assert (decoded_msg == "hello, world!")
 
-
 Output::
 
     dahhk, sknhz!
@@ -400,13 +381,11 @@ In program outputs, it is often required to print some number followed by a noun
 
 If there is only one file, then the phrase should be ``1 file found`` instead.
 ::
-
   load system io.
 
   for n in 0 to 5 do
       io @println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
   end
-
 
 Output::
 
@@ -425,7 +404,6 @@ Challenge: The most frequent word
 
 In our solution we use a hash table to count the number of word occurences.
 ::
-
 
   load system io.
   load system util.
@@ -485,7 +463,6 @@ In our solution we use a hash table to count the number of word occurences.
 
   assert (most_frequent_word == "sed").
 
-
 Output::
 
     sed
@@ -502,7 +479,6 @@ There are two loops (see also Task 17, The longest palindrome) over the first
 string (``stra``). These use the index method to search for the substring in the
 second string (``strb``).
 ::
-
   load system io.
 
   let stra = "the quick brown fox jumps over the lazy dog".
@@ -526,7 +502,6 @@ second string (``strb``).
 
   assert (common == " fox ").
 
-
 Output::
 
     The longest common substring is ' fox '.
@@ -539,7 +514,6 @@ Challenge: Anagram test
 
 An anagram is a word, phrase, or name formed by rearranging the letters of another, such as ``cinema``, formed from ``iceman``.
 ::
-
   load system io.
 
   let str1 = "cinema".
@@ -559,7 +533,6 @@ An anagram is a word, phrase, or name formed by rearranging the letters of anoth
 
   assert (normalize(str1) == normalize(str2)).
 
-
 Output::
 
     Anagrams
@@ -573,7 +546,6 @@ Challenge: Palindrome test
 A palindrome is a string that can be read from both ends: left to right or right
 to left.
 ::
-
   load system io.
 
   let str = "Was it a rat I saw?".
@@ -595,7 +567,6 @@ to left.
 
   assert (clean_str == clean_str @flip()).
 
-
 Output::
 
     Palindromic
@@ -614,7 +585,6 @@ Now, extract the substring and do the check similar to the solution of Task
 without taking into account the non-letter characters, but saving the result as
 part of the original string.
 ::
-
   load system io.
 
   let str = "Hello, World!".
@@ -648,7 +618,6 @@ part of the original string.
 
   io @println longest_palindrome.
 
-
 Output::
 
     o, Wo
@@ -661,7 +630,6 @@ Challenge: Finding duplicate texts
 
 We do this by finding and hashing N-grams after the appropriate preprocessing.  We will use ``N=3``.
 ::
-
   load system io.
   load system hash.
 
@@ -779,7 +747,6 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
       io @println (n_gram+": "+cnt).
   end
 
-
 Output::
 
     lorem ipsum dolor: 2
@@ -805,12 +772,10 @@ Challenge: Pi
 
 > Print the value of pi.
 ::
-
   load system io.
   load system math. -- definition of pi
 
   io @println (math @pi).
-
 
 Output::
 
@@ -818,7 +783,6 @@ Output::
 
 Other constants are also available.
 ::
-
   load system io.
   load system math.
 
@@ -826,7 +790,6 @@ Other constants are also available.
   io @println (math @tau). -- tau=2*pi
 
   assert (math @tau == 2 * math @pi)
-
 
 Output::
 
@@ -841,14 +804,12 @@ Challenge: Factorial!
 
 By definition, the factorial of a positive integer number N is a product of all the integers numbering from 1 to N, including N. Our first solution is based on the direct implementation of the definition above using the list ``reduce`` function.
 ::
-
   load system io.
 
   let n = 3.
   let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
   io @println fact.
   assert (fact == 6).
-
 
 Output::
 
@@ -866,7 +827,6 @@ where :math:`x \in Int`.
 Here, each case specifies what value the function should return if
 the predicate applied to the input is true.  The last case is of some interest because it states that the function is undefined for negative integers.
 ::
-
   load system io.
 
   let POS_INT = pattern with (x:%integer) if x > 0.
@@ -883,7 +843,6 @@ the predicate applied to the input is true.  The last case is of some interest b
 
   io @println ("The factorial of 3 is: " + fact (3)).
   assert (fact(3) == 6).
-
 
 Output::
 
@@ -904,7 +863,6 @@ You can assign two values at a time (**Challenge: Swap two values**). You can us
 
 Here we give an iterative solutions.  It is clear that there exists a trivial recursive solution by implementing the above formula.
 ::
-
   load system io.
 
   let n = 10. -- compute the 10th Fib number
@@ -916,7 +874,6 @@ Here we give an iterative solutions.  It is clear that there exists a trivial re
 
   io @println f_1.
   assert (f_1 == 55)
-
 
 Output::
 
@@ -930,7 +887,6 @@ Challenge: Print squares
 
 Of course this is straightforward, with a ``for-loop`` over a list.  Here we show another solution using the list ``map`` function.
 ::
-
   load system io.
 
   let sq = [1 to 10] @map(lambda with x do return x*x).
@@ -938,7 +894,6 @@ Of course this is straightforward, with a ``for-loop`` over a list.  Here we sho
   io @println sq.
 
   assert (sq == [1,4,9,16,25,36,49,64,81,100])
-
 
 Output::
 
@@ -952,7 +907,6 @@ Challenge: Powers of two
 
 Just as in the previous challenge, we skip the naive loop solution and give a solution using the ``map`` function.
 ::
-
   load system io.
   load system math.
 
@@ -961,7 +915,6 @@ Just as in the previous challenge, we skip the naive loop solution and give a so
   io @println p2.
 
   assert (p2 == [1,2,4,8,16,32,64,128,256,512])
-
 
 Output::
 
@@ -975,7 +928,6 @@ Challenge: Odd and even numbers
 
 We start with printing the first ten odd numbers,
 ::
-
   load system io.
   load system math.
 
@@ -987,7 +939,6 @@ We start with printing the first ten odd numbers,
   io @println odd.
   assert(odd == [1,3,5,7,9])
 
-
 Output::
 
     [1,3,5,7,9]
@@ -995,7 +946,6 @@ Output::
 
 Now the even numbers,
 ::
-
   load system io.
   load system math.
 
@@ -1006,7 +956,6 @@ Now the even numbers,
 
   io @println even.
   assert(even == [2,4,6,8,10])
-
 
 Output:
 ::
@@ -1021,7 +970,6 @@ Challenge: Compare numbers approximately
 
 Comparing non-integer numbers (which are represented as floating-point numbers) is often a task that requires approximate comparison.  In Asteroid this can be accomplished with the ``isclose`` function availabel in the ``math`` module.
 ::
-
   load system io.
   load system math.
 
@@ -1032,7 +980,6 @@ Comparing non-integer numbers (which are represented as floating-point numbers) 
   assert (math @isclose(2.0,2.00001,0.0001)).
 
 
-
 Challenge: Prime numbers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1040,7 +987,6 @@ Challenge: Prime numbers
 
 Prime numbers are those that can be divided only by 1, and by themselves.
 ::
-
   load system io.
   load system math.
 
@@ -1063,7 +1009,6 @@ Prime numbers are those that can be divided only by 1, and by themselves.
   assert (isprime(17)).
   assert (not isprime(15)).
 
-
 Output:
 ::
 
@@ -1076,7 +1021,6 @@ Challenge: List of prime numbers
 
 > Print the list of the first ten prime numbers.
 ::
-
   load system io.
   load system math.
 
@@ -1102,7 +1046,6 @@ Challenge: List of prime numbers
       end
   end
 
-
 Output:
 ::
 
@@ -1125,7 +1068,6 @@ Challenge: Prime factors
 
 Prime factors are the prime numbers that divide the given integer number exactly.
 ::
-
   load system io.
   load system math.
 
@@ -1168,7 +1110,6 @@ Prime factors are the prime numbers that divide the given integer number exactly
 
   assert (factors == [3,5,11])
 
-
 Output:
 ::
 
@@ -1182,7 +1123,6 @@ Challenge: Reducing a fraction
 
 5/15 and 16/280 are examples of fractions that can be reduced. The final results of this task are 1/3 and 2/35. Generally, the algorithm of reducing a fraction requires searching for the greatest common divisor, and then dividing both numerator and denominator by that number.  For our solution we use the function ``gcd`` available in the ``math`` module.
 ::
-
   load system io.
   load system math.
 
@@ -1200,7 +1140,6 @@ Challenge: Reducing a fraction
   -- show that original and reduced fraction are the same value
   assert (a/b == numerator/denominator).
 
-
 Output:
 ::
 
@@ -1215,7 +1154,6 @@ Challenge: Divide by zero
 
 Asteroid is an eager language, that is, expressions are evaluated as early as possible.  We can trap division-by-zero errors using a try-catch block.
 ::
-
   load system io.
 
   try
@@ -1224,7 +1162,6 @@ Asteroid is an eager language, that is, expressions are evaluated as early as po
       io @println m.
   end
   io @println "We are still alive...".
-
 
 Output:
 ::
@@ -1243,7 +1180,6 @@ Challenge: Generating random numbers
 
 Asteroid has two random number generation functions: ``random()`` generates a random real value in the interval $[0.0,1.0)$ and ``randint(a,b)`` that generates a random value in the interval $[a,b]$.  The type of the random value generated depends on the type of the values a and b specifying the interval.
 ::
-
   load system io.
   load system random.
   load system util.
@@ -1261,7 +1197,6 @@ Asteroid has two random number generation functions: ``random()`` generates a ra
   let n = 10.
   io @println (randint(0.0,type @toreal(n))).
   io @println (randint(0,n)).
-
 
 Output:
 ::
@@ -1288,7 +1223,6 @@ This algorithm is a simple method of generating short sequences of four-digit ra
 
 To illustrate it with an example, let’s take the number 1234 as the seed. On step 2, it becomes 1522756; after step 3, 01522756. Finally, step 4 extracts the number 5227.
 ::
-
   load system io.
   load system util.
   load system type.
@@ -1307,7 +1241,6 @@ To illustrate it with an example, let’s take the number 1234 as the seed. On s
 
   assert (rval == 5227)
 
-
 Output:
 ::
 
@@ -1323,7 +1256,6 @@ The quality of the built-in generator of random numbers fully depends on the alg
 
 In our solution, we generate 10 random integers between 0 and 9. We then count how many times each of the integers have been generated.  If it is a decent random number generator, all numbers should have been generated roughly an equal number of times.
 ::
-
   load system io.
   load system random.
 
@@ -1335,7 +1267,6 @@ In our solution, we generate 10 random integers between 0 and 9. We then count h
   end
 
   io @println hist.
-
 
 Output:
 ::
@@ -1354,7 +1285,6 @@ Challenge: Distance between two points
 There are two points on a surface, each with their own coordinates, x and y. The task is to find the distance between these two points.
 A straightforward solution would be to use the Pythagorean theorem:
 ::
-
   load system io.
   load system math.
 
@@ -1364,7 +1294,6 @@ A straightforward solution would be to use the Pythagorean theorem:
   io @println d.
 
   assert (d == 2.23606797749979)
-
 
 Output:
 ::
@@ -1380,7 +1309,6 @@ Another approach is using the math identity,
 
 where ``.`` represents the dot product. In our case ``a`` would be the distance vector between points ``x`` and ``y``,
 ::
-
   load system io.
   load system math.
   load system vector.
@@ -1392,7 +1320,6 @@ where ``.`` represents the dot product. In our case ``a`` would be the distance 
   io @println d.
 
   assert (d == 2.23606797749979)
-
 
 Output:
 ::
@@ -1415,7 +1342,6 @@ Standard deviation is a statistical term that shows how compact data distributio
 
 where :math:`n` is the number of elements in the array :math:`x`; :math:`\bar{x}` is its average value (**Challenge: Average on an array**).
 ::
-
   load system io.
   load system math.
 
@@ -1429,7 +1355,6 @@ where :math:`n` is the number of elements in the array :math:`x`; :math:`\bar{x}
   io @println sigma.
 
   assert (sigma == 420.96248961952256)
-
 
 Output:
 ::
@@ -1453,7 +1378,6 @@ The conversion formulae between the Cartesian and polar systems, which is valid 
 
 These expressions can be implemented as-is in the code:
 ::
-
   load system io.
   load system math.
 
@@ -1484,7 +1408,6 @@ These expressions can be implemented as-is in the code:
   -- we started with
   assert (math @isclose(1,x,0.0001) and math @isclose(2,y,0.0001)).
 
-
 Output:
 ::
 
@@ -1495,7 +1418,6 @@ For the **negative** ``x`` and ``y``, the Cartesian-to-polar conversion is a bit
 or smaller than ``pi``. When ``x`` is zero, it is either ``-pi/2`` or ``pi/2``.
 All these variants can be implemented by using ``with`` clauses and conditional matching, as demonstrated below:
 ::
-
   load system io.
   load system math.
   load system util.
@@ -1544,7 +1466,6 @@ All these variants can be implemented by using ``with`` clauses and conditional 
   -- we started with
   assert (math @isclose(-3,x,0.0001) and math @isclose(5,y,0.0001)).
 
-
 Output:
 ::
 
@@ -1560,7 +1481,6 @@ The Monte Carlo method is a statistical method of calculating data whose formula
 
 To calculate the area of a circle with a radius of 1, pairs of random numbers between −1 and 1 are generated. These pairs represent the points in the square in the center of coordinates with sides of length 2. The area of the square is thus 4. If the distance between the random point and the center of the square is less than 1, then this point is located inside the circle of that radius. Counting the number of points that landed inside the circle and the number of points outside the circle gives the approximate value of the area of the circle, as soon as the area of the square is known. Here is the program.
 ::
-
   load system io.
   load system math.
   load system random.
@@ -1584,7 +1504,6 @@ To calculate the area of a circle with a radius of 1, pairs of random numbers be
 
   assert (area == 3.1392).
 
-
 Output:
 ::
 
@@ -1599,7 +1518,6 @@ Challenge: Guess the number
 First, a random number needs to be generated. Then the program must
 ask for the initial guess and enter the loop, which compares the guess with the generated number.
 ::
-
   load system io.
   load system random.
   load system util.
@@ -1619,7 +1537,6 @@ ask for the initial guess and enter the loop, which compares the guess with the 
   end
   io @println "Yes, this is it!".
 
-
 Challenge: Binary to integer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1627,7 +1544,6 @@ Challenge: Binary to integer
 
 In Asteroid this is straightforward using the built-in ``tointeger`` function, passing it a string representation of the binary number and the base.
 ::
-
   load system io.
   load system type.
 
@@ -1636,7 +1552,6 @@ In Asteroid this is straightforward using the built-in ``tointeger`` function, p
   io @println int.
 
   assert (int == 45).
-
 
 Output:
 ::
@@ -1651,7 +1566,6 @@ Challenge: Integer as binary, octal, and hex
 
 In Asteroid this is easily done with the ``tobase`` function.
 ::
-
   load system io.
   load system type.
 
@@ -1669,7 +1583,6 @@ In Asteroid this is easily done with the ``tobase`` function.
   assert (tointeger(tobase(val,8),8) == val).
   assert (tointeger(tobase(val,16),16) == val).
 
-
 Output:
 ::
 
@@ -1685,7 +1598,6 @@ Challenge: Sum of digits
 
 Pretty straightforward using string and list manipulation.
 ::
-
   load system io.
   load system type.
 
@@ -1698,7 +1610,6 @@ Pretty straightforward using string and list manipulation.
   io @println s.
 
   assert (s == 49).
-
 
 Output:
 ::
@@ -1713,7 +1624,6 @@ Challenge: Bit counter
 
 If we remove all the zeros from a binary number, then we are left with only ``1`` characters which we can then count.
 ::
-
   load system io.
 
   let bits = "1010101" @replace("0","")
@@ -1721,7 +1631,6 @@ If we remove all the zeros from a binary number, then we are left with only ``1`
   io @println bits.
 
   assert (bits == 4).
-
 
 Output:
 ::
@@ -1736,7 +1645,6 @@ Challenge: Compose the largest number
 
 The easiest way to achieve that is to treat the numbers as strings, sort them alphabetically in descending order, concatenate the pieces to a single string, and get the resulting integer.
 ::
-
   load system io.
   load system type.
 
@@ -1744,7 +1652,6 @@ The easiest way to achieve that is to treat the numbers as strings, sort them al
   io @println a.
 
   assert (a == 8675451).
-
 
 Output:
 ::
@@ -1763,7 +1670,6 @@ Let’s use the algorithm that keeps the table of pre-calculated sequences of Ro
 
 In the program below, there are four such sequences: for thousands, hundreds, tens, and ones. The program iterates over the digits of the number in the decimal representation and chooses one of the values from the array of lists stored in the ``roman_hash`` table.
 ::
-
   load system io.
   load system math.
   load system util.
@@ -1791,7 +1697,6 @@ In the program below, there are four such sequences: for thousands, hundreds, te
 
   assert (roman == "MMXVIII")
 
-
 Output:
 ::
 
@@ -1818,7 +1723,6 @@ For the larger numbers (21 to 99), there are two cases. If the number is dividab
 
 The zero name appears only in the case when the given number is zero.
 ::
-
   load system io.
   load system math.
 
@@ -1853,7 +1757,6 @@ The zero name appears only in the case when the given number is zero.
   io @println (spell_number 987654).
   io @println (spell_number 1001).
 
-
 Output:
 ::
 
@@ -1878,7 +1781,6 @@ In Asteroid, there is no need to use temporary variables to swap the values of t
 
 Consider the complete program:
 ::
-
   load system io.
 
   let (a,b) = (10,20).
@@ -1886,7 +1788,6 @@ Consider the complete program:
   io @println ("a = "+a,"b = "+b).
 
   assert ((a,b) is (20,10)).
-
 
 Output:
 ::
@@ -1901,7 +1802,6 @@ This program prints the swapped values:
 
 This approach also works with elements of an array:
 ::
-
   load system io.
 
   let a = [3,5,7,4].
@@ -1909,7 +1809,6 @@ This approach also works with elements of an array:
   io @println a.
 
   assert (a is [3,5,4,7]).
-
 
 Output:
 ::
@@ -1922,14 +1821,12 @@ Challenge: Reverse a list
 
 > Print the given list in reverse order.
 ::
-
   load system io.
 
   let a = [10, 20, 30, 40, 50].
   io @println (a @reverse()).
 
   assert(a == [50,40,30,20,10]).
-
 
 Output:
 ::
@@ -1944,7 +1841,6 @@ Challenge: Rotate a list
 
 Asteroid does not have a built-in ``rotate`` function. However, such a function is easily constructed through slicing lists (see ``vix`` below).
 ::
-
   load system io.
   load system math.
 
@@ -1964,7 +1860,6 @@ Asteroid does not have a built-in ``rotate`` function. However, such a function 
 
   assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).
 
-
 Output:
 ::
 
@@ -1980,7 +1875,6 @@ Challenge: Randomize an array
 
 This is easily accomplished with the built-in ``shuffle``.
 ::
-
   load system io.
   load system random.
 
@@ -1989,7 +1883,6 @@ This is easily accomplished with the built-in ``shuffle``.
   io @println b.
 
   assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).
-
 
 Output:
 ::
@@ -2004,7 +1897,6 @@ Challenge: Incrementing array elements
 
 For this we use Asteroid's ``vector`` module, which can handle incrementing a vector with a scalar.
 ::
-
   load system io.
   load system vector.
 
@@ -2013,7 +1905,6 @@ For this we use Asteroid's ``vector`` module, which can handle incrementing a ve
   io @println b.
 
   assert(b == [2,3,4,5,6,7,8,9,10,11]).
-
 
 Output:
 ::
@@ -2028,7 +1919,6 @@ Challenge: Adding up two arrays
 
 Again, here we take advantage of Asteroid's ``vector`` module.  Note that the two vectors have to be of the same length in order to add them together.
 ::
-
   load system io.
   load system vector.
 
@@ -2039,7 +1929,6 @@ Again, here we take advantage of Asteroid's ``vector`` module.  Note that the tw
 
   assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
 
-
 Output:
 ::
 
@@ -2048,7 +1937,6 @@ Output:
 
 The vector module defines a function called ``op`` that allows you to combine two vectors using any arbitrary binary function.  Rewriting the above program using ``op``,
 ::
-
   load system io.
   load system vector.
 
@@ -2059,7 +1947,6 @@ The vector module defines a function called ``op`` that allows you to combine tw
 
   assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
 
-
 Output:
 ::
 
@@ -2068,7 +1955,6 @@ Output:
 
 As we said above, any arbitrary binary function. Consider the relational operator ``<`` expressed as a lambda function,
 ::
-
   load system io.
   load system vector.
   load system random.
@@ -2081,7 +1967,6 @@ As we said above, any arbitrary binary function. Consider the relational operato
   io @println c.
 
   assert(c == [false,true,false,false,false,true,false,false,true,true]).
-
 
 Output:
 ::
@@ -2097,7 +1982,6 @@ appear in the second one.
 
 Here we use Asteroid's ``set`` module.
 ::
-
   load system io.
   load system set.
 
@@ -2107,7 +1991,6 @@ Here we use Asteroid's ``set`` module.
   io @println c.
 
   assert(c @sort() == [1,2,3,4]).
-
 
 Output:
 ::
@@ -2123,7 +2006,6 @@ Challenge: Sum of the elements of an array
 
 > Find the sum of the elements of an array of integers.
 ::
-
   load system io.
 
   let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
@@ -2131,7 +2013,6 @@ Challenge: Sum of the elements of an array
   io @println s.
 
   assert (s == 125).
-
 
 Output:
 ::
@@ -2141,7 +2022,6 @@ Output:
 
 If summing up elements that are greater than 10,
 ::
-
   load system io.
 
   let a = [4, 6, 8, 1, 0, 58, 1, 34, 7, 4, 2].
@@ -2150,7 +2030,6 @@ If summing up elements that are greater than 10,
   io @println s.
 
   assert (s == 92).
-
 
 Output:
 ::
@@ -2163,7 +2042,6 @@ Challenge: Average of an array
 
 > Find the average value of the given array of numbers.
 ::
-
   load system io.
 
   let a = [7, 11, 34, 50, 200].
@@ -2171,7 +2049,6 @@ Challenge: Average of an array
   io @println avg.
 
   assert (avg == 60).
-
 
 Output:
 ::
@@ -2184,13 +2061,11 @@ Challenge: Is an element in a list?
 
 > Tell if the given value is in the list.
 ::
-
   load system io.
 
   let array = [10, 14, 0, 15, 17, 20, 30, 35].
   let x = 17.
   io @println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).
-
 
 Output:
 ::
@@ -2200,7 +2075,6 @@ Output:
 
 We can also use a reduction function to solve this,
 ::
-
   load system io.
 
   let array = [10, 14, 0, 15, 17, 20, 30, 35].
@@ -2211,7 +2085,6 @@ We can also use a reduction function to solve this,
   else
       io @println (x+" is not in the list").
   end
-
 
 Output:
 ::
@@ -2226,7 +2099,6 @@ Challenge: First odd number
 
 The easiest way to do this is with a reduction,
 ::
-
   load system io.
   load system math.
   load system util.
@@ -2237,7 +2109,6 @@ The easiest way to do this is with a reduction,
   let array = [2, 4, 18, 9, 16, 7, 10].
   let odd = array @reduce(lambda with (acc,i) do return i if type @isnone(acc) and mod(i,2) else acc,none).
   io @println odd.
-
 
 Output:
 ::
@@ -2250,7 +2121,6 @@ Challenge: Take every second element
 
 > Form a new array by picking every second element from the original array.
 ::
-
   load system io.
   load system math.
 
@@ -2258,7 +2128,6 @@ Challenge: Take every second element
   io @println array.
 
   assert (array == [21,23,25,27,29]).
-
 
 Output:
 ::
@@ -2268,7 +2137,6 @@ Output:
 
 We can use an index vector to accomplish  the same thing,
 ::
-
   load system io.
   load system math.
 
@@ -2277,7 +2145,6 @@ We can use an index vector to accomplish  the same thing,
   io @println array.
 
   assert (array == [21,23,25,27,29]).
-
 
 Output:
 ::
@@ -2290,7 +2157,6 @@ Challenge: Number of occurrences in an array
 
 > Count how many times a particular element appears in the array.
 ::
-
   load system io.
   load system math.
 
@@ -2310,7 +2176,6 @@ Challenge: Number of occurrences in an array
 
   assert (cnt == 2).
 
-
 Output:
 ::
 
@@ -2324,7 +2189,6 @@ Challenge: Finding unique elements
 
 Converting a list to a set will remove all duplicate elements in the list.
 ::
-
   load system io.
   load system set.
 
@@ -2338,7 +2202,6 @@ Converting a list to a set will remove all duplicate elements in the list.
 
   assert (a == [2,3,4,5,6,7,10])
 
-
 Output:
 ::
 
@@ -2350,7 +2213,6 @@ Challenge: Minimum and maximum
 
 > Find the minimum and the maximum numbers in the given list of integers.
 ::
-
   load system io.
 
   function max with lst:%list do
@@ -2371,7 +2233,6 @@ Challenge: Minimum and maximum
 
   assert (a == 15 and b == 2).
 
-
 Output:
 ::
 
@@ -2384,7 +2245,6 @@ Challenge: Increasing sequences
 
 > Check if the given array contains increasing (or decreasing) numbers.
 ::
-
   load system io.
   load system type.
 
@@ -2394,7 +2254,6 @@ Challenge: Increasing sequences
   io @println b.
 
   assert (b).
-
 
 Output:
 ::
@@ -2436,7 +2295,6 @@ with its transpose,
 
 The procedure:
 ::
-
   load system io.
 
   function transpose with m do
@@ -2497,7 +2355,6 @@ The procedure:
 
   assert(mt == [[1,3,5],[2,4,6]]).
 
-
 Output:
 ::
 
@@ -2531,7 +2388,6 @@ Challenge: Sort hashes by parameter
 
 This task is commonly performed to sort items where the sortable parameter is one of the values in the hash. For example, sorting a list of people by age.
 ::
-
   load system io.
   load system hash.
   load system sort.
@@ -2563,7 +2419,6 @@ This task is commonly performed to sort items where the sortable parameter is on
 
   assert (sort @sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
 
-
 Output:
 ::
 
@@ -2577,7 +2432,6 @@ Challenge: Count hash values
 
 For example, a hash is a collection mapping a car’s license plate to the colour of the car or a passport number to the name of the street where the person lives. In the first example, the task is to count how many cars of each colour there are. In the second example, we have to say how many people live on each street. But let’s simply count the colours of fruit.
 ::
-
   load system io.
   load system hash.
   load system sort.
@@ -2612,7 +2466,6 @@ For example, a hash is a collection mapping a car’s license plate to the colou
 
   io @println (sort @sort(pairs,color_lst)).
 
-
 Output:
 ::
 
@@ -2626,7 +2479,6 @@ Challenge: Product table
 
 We will do this with an outer loop  and a ``map`` function.
 ::
-
   load system io.
   load system type.
 
@@ -2639,7 +2491,6 @@ We will do this with an outer loop  and a ``map`` function.
   for i in 1 to 10 do
       io @println ([1 to 10] @map(lambda with x do return format(i*x)) @join(" ")).
   end
-
 
 Output:
 ::
@@ -2703,7 +2554,6 @@ We then add them together,
 
 The only thing that is left to do is to iterate appropiately and format the output.
 ::
-
   load system io.
   load system vector.
   load system util.
@@ -2725,7 +2575,6 @@ The only thing that is left to do is to iterate appropiately and format the outp
       io @println (r @map(lambda with v do return type @tostring v) @join(" ")).
   end
 
-
 Output:
 ::
 
@@ -2740,4 +2589,3 @@ Output:
 
 The program prints the first seven rows of the Pascal triangle. The rows are not centred, and are aligned to the left side.
 As an extra exercise, modify the program so that it prints the triangle as it is shown at the beginning of this task. For example, you can first generate rows and keep them in a separate array and then, knowing the length of the longest string, add some spaces in front of the rows before printing them.
-
