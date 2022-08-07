@@ -5,6 +5,15 @@ be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
 
+## New in Release 1.1.0
+
+* Asteroid now supports its own interactive debugger `adb`.
+
+* Eliminated the `stride` notation in list comprehensions and replaced with the `step` notation.
+
+* Lots of bug fixes.
+
+
 ## New in Release 1.0.0
 
 * Interpreter line-editing features similar to Python include interactive editing, history substitution and code completion on systems that support the GNU Readline library.
