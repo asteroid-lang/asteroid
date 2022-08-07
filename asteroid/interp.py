@@ -25,7 +25,9 @@ def interp(input_stream,
            exceptions=False,
            redundancy=True,
            prologue=True,
-           initialize_state = True):
+           functional_mode=False,
+           initialize_state = True
+           ):
     try:
         # initialize state
         if initialize_state:
@@ -56,11 +58,11 @@ def interp(input_stream,
             with open(prologue_file) as f:
                 state.modules.append(prologue_name)
                 data = f.read()
-                pparser = Parser(prologue_name)
+                pparser = Parser(prologue_name) # should never be parsed in functional mode
                 (LIST, pstmts) = pparser.parse(data)
 
         # build the AST
-        parser = Parser(input_name)
+        parser = Parser(input_name, functional_mode)
         (LIST, istmts) = parser.parse(input_stream)
         if prologue:
             state.AST = ('list', pstmts + istmts)
