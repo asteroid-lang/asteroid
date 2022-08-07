@@ -78,16 +78,16 @@ class Parser:
         self.lexer = Lexer()
         self.functional_mode = functional_mode
         self.system_modules = os.listdir(os.path.dirname( __file__ )+'/modules')
+        self.parser_file_path = os.path.split(os.path.dirname(__file__))[0]
         state.lineinfo = (filename,1)
 
     ###########################################################################################
-    # best guess whether we are looking at a system module or not.  this will misidentify
-    # a user module as a system module if the the user placed a module into a 'modules'
-    # folder and called it a name that is already taken by an actual system module
-    # this can be cleaned up by using more specific information from the pip installation.
+    # best guess whether we are looking at a system module or not: if the parser
+    # file path is a substring of the module file path then the module is a
+    # system module
     def is_system_module(self):
         name = state.lineinfo[0]
-        if (os.path.split(name)[1] in self.system_modules) and ('modules' in name):
+        if (os.path.split(name)[1] in self.system_modules) and (self.parser_file_path in name):
             return True
         else:
             return False
