@@ -40,8 +40,7 @@ def message_explicit(fmt_message, terms=None, level="primary",
     from types import GeneratorType
 
     if explicit_enabled():
-        if decrease:
-            decrease_tab_level()
+        if decrease: decrease_tab_level()
 
         if not terms:
             debugger.message_explicit(fmt_message, level)
@@ -54,14 +53,10 @@ def message_explicit(fmt_message, terms=None, level="primary",
                     expressed_terms.append(t)
             
             expressed_string = fmt_message.format(*expressed_terms)
-
             debugger.message_explicit(expressed_string, level)
         
-        if increase:
-            increase_tab_level()
-
-        if notify:
-            notify_explicit()
+        if increase: increase_tab_level()
+        if notify:   notify_explicit()
 
 def gen_t2s(node):
     """
@@ -1105,8 +1100,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # call started at, so, we grab this here to reset to at
     # the return. This allows recursive functions to have
     # the proper formatting
-    if debugging:
-        cur_tab_level = debugger.tab_level
+    if debugging: cur_tab_level = debugger.tab_level
 
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
@@ -1149,7 +1143,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         if unified:
             break
 
-    if debugging: debugger.tab_level = cur_tab_level + 1
+    if debugging: debugger.tab_level = cur_tab_level
 
     if not unified:
         raise ValueError("actual argument '{}' not recognized by function '{}'"
