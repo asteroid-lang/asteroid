@@ -134,14 +134,6 @@ __retval__ = None  # return value register for escaped code
 function_return_value = [None]
 
 ###########################################################################################
-# check if the two type tags match
-def match(tag1, tag2):
-
-    if tag1 == tag2:
-        return True
-    else:
-        return False
-###########################################################################################
 def unify(term, pattern, unifying = True):
     '''
     Proxy function for unify to make the debugger's formatting
@@ -695,7 +687,7 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("[End] constraint pattern", decrease=True)
         return [] #Return an empty unifier
 
-    elif not match(term[0], pattern[0]):  # nodes are not the same
+    elif term[0] != pattern[0]:  # nodes are not the same
         message_explicit("Fail: {} and {} are not the same",
             [term[0], pattern[0]], level="secondary")
         
