@@ -865,11 +865,3 @@ class ADB:
         
         # Reset the top level so that nested statements don't come in
         self.set_top_level(False)
-
-if __name__ == "__main__":
-    db = ADB()
-    import sys
-    if len(sys.argv) < 2:
-        print("No file given to debug")
-    else:
-        db.run(sys.argv[-1])

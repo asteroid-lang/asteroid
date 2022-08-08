@@ -33,30 +33,35 @@ def main():
     # defaults for the flags - when the flag is set on the command line
     # it simply toggles the default value in this table.
     flags = {
-        '-s' : False, # symbol table dump flag
-        '-t' : False, # AST dump flag
-        '-v' : False, # version flag
-        '-w' : True,  # tree walk flag
-        '-z' : False, # generate pstats flag
-        '-p' : True,  # prologue flag
-        '-h' : False, # display help flag
-        '-r' : True,  # redundant pattern dectector
-        '-e' : False, # show full exceptions
-        '-F' : False, # functional mode
+        '-s' : False,  # symbol table dump flag
+        '-t' : False,  # AST dump flag
+        '-v' : False,  # version flag
+        '-w' : True,   # tree walk flag
+        '-z' : False,  # generate pstats flag
+        '-p' : True,   # prologue flag
+        '-h' : False,  # display help flag
+        '-r' : True,   # redundant pattern dectector
+        '-e' : False,  # show full exceptions
+        '-F' : False,  # functional mode
+        '--adb': False # debugger flag 
     }
-
-    flag_names = list(flags.keys())
 
     for fl in sys.argv:
         if fl[0] != '-':
             continue
-        elif fl not in flag_names:
+        elif fl not in flags:
             print("unknown flag {}".format(fl))
             sys.exit(0)
         flags[fl] = not flags[fl]
 
     if len(sys.argv) == 1:
         repl()
+        sys.exit(0)
+
+    if flags['--adb']:
+        from .adb import adb
+        db = adb.ADB()
+        db.run(sys.argv[-1])
         sys.exit(0)
 
     if flags['-h']:
@@ -72,7 +77,7 @@ def main():
     if not os.path.isfile(input_file):
         print("unknown file {}".format(input_file))
         sys.exit(0)
-
+    
     f = open(input_file, 'r')
     input_stream = f.read()
     f.close()
