@@ -2044,22 +2044,12 @@ def set_ret_val(node):
     (SET_RET_VAL, exp) = node
     assert_match(SET_RET_VAL,'set-ret-val')
 
-    # Check if the user is at the top level to decide if we give
-    was_at_top_before = debugging and debugger.top_level
-
     global function_return_value
     val = walk(exp)
     function_return_value.pop()
     function_return_value.append(val)
 
-    was_at_top = was_at_top_before \
-        and debugging and not debugger.explicit_enabled and debugger.is_next
-
-    if was_at_top and val:
-        debugger.message("Returned: {}".format(term2string(val)))
-
     return
-
 def top_level_exp_stmt(node):
 
     (TOP_LEVEL_EXP, exp) = node
