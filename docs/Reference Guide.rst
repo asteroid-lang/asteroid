@@ -1248,7 +1248,32 @@ as an argument.  Let's test drive this in the Python interactive shell,
     >>>
 
 For more detailed information on the ``interp`` function do a ``help(interp)``
-at the interactive Python prompt. Even though we have shown this example under Linux, analogous approaches
+at the interactive Python prompt. Not only can we execute the Asteroid interpreter
+from Python but we can also access its state to look up the results of a
+computation for example.  Here is a slight variation of the program above 
+where the Asteroid program computes the string value containing the greeting but
+we are actually printing the value from Python,
+::
+      # import Asteroid modules
+      from asteroid.interp import interp
+      from asteroid.state import state
+
+      # run the interpreter to compute the greeting string
+      interp('let s = "Hello World!".')
+
+      # retrieve the greeting string from the interpreter state
+      # notice the pair of values a symbol table lookup produces:
+      # one for the type of the value and one for the actual value
+      (type,val) = state.symbol_table.lookup_sym('s')
+      print(type)
+      print(val)
+
+The program prints out,
+::
+      string
+      Hello World!
+
+Even though we have shown this example under Linux, analogous approaches
 should work on both Windows and macOS.
 
 Embedding Python into an Asteroid Program
