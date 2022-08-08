@@ -1232,9 +1232,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     state.trace_stack.pop()
 
-    if debugging:
-        debugger.tab_level = cur_tab_level 
-
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname],
@@ -2053,6 +2050,9 @@ def set_ret_val(node):
     val = walk(exp)
     function_return_value.pop()
     function_return_value.append(val)
+
+    if debugging:
+        debugger.ret_val = term2string(val)
 
     return
 
