@@ -1321,15 +1321,10 @@ def assert_stmt(node):
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
 
-    message_explicit("Asserting: {}", [gen_t2s(exp)], increase=True)
-
     exp_val = walk(exp)
 
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
-
-    message_explicit("Assert Succeeded", decrease=True)
-
 #########################################################################
 def unify_stmt(node):
     # owm - How can we get that nice deref listing behavior?
@@ -1342,12 +1337,6 @@ def unify_stmt(node):
     assert_match(UNIFY, 'unify')
 
     term = walk(exp)
-
-    message_explicit("pattern: {}",
-        [gen_t2s(pattern), gen_t2s(term)], level="secondary")
-
-    message_explicit("term: {}",
-        [gen_t2s(pattern), gen_t2s(term)], level="secondary")
 
     unifiers = unify(term, pattern)
 
@@ -1381,7 +1370,6 @@ def throw_stmt(node):
     assert_match(THROW, 'throw')
     
     throw_object = walk(object)
-    message_explicit("Throwing {}", [gen_t2s(throw_object)])
 
     raise ThrowValue(throw_object)
 
@@ -1401,8 +1389,6 @@ def try_stmt(node):
         (debugger.is_stepping or debugger.is_continuing)
 
     try:
-        message_explicit("Try block")
-
         # Each statement in the try block is "top level"
         for s in try_stmts[1]:
             if stepping: debugger.set_top_level(True)
@@ -1481,8 +1467,6 @@ def try_stmt(node):
         if debugging: debugger.top_level = old_tl
         return
 
-    message_explicit("Exception Caught: {}", [str(inst_val)])
-
     # we had an exception - walk the catch list and find an appropriate set of
     # catch statements.
     for catch_val in catch_list:
@@ -1509,8 +1493,6 @@ def try_stmt(node):
 def loop_stmt(node):
     notify_debugger()
 
-    message_explicit("Loop statement")
-
     (LOOP, body_stmts) = node
     assert_match(LOOP, 'loop')
 
@@ -1526,20 +1508,14 @@ def loop_stmt(node):
 def while_stmt(node):
     notify_debugger()
 
-    message_explicit("While loop")
-
     (WHILE, cond_exp, body_stmts) = node
     assert_match(WHILE, 'while')
 
     (COND_EXP, cond) = cond_exp
     (STMT_LIST, body) = body_stmts
 
-    message_explicit("Condition {}", [gen_t2s(cond)], level="secondary")
-
     try:
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
-        if cond_val:
-            message_explicit("Condition met", level="tertiary")
         while cond_val:
             walk(body)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
@@ -1549,8 +1525,6 @@ def while_stmt(node):
 #########################################################################
 def repeat_stmt(node):
     notify_debugger()
-
-    message_explicit("Repeat statement")
 
     (REPEAT, body_stmts, cond_exp) = node
     assert_match(REPEAT, 'repeat')
@@ -1571,7 +1545,6 @@ def repeat_stmt(node):
 #########################################################################
 def for_stmt(node):
     notify_debugger()
-    message_explicit("For loop")
 
     (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
     assert_match(FOR, 'for')
@@ -1607,9 +1580,6 @@ def for_stmt(node):
                 pass
             else:
                 declare_unifiers(unifiers)
-                
-                message_explicit("Walking body")
-
                 walk(stmt_list)
                 
     except Break:
@@ -1618,8 +1588,6 @@ def for_stmt(node):
 #########################################################################
 def if_stmt(node):
     notify_debugger()
-
-    message_explicit("Evaluating if clauses")
 
     (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
@@ -1634,12 +1602,9 @@ def if_stmt(node):
          (COND, cond),
          (STMT_LIST, stmts)) = if_list[ i + 1 ]
 
-        message_explicit("Checking: {}", [gen_t2s(cond)], level="secondary")
-
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
         if cond_val:
-            message_explicit("Condition met", level="tertiary")
             walk(stmts)
             break
 #########################################################################
@@ -1651,8 +1616,6 @@ def struct_def_stmt(node):
     assert_match(ID, 'id')
     assert_match(MEMBER_LIST, 'member-list')
     assert_match(LIST, 'list')
-
-    message_explicit("Struct definition for {}", [struct_id])
 
     # declare members
     # member names are declared as variables whose value is the slot
@@ -1667,16 +1630,12 @@ def struct_def_stmt(node):
             struct_memory.append(('none', None))
             member_names.append(member_id)
 
-            message_explicit("Data member: {}",[member_id], level="secondary")
-
         elif member[0] == 'unify':
             (UNIFY, (ID, member_id), function_exp) = member
             # Note: we have to bind a function VALUE into the structure memory
             function_val = walk(function_exp)
             struct_memory.append(function_val)
             member_names.append(member_id)
-
-            message_explicit("Member function: {}", [member_id], level="secondary")
 
         elif member[0] == 'noop':
             pass
@@ -1705,7 +1664,6 @@ def import_list_stmt(node):
 
     debugging = old_debugging
 
-    message_explicit("Import successful!")
     return
 
 #########################################################################
