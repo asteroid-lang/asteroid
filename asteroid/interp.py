@@ -16,9 +16,8 @@ from asteroid.walk import walk
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
 
-# TODO: adjust the defaults
-def interp(input_stream,
-           input_name = "<input>",
+def interp(program,
+           program_name = "<input>",
            tree_dump=False,
            do_walk=True,
            symtab_dump=False,
@@ -28,10 +27,27 @@ def interp(input_stream,
            functional_mode=False,
            initialize_state = True
            ):
+    '''
+    The function 'interp' is the top-level entry point to the
+    Asteroid interpreter with the following arguments:
+      * program: a string representing an Asteroid program
+      * program_name: the of the program to be interpreted
+      * tree_dump: a flag indicating whether the AST should be dumped after parsing
+      * do_walk: a flag indicating whether the interpret should interpret the AST
+      * symtab_dump: a flag indicating whether the contents of the symbol
+                     table should be printed out
+      * exceptions: when true Python style exceptions are shown, otherwise
+                    Asteroid style exceptions are shown
+      * redundancy: a flag indicating whether the function pattern checker should be run
+      * prologue: a flag indicating whether the Asteroid prologue file should be loaded
+      * functional_mode: if set then the Asteroid interpreter behaves like an interpreter
+                         functional programming language.
+      * initialize_state: if set then the interpreter will (re)initialize its state.  
+    '''
     try:
         # initialize state
         if initialize_state:
-            state.initialize(input_name)
+            state.initialize(program_name)
 
         #lhh
         #print("path[0]: {}".format(sys.path[0]))
@@ -62,8 +78,8 @@ def interp(input_stream,
                 (LIST, pstmts) = pparser.parse(data)
 
         # build the AST
-        parser = Parser(input_name, functional_mode)
-        (LIST, istmts) = parser.parse(input_stream)
+        parser = Parser(program_name, functional_mode)
+        (LIST, istmts) = parser.parse(program)
         if prologue:
             state.AST = ('list', pstmts + istmts)
         else:

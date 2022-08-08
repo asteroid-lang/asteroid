@@ -1003,3 +1003,257 @@ Here is a simple example program for the ``vector`` module,
 #include "../asteroid/test-suites/ref-programs/vector.ast"
 
 which prints the value ``0``.
+
+Interfacing Asteroid with Python
+--------------------------------
+
+Asteroid allows integration with Python in one of two ways.  First, we can call the
+Asteroid interpreter from within a Python program and second, we can embed
+Python code directly within an Asteroid program. We start with looking at
+calling the Asteroid interpreter from Python.
+
+Calling Asteroid from Python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Calling Asteroid from within a Python program is nothing more than calling Asteroid's ``interp``
+function with a string representing an Asteroid program as its argument.  In order to make this work you
+will have to make sure that the Python interpreter can find the Asteroid modules.
+Here we assume that you have installed Asteroid with the ``pip`` installer.
+Once you have installed Asteroid you will have to point the ``PYTHONPATH``
+environment variable to the directory where ``pip`` installed the Asteroid modules.
+You can easily find out where the modules are installed by issuing the ``show`` command,
+::
+    ubuntu$ pip3 show asteroid-lang
+    Name: asteroid-lang
+    Version: 1.1.0
+    Summary: A pattern-matching oriented programming language.
+    Home-page: https://asteroid-lang.org
+    Author: University of Rhode Island
+    Author-email: lutzhamel@uri.edu
+    License: None
+    Location: /home/ubuntu/.local/lib/python3.8/site-packages
+    Requires: numpy, pandas, matplotlib
+    Required-by:
+    ubuntu$
+
+The ``Location`` field tells us where the Asteroid modules have been installed.
+Under Ubuntu we can now create an environment variable that points to that directory as follows,
+::
+    ubuntu$ export PYTHONPATH=/home/ubuntu/.local/lib/python3.8/site-packages
+    ubuntu$
+
+Now that Python knows how to find the Asteroid modules we can import the
+Asteroid interpreter into any Python program using,
+::
+   from asteroid.interp import interp
+
+where the ``interp`` function takes a string representing of an Asteroid program
+as an argument.  Let's test drive this in the Python interactive shell,
+::
+    ubuntu$ python3
+    Python 3.8.10 (default, Nov 26 2021, 20:14:08)
+    [GCC 9.3.0] on linux
+    Type "help", "copyright", "credits" or "license" for more information.
+    >>> from asteroid.interp import interp
+    >>> interp('load system io. io @println "Hello, World!".')
+    Hello, World!
+    >>>
+
+For more detailed information on the ``interp`` function do a ``help(interp)``
+at the interactive Python prompt. Even though we have shown this example under Linux, analogous approaches
+should work on both Windows and macOS.
+
+Embedding Python into an Asteroid Program
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using Asteroid's ``escape`` expression allows us to embed arbitray Python
+code into an Asteroid program,
+::
+      -- Printing hello once from each environment
+
+      -- print hello from Asteroid
+      load system io.
+      io @println "Hello World from Asteroid!".
+
+      -- print hello from Python
+      escape
+      "
+      print('Hello World from Python!')
+      ".
+
+Please note that the format of the Python code in the escaped string should follow the
+same guidelines as the Python code embedded in strings handed to the Python `exec
+function <https://docs.python.org/3/library/functions.html#exec>`_.
+
+Not only does the ``escape`` expression give you access to the Python environment but
+it also gives you access to the current Asteroid interpreter state including its
+symbol table.  That means we can access any variable defined in the Asteroid
+environment from Python,
+::
+      let s = "Hello World!".
+
+      escape
+      "
+      (type, val) = state.symbol_table.lookup_sym('s')
+      print(type)
+      print(val)
+      ".
+
+Notice that a symbol table lookup produces a pair of values where the first value
+represents the type of the value stored in the symbol table and the second value
+is the actual value stored.  In this case our program prints out,
+::
+      string
+      Hello World!
+
+That is the type of the value is a string and the value is the actual string ``Hello World!``.
+
+Since ``escape`` represents an expression we can also return values from the
+Python code using a special ``__retval__`` variable.  The only trick is that
+we have to remember that values in Asteroid are pairs consisting of type information
+and values.  Here is a very simple program that exercises that part of the Python API,
+::
+      load system io.
+
+      let i = escape
+      "
+      global __retval__  # access the return value register
+
+      __retval__ = ('integer', 101)
+      ".
+
+      io @println i.
+
+This program will print out the value ``101`` from Asteroid even though that value
+was created within the Python environment.  Notice that we have to access the
+return value register ``__retval__`` with the ``global`` statement in the Python code.
+
+We can pull all of this together and write an Asteroid function that performs its
+computations in Python,
+::
+      function inc with i do return escape
+      "
+      hash_comment access return value register
+      global __retval__
+      hash_comment lookup the value of the formal argument
+      (type, val) = state.symbol_table.lookup_sym('i')
+
+      hash_comment only perform the increment if the value is an integer
+      if type != 'integer':
+         raise ValueError('not an integer')
+      else:
+         __retval__ = (type, val+1)
+      ".
+      end
+
+      -- call inc and make sure the result is correct
+      let k = inc(1)
+      assert(k == 2).
+
+Of course the function is just an illustration of how to use the Python API.  This
+type of computation is much easier to express in Asteroid directly,
+::
+      function inc
+         with i:%integer do
+            i+1
+         end
+
+      let k = inc(1)
+      assert(k == 2).
+
+The Foreign Type Tag
+^^^^^^^^^^^^^^^^^^^^
+
+When working in the hybrid Asteroid-Python environment it is sometimes useful to be able to embed values
+in an Asteroid program that have no direct representation in Asteroid.  This is where the ``foreign``
+type tage comes into play.  Consider the following program that uses Pandas dataframes within an
+Asteroid program,
+::
+
+      ------------------------------------------------------------------------
+      function pack
+      ------------------------------------------------------------------------
+      -- this function packs four real values into a Pandas dataframe
+      with (a:%real,b:%real,c:%real,d:%real) do return escape
+      "
+      global __retval__
+      hash_comment we can ignore type info here because we checked it above
+      (_, aval) = state.symbol_table.lookup_sym('a')
+      (_, bval) = state.symbol_table.lookup_sym('b')
+      (_, cval) = state.symbol_table.lookup_sym('c')
+      (_, dval) = state.symbol_table.lookup_sym('d')
+
+      import pandas as pd
+      df = pd.DataFrame({'x':[aval,bval], 'y':[cval,dval]})
+      __retval__ = ('foreign', df)
+      "
+      end
+
+      ------------------------------------------------------------------------
+      function dump
+      ------------------------------------------------------------------------
+      -- dump the Pandas dataframe to stdout
+      with df do escape
+      "
+      (dftype, dfval) = state.symbol_table.lookup_sym('df')
+      if dftype != 'foreign':
+         raise ValueError('expected data frame')
+      print(dfval)
+      "
+      end
+
+      ------------------------------------------------------------------------
+      function access
+      ------------------------------------------------------------------------
+      -- access an element of the Pandas dataframe at row r and column c
+      with (df,r:%integer,c:%integer) do return escape
+      "
+      global __retval__
+      (dftype, dfval) = state.symbol_table.lookup_sym('df')
+      if dftype != 'foreign':
+         raise ValueError('expected data frame')
+      hash_comment we can ignore type info here because we checked it above
+      (_, rval) = state.symbol_table.lookup_sym('r')
+      (_, cval) = state.symbol_table.lookup_sym('c')
+      hash_comment make sure the ret value conforms to the Asteroid value structure
+      __retval__ = ('real', dfval.iloc[rval,cval])
+      "
+      end
+
+      ------------------------------------------------------------------------
+      function sum
+      ------------------------------------------------------------------------
+      -- sum down the columns of the dataframe and return a pair of values,
+      -- one component for each column
+      with (df) do return escape
+      "
+      global __retval__
+      (dftype, dfval) = state.symbol_table.lookup_sym('df')
+      if dftype != 'foreign':
+         raise ValueError('expected data frame')
+      hash_comment sum the value down the columns
+      sum = list(dfval.sum(axis=0))
+      hash_comment construct our tuple, note the type information
+      __retval__ = ('tuple', [('real',sum[0]),('real',sum[1])])
+      "
+      end
+
+      ------------------------------------------------------------------------
+      -- exercise our machinery
+      let df = pack(1.0,2.0,3.0,4.0).
+      dump(df).
+      assert(access(df,1,1) == 4).
+      assert(sum(df) == (3.0,7.0)).
+
+The ``dump`` function generates the following output,
+::
+           x    y
+      0  1.0  3.0
+      1  2.0  4.0
+
+Pandas dataframes are not directly usable in Asteroid but by writing thin Python
+wrappers and taking advantage of the ``escape`` expression the ``foreign`` type
+tag we can embed Pandas functionality into Asteroid.  As an additional step we could
+wrap these individual functions into a ``structure`` with the dataframe as
+a data member and the functions as member functions of that structure.  As an
+example of this approach see the ``dataframe.ast`` system module.
