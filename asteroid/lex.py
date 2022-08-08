@@ -194,8 +194,6 @@ def tokenize(code):
             if value == '\"':
                 raise ExpectationError(expected='\"', found='EOF')
             else:
-                for t in tokens:
-                    print(t)
                 raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
         tokens.append(Token(type, value, module, line_num))
