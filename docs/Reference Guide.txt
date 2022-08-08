@@ -459,18 +459,18 @@ Example,
 List Comprehensions
 %%%%%%%%%%%%%%%%%%%
 
-Syntax: ``start_exp TO end_exp (STRIDE exp)?``
+Syntax: ``start_exp TO end_exp (STEP exp)?``
 
 This expression constructs a list starting with an element given by the start expression
-up to the value of the end expression with a given stride.  If the stride expression
-is not given then a stride value of 1 is assumed.  The stride value is always a
-positive value.  The comprehension figures out how to apply the stride value to reach the
+up to the value of the end expression with a given step.  If the step expression
+is not given then a step value of 1 is assumed.  The step value is always a
+positive value.  The comprehension figures out how to apply the step value to reach the
 end value from the start value.  The comprehension can be placed between optional square brackets.
 
 Examples,
 ::
       let [0,1,2,3,4] = 0 to 4.
-      let [0,-2,-4,-6] = [0 to -6 stride 2].
+      let [0,-2,-4,-6] = [0 to -6 step 2].
 
 Function Calls
 %%%%%%%%%%%%%%
@@ -630,7 +630,7 @@ Builtin Functions
 * Function ``range`` will compute a list of values depending on the input values:
 
   1. ``(start:%integer,stop:%integer)`` returns list ``[start to stop-1]``.
-  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 stride inc]``.
+  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 step inc]``.
   3. ``(stop:%integer)`` returns list ``[0 to stop-1]``.
 
 * Function ``getid`` returns the id (physical memory address) of any Asteroid object as an Asteroid integer.

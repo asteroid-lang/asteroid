@@ -651,18 +651,18 @@ class Parser:
         elif tt == 'TO':
             self.lexer.match('TO')
             v2 = self.exp()
-            if self.lexer.peek().type == 'STRIDE':
-                self.lexer.match('STRIDE')
+            if self.lexer.peek().type == 'STEP':
+                self.lexer.match('STEP')
                 v3 = self.exp()
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', v3))
+                        ('step', v3))
             else:
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', ('integer', '1')))
+                        ('step', ('integer', '1')))
 
         else:
             return v
