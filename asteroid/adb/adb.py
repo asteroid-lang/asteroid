@@ -468,8 +468,10 @@ class ADB:
                 initialize_state=False,
                 debugger=None,
                 exceptions=True)
+
         except Exception as e:
             print("Command error: {}".format(e))
+
         else:
             # Check if there's actually a return value in
             # the register

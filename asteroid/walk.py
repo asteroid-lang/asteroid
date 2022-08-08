@@ -2092,20 +2092,31 @@ def walk(node):
 # debug_walk
 #########################################################################
 def debug_walk(node, dbg):
-    # We want to differentiate between top level and nested
-    # statements. So, we run the list of statements outright
-    # so we can control when we know we are at the top level
+    """
+    This function allows us to keep the top-level distinction
+    at the program level.
+    """
     global debugging, debugger
     debugging, debugger = (True, dbg)
 
     (LIST, inlist) = node
 
     for e in inlist:
+        # We want to differentiate between top level and nested
+        # statements. So, we run the list of statements outright
+        # so we can control when we know we are at the top level
         debugger.set_top_level(True)
         walk(e)
 
-
+#########################################################################
+# walk_program
+#########################################################################
 def walk_program(node):
+    """
+    This function exists mostly as a performance
+    boost to unify. Running the program through
+    this function overrid
+    """
     global unify
     unify = __unify
 
