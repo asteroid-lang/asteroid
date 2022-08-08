@@ -144,6 +144,9 @@ def unify(term, pattern, unifying = True):
     occur. In this situation, we need to decrease the tab level
     and then re-raise the exception. Being able to "unravel"
     tab levels is essential to making things look good.
+
+    In normal, non-debugging execution, this function is overridden
+    and not used.
     '''
 
     # Try to call the actual unify function
