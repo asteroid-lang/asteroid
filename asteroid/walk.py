@@ -25,7 +25,7 @@ def explicit_enabled():
 def message_explicit(fmt_message, terms=None, level="primary", 
     increase=False, decrease=False, notify=False):
     """
-    Message explicit expects 1-3 arguments
+    Message explicit expects 1-3 main arguments
 
     1. A string, which can be a format string or a normal string.
     2. (Optional) A list of terms to express for a given format string
@@ -36,6 +36,14 @@ def message_explicit(fmt_message, terms=None, level="primary",
 
     fmt_message is a list of terms to be applied in the same
     way as .format
+
+    --------------------------------------------------------------
+    This function also supports three other options.
+
+    increase: Increases the tab level after the message is written
+    decrease: Decreases the tab level before the message is written
+    notify: Makes a notify_explicit call to stop the debugger within
+            a pattern
     """
     from types import GeneratorType
 
@@ -103,6 +111,7 @@ def notify_explicit():
         # Reset our lineinfo
         state.lineinfo = old_lineinfo
         debugger.set_lineinfo(state.lineinfo)
+
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
@@ -1143,6 +1152,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         if unified:
             break
 
+    # Reset the tab level back to the function call's level
     if debugging: debugger.tab_level = cur_tab_level
 
     if not unified:
@@ -2050,6 +2060,7 @@ def set_ret_val(node):
     function_return_value.append(val)
 
     return
+
 def top_level_exp_stmt(node):
 
     (TOP_LEVEL_EXP, exp) = node

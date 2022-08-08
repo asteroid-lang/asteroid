@@ -171,6 +171,7 @@ class ADB:
         print("Welcome to ADB version {}.".format(VERSION))
         print("Type \"help\" to recieve help.")
         print("ADB is experimental and under active development")
+        print("Report any suggestions or bugs to https://github.com/asteroid-lang/")
         print()
 
         # Main debug loop
