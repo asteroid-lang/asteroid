@@ -832,20 +832,6 @@ class ADB:
         """
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
-
-        """
-        if self.is_return:
-            if at_return_stmt:
-                self.message("Reached return location")
-                self.tick()
-                self.set_return(False)
-            else:
-                pass
-            
-        elif self.is_return and len(state.trace_stack) == 1:
-            self.set_movement(next=True)
-        """
-
         if self.has_breakpoint_here() and not self.is_next:
             self.message("Breakpoint")
             self.tick()
