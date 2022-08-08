@@ -682,7 +682,8 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("[Begin] constraint pattern: {}",
             [gen_t2s(pattern[1])],
             notify=True, increase=True
-        )    
+        )
+
         state.constraint_lvl += 1
         unifier = unify(term,pattern[1])
         state.constraint_lvl -= 1

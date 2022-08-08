@@ -568,6 +568,7 @@ class ADB:
             state.symbol_table.set_config(
                 state.symbol_table.saved_configs[-self.config_offset]
             )
+
             self.set_lineinfo( (module, line) )
             self.print_given_line(self.lineinfo)
 
