@@ -102,7 +102,7 @@ class ADB:
         Reset the symbol table's original config
         """
         if self.original_config:
-            state.symbol_table.set_movement(self.original_config)
+            state.symbol_table.set_config(self.original_config)
             self.original_config = None
             self.original_lineinfo = None
             self.config_offset = 0
@@ -565,7 +565,7 @@ class ADB:
             (module, line, _) = state.trace_stack[-self.config_offset]
             
             # Set the config
-            state.symbol_table.set_movement(
+            state.symbol_table.set_config(
                 state.symbol_table.saved_configs[-self.config_offset]
             )
             self.set_lineinfo( (module, line) )
@@ -586,14 +586,14 @@ class ADB:
         
             if bottom_level:
                 if self.original_config:
-                    state.symbol_table.set_movement(self.original_config)
+                    state.symbol_table.set_config(self.original_config)
                     self.set_lineinfo( (self.original_lineinfo) )
             else:
                 # We're at the bottommost frame and want to go up, but need
                 # to save the original config
                 (module, line, _) = state.trace_stack[-self.config_offset]
                 
-                state.symbol_table.set_movement(
+                state.symbol_table.set_config(
                     state.symbol_table.saved_configs[-self.config_offset])
 
                 self.set_lineinfo( (module, line) )
