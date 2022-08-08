@@ -52,8 +52,9 @@ def interp(input_stream,
            exceptions=False,
            redundancy=True,
            prologue=True,
-           initialize_state = True,
-           debugger=None):
+           debugger=None,
+           functional_mode=False,
+           initialize_state = True):
     try:
         # initialize state
         if initialize_state:
@@ -66,7 +67,7 @@ def interp(input_stream,
         state.eval_redundancy = redundancy
 
         # build the AST
-        parser = Parser(input_name)
+        parser = Parser(input_name, functional_mode)
         (LIST, istmts) = parser.parse(input_stream)
         state.AST = ('list', istmts)
 
