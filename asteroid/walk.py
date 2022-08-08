@@ -2101,6 +2101,13 @@ def debug_walk(node, dbg):
         debugger.set_top_level(True)
         walk(e)
 
+
+def walk_program(node):
+    global unify
+    unify = __unify
+
+    walk(node)
+
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
     # statements - statements do not produce return values
