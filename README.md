@@ -13,7 +13,7 @@ Documentation on Asteroid can be found at
 * A Python API allowing the developer to call the Asteroid interpreter from within a Python program and also embed
   Python code in an Asteroid program.
 
-* Eliminated the `step` notation in list comprehensions and replaced it with the `step` notation.
+* Eliminated the `stride` notation in list comprehensions and replaced it with the `step` notation.
 
 * Lots of bug fixes.
 
