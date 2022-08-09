@@ -19,103 +19,6 @@ from asteroid.state import state, warning
 debugging = False
 debugger = None
 
-def explicit_enabled():
-    """
-    Helper function that returns the state
-    of explicit mode if debugging is enableds
-    """
-    return debugging and debugger.explicit_enabled
-
-def message_explicit(fmt_message, terms=None, level="primary", 
-    increase=False, decrease=False, notify=False):
-    """
-    Message explicit expects 1-3 main arguments
-
-    1. A string, which can be a format string or a normal string.
-    2. (Optional) A list of terms to express for a given format string
-    3. The message level (Defaults to primary)
-
-    Format terms can be either plain strings or generators. If a gener-
-    ator is supplied, this function will express it
-
-    fmt_message is a list of terms to be applied in the same
-    way as .format
-
-    --------------------------------------------------------------
-    This function also supports three other options.
-
-    increase: Increases the tab level after the message is written
-    decrease: Decreases the tab level before the message is written
-    notify: Makes a notify_explicit call to stop the debugger within
-            a pattern
-    """
-    from types import GeneratorType
-
-    if explicit_enabled():
-        if decrease: decrease_tab_level()
-
-        if not terms:
-            debugger.message_explicit(fmt_message, level)
-        else:
-            expressed_terms = []
-            for t in terms:
-                if isinstance(t, GeneratorType):
-                    expressed_terms.append(next(t))
-                else:
-                    expressed_terms.append(t)
-            
-            expressed_string = fmt_message.format(*expressed_terms)
-            debugger.message_explicit(expressed_string, level)
-        
-        if increase: increase_tab_level()
-        if notify:   notify_explicit()
-
-def gen_t2s(node):
-    """
-    Generator function for term2string. This cuts down on
-    runtime as it defers term2string computations to when
-    they're actually needed.
-    """
-    yield term2string(node)
-
-def increase_tab_level():
-    """
-    Increase the debugger's tab level by one
-    """
-    if explicit_enabled():
-        debugger.tab_level += 1
-
-def decrease_tab_level():
-    """
-    Decrease the debugger's tab level by one
-    """
-    if explicit_enabled():
-        debugger.tab_level -= 1
-
-        if debugger.tab_level < 0:
-            debugger.tab_level = 0
-
-def notify_debugger():
-    if debugging:
-        # We need to save the old lineinfo in case we go into a REPL
-        old_lineinfo = state.lineinfo
-
-        debugger.notify()
-
-        # Reset our lineinfo
-        state.lineinfo = old_lineinfo
-        debugger.set_lineinfo(state.lineinfo)
-
-def notify_explicit():
-    if debugging and explicit_enabled:
-        old_lineinfo = state.lineinfo
-        
-        debugger.notify_explicit()
-
-        # Reset our lineinfo
-        state.lineinfo = old_lineinfo
-        debugger.set_lineinfo(state.lineinfo)
-
 #########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
@@ -2253,4 +2156,124 @@ def check_redundancy( body_list, f_name ):
                 pass
             else:                               #CONFLICTION
                 raise RedundantPatternFound( ptrn_h , ptrn_l , f_name, location_h, location_l )
+
 #######################################################################################
+# *** Asteroid Debugger (ADB) helper functions ***
+# 
+# message_explicit:
+#     The main messaging function for explicit mode. Operates in a similar way the
+#     string.format function does. Read the function's internal docstring for more
+#     information.
+# 
+# notify_debugger:
+#     Notifies the debugger of the current program position. If the debugger is
+#     accepting notifications at the time of call, the debugger will pause and
+#     run the interactive prompt.
+# 
+# notify_explicit:
+#     Similar to notify_debugger but only runs in explicit mode.
+# 
+# explicit_enabled:
+#     A simple helper function. Equivalent to `debugging and debugger.explicit_enabled`
+# 
+# gen_t2s:
+#     A generator function used in place of term2string in message_explicit calls.
+#     This allows the computation to be deferred or completely ignored. Much like
+#     a function returning a lambda function
+#
+#######################################################################################
+def message_explicit(fmt_message, terms=None, level="primary", 
+    increase=False, decrease=False, notify=False):
+
+    """
+    Message explicit expects 1-3 main arguments
+
+    1. A string, which can be a format string or a normal string.
+    2. (Optional) A list of terms to express for a given format string
+    3. The message level (Defaults to primary)
+
+    Format terms can be either plain strings or generators. If a gener-
+    ator is supplied, this function will express it
+
+    fmt_message is a list of terms to be applied in the same
+    way as .format
+
+    --------------------------------------------------------------
+    This function also supports three other options.
+
+    increase: Increases the tab level after the message is written
+    decrease: Decreases the tab level before the message is written
+    notify: Makes a notify_explicit call to stop the debugger within
+            a pattern
+    """
+    from types import GeneratorType
+
+    if explicit_enabled():
+        if decrease:
+            debugger.tab_level = (debugger.tab_level - 1) \
+                if debugger.tab_level > 0 else 0
+
+        if not terms:
+            debugger.message_explicit(fmt_message, level)
+        else:
+            expressed_terms = []
+            for t in terms:
+                if isinstance(t, GeneratorType):
+                    expressed_terms.append(next(t))
+                else:
+                    expressed_terms.append(t)
+            
+            expressed_string = fmt_message.format(*expressed_terms)
+            debugger.message_explicit(expressed_string, level)
+        
+        if increase:    debugger.tab_level += 1
+        if notify:      notify_explicit()
+
+#########################################################################
+def notify_debugger():
+    """
+    If the debugger is accepting notifications at the time of call,
+    the debugger will pause and run the interactive prompt.
+    """
+    if debugging:
+        # We need to save the old lineinfo in case we go into a REPL
+        old_lineinfo = state.lineinfo
+
+        debugger.notify()
+
+        # Reset our lineinfo
+        state.lineinfo = old_lineinfo
+        debugger.set_lineinfo(state.lineinfo)
+
+#########################################################################
+def notify_explicit():
+    """
+    If the debugger is accepting notifications at the time of call and
+    the debugger is in explicit mode, the debugger will pause and run
+    the interactive prompt.
+    """
+    if debugging and explicit_enabled:
+        old_lineinfo = state.lineinfo
+        
+        debugger.notify_explicit()
+
+        # Reset our lineinfo
+        state.lineinfo = old_lineinfo
+        debugger.set_lineinfo(state.lineinfo)
+
+#########################################################################
+def explicit_enabled():
+    """
+    Helper function that returns the state
+    of explicit mode if debugging is enableds
+    """
+    return debugging and debugger.explicit_enabled
+
+#########################################################################
+def gen_t2s(node):
+    """
+    Generator function for term2string. This cuts down on
+    runtime as it defers term2string computations to when
+    they're actually needed.
+    """
+    yield term2string(node)
