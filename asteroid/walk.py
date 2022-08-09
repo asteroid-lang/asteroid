@@ -1065,6 +1065,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     if obj_ref:
         state.symbol_table.enter_sym('this', obj_ref)
 
+    # OWM: The following segment is a repeat of the bottom of this function.
+    # We need to do this because redundant patterns can break scope and
+    # some debugger features as they exit computation.
+
     # Check for useless patterns
     try:
         if state.eval_redundancy:
