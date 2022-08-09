@@ -1284,4 +1284,4 @@ wrappers and taking advantage of the ``escape`` expression the ``foreign`` type
 tag we can embed Pandas functionality into Asteroid.  As an additional step we could
 wrap these individual functions into a ``structure`` with the dataframe as
 a data member and the functions as member functions of that structure.  As an
-example of this approach see the ``dataframe.ast`` system module.
+example of this approach see the `dataframe.ast <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/dataframe.ast>`_ system module.
