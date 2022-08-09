@@ -79,5 +79,5 @@ command_description_table = {
     
     'help':         """[h]elp ?(name)
     Get help for a command
-    """s
+    """
 }
