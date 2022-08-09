@@ -187,7 +187,7 @@ class ADB:
 
                 # Interpret our file
                 interp(input_stream,
-                    input_name = filename,
+                    program_name = filename,
                     prologue=False,
                     initialize_state=False,
                     exceptions=True,
@@ -260,7 +260,7 @@ class ADB:
             # interpret the break conition
             try:
                 interp(break_cond,
-                    input_name = "<COMMAND>",
+                    program_name = "<COMMAND>",
                     redundancy=False,
                     prologue=False,
                     initialize_state=False,
@@ -462,7 +462,7 @@ class ADB:
         # Run the asteroid code
         try:
             interp(value,
-                input_name = "<EVAL>",
+                program_name = "<EVAL>",
                 redundancy=False,
                 prologue=False,
                 initialize_state=False,

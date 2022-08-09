@@ -64,7 +64,7 @@ def run_repl():
         Interpretation, multiline input, and exception handling
         """
         try:
-            interp(line, input_name="<repl>", prologue=False, initialize_state=False, exceptions=True)
+            interp(line, program_name="<repl>", prologue=False, initialize_state=False, exceptions=True)
 
             # Try to
             line = ""
