@@ -7,7 +7,11 @@ Documentation on Asteroid can be found at
 
 ## New in Release 1.1.0
 
-* Asteroid now supports its own interactive debugger `adb`.
+* An experimental implementation of an interactive debugger that supports debugging pattern matching and in 
+  particular, pattern matching with first-class patterns.
+  
+* A Python API allowing the developer to call the Asteroid interpreter from within a Python program and also embed
+  Python code in an Asteroid program.
 
 * Eliminated the `step` notation in list comprehensions and replaced it with the `step` notation.
 
