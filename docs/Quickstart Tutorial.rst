@@ -2,18 +2,10 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
+
 
 .. highlight:: none
 
@@ -231,3 +223,4 @@ Some important things to note in Asteroid:
 * If you see a line that looks like (``x:%integer``), that is used to match any value of a given type. (The ``%integer`` pattern matches any integer value and can be used with any other type in Asteroid.)
 
 If you would like more information about Asteroid, please see the Asteroid `reference guide <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html#>`_  and `user guide <https://asteroid-lang.readthedocs.io/en/latest/Asteroid%20User%20Guide.html>`_.
+
