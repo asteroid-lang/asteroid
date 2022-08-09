@@ -1380,9 +1380,6 @@ def throw_stmt(node):
 def try_stmt(node):
     notify_debugger()
 
-    if debugging:
-        old_tl = debugger.top_level
-
     (TRY,
      (STMT_LIST, try_stmts),
      (CATCH_LIST, (LIST, catch_list))) = node
@@ -1467,7 +1464,6 @@ def try_stmt(node):
 
     else:
         # no exceptions found in the try statements
-        if debugging: debugger.top_level = old_tl
         return
 
     # we had an exception - walk the catch list and find an appropriate set of
@@ -1486,7 +1482,6 @@ def try_stmt(node):
                 if stepping: debugger.set_top_level(True)
                 walk(s)     
 
-            if debugging: debugger.top_level = old_tl       
             return
 
     # no exception handler found - rethrow the exception
