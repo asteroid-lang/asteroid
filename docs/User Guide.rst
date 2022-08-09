@@ -175,16 +175,16 @@ For a comprehensive treatment of available member functions for Asteroid lists p
 
 Besides using the default constructor for lists which consists of the
 square brackets enclosing a list of elements we can use **list comprehensions** to construct lists.  In Asteroid a list comprehension consist of a range specifier together with
-a stride specifier allowing you to generate integer values within that range,
+a step specifier allowing you to generate integer values within that range,
 ::
     load system io.
 
     -- build a list of odd values
-    let a = [1 to 10 stride 2].  -- list comprehension
+    let a = [1 to 10 step 2].  -- list comprehension
     io @println ("list: " + a).
 
     -- reverse the list using a slice computed as comprehension
-    let slice = [4 to 0 stride 1]. -- list comprehension
+    let slice = [4 to 0 step 1]. -- list comprehension
     let b = a @slice.
     io @println ("reversed list: " + b).
 
@@ -408,7 +408,7 @@ As we said, in terms of flow of control statements there are really not a lot of
 ::
     load system io.
 
-    for i in 0 to 10 stride 2 do
+    for i in 0 to 10 step 2 do
         io @println i.
     end
 

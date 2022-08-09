@@ -12,7 +12,7 @@ if exists("b:current_syntax")
 endif
 
 syn keyword basic with end do load let for function structure in is pattern 
-syn keyword basic throw this system data global return to stride if not
+syn keyword basic throw this system data global return to step if not
 syn keyword basic else or and
 
 syn keyword delimeter escape
