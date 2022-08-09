@@ -184,7 +184,7 @@ a step specifier allowing you to generate integer values within that range,
     io @println ("list: " + a).
 
     -- reverse the list using a slice computed as comprehension
-    let slice = [4 to 0 step 1]. -- list comprehension
+    let slice = [4 to 0 step -1]. -- list comprehension
     let b = a @slice.
     io @println ("reversed list: " + b).
 
