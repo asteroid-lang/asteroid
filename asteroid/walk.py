@@ -14,7 +14,8 @@ from asteroid.state import state, warning
 #########################################################################
 # These two variables are used by the debugger. "Debugging" is a flag
 # to tell if we're currently in debugging mode and "Debugger" is a
-# debugger object
+# debugger object. For more information on the debugger's helper
+# functions. See the function definitions in this file.
 #########################################################################
 debugging = False
 debugger = None
