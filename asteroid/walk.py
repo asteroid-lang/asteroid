@@ -42,35 +42,6 @@ __retval__ = None  # return value register for escaped code
 function_return_value = [None]
 
 ###########################################################################################
-def unify(term, pattern, unifying = True):
-    '''
-    Proxy function for unify to make the debugger's formatting
-    work properly
-
-    OWM - This proxy function allows us to wrap unification
-    in an except block and catch when PatternMatchFailed exceptions
-    occur. In this situation, we need to decrease the tab level
-    and then re-raise the exception. Being able to "unravel"
-    tab levels is essential to making things look good.
-
-    In normal, non-debugging execution, this function is overridden
-    and not used.
-    '''
-
-    # Try to call the actual unify function
-    try:
-        return __unify(term, pattern, unifying)
-
-    # If there's a pattern match failed, decrease
-    # the tab level and reraise the exception
-    except PatternMatchFailed as r:
-        decrease_tab_level()
-        raise r
-
-    # If there's a normal exception, reraise it
-    except Exception as e:
-        raise e
-
 def __unify(term, pattern, unifying = True ):
     '''
     unify term and pattern recursively and return the unifier.
@@ -1955,11 +1926,9 @@ def set_ret_val(node):
     function_return_value.pop()
     function_return_value.append(val)
 
-    if debugging:
-        debugger.ret_val = term2string(val)
-
     return
 
+#########################################################################
 def top_level_exp_stmt(node):
 
     (TOP_LEVEL_EXP, exp) = node
@@ -1993,26 +1962,6 @@ def walk(node):
         raise ValueError("feature '{}' not yet implemented".format(type))
 
 #########################################################################
-# debug_walk
-#########################################################################
-def debug_walk(node, dbg):
-    """
-    This function allows us to keep the top-level distinction
-    at the program level.
-    """
-    global debugging, debugger
-    debugging, debugger = (True, dbg)
-
-    (LIST, inlist) = node
-
-    for e in inlist:
-        # We want to differentiate between top level and nested
-        # statements. So, we run the list of statements outright
-        # so we can control when we know we are at the top level
-        debugger.set_top_level(True)
-        walk(e)
-
-#########################################################################
 # walk_program
 #########################################################################
 def walk_program(node):
@@ -2025,6 +1974,28 @@ def walk_program(node):
     unify = __unify
 
     walk(node)
+
+#########################################################################
+# debug_walk
+#########################################################################
+def debug_walk(node, dbg):
+    """
+    This function allows us to keep the top-level distinction
+    at the program level.
+    """
+    global debugging, debugger, unify
+    debugging, debugger = (True, dbg)
+
+    unify = debug_unify
+
+    (LIST, inlist) = node
+
+    for e in inlist:
+        # We want to differentiate between top level and nested
+        # statements. So, we run the list of statements outright
+        # so we can control when we know we are at the top level
+        debugger.set_top_level(True)
+        walk(e)
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
@@ -2214,9 +2185,7 @@ def message_explicit(fmt_message, terms=None, level="primary",
     from types import GeneratorType
 
     if explicit_enabled():
-        if decrease:
-            debugger.tab_level = (debugger.tab_level - 1) \
-                if debugger.tab_level > 0 else 0
+        if decrease: decrease_tab_level()
 
         if not terms:
             debugger.message_explicit(fmt_message, level)
@@ -2282,3 +2251,41 @@ def gen_t2s(node):
     they're actually needed.
     """
     yield term2string(node)
+
+#########################################################################
+def decrease_tab_level():
+    if debugging:
+        debugger.tab_level = debugger.tab_level - 1
+
+        if debugger.tab_level < 0:
+            debugger.tab_level = 0
+
+#########################################################################
+def debug_unify(term, pattern, unifying = True):
+    '''
+    Proxy function for unify to make the debugger's formatting
+    work properly
+
+    OWM - This proxy function allows us to wrap unification
+    in an except block and catch when PatternMatchFailed exceptions
+    occur. In this situation, we need to decrease the tab level
+    and then re-raise the exception. Being able to "unravel"
+    tab levels is essential to making things look good.
+
+    In normal, non-debugging execution, this function is overridden
+    and not used.
+    '''
+
+    # Try to call the actual unify function
+    try:
+        return __unify(term, pattern, unifying)
+
+    # If there's a pattern match failed, decrease
+    # the tab level and reraise the exception
+    except PatternMatchFailed as r:
+        decrease_tab_level()
+        raise r
+
+    # If there's a normal exception, reraise it
+    except Exception as e:
+        raise e
