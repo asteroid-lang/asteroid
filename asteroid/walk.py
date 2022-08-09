@@ -20,6 +20,10 @@ debugging = False
 debugger = None
 
 def explicit_enabled():
+    """
+    Helper function that returns the state
+    of explicit mode if debugging is enableds
+    """
     return debugging and debugger.explicit_enabled
 
 def message_explicit(fmt_message, terms=None, level="primary", 
@@ -644,16 +648,12 @@ def __unify(term, pattern, unifying = True ):
         # v can be an AST representing any computation
         # that produces a pattern.
 
-        message_explicit("Dereferencing {}",
-            [gen_t2s(pattern[1])]
-        )
+        message_explicit("Dereferencing {}", [gen_t2s(pattern[1])])
 
         p = walk(pattern[1])
 
-        message_explicit("{} -> {}",
-            [gen_t2s(pattern),
-            gen_t2s(p)], "secondary"
-        )
+        message_explicit("{} -> {}", [gen_t2s(pattern), gen_t2s(p)], 
+            level="secondary")
 
         notify_explicit()
 
