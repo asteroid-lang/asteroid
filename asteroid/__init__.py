@@ -84,8 +84,8 @@ def main():
 
     # execute interpreter
     interp_object = \
-    '''interp(input_stream=input_stream,
-           input_name = input_file,
+    '''interp(program=input_stream,
+           program_name = input_file,
            tree_dump=flags['-t'],
            do_walk=flags['-w'],
            symtab_dump=flags['-s'],
