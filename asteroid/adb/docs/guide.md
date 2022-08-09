@@ -16,6 +16,11 @@ details many of the steps of pattern matching, function calling, statement execu
 return values. To learn more about explicit mode and its many features, see: [ADB in action](in_action.md)
 
 
+## Usage
+```
+asteroid --adb <FILENAMEs>
+```
+
 ## Debugging sessions
 The debugger's prompt `(ADB)` allows the user to enter commands to effect the source environment
 and debugger behavior.
@@ -58,9 +63,6 @@ we see running commands, listing the program, and setting and continuing to brea
 -->> let t:*d = (1,2,3).
 (ADB) 
 ```
-
-## Usage
-`TBD`
 
 ## Commands
 Below is a list of the commands available to the debugger. Most of which can be shortened.
@@ -158,3 +160,6 @@ e on
 explicit off
 e off
 ```
+
+### Quit
+`q(uit)` Quits the current ADB session
