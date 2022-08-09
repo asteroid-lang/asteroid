@@ -49,6 +49,19 @@ command_description_table = {
     List the contents of the program around the current line
     """,
     
+    '>':            """>
+    Move down one frame
+    """,
+
+    '<':            """<
+    Move up one frame
+    """,
+
+    'where':        """[w]here
+    Lists the currently available stack frames and shows the user
+    the currently active one.
+    """,
+
     'quit':         """[q]uit
     Exit ADB
     """,
@@ -66,5 +79,5 @@ command_description_table = {
     
     'help':         """[h]elp ?(name)
     Get help for a command
-    """
+    """s
 }
