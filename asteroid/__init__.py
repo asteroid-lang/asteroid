@@ -62,6 +62,12 @@ def main():
             sys.exit(0)
         flags[fl] = not flags[fl]
 
+    if flags['--adb']:
+        from .adb import adb
+        db = adb.ADB()
+        db.run(sys.argv[-1])
+        sys.exit(0)
+
     if flags['-h']:
         display_help()
         sys.exit(0)
