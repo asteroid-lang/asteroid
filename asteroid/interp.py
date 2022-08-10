@@ -87,10 +87,7 @@ def interp(program,
         # build the AST
         parser = Parser(program_name, functional_mode)
         (LIST, istmts) = parser.parse(program)
-        if prologue:
-            state.AST = ('list', pstmts + istmts)
-        else:
-            state.AST = ('list', istmts)
+        state.AST = ('list', istmts)
 
         # walk the AST
         if tree_dump:

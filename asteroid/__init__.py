@@ -46,6 +46,14 @@ def main():
         '--adb': False # debugger flag 
     }
 
+    flag_names = list(flags.keys())
+
+    if len(sys.argv) == 1:
+        repl(redundancy=flags['-r'],
+             prologue=flags['-p'],
+             functional_mode=flags['-F'])
+        sys.exit(0)
+
     for fl in sys.argv:
         if fl[0] != '-':
             continue
@@ -53,16 +61,6 @@ def main():
             print("unknown flag {}".format(fl))
             sys.exit(0)
         flags[fl] = not flags[fl]
-
-    if len(sys.argv) == 1:
-        repl()
-        sys.exit(0)
-
-    if flags['--adb']:
-        from .adb import adb
-        db = adb.ADB()
-        db.run(sys.argv[-1])
-        sys.exit(0)
 
     if flags['-h']:
         display_help()
@@ -73,6 +71,12 @@ def main():
         sys.exit(0)
 
     input_file = sys.argv[-1]
+
+    if input_file[0] == '-':
+        repl(redundancy=flags['-r'],
+             prologue=flags['-p'],
+             functional_mode=flags['-F'])
+        sys.exit(0)
 
     if not os.path.isfile(input_file):
         print("unknown file {}".format(input_file))

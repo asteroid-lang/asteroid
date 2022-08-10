@@ -8,14 +8,14 @@ from asteroid.support import term2string
 from sys import stdin
 import readline
 
-def repl(new=True):
+def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
     if new:
         state.initialize()
         load_prologue()
         print_repl_menu()
     try:
-        run_repl()
+        run_repl(redundancy, prologue, functional_mode)
     except EOFError:
         print()
         pass
@@ -25,7 +25,7 @@ def print_repl_menu():
     print("Run \"asteroid -h\" for help")
     print("Press CTRL+D to exit")
 
-def run_repl():
+def run_repl(redundancy, prologue, functional_mode):
 
     # The two different prompt types either > for a new statement
     # or . for continuing one
@@ -64,7 +64,13 @@ def run_repl():
         Interpretation, multiline input, and exception handling
         """
         try:
-            interp(line, program_name="<repl>", prologue=False, initialize_state=False, exceptions=True)
+            # Try to interpret the new statement
+            interp(line,
+                   initialize_state=False,
+                   redundancy=redundancy,
+                   prologue=prologue,
+                   functional_mode=functional_mode,
+                   exceptions=True)
 
             # Try to
             line = ""
@@ -93,6 +99,7 @@ def run_repl():
             print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
+            raise e
 
         else:
             current_prompt = arrow_prompt
