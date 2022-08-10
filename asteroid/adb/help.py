@@ -48,6 +48,10 @@ command_description_table = {
     'list':         """[l]ist
     List the contents of the program around the current line
     """,
+
+    'retval':       """[[r]et]val
+    Print the most recent return value
+    """,
     
     '>':            """>
     Move down one frame

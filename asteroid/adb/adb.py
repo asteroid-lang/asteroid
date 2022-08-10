@@ -41,6 +41,10 @@ class ADB:
         self.is_next = True
 
         #############################
+        # A copy of the most recent return value
+        self.retval = None
+
+        #############################
         # If our program is executing at the top level
         self.top_level = True
 
@@ -480,11 +484,11 @@ class ADB:
             # the register
             if function_return_value[-1]:
                 # Get the last return value (type, value)
-                retval = function_return_value[-1]
+                ret = function_return_value[-1]
 
                 # If it isn't none, print out the value
-                if retval[1] != None:
-                    print(term2string(function_return_value[-1]))
+                if ret[1] != None:
+                    print(term2string(ret))
 
         # Reset debugging state
         asteroid.walk.debugging = True
@@ -673,9 +677,11 @@ class ADB:
             case ('LONGLIST',):         self.list_program()
             case ('LIST',):             self.list_program(relative=True)
 
-            case ('RETURN',):
-                self.message("RETURN NOT IMPLEMENTED YET")
-                exit_loop = True
+            case ('RETVAL',):
+                if self.retval:
+                    self.message("Most recent return value: {}".format(self.retval))
+                else:
+                    self.message("No values have been returned yet")
 
             case ('EXPLICIT', set_explicit):
                 if set_explicit == False:

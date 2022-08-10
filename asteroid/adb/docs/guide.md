@@ -134,6 +134,9 @@ h macro
 help break
 ```
 
+### Retval
+`((r)et)val` Prints the most recent return value
+
 ### <
 `<` move up one stack frame
 

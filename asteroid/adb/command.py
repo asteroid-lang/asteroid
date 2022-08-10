@@ -26,7 +26,7 @@ class DebuggerLexer:
             ('LONGLIST',    r'\blonglist\b|\bll\b'),
             ('QUIT',        r'\bquit\b|\bq\b'),
 
-            ('RETURN',      r'\breturn\b|\bret\b|\br\b'),
+            ('RETVAL',      r'\bretval\b|\bret\b|\br\b'),
             
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
             ('ON',          r'\bon\b'),
@@ -220,7 +220,7 @@ class DebuggerParser:
             case 'HELP':     return self.help_cmd()
             case 'EXPLICIT': return self.explicit_cmd()
 
-            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETURN' | \
+            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETVAL' | \
                  'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)

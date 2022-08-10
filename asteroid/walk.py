@@ -1911,6 +1911,9 @@ def set_ret_val(node):
     function_return_value.pop()
     function_return_value.append(val)
 
+    if debugging and val:
+        debugger.retval = term2string(val)
+
     return
 
 #########################################################################
