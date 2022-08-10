@@ -74,7 +74,10 @@ class ADB:
         
         #############################
         # Dictionary of macros
-        self.macros = {}
+        self.macros = {
+            # A clear screen macro
+            'clear': [('EVAL', 'escape "import os;os.system(\'clear\') "')]
+        }
 
         #############################
         # The queue of commands being executed
