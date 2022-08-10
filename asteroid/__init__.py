@@ -57,7 +57,7 @@ def main():
     for fl in sys.argv:
         if fl[0] != '-':
             continue
-        elif fl not in flags:
+        elif fl not in flag_names:
             print("unknown flag {}".format(fl))
             sys.exit(0)
         flags[fl] = not flags[fl]
