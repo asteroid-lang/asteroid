@@ -2128,25 +2128,32 @@ def check_redundancy( body_list, f_name ):
 # *** Asteroid Debugger (ADB) helper functions ***
 # 
 # message_explicit:
-#     The main messaging function for explicit mode. Operates in a similar way the
-#     string.format function does. Read the function's internal docstring for more
-#     information.
+#   The main messaging function for explicit mode. Operates in a similar way the
+#   string.format function does. Read the function's internal docstring for more
+#   information.
 # 
 # notify_debugger:
-#     Notifies the debugger of the current program position. If the debugger is
-#     accepting notifications at the time of call, the debugger will pause and
-#     run the interactive prompt.
+#   Notifies the debugger of the current program position. If the debugger is
+#   accepting notifications at the time of call, the debugger will pause and
+#   run the interactive prompt.
 # 
 # notify_explicit:
-#     Similar to notify_debugger but only runs in explicit mode.
+#   Similar to notify_debugger but only runs in explicit mode.
 # 
 # explicit_enabled:
-#     A simple helper function. Equivalent to `debugging and debugger.explicit_enabled`
+#   A simple helper function. Equivalent to `debugging and debugger.explicit_enabled`
 # 
 # gen_t2s:
-#     A generator function used in place of term2string in message_explicit calls.
-#     This allows the computation to be deferred or completely ignored. Much like
-#     a function returning a lambda function
+#   A generator function used in place of term2string in message_explicit calls.
+#   This allows the computation to be deferred or completely ignored. Much like
+#   a function returning a lambda function
+#
+# decrease_tab_level:
+#   A simple helper function to manage debugger tab level decrementing.
+#
+# debug_unify:
+#   A wrapper for the normal unify function that automatically decreases
+#   the tab level of failed pattern matches.
 #
 #######################################################################################
 def message_explicit(fmt_message, terms=None, level="primary", 
