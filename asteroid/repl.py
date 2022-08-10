@@ -8,11 +8,11 @@ from asteroid.support import term2string
 from sys import stdin
 import readline
 
-def repl():
+def repl(redundancy, prologue, functional_mode):
     state.initialize()
     print_repl_menu()
     try:
-        run_repl()
+        run_repl(redundancy, prologue, functional_mode)
     except EOFError:
         print()
         pass
@@ -23,7 +23,7 @@ def print_repl_menu():
     print("Press CTRL+D to exit")
 
 
-def run_repl():
+def run_repl(redundancy, prologue, functional_mode):
 
     # The two different prompt types either > for a new statement
     # or . for continuing one
@@ -63,7 +63,12 @@ def run_repl():
         """
         try:
             # Try to interpret the new statement
-            interp(line, initialize_state=False, exceptions=True)
+            interp(line,
+                   initialize_state=False,
+                   redundancy=redundancy,
+                   prologue=prologue,
+                   functional_mode=functional_mode,
+                   exceptions=True)
 
             # Try to
             line = ""
