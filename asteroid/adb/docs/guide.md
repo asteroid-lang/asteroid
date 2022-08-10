@@ -18,7 +18,7 @@ explicit mode is currently incomplete.
 
 ## Usage
 ```
-asteroid --adb <FILENAMEs>
+asteroid --adb <FILENAME>
 ```
 
 ## Debugging sessions
