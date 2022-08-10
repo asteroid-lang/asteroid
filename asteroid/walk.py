@@ -1542,6 +1542,16 @@ def import_stmt(node):
     return
 
 #########################################################################
+def top_level_exp_stmt(node):
+
+    (TOP_LEVEL_EXP, exp) = node
+    assert_match(TOP_LEVEL_EXP, 'top-level-exp')
+
+    notify_debugger()
+
+    return walk(exp)
+
+#########################################################################
 def eval_exp(node):
 
     (EVAL, exp) = node
@@ -1915,16 +1925,6 @@ def set_ret_val(node):
         debugger.retval = term2string(val)
 
     return
-
-#########################################################################
-def top_level_exp_stmt(node):
-
-    (TOP_LEVEL_EXP, exp) = node
-    assert_match(TOP_LEVEL_EXP, 'top-level-exp')
-
-    notify_debugger()
-
-    return walk(exp)
 
 #########################################################################
 # walk
