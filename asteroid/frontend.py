@@ -123,15 +123,18 @@ class Parser:
             # Get the statment
             stmt = self.stmt()
 
-            # If there's another stmt coming up, don't set the ret val
-            if self.lexer.peek().type in stmt_lookahead:
-                sl += [stmt]
+            sl += [('clear-ret-val',)]
+            sl += [('set-ret-val', stmt)]
 
-            # Else, the last stmt in a list can contain an implicit return
-            # Set the node accordingly
-            else:
-                sl += [('clear-ret-val',)]
-                sl += [('set-ret-val', stmt)]
+            # # If there's another stmt coming up, don't set the ret val
+            # if self.lexer.peek().type in stmt_lookahead:
+            #     sl += [stmt]
+
+            # # Else, the last stmt in a list can contain an implicit return
+            # # Set the node accordingly
+            # else:
+            #     sl += [('clear-ret-val',)]
+            #     sl += [('set-ret-val', stmt)]
 
         return ('list', sl)
 
