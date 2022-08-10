@@ -13,8 +13,8 @@ It supports the following:
 ADB features a unique "explicit" mode which details much of the pattern matching and underlying
 mechanics of Asteroid allow developers to debug pattern matches. Explicit mode
 details many of the steps of pattern matching, function calling, statement execution, and
-return values. To learn more about explicit mode and its many features, see: [ADB in action](in_action.md)
-
+return values. Explicit mode is very experimental and is under current research. As a result,
+explicit mode is currently incomplete.
 
 ## Usage
 ```

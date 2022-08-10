@@ -1953,7 +1953,8 @@ def walk_program(node):
     """
     This function exists mostly as a performance
     boost to unify. Running the program through
-    this function overrid
+    this function overrides the debugger wrapping
+    on unify.
     """
     global unify
     unify = __unify
