@@ -1524,7 +1524,7 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
-def import_list_stmt(node):
+def import_stmt(node):
     notify_debugger()
 
     global debugging
@@ -1532,7 +1532,7 @@ def import_list_stmt(node):
     debugging = False
 
     (LIST, inlist) = node
-    assert_match(LIST, 'import_list')
+    assert_match(LIST, 'import_stmt')
 
     for e in inlist:
         walk(e)
@@ -2008,7 +2008,7 @@ dispatch_dict = {
     'top-level-exp' : top_level_exp_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    'import_list'   : import_list_stmt,
+    'import_stmt'   : import_stmt,
     'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,

@@ -238,7 +238,7 @@ class Parser:
                 (STMT_LIST, fstmts) = fparser.parse(data)
             
             state.lineinfo = old_lineinfo
-            return ('import_list', fstmts)
+            return ('import_stmt', fstmts)
 
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
