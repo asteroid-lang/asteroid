@@ -31,14 +31,14 @@ class ADB:
         self.breakpoints = {}
 
         #############################
-        # Flag if the debugger is continuing to the next breakpoint (continue) 
-        self.is_continuing = False
-
-        # OR next line (step)
-        self.is_stepping = False
-
-        # OR next top level statement (next)
-        self.is_next = True
+        # Execution control table
+        self.exc = {
+            'CONTINUE': False,
+            'STEP':     False,
+            'RETURN':   False,
+            'UNTIL':    False,
+            'NEXT':     True,
+        }
 
         #############################
         # A copy of the most recent return value
@@ -98,9 +98,12 @@ class ADB:
         Resets the debugger's default config
         """
         # Reset defaults
-        self.is_continuing = False
-        self.is_stepping = False
-        self.is_next = True
+        self.exc['CONTINUE'] = False
+        self.exc['STEP'] = False
+        self.exc['NEXT'] = True
+        self.exc['RETURN'] = False
+        self.exc['UNTIL'] = False
+
         self.top_level = True
         self.explicit_enabled = False
 
@@ -129,8 +132,8 @@ class ADB:
             2. The user is stepping through a function call
         """
         if self.explicit_enabled and \
-            (not self.is_continuing and self.lineinfo[0] == self.filename) or \
-            (self.is_stepping):
+            (not self.exc['CONTINUE'] and self.lineinfo[0] == self.filename) or \
+            (self.exc['STEP']):
 
             tl = self.make_tab_level()
             match(level):
@@ -430,9 +433,9 @@ class ADB:
         """
         Set the debugger movement configuration
         """
-        self.is_stepping = step
-        self.is_continuing = cont
-        self.is_next = next
+        self.exc['STEP'] = step
+        self.exc['CONTINUE'] = cont
+        self.exc['NEXT'] = next
 
     def display_macros(self):
         """
@@ -820,7 +823,7 @@ class ADB:
         """
         Run a command loop ~iff~ we're in explicit mode
         """
-        if self.is_stepping and self.explicit_enabled:
+        if self.exc['STEP'] and self.explicit_enabled:
             self.command_loop(in_pattern=True)
 
     def notify(self):
@@ -842,21 +845,21 @@ class ADB:
         """
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
-        if self.has_breakpoint_here() and not self.is_next:
+        if self.has_breakpoint_here() and not self.exc['NEXT']:
             self.message("Breakpoint")
             self.tick()
 
         # If we're at the top level and we're not continuing
         # to the next breakpoint, and we're going to the next statement
         # do a tick
-        elif self.top_level and self.is_next and not self.is_continuing:
+        elif self.top_level and self.exc['NEXT'] and not self.exc['CONTINUE']:
             if self.has_breakpoint_here():
                 self.message("Breakpoint")
             self.tick()
 
         # Otherwhise, if we're stepping through the program,
         # always tick
-        elif self.is_stepping:
+        elif self.exc['STEP']:
             self.tick()
         
         # Reset the top level so that nested statements don't come in

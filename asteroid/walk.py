@@ -1081,8 +1081,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # into this function call, effectively telling
         # the debugger to treat it as the top level
 
-        stepping = debugging and \
-            (debugger.is_stepping or debugger.is_continuing)
+        stepping = debugger_has_stepped()
 
         for s in stmts[1]:
             if stepping: debugger.set_top_level(True)
@@ -1264,8 +1263,7 @@ def try_stmt(node):
      (CATCH_LIST, (LIST, catch_list))) = node
 
     # did we step into the try block?
-    stepping = debugging and \
-        (debugger.is_stepping or debugger.is_continuing)
+    stepping = debugger_has_stepped()
 
     try:
         # Each statement in the try block is "top level"
@@ -2173,7 +2171,8 @@ def message_explicit(fmt_message, terms=None, level="primary",
     way as .format
 
     --------------------------------------------------------------
-    This function also supports three other options.
+    This function also supports three other options that shorten
+    common development patterns.
 
     increase: Increases the tab level after the message is written
     decrease: Decreases the tab level before the message is written
@@ -2257,6 +2256,10 @@ def decrease_tab_level():
 
         if debugger.tab_level < 0:
             debugger.tab_level = 0
+
+def debugger_has_stepped():
+    return debugging and \
+            (debugger.exc['STEP'] or debugger.exc['CONTINUE'])
 
 #########################################################################
 def debug_unify(term, pattern, unifying = True):
