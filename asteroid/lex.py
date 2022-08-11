@@ -60,7 +60,7 @@ keywords = {
 token_specs = [
 #   value:                                        display:      type:
     (r'[0-9]+([.][0-9]+)?((e|E)(\+|\-)?[0-9]+)?', "number",     'NUMBER'),
-    (r'"(\\"|\\.|[^"])*"',                         "string",     'STRING'),
+    (r'"([^"]|\\"|\\)*"',                         "string",     'STRING'),
     (r'(--.*)|(\#.*)',                            "comment",    'COMMENT'),
     (r'[a-zA-Z_][a-zA-Z_0-9]*',                   "variable",   'ID'),
     (r'\n',                                       "\n",         'NEWLINE'),
