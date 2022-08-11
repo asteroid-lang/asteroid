@@ -117,21 +117,28 @@ class Parser:
         dbg_print("parsing STMT_LIST")
 
         sl = []
-        while self.lexer.peek().type in stmt_lookahead:
+        while self.stmt_coming_up():
             sl += [('lineinfo', state.lineinfo)]
 
             # Get the statment
             stmt = self.stmt()
 
-            # If there's another stmt coming up, don't set the ret val
-            if self.lexer.peek().type in stmt_lookahead:
+            # This set of conditionals gives us the behavior we want
+            # wrt implicit return values. There's only one situation
+            # in which we want to set the return value. That is when
+            # a top level expression is the last in a stmt_list
+
+            # If there's a statement coming up or the current statement
+            # is not a top level expression, just append the statement
+            if self.stmt_coming_up() or stmt[0] != 'top-level-exp':
                 sl += [stmt]
 
-            # Else, the last stmt in a list can contain an implicit return
-            # Set the node accordingly
+            # Otherwhise, if there's no statement coming up and the
+            # last statement was a top level expression, set the
+            # ret val
             else:
                 sl += [('clear-ret-val',)]
-                sl += [('set-ret-val', stmt)]
+                sl += [('set-ret-val', stmt)]             
 
         return ('list', sl)
 
@@ -966,3 +973,8 @@ class Parser:
         body_list = self.body_defs()
 
         return ('function-exp', body_list)
+
+    ###########################################################################################
+    # Minor helper function
+    def stmt_coming_up(self):
+        return self.lexer.peek().type in stmt_lookahead
