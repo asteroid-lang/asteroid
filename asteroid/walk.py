@@ -1099,6 +1099,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         function_return_value.pop()
         return_value = val.value
 
+        # In this case, we want to try and 
+        if debugging and debugger.exc['RETURN']:
+            notify_debugger(at_return=True)
+
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
 
@@ -2201,7 +2205,7 @@ def message_explicit(fmt_message, terms=None, level="primary",
         if notify:      notify_explicit()
 
 #########################################################################
-def notify_debugger():
+def notify_debugger(at_return=False):
     """
     If the debugger is accepting notifications at the time of call,
     the debugger will pause and run the interactive prompt.
@@ -2210,7 +2214,7 @@ def notify_debugger():
         # We need to save the old lineinfo in case we go into a REPL
         old_lineinfo = state.lineinfo
 
-        debugger.notify()
+        debugger.notify(at_return)
 
         # Reset our lineinfo
         state.lineinfo = old_lineinfo

@@ -686,6 +686,14 @@ class ADB:
                 else:
                     self.message("No values have been returned yet")
 
+            case ('RETURN',):
+                if len(state.trace_stack) == 1:
+                    self.message("Cannot continue to return on the top level")
+                else:
+                    self.exc['RETURN'] = True
+                    self.set_movement(step=False, next=False, cont=False)
+                    exit_loop = True
+
             case ('EXPLICIT', set_explicit):
                 if set_explicit == False:
                     self.explicit_enabled = False
@@ -826,7 +834,7 @@ class ADB:
         if self.exc['STEP'] and self.explicit_enabled:
             self.command_loop(in_pattern=True)
 
-    def notify(self):
+    def notify(self, at_return=False):
         """
         Notify the debugger that a potential tick-point has
         occured and do the necessary checks to see if we can
@@ -861,6 +869,12 @@ class ADB:
         # always tick
         elif self.exc['STEP']:
             self.tick()
+
+        elif at_return and self.exc['RETURN']:
+            self.exc['RETURN'] = False
+            self.message('Return reached!')
+            self.tick()
+
         
         # Reset the top level so that nested statements don't come in
         self.set_top_level(False)
