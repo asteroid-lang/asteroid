@@ -865,16 +865,15 @@ class ADB:
                 self.message("Breakpoint")
             self.tick()
 
-        # Otherwhise, if we're stepping through the program,
-        # always tick
-        elif self.exc['STEP']:
-            self.tick()
-
         elif at_return and self.exc['RETURN']:
             self.exc['RETURN'] = False
             self.message('Return reached!')
             self.tick()
 
+        # Otherwhise, if we're stepping through the program,
+        # always tick
+        elif self.exc['STEP']:
+            self.tick()
         
         # Reset the top level so that nested statements don't come in
         self.set_top_level(False)

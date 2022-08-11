@@ -1071,8 +1071,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     try:
         function_return_value.append(None)
+
         # Flag to tell us if we actually want to step
-        # through to the net line of the function call
+        # through to the next line of the function call
 
         # We only want to do this if we're debugging
         # and we've stepped through to this point or
@@ -1080,17 +1081,28 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # flag tells us if we've stepped or continued 
         # into this function call, effectively telling
         # the debugger to treat it as the top level
-
         stepping = debugger_has_stepped()
-
+    
         for s in stmts[1]:
+            # Set the debugger's info reflect new "top level"
             if stepping: debugger.set_top_level(True)
 
+            # If we've hit a return and we're in continue-until-return
+            # mode, notify the debugger
+            if s[0] == 'return' and return_enabled():
+                notify_debugger(at_return=True)
+
+            # Then, walk
             walk(s)
 
+        # Pop the return value
         val = function_return_value.pop()
+
+        # If we have one, set it as the retval
         if val:
             return_value = val
+
+        # Otherwhise default the return value to none
         else:
             return_value = ('none', None)
 
@@ -1098,10 +1110,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # we got here because a return statement threw a return object
         function_return_value.pop()
         return_value = val.value
-
-        # In this case, we want to try and 
-        if debugging and debugger.exc['RETURN']:
-            notify_debugger(at_return=True)
 
     # coming back from a function call - restore caller's env
     state.lineinfo = old_lineinfo
@@ -2243,6 +2251,13 @@ def explicit_enabled():
     of explicit mode if debugging is enableds
     """
     return debugging and debugger.explicit_enabled
+
+
+def return_enabled():
+    """
+    Returns the state of return continuation
+    """
+    return debugging and debugger.exc['RETURN']
 
 #########################################################################
 def gen_t2s(node):
