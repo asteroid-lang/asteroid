@@ -1089,9 +1089,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
             # If we've hit a return and we're in continue-until-return
             # mode, notify the debugger
-            if s[0] == 'return' and return_enabled():
+            if return_enabled() and s[0] == 'return':
                 notify_debugger(at_return=True)
-
+                
             # Then, walk
             walk(s)
 

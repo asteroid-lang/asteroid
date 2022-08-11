@@ -429,7 +429,7 @@ class ADB:
             # Reset the start of line
             start_of_line = "  "
 
-    def set_movement(self, step=False, cont=False, next=False):
+    def set_exc(self, step=False, cont=False, next=False):
         """
         Set the debugger movement configuration
         """
@@ -691,7 +691,7 @@ class ADB:
                     self.message("Cannot continue to return on the top level")
                 else:
                     self.exc['RETURN'] = True
-                    self.set_movement(step=False, next=False, cont=False)
+                    self.set_exc(step=False, next=False, cont=False)
                     exit_loop = True
 
             case ('EXPLICIT', set_explicit):
@@ -704,17 +704,17 @@ class ADB:
 
             # Step
             case ('STEP', ):
-                self.set_movement(step=True)
+                self.set_exc(step=True)
                 exit_loop = True
 
             # Continue
             case ('CONTINUE', ):
-                self.set_movement(cont=True)
+                self.set_exc(cont=True)
                 exit_loop = True
 
             # Next
             case ('NEXT', ):
-                self.set_movement(next=True)
+                self.set_exc(next=True)
                 exit_loop = True
 
             # Break 
@@ -865,10 +865,14 @@ class ADB:
                 self.message("Breakpoint")
             self.tick()
 
+        # If we're at a return statement and we're continuing onto a return
+        # we need to first send the message that we've arrived and then
+        # set the execution control such that when the return statement
+        # is walked, we always catch it
         elif at_return and self.exc['RETURN']:
             self.exc['RETURN'] = False
             self.message('Return reached!')
-            self.tick()
+            self.set_exc(step=True)
 
         # Otherwhise, if we're stepping through the program,
         # always tick
