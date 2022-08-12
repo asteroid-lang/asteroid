@@ -1919,6 +1919,12 @@ def walk_stmt_list(stmts, step_state=None):
     # flag tells us if we've stepped or continued 
     # into this function call, effectively telling
     # the debugger to treat it as the top level
+
+    # This also allows us to keep loop execution
+    # control working with the debugger. Meaning
+    # we can do a "next" on the last line in a 
+    # loop and go back to the top as opposed to the
+    # next line after the loop
     if step_state:
         stepping = step_state
     else:
@@ -1929,6 +1935,7 @@ def walk_stmt_list(stmts, step_state=None):
         if debugging:
             # Set the debugger's info reflect new "top level"
             if stepping: debugger.set_top_level(True)
+
             # If we've hit a return and we're in continue-until-return
             # mode, notify the debugger
             if debugging and \
