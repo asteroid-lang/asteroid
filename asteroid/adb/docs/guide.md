@@ -83,6 +83,16 @@ These shortenings are shown in parenthesis (`c(ommand)`).
 ### Next
 `n(ext)` continue onto the next executing line at the current scope.
 
+## Until
+`u(ntil) ?lineno` By default, continue execution until a line with a greater number
+than the current one is reached.
+
+Given an optional line number, continue execution until a line number greater than
+or equal to that number is reached
+
+## Return
+`(r(et))urn` Continue execution until the return of the current function is reached
+
 ### Breakpoints
 `b(reak) number*` set a breakpoint at one or more lines. Running without any arguments
 lists your breakpoints.
@@ -125,6 +135,9 @@ eval("x")
 
 ### !
 `!` Open up a repl in the current context
+
+## \_\_retval\_\_
+`(_)_retval` Print the most recent return value
 
 ### Help
 `h(elp) (command)?` gives help for a given command. Running just `help` shows all available commands.
