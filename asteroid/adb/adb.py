@@ -16,17 +16,6 @@ class ADB:
     asteroid debugger
     """
     def __init__(self):
-        """
-        Major distinction notice:
-            stepping:   Go to next executing line
-            continuing: Go to next breakpoint
-            next:       Go to next top level line (i.e. top level statement) {Can be a breakpoint}
-
-        State management is pretty important so I've segmented it into several pieces.
-            * Stepping/continuation/next level (What do we do on next tick?)
-            * Top level (Is this statement at the top level?)
-                * Explicit (Are we just showing everything for a little bit?)
-        """
         # Table of breakpoints and conditions
         self.breakpoints = {}
 
@@ -96,6 +85,42 @@ class ADB:
         #############################
         # Old lineinfo to be stored when until command is used
         self.old_lineinfo = None
+
+    def macro_to_string(self, macro_name):
+        contents = self.macros[macro_name]
+
+        outstr = ""
+
+        for cmd in contents:
+            match(cmd):
+                case ('MACRO',):                    outstr += 'macro'
+                case ('EVAL', value):               outstr += 'eval("{}")'.format(value)
+                case ('BANG', ):                    outstr += '!'
+                case ('HELP', name):                outstr += 'help {}'.format(name)
+                case ('UP',):                       outstr += '<'
+                case ('DOWN',):                     outstr += '>'
+                case ('WHERE',):                    outstr += 'where'
+                case ('LONGLIST',):                 outstr += 'longlist'
+                case ('LIST',):                     outstr += 'list'
+                case ('RETVAL',):                   outstr += '__retval__'
+                case ('UNTIL',):                    outstr += 'until'
+                case ('RETURN',):                   outstr += 'return'
+                case ('EXPLICIT', set_explicit):    outstr += 'explicit {}'.format(set_explicit if set_explicit else "")
+                case ('STEP', ):                    outstr += 'step'
+                case ('CONTINUE', ):                outstr += 'continue'
+                case ('NEXT', ):                    outstr += 'next'
+
+                # TODO: (OWM) print out conditions for these
+                case ('BREAK', nums, conds):        outstr += "break {}".format(' '.join([str(n) for n in nums]))
+
+                case ('DELETE', nums):              outstr += "delete {}".format(' '.join([str(n) for n in nums]))
+                case ('NAME', v):                   outstr += str(v)
+                case ('QUIT', ):                    outstr += 'quit'
+                case ('NOOP', ):                    outstr += 'noop'
+
+            outstr += '; '
+
+        return outstr
 
     def reset_defaults(self):
         """
@@ -448,7 +473,7 @@ class ADB:
         """
         for m in self.macros:
             print("* {} : {}".format(
-                m, self.macros[m]
+                m, self.macro_to_string(m)
             ))
 
     def set_new_macro(self, name, l):
@@ -853,11 +878,6 @@ class ADB:
 
         This function is a little complicated because the
         behavior is complicated.
-
-        Hierarchy of ticking:
-            Step
-            Breakpoint (Continue)
-            Next
 
         Explicit mode is a mode in which extra steps in
         computations are revealed to the user
