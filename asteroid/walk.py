@@ -1351,8 +1351,9 @@ def loop_stmt(node):
     (STMT_LIST, body) = body_stmts
 
     try:
+        stepping = debugger_has_stepped()
         while True:
-            walk_stmt_list(body)
+            walk_stmt_list(body, step_state=stepping)
     except Break:
         pass
 
@@ -1367,9 +1368,11 @@ def while_stmt(node):
     (STMT_LIST, body) = body_stmts
 
     try:
+        stepping = debugger_has_stepped()
+
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
         while cond_val:
-            walk_stmt_list(body)
+            walk_stmt_list(body, step_state=stepping)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
     except Break:
         pass
@@ -1385,8 +1388,9 @@ def repeat_stmt(node):
     (STMT_LIST, body) = body_stmts
 
     try:
+        stepping = debugger_has_stepped()
         while True:
-            walk_stmt_list(body)
+            walk_stmt_list(body, step_state=stepping)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
             if cond_val:
                 break
@@ -1425,6 +1429,7 @@ def for_stmt(node):
     #             print y.
     #      end for
     try:
+        stepping = debugger_has_stepped()
         for term in list_val:
             try:
                 unifiers = unify(term,pattern)
@@ -1432,7 +1437,7 @@ def for_stmt(node):
                 pass
             else:
                 declare_unifiers(unifiers)
-                walk_stmt_list(stmt_list)
+                walk_stmt_list(stmt_list, step_state=stepping)
                 
     except Break:
         pass
@@ -2189,11 +2194,7 @@ def message_explicit(fmt_message, terms=None, level="primary",
     from types import GeneratorType
 
     if explicit_enabled():
-        if decrease:
-            debugger.tab_level = debugger.tab_level - 1
-
-            if debugger.tab_level < 0:
-                debugger.tab_level = 0
+        if decrease: decrease_tab_level()
 
         if not terms:
             debugger.message_explicit(fmt_message, level)
@@ -2264,6 +2265,13 @@ def gen_t2s(node):
 def debugger_has_stepped():
     return debugging and \
             (debugger.exc['STEP'] or debugger.exc['CONTINUE'])
+
+def decrease_tab_level():
+    if debugging:
+        debugger.tab_level = debugger.tab_level - 1
+
+        if debugger.tab_level < 0:
+            debugger.tab_level = 0
 
 #########################################################################
 def debug_unify(term, pattern, unifying = True):
