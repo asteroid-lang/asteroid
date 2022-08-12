@@ -1938,8 +1938,14 @@ def walk_stmt_list(stmts, step_state=None):
 
             # If we've hit a return and we're in continue-until-return
             # mode, notify the debugger
+
+            # TODO: (OWM) get this working for implicit returns as well.
+            # This currently doesn't work because you can have an implicit
+            # return before a return statement. In this case, the return
+            # statement consumes the return behavior because it is the
+            # final statement in the stmt_list
             if debugging and \
-                debugger.exc['RETURN'] and s[0] in ['return', 'set-ret-val']:
+                debugger.exc['RETURN'] and s[0] in ['return']:
                 
                 notify_debugger(at_return=True)
             

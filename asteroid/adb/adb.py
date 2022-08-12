@@ -862,6 +862,7 @@ class ADB:
         Explicit mode is a mode in which extra steps in
         computations are revealed to the user
         """
+
         # If we have a breakpoint here and we're not trying to go
         # to the next top level statement, then tick
         if self.has_breakpoint_here() and not self.exc['NEXT']:
@@ -883,19 +884,18 @@ class ADB:
         elif at_return and self.exc['RETURN']:
             self.exc['RETURN'] = False
             self.message('Return reached!')
-            self.set_exc(step=True)
+            self.set_exc(next=True)
 
         # If the until command is learactive, we basically continue until we're
         # at a greater linenumber within the file.
         elif self.exc['UNTIL']:
-            self.exc['UNTIL'] = False
-
             # Grab the old and current lineinfo
             (old_file_name, old_lineno) = self.old_lineinfo
             (cur_file_name, cur_lineno) = self.lineinfo
             
             # Compare them
             if (old_file_name == cur_file_name) and (cur_lineno > old_lineno):
+                self.exc['UNTIL'] = False
                 self.tick()
 
         # Otherwhise, if we're stepping through the program, always tick
