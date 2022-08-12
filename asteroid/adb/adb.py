@@ -686,6 +686,9 @@ class ADB:
                 else:
                     self.message("No values have been returned yet")
 
+            case ('UNTIL',):
+                self.message("UNTIL NOT IMPLEMENTED YET")
+
             case ('RETURN',):
                 if len(state.trace_stack) == 1:
                     self.message("Cannot continue to return on the top level")

@@ -27,6 +27,7 @@ class DebuggerLexer:
             ('QUIT',        r'\bquit\b|\bq\b'),
 
             ('RETURN',      r'\breturn\b|\bret\b|\br\b'),
+            ('UNTIL',       r'\buntil\b|\bu\b'),
             ('RETVAL',      r'\b__retval__\b|\b_\b'),
             
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
@@ -222,7 +223,7 @@ class DebuggerParser:
             case 'EXPLICIT': return self.explicit_cmd()
 
             case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETURN' | 'RETVAL' | \
-                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
+                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE' | 'UNTIL':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)
