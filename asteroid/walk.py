@@ -212,7 +212,6 @@ def __unify(term, pattern, unifying = True ):
         if state.constraint_lvl:
             state.symbol_table.pop_scope()
 
-
         if bool_val[1]:
             message_explicit("Condition met, {}",
                 [gen_t2s(cond_exp)], decrease=True
@@ -2166,13 +2165,17 @@ def check_redundancy( body_list, f_name ):
 # explicit_enabled:
 #   A simple helper function. Equivalent to `debugging and debugger.explicit_enabled`
 # 
+# decrease_tab_level:
+#   A simple helper function to manage debugger tab level decrementing.
+#
+# debugger_has_stepped::
+#   Helper function that returns if the debugger has stepped into a function
+#   body or other compound statement
+#
 # gen_t2s:
 #   A generator function used in place of term2string in message_explicit calls.
 #   This allows the computation to be deferred or completely ignored. Much like
 #   a function returning a lambda function
-#
-# decrease_tab_level:
-#   A simple helper function to manage debugger tab level decrementing.
 #
 # debug_unify:
 #   A wrapper for the normal unify function that automatically decreases
@@ -2276,10 +2279,17 @@ def gen_t2s(node):
 
 #########################################################################
 def debugger_has_stepped():
+    """
+    Returns the step/continue state of the debugger
+    """
     return debugging and \
             (debugger.exc['STEP'] or debugger.exc['CONTINUE'])
 
+#########################################################################
 def decrease_tab_level():
+    """
+    Decreases/handles the debugger's tab level
+    """
     if debugging:
         debugger.tab_level = debugger.tab_level - 1
 
