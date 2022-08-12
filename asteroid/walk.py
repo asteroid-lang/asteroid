@@ -1930,7 +1930,9 @@ def walk_stmt_list(stmts, step_state=None):
             if stepping: debugger.set_top_level(True)
             # If we've hit a return and we're in continue-until-return
             # mode, notify the debugger
-            if return_enabled() and s[0] in ['return', 'set-ret-val']:
+            if debugging and \
+                debugger.exc['RETURN'] and s[0] in ['return', 'set-ret-val']:
+                
                 notify_debugger(at_return=True)
             
         walk(s)
@@ -2191,7 +2193,11 @@ def message_explicit(fmt_message, terms=None, level="primary",
     from types import GeneratorType
 
     if explicit_enabled():
-        if decrease: decrease_tab_level()
+        if decrease:
+            debugger.tab_level = debugger.tab_level - 1
+
+            if debugger.tab_level < 0:
+                debugger.tab_level = 0
 
         if not terms:
             debugger.message_explicit(fmt_message, level)
@@ -2250,13 +2256,6 @@ def explicit_enabled():
     return debugging and debugger.explicit_enabled
 
 #########################################################################
-def return_enabled():
-    """
-    Returns the state of return continuation
-    """
-    return debugging and debugger.exc['RETURN']
-
-#########################################################################
 def gen_t2s(node):
     """
     Generator function for term2string. This cuts down on
@@ -2266,12 +2265,6 @@ def gen_t2s(node):
     yield term2string(node)
 
 #########################################################################
-def decrease_tab_level():
-    if debugging:
-        debugger.tab_level = debugger.tab_level - 1
-
-        if debugger.tab_level < 0:
-            debugger.tab_level = 0
 
 def debugger_has_stepped():
     return debugging and \
