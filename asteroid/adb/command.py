@@ -14,20 +14,22 @@ class DebuggerLexer:
         #   type:          value:
             ('STRING',     r'"(\\"|\\.|[^"])*"'),
             
-            ('STEP',        r'\bstep\b|\bs\b'),
-            ('EVAL',        r'\beval\b'),
-            ('CONTINUE',    r'\bcontinue\b|\bcont\b|\bc\b'),
             ('NEXT',        r'\bnext\b|\bn\b'),
+            ('STEP',        r'\bstep\b|\bs\b'),
+            ('CONTINUE',    r'\bcontinue\b|\bcont\b|\bc\b'),
+            ('RETURN',      r'\breturn\b|\bret\b|\br\b'),
+            ('UNTIL',       r'\buntil\b|\bu\b'),
+
+            ('EVAL',        r'\beval\b'),
+            ('BANG',        r'!'),
+
             ('BREAK',       r'\bbreak\b|\bb\b'),
             ('DELETE',      r'\bdelete\b|\bdel\b|\bd\b'),
-            ('BANG',        r'!'),
+
             ('MACRO',       r'\bmacro\b'),
             ('LIST',        r'\blist\b|\bl\b'),
             ('LONGLIST',    r'\blonglist\b|\bll\b'),
-            ('QUIT',        r'\bquit\b|\bq\b'),
 
-            ('RETURN',      r'\breturn\b|\bret\b|\br\b'),
-            ('UNTIL',       r'\buntil\b|\bu\b'),
             ('RETVAL',      r'\b__retval__\b|\b_\b'),
             
             ('EXPLICIT',    r'\bexplicit\b|\be\b'),
@@ -47,6 +49,8 @@ class DebuggerLexer:
             ('COMMA',       r','),
             ('LPAREN',      r'\('),
             ('RPAREN',      r'\)'),
+
+            ('QUIT',        r'\bquit\b|\bq\b'),
 
             ('NAME',        r'[a-zA-Z_\$][a-zA-Z0-9_\$]*'),
             ('WHITESPACE',  r'[ \t\n]+'),
