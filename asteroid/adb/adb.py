@@ -93,6 +93,10 @@ class ADB:
         self.original_config = None     # The original config we started with (before moving between frames)
         self.original_lineinfo = None   # The original lineinfo we started with (before moving between frames)
 
+        #############################
+        # Old lineinfo to be stored when until command is used
+        self.old_lineinfo = None
+
     def reset_defaults(self):
         """
         Resets the debugger's default config
@@ -106,6 +110,7 @@ class ADB:
 
         self.top_level = True
         self.explicit_enabled = False
+        self.old_lineinfo = None
 
     def reset_config(self):
         """
@@ -687,7 +692,10 @@ class ADB:
                     self.message("No values have been returned yet")
 
             case ('UNTIL',):
-                self.message("UNTIL NOT IMPLEMENTED YET")
+                self.exc['UNTIL'] = True
+                self.old_lineinfo = self.lineinfo
+                self.set_exc()
+                exit_loop = True
 
             case ('RETURN',):
                 if len(state.trace_stack) == 1:
@@ -876,6 +884,19 @@ class ADB:
             self.exc['RETURN'] = False
             self.message('Return reached!')
             self.set_exc(step=True)
+
+        # If the until command is active, we basically continue until we're
+        # at a greater linenumber within the file.
+        elif self.exc['UNTIL']:
+            self.exc['UNTIL'] = False
+
+            # Grab the old and current lineinfo
+            (old_file_name, old_lineno) = self.old_lineinfo
+            (cur_file_name, cur_lineno) = self.lineinfo
+            
+            # Compare them
+            if (old_file_name == cur_file_name) and (cur_lineno > old_lineno):
+                self.tick()
 
         # Otherwhise, if we're stepping through the program,
         # always tick
