@@ -1038,7 +1038,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     # OWM: The following segment is a repeat of the bottom of this function.
     # We need to do this because redundant patterns can break scope and
-    # some debugger features as they exit computation.
+    # some debugger and state features as they exit computation.
 
     # Check for useless patterns
     try:
