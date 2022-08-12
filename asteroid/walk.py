@@ -1094,8 +1094,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.lineinfo = old_lineinfo
 
     # Keep debugger up to date
-    if debugging:
-        debugger.set_lineinfo(state.lineinfo)
+    if debugging: debugger.set_lineinfo(state.lineinfo)
 
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
@@ -1164,6 +1163,7 @@ def declare_unifiers(unifiers):
 
             # Print our message
             message_explicit(fstring, terms)
+
 #########################################################################
 # node functions
 #########################################################################
@@ -1199,10 +1199,6 @@ def assert_stmt(node):
     assert exp_val[1], 'assert failed'
 #########################################################################
 def unify_stmt(node):
-    # owm - How can we get that nice deref listing behavior?
-    # The thing is, we would have to deref every kind of pattern
-    # recursively, which would be a hassle.
-
     notify_debugger()
 
     (UNIFY, pattern, exp) = node
@@ -2265,7 +2261,6 @@ def gen_t2s(node):
     yield term2string(node)
 
 #########################################################################
-
 def debugger_has_stepped():
     return debugging and \
             (debugger.exc['STEP'] or debugger.exc['CONTINUE'])
