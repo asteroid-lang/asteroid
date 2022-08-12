@@ -1072,28 +1072,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     try:
         function_return_value.append(None)
 
-        # Flag to tell us if we actually want to step
-        # through to the next line of the function call
-
-        # We only want to do this if we're debugging
-        # and we've stepped through to this point or
-        # have continued to this point. Basically, this
-        # flag tells us if we've stepped or continued 
-        # into this function call, effectively telling
-        # the debugger to treat it as the top level
-        stepping = debugger_has_stepped()
-    
-        for s in stmts[1]:
-            # Set the debugger's info reflect new "top level"
-            if stepping: debugger.set_top_level(True)
-
-            # If we've hit a return and we're in continue-until-return
-            # mode, notify the debugger
-            if return_enabled() and s[0] in ['return', 'set-ret-val']:
-                notify_debugger(at_return=True)
-                
-            # Then, walk
-            walk(s)
+        walk_stmt_list(stmts)
 
         # Pop the return value
         val = function_return_value.pop()
@@ -1274,20 +1253,13 @@ def try_stmt(node):
      (STMT_LIST, try_stmts),
      (CATCH_LIST, (LIST, catch_list))) = node
 
-    # did we step into the try block?
     stepping = debugger_has_stepped()
-
     try:
-        # Each statement in the try block is "top level"
-        for s in try_stmts[1]:
-            if stepping: debugger.set_top_level(True)
-
-            walk(s)
+        walk_stmt_list(try_stmts)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
     # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
     #       by constructing Exception objects - see prologue.ast
-
     except ThrowValue as inst:
         except_val = inst.value
         inst_val = inst
@@ -1367,10 +1339,7 @@ def try_stmt(node):
             pass
         else:
             declare_unifiers(unifiers)
-            for s in catch_stmts[1]:
-                if stepping: debugger.set_top_level(True)
-                walk(s)     
-
+            walk_stmt_list(catch_stmts, step_state=stepping)
             return
 
     # no exception handler found - rethrow the exception
@@ -1387,7 +1356,7 @@ def loop_stmt(node):
 
     try:
         while True:
-            walk(body)
+            walk_stmt_list(body)
     except Break:
         pass
 
@@ -1404,7 +1373,7 @@ def while_stmt(node):
     try:
         (COND_TYPE, cond_val) = map2boolean(walk(cond))
         while cond_val:
-            walk(body)
+            walk_stmt_list(body)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
     except Break:
         pass
@@ -1421,7 +1390,7 @@ def repeat_stmt(node):
 
     try:
         while True:
-            walk(body)
+            walk_stmt_list(body)
             (COND_TYPE, cond_val) = map2boolean(walk(cond))
             if cond_val:
                 break
@@ -1467,7 +1436,7 @@ def for_stmt(node):
                 pass
             else:
                 declare_unifiers(unifiers)
-                walk(stmt_list)
+                walk_stmt_list(stmt_list)
                 
     except Break:
         pass
@@ -1492,7 +1461,7 @@ def if_stmt(node):
         (BOOLEAN, cond_val) = map2boolean(walk(cond))
 
         if cond_val:
-            walk(stmts)
+            walk_stmt_list(stmts)
             break
 #########################################################################
 def struct_def_stmt(node):
@@ -1939,6 +1908,34 @@ def set_ret_val(node):
     return
 
 #########################################################################
+def walk_stmt_list(stmts, step_state=None):
+    # Flag to tell us if we actually want to step
+    # through to the next line of the stmt list
+    
+    # We only want to do this if we're debugging
+    # and we've stepped through to this point or
+    # have continued to this point. Basically, this
+    # flag tells us if we've stepped or continued 
+    # into this function call, effectively telling
+    # the debugger to treat it as the top level
+    if step_state:
+        stepping = step_state
+    else:
+        stepping = debugger_has_stepped()
+
+    for s in stmts[1]:
+
+        if debugging:
+            # Set the debugger's info reflect new "top level"
+            if stepping: debugger.set_top_level(True)
+            # If we've hit a return and we're in continue-until-return
+            # mode, notify the debugger
+            if return_enabled() and s[0] in ['return', 'set-ret-val']:
+                notify_debugger(at_return=True)
+            
+        walk(s)
+
+#########################################################################
 # walk
 #########################################################################
 def walk(node):
@@ -2252,7 +2249,7 @@ def explicit_enabled():
     """
     return debugging and debugger.explicit_enabled
 
-
+#########################################################################
 def return_enabled():
     """
     Returns the state of return continuation
