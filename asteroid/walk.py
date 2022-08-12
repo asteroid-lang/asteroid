@@ -106,8 +106,8 @@ def __unify(term, pattern, unifying = True ):
                 [gen_t2s( ('list', pattern) ), gen_t2s( ('list', term) )],
                 increase=True, notify=True)
 
+            # Make our unifier(s)
             unifier = []
-
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
 

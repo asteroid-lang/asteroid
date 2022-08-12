@@ -885,7 +885,7 @@ class ADB:
             self.message('Return reached!')
             self.set_exc(step=True)
 
-        # If the until command is active, we basically continue until we're
+        # If the until command is learactive, we basically continue until we're
         # at a greater linenumber within the file.
         elif self.exc['UNTIL']:
             self.exc['UNTIL'] = False
@@ -898,8 +898,7 @@ class ADB:
             if (old_file_name == cur_file_name) and (cur_lineno > old_lineno):
                 self.tick()
 
-        # Otherwhise, if we're stepping through the program,
-        # always tick
+        # Otherwhise, if we're stepping through the program, always tick
         elif self.exc['STEP']:
             self.tick()
         
