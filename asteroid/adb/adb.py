@@ -86,7 +86,6 @@ class ADB:
         # Old lineinfo to be stored when until command is used
         self.old_lineinfo = None
 
-
     def reset_defaults(self):
         """
         Resets the debugger's default config
@@ -438,8 +437,7 @@ class ADB:
         """
         for m in self.macros:
             print("* {} : {}".format(
-                m, self.macro_to_string(m)
-            ))
+                m, self.macro_to_string(m)))
     
     def macro_to_string(self, macro_name):
         contents = self.macros[macro_name]
@@ -460,15 +458,20 @@ class ADB:
                 case ('RETVAL',):                   outstr += '__retval__'
                 case ('UNTIL',):                    outstr += 'until'
                 case ('RETURN',):                   outstr += 'return'
-                case ('EXPLICIT', set_explicit):    outstr += 'explicit {}'.format(set_explicit if set_explicit else "")
+                case ('EXPLICIT', set_explicit):    outstr += 'explicit {}'.format(
+                    set_explicit if set_explicit else "")
+
                 case ('STEP', ):                    outstr += 'step'
                 case ('CONTINUE', ):                outstr += 'continue'
                 case ('NEXT', ):                    outstr += 'next'
 
                 # TODO: (OWM) print out conditions for these
-                case ('BREAK', nums, conds):        outstr += "break {}".format(' '.join([str(n) for n in nums]))
+                case ('BREAK', nums, conds):        outstr += "break {}".format(
+                    ' '.join([str(n) for n in nums]))
 
-                case ('DELETE', nums):              outstr += "delete {}".format(' '.join([str(n) for n in nums]))
+                case ('DELETE', nums):              outstr += "delete {}".format(
+                    ' '.join([str(n) for n in nums]))
+
                 case ('NAME', v):                   outstr += str(v)
                 case ('QUIT', ):                    outstr += 'quit'
                 case ('NOOP', ):                    outstr += 'noop'
