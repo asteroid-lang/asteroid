@@ -11,6 +11,7 @@ import os
 from asteroid.interp import interp
 from asteroid.repl import repl
 from asteroid.version import VERSION
+from asteroid.adb import adb
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))
@@ -63,7 +64,6 @@ def main():
         flags[fl] = not flags[fl]
 
     if flags['--adb']:
-        from .adb import adb
         db = adb.ADB()
         db.run(sys.argv[-1])
         sys.exit(0)
