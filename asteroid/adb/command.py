@@ -216,8 +216,16 @@ class DebuggerParser:
             set_exp = (self.dlx.pointer().type == 'ON')
             self.dlx.next()
 
-        return ('EXPLICIT', set_exp)
-    
+    def until_cmd(self):
+        self.dlx.match('UNTIL')
+        
+        n = None
+        if self.dlx.pointer().type == 'NUM':
+            n = self.dlx.pointer().value
+            self.dlx.next()
+        
+        return ('UNTIL', n)
+
     def command(self):
         match(self.dlx.pointer().type):
             case 'EVAL':     return self.eval_cmd()
@@ -225,9 +233,10 @@ class DebuggerParser:
             case 'DELETE':   return self.delete_cmd()
             case 'HELP':     return self.help_cmd()
             case 'EXPLICIT': return self.explicit_cmd()
+            case 'UNTIL':    return self.until_cmd()
 
             case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETURN' | 'RETVAL' | \
-                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE' | 'UNTIL':
+                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
                 t = self.dlx.pointer().type
                 self.dlx.match(t)
                 return (t,)

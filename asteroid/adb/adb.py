@@ -456,7 +456,7 @@ class ADB:
                 case ('LONGLIST',):                 outstr += 'longlist'
                 case ('LIST',):                     outstr += 'list'
                 case ('RETVAL',):                   outstr += '__retval__'
-                case ('UNTIL',):                    outstr += 'until'
+                case ('UNTIL', lineno):             outstr += 'until{}'.format((" "+lineno) if lineno else "")
                 case ('RETURN',):                   outstr += 'return'
                 case ('EXPLICIT', set_explicit):    outstr += 'explicit {}'.format(
                     set_explicit if set_explicit else "")
@@ -720,9 +720,14 @@ class ADB:
                 else:
                     self.message("No values have been returned yet")
 
-            case ('UNTIL',):
+            case ('UNTIL', lineno):
                 self.exc['UNTIL'] = True
-                self.old_lineinfo = self.lineinfo
+
+                if lineno:
+                    self.old_lineinfo = (self.lineinfo[0], int(lineno) - 1)
+                else:
+                    self.old_lineinfo = self.lineinfo
+    
                 self.set_exc()
                 exit_loop = True
 
