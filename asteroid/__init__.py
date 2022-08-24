@@ -63,11 +63,6 @@ def main():
             sys.exit(0)
         flags[fl] = not flags[fl]
 
-    if flags['--adb']:
-        db = adb.ADB()
-        db.run(sys.argv[-1])
-        sys.exit(0)
-
     if flags['-h']:
         display_help()
         sys.exit(0)
@@ -79,6 +74,9 @@ def main():
     input_file = sys.argv[-1]
 
     if input_file[0] == '-':
+        if flags['--adb']:
+            print("ADB is not available in repl mode")
+            sys.exit(1)
         repl(redundancy=flags['-r'],
              prologue=flags['-p'],
              functional_mode=flags['-F'])
@@ -86,6 +84,11 @@ def main():
 
     if not os.path.isfile(input_file):
         print("unknown file {}".format(input_file))
+        sys.exit(0)
+
+    if flags['--adb']:
+        db = adb.ADB()
+        db.run(input_file)
         sys.exit(0)
     
     f = open(input_file, 'r')
