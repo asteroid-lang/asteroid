@@ -130,13 +130,12 @@ class ADB:
             (self.exc['STEP']):
 
             tl = self.make_tab_level()
-            match(level):
-                case "primary":
-                    print("{}- {}".format(tl, message))
-                case "secondary":
-                    print("{} ** {}".format(tl, message))
-                case "tertiary":
-                    print("{}  * {}".format(tl, message))
+            if level == 'primary':
+                print("{}- {}".format(tl, message))
+            elif level == 'secondary':
+                print("{} ** {}".format(tl, message))
+            else:
+                print("{}  * {}".format(tl, message))
 
     def message(self, message):
         """
