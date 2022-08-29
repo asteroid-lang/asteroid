@@ -10,6 +10,16 @@ command_description_table = {
     'step':         """[s]tep
     Step to the next executing line
     """,
+
+    'until':        """[u]ntil ?lineno
+    Without a given line number, continue execution until a line that is greater than the current
+    one is reached.
+
+    With a line number, continue execution until a line that is greater than or equal to that one
+    is reached.
+
+    In both cases, stop when the current frame returns.
+    """,
     
     'continue':     """[[c]ont]inue
     Continue to the next breakpoint

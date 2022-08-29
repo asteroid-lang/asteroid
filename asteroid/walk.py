@@ -1909,8 +1909,9 @@ def set_ret_val(node):
 
 #########################################################################
 def walk_stmt_list(stmts, step_state=None):
-    # Flag to tell us if we actually want to step
-    # through to the next line of the stmt list
+    # step_stae is a flag to tell us if we actually
+    # want to step through to the next line of the stmt
+    # list while debugging
     
     # We only want to do this if we're debugging
     # and we've stepped through to this point or
