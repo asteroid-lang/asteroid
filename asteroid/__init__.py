@@ -75,7 +75,7 @@ def main():
 
     if input_file[0] == '-':
         if flags['--adb']:
-            print("ADB is not available in repl mode")
+            print("Please provide a file to debug")
             sys.exit(1)
         repl(redundancy=flags['-r'],
              prologue=flags['-p'],
