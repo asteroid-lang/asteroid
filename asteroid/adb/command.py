@@ -215,6 +215,8 @@ class DebuggerParser:
         if self.dlx.pointer().type in ['ON', 'OFF']:
             set_exp = (self.dlx.pointer().type == 'ON')
             self.dlx.next()
+        
+        return ('EXPLICIT', set_exp)
 
     def until_cmd(self):
         self.dlx.match('UNTIL')
@@ -227,28 +229,29 @@ class DebuggerParser:
         return ('UNTIL', n)
 
     def command(self):
-        match(self.dlx.pointer().type):
-            case 'EVAL':     return self.eval_cmd()
-            case 'BREAK':    return self.break_cmd()
-            case 'DELETE':   return self.delete_cmd()
-            case 'HELP':     return self.help_cmd()
-            case 'EXPLICIT': return self.explicit_cmd()
-            case 'UNTIL':    return self.until_cmd()
-
-            case 'BANG' | 'LONGLIST' | 'LIST' | 'QUIT' | 'RETURN' | 'RETVAL' | \
-                 'STEP' | 'CONTINUE' | 'NEXT' | 'UP' | 'DOWN' | 'WHERE':
-                t = self.dlx.pointer().type
-                self.dlx.match(t)
-                return (t,)
-
-            case 'NAME':
-                n = self.dlx.match('NAME').value
-                return ('NAME', n)
-
-            case 'EOF' | 'SEMI':
-                return ('NOOP',)
-
-            case _:
-                raise ValueError("Unknown command: {}".format(
-                    str(self.dlx.pointer().value)
-                ))
+        t = self.dlx.pointer().type
+        
+        if t ==  'EVAL':     return self.eval_cmd()
+        elif t ==  'BREAK':    return self.break_cmd()
+        elif t ==  'DELETE':   return self.delete_cmd()
+        elif t ==  'HELP':     return self.help_cmd()
+        elif t ==  'EXPLICIT': return self.explicit_cmd()
+        elif t ==  'UNTIL':    return self.until_cmd()
+        
+        elif t in ['BANG', 'LONGLIST', 'LIST', 'QUIT', 'RETURN', 'RETVAL',
+             'STEP', 'CONTINUE', 'NEXT', 'UP', 'DOWN', 'WHERE']:
+            t = self.dlx.pointer().type
+            self.dlx.match(t)
+            return (t,)
+        
+        elif t ==  'NAME':
+            n = self.dlx.match('NAME').value
+            return ('NAME', n)
+        
+        elif t in  ['EOF', 'SEMI']:
+            return ('NOOP',)
+        
+        else:
+            raise ValueError("Unknown command: {}".format(
+                str(self.dlx.pointer().value)
+            ))

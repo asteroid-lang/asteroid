@@ -148,6 +148,7 @@ class ADB:
         (module, lineno) = state.lineinfo
         print("\nERROR: {}: {}: {}".format(module, lineno, e))
         dump_trace()
+        raise e
         
         # Set out lineinfo here to be sure that the file is in
         # our program_text dictionary
@@ -444,36 +445,33 @@ class ADB:
         outstr = ""
 
         for cmd in contents:
-            match(cmd):
-                case ('MACRO',):                    outstr += 'macro'
-                case ('EVAL', value):               outstr += 'eval("{}")'.format(value)
-                case ('BANG', ):                    outstr += '!'
-                case ('HELP', name):                outstr += 'help {}'.format(name)
-                case ('UP',):                       outstr += '<'
-                case ('DOWN',):                     outstr += '>'
-                case ('WHERE',):                    outstr += 'where'
-                case ('LONGLIST',):                 outstr += 'longlist'
-                case ('LIST',):                     outstr += 'list'
-                case ('RETVAL',):                   outstr += '__retval__'
-                case ('UNTIL', lineno):             outstr += 'until{}'.format((" "+lineno) if lineno else "")
-                case ('RETURN',):                   outstr += 'return'
-                case ('EXPLICIT', set_explicit):    outstr += 'explicit {}'.format(
-                    set_explicit if set_explicit else "")
+            if cmd == ('MACRO',):                      outstr += 'macro'
+            elif cmd[0] == 'EVAL':                     outstr += 'eval("{}")'.format(cmd[1])
+            elif cmd == ('BANG', ):                    outstr += '!'
+            elif cmd[0] == 'HELP':                     outstr += 'help {}'.format(cmd[1])
+            elif cmd == ('UP',):                       outstr += '<'
+            elif cmd == ('DOWN',):                     outstr += '>'
+            elif cmd == ('WHERE',):                    outstr += 'where'
+            elif cmd == ('LONGLIST',):                 outstr += 'longlist'
+            elif cmd == ('LIST',):                     outstr += 'list'
+            elif cmd == ('RETVAL',):                   outstr += '__retval__'
+            elif cmd[0] ==  'UNTIL':                   outstr += 'until{}'.format((" "+cmd[1]) if cmd[1] else "")
+            elif cmd == ('RETURN',):                   outstr += 'return'
+            elif cmd[0] == 'EXPLICIT':                 outstr += 'explicit {}'.format(
+                cmd[1] if cmd[1] else "")
+            elif cmd == ('STEP', ):                    outstr += 'step'
+            elif cmd == ('CONTINUE', ):                outstr += 'continue'
+            elif cmd == ('NEXT', ):                    outstr += 'next'
 
-                case ('STEP', ):                    outstr += 'step'
-                case ('CONTINUE', ):                outstr += 'continue'
-                case ('NEXT', ):                    outstr += 'next'
-
-                # TODO: (OWM) print out conditions for these
-                case ('BREAK', nums, conds):        outstr += "break {}".format(
-                    ' '.join([str(n) for n in nums]))
-
-                case ('DELETE', nums):              outstr += "delete {}".format(
-                    ' '.join([str(n) for n in nums]))
-
-                case ('NAME', v):                   outstr += str(v)
-                case ('QUIT', ):                    outstr += 'quit'
-                case ('NOOP', ):                    outstr += 'noop'
+            # TODO: (OWM) print out conditions for these
+            elif cmd[0] == 'BREAK':                    outstr += "break {}".format(
+                ' '.join([str(n) for n in cmd[1]]))
+            elif cmd == 'DELETE':                      outstr += "delete {}".format(
+                ' '.join([str(n) for n in cmd[1]]))
+            
+            elif cmd[0] == 'NAME':                     outstr += str(cmd[1])
+            elif cmd == ('QUIT', ):                    outstr += 'quit'
+            elif cmd == ('NOOP', ):                    outstr += 'noop'
 
             outstr += '; '
 
@@ -701,96 +699,102 @@ class ADB:
         exit_loop = False
 
         # Match command to behavior
-        match(cmd):
-            case ('MACRO',):            self.display_macros()
-            case ('MACRO', name, l):    self.set_new_macro(name, l)
-            case ('EVAL', value):       self.do_eval_command(value)
-            case ('BANG', ):            self.do_repl_command()
-            case ('HELP', name):        self.do_help_command(name)
-            case ('UP',):               self.move_frame_up()
-            case ('DOWN',):             self.move_frame_down()
-            case ('WHERE',):            self.do_where_command()
-            case ('LONGLIST',):         self.list_program()
-            case ('LIST',):             self.list_program(relative=True)
+        if cmd[0] == 'MACRO' and len(cmd) == 1: self.display_macros()
 
-            case ('RETVAL',):
-                if self.retval:
-                    self.message("Most recent return value: {}".format(self.retval))
-                else:
-                    self.message("No values have been returned yet")
+        elif cmd[0] == 'MACRO':
+            name, l = cmd[1], cmd[2]
+            self.set_new_macro(name, l)
 
-            case ('UNTIL', lineno):
-                self.exc['UNTIL'] = True
+        elif cmd[0] == 'EVAL':
+            value = cmd[1]
+            self.do_eval_command(value)
 
-                if lineno:
-                    self.old_lineinfo = (self.lineinfo[0], int(lineno) - 1)
-                else:
-                    self.old_lineinfo = self.lineinfo
+        elif cmd[0] == 'HELP':
+            name = cmd[1]
+            self.do_help_command(name)
+
+        elif cmd == ('BANG', ):            self.do_repl_command()
+        elif cmd == ('UP',):               self.move_frame_up()
+        elif cmd == ('DOWN',):             self.move_frame_down()
+        elif cmd == ('WHERE',):            self.do_where_command()
+        elif cmd == ('LONGLIST',):         self.list_program()
+        elif cmd == ('LIST',):             self.list_program(relative=True)
     
-                self.set_exc()
+        elif cmd == ('RETVAL',):
+            if self.retval:
+                self.message("Most recent return value: {}".format(self.retval))
+            else:
+                self.message("No values have been returned yet")
+        elif cmd[0] == 'UNTIL':
+            lineno = cmd[1]
+
+            self.exc['UNTIL'] = True
+            if lineno:
+                self.old_lineinfo = (self.lineinfo[0], int(lineno) - 1)
+            else:
+                self.old_lineinfo = self.lineinfo
+
+            self.set_exc()
+            exit_loop = True
+        elif cmd == ('RETURN',):
+            if len(state.trace_stack) == 1:
+                self.message("Cannot continue to return on the top level")
+            else:
+                self.exc['RETURN'] = True
+                self.set_exc(step=False, next=False, cont=False)
                 exit_loop = True
 
-            case ('RETURN',):
-                if len(state.trace_stack) == 1:
-                    self.message("Cannot continue to return on the top level")
-                else:
-                    self.exc['RETURN'] = True
-                    self.set_exc(step=False, next=False, cont=False)
-                    exit_loop = True
+        elif cmd[0] == 'EXPLICIT':
+            set_explicit = cmd[1]
 
-            case ('EXPLICIT', set_explicit):
-                if set_explicit == False:
-                    self.explicit_enabled = False
-                elif set_explicit == True:
-                    self.explicit_enabled = True
-                else:
-                    self.explicit_enabled = not self.explicit_enabled
+            if set_explicit == False:
+                self.explicit_enabled = False
+            elif set_explicit == True:
+                self.explicit_enabled = True
+            else:
+                self.explicit_enabled = not self.explicit_enabled
+        # Step
+        elif cmd == ('STEP', ):
+            self.set_exc(step=True)
+            exit_loop = True
+        # Continue
+        elif cmd == ('CONTINUE', ):
+            self.set_exc(cont=True)
+            exit_loop = True
+        # Next
+        elif cmd == ('NEXT', ):
+            self.set_exc(next=True)
+            exit_loop = True
+        # Break 
+        elif cmd[0] == 'BREAK':
+            nums, conds = cmd[1], cmd[2]
+            if nums:
+                for ix, n in enumerate(nums):
+                    self.breakpoints[n] = conds[ix]
+            else:
+                self.list_breakpoints()
+        # Delete
+        elif cmd[0] == 'DELETE':
+            nums = cmd[1]
+            for n in nums:
+                self.breakpoints.pop(n)
+        # Macro/Unknown
+        elif cmd[0] == 'NAME':
+            v = cmd[1]
+            # If the command name is in macros
+            if v in self.macros:                    
+                self.command_queue += self.macros[v]
+            else:
+                raise ValueError("Unknown macro: {}".format(str(v)))
+        # Quit command
+        elif cmd == ('QUIT', ):
+            raise SystemExit()
 
-            # Step
-            case ('STEP', ):
-                self.set_exc(step=True)
-                exit_loop = True
-
-            # Continue
-            case ('CONTINUE', ):
-                self.set_exc(cont=True)
-                exit_loop = True
-
-            # Next
-            case ('NEXT', ):
-                self.set_exc(next=True)
-                exit_loop = True
-
-            # Break 
-            case ('BREAK', nums, conds):
-                if nums:
-                    for ix, n in enumerate(nums):
-                        self.breakpoints[n] = conds[ix]
-                else:
-                    self.list_breakpoints()
-
-            # Delete
-            case ('DELETE', nums):
-                for n in nums:
-                    self.breakpoints.pop(n)
-
-            # Macro/Unknown
-            case ('NAME', v):
-                # If the command name is in macros
-                if v in self.macros:                    
-                    self.command_queue += self.macros[v]
-                else:
-                    raise ValueError("Unknown macro: {}".format(str(v)))
-
-            # Quit command
-            case ('QUIT', ):
-                raise SystemExit()
-
-            case ('NOOP', ):
-                pass
-
-            case _:
-                raise ValueError("Unknown command: {}".format(str(cmd)))
+        elif cmd == ('NOOP', ):
+            pass
+        
+        else:
+            raise ValueError("Unknown command: {}".format(str(cmd)))
 
         return exit_loop
 
