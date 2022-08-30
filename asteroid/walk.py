@@ -1944,8 +1944,14 @@ def walk_stmt_list(stmts, step_state=None):
             # return before a return statement. In this case, the return
             # statement consumes the return behavior because it is the
             # final statement in the stmt_list
+
+            # OWM -- This is still true but I'm not sure the fix for it
+            # nor if it should even be fixed
+
+            # The statement is a return the debugger is executing until return
+            # then notify the debugger
             if debugging and \
-                debugger.exc['RETURN'] and s[0] in ['return']:
+                debugger.exc['RETURN'] and s[0] == 'return':
                 
                 notify_debugger(at_return=True)
             
