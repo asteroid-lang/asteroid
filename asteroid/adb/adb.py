@@ -148,7 +148,6 @@ class ADB:
         (module, lineno) = state.lineinfo
         print("\nERROR: {}: {}: {}".format(module, lineno, e))
         dump_trace()
-        raise e
         
         # Set out lineinfo here to be sure that the file is in
         # our program_text dictionary
