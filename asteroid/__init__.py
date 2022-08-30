@@ -96,6 +96,7 @@ def main():
             'redundancy': flags['-r'],
             'prologue': flags['-p'],
             'functional_mode': flags['-F'],
+            'exceptions': flags['-e'],
         }
 
         db.run(input_file)

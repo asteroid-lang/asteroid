@@ -10,6 +10,9 @@ from asteroid.support import term2string, map2boolean
 
 from asteroid.walk import function_return_value
 
+# Used for showing full exceptions
+import traceback
+
 class ADB:
     """
     This class implements the behavior and state managment for the
@@ -20,7 +23,8 @@ class ADB:
         self.interp_options = {
             'redundancy': False,
             'prologue': True,
-            'functional_mode': False
+            'functional_mode': False,
+            'exceptions': False,
         }
 
         # Table of breakpoints and conditions
@@ -154,6 +158,8 @@ class ADB:
         # Handle exceptions from the interpretation session
         (module, lineno) = state.lineinfo
         print("\nERROR: {}: {}: {}".format(module, lineno, e))
+        if self.interp_options['exceptions']:
+            print(traceback.format_exc())   
         
         # Set out lineinfo here to be sure that the file is in
         # our program_text dictionary
