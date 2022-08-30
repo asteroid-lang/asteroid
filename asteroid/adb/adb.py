@@ -951,9 +951,12 @@ class ADB:
         elif at_return and self.exc['RETURN']:
             self.exc['RETURN'] = False
             self.message('Return reached!')
-            self.set_exc(next=True)
 
-        # If the until command is learactive, we basically continue until we're
+            # This is set to step so that we always hit the impending
+            # return statement
+            self.set_exc(step=True)
+
+        # If the until command is active, we basically continue until we're
         # at a greater linenumber within the file.
         elif self.exc['UNTIL']:
             # Grab the old and current lineinfo
