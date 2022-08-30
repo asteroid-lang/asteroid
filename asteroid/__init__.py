@@ -88,7 +88,16 @@ def main():
         sys.exit(0)
 
     if flags['--adb'] or flags['-g']:
+        # Create a new debugger
         db = adb.ADB()
+
+        # Set the debugger's internal interpretation options
+        db.interp_options = {
+            'redundancy': flags['-r'],
+            'prologue': flags['-p'],
+            'functional_mode': flags['-F'],
+        }
+
         db.run(input_file)
         sys.exit(0)
     

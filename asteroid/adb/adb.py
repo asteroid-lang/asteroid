@@ -16,6 +16,13 @@ class ADB:
     asteroid debugger
     """
     def __init__(self):
+        # List of options to run the interpreter under
+        self.interp_options = {
+            'redundancy': False,
+            'prologue': True,
+            'functional_mode': False
+        }
+
         # Table of breakpoints and conditions
         self.breakpoints = {}
 
@@ -185,13 +192,26 @@ class ADB:
 
                 # Reinitialize the state and reload the prologue
                 state.initialize()
-                load_prologue()
+
+                # Load the prologue if user requests
+                if self.interp_options['prologue']:
+                    load_prologue()
 
                 # Interpret our file
                 interp(input_stream,
                     program_name = filename,
+
+                    # If we wanted to load the prologue, we already would have
                     prologue=False,
+
+                    # Don't re-initialize the state
                     initialize_state=False,
+
+                    # User options
+                    redundancy=self.interp_options['redundancy'],
+                    functional_mode=self.interp_options['functional_mode'],
+
+                    # Set exceptions so we can wrap them
                     exceptions=True,
                     debugger=self)
 
@@ -263,9 +283,12 @@ class ADB:
             try:
                 interp(break_cond,
                     program_name = "<COMMAND>",
-                    redundancy=False,
                     prologue=False,
                     initialize_state=False,
+
+                    redundancy=self.interp_options['redundancy'],
+                    functional_mode=self.interp_options['functional_mode'],
+
                     debugger=None,
                     exceptions=True
             )
@@ -502,9 +525,12 @@ class ADB:
         try:
             interp(value,
                 program_name = "<EVAL>",
-                redundancy=False,
                 prologue=False,
                 initialize_state=False,
+
+                redundancy=self.interp_options['redundancy'],
+                functional_mode=self.interp_options['functional_mode'],
+
                 debugger=None,
                 exceptions=True)
 
@@ -549,7 +575,12 @@ class ADB:
         asteroid.walk.debugging = False
         
         # Run the repl
-        repl(new=False)
+        repl(
+            new=False,
+            prologue=False,
+            redundancy=self.interp_options['redundancy'],
+            functional_mode=self.interp_options['functional_mode']
+            )
 
         # Restore debugging flag and give state its old lineinfo
         asteroid.walk.debugging = True
