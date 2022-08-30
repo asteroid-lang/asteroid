@@ -44,7 +44,8 @@ def main():
         '-r' : True,   # redundant pattern dectector
         '-e' : False,  # show full exceptions
         '-F' : False,  # functional mode
-        '--adb': False # debugger flag 
+        '--adb': False, # debugger flag 
+        '-g': False    # Short debugger flag
     }
 
     flag_names = list(flags.keys())
@@ -86,7 +87,7 @@ def main():
         print("unknown file {}".format(input_file))
         sys.exit(0)
 
-    if flags['--adb']:
+    if flags['--adb'] or flags['-g']:
         db = adb.ADB()
         db.run(input_file)
         sys.exit(0)
