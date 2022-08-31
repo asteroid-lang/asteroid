@@ -282,7 +282,7 @@ def term2string(term):
                 )
         else:
             term_string = term2string(f)
-            term_string += '(' + term2string(args) + ')'
+            term_string += term2string(args)
 
         return term_string
 

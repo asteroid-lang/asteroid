@@ -1141,22 +1141,20 @@ def declare_unifiers(unifiers):
     
     # Explicit messaging for unifiers
     if explicit_enabled():
-        l = [(lval, value) for u in unifiers]
-
         # if we've unified anything
-        if l:
+        if unifiers:
             # Create our format string and list of terms
             fstring = ""
             terms = []
 
             # For each unifier except the last one
-            for (lval, value) in l[:-1]:
+            for (lval, value) in unifiers[:-1]:
                 # Add to our format string and our terms
                 fstring += "{} = {}, "
                 terms += [gen_t2s(lval), gen_t2s(value)]
 
             # Get the last unifier and add it to the terms and fstring
-            (lval, value) = l[-1]
+            (lval, value) = unifiers[-1]
             fstring += "{} = {}"
             terms += [gen_t2s(lval), gen_t2s(value)]
 
