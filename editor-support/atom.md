@@ -1,4 +1,4 @@
-## Atom Syntax Highlighting for Asteroid
+## Asteroid Syntax Highlighting for Atom
 
 Syntax highlighting for Asteroid in the Atom editor is provided via
 the `language-asteroid` Atom package.  You can install this package directly from
