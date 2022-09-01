@@ -26,7 +26,7 @@ Usage
 ``asteroid -g <FILENAME>``
 
 Debugging sessions
-=======
+==================
 The debugger's prompt ``(ADB)`` allows the user to enter commands to effect the source environment
 and debugger behavior.
 
@@ -34,18 +34,23 @@ Each debugging session will have a few pieces of information:
 
 **Filename and line number**
 ::
-    [/home/user/test.ast (1)]
+
+	[/home/user/test.ast (1)]
 
 **The current line which will be executed**
 ::
+
     -->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
 
 **The command prompt**
 ::
+
   (ADB)
 
 ADB runs like any other debugger, here's a small example session where
-we see running commands, listing the program, and setting and continuing to breakpoints.::
+we see running commands, listing the program, and setting and continuing to breakpoints.
+::
+
   [/home/user/test.ast (1)]
   -->> let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
   (ADB) ll
@@ -112,6 +117,7 @@ after each breakpoint number.
 
 Example:
 ::
+
     -- Set a conditional breakpoint on 10 and normal breakpoints on 11, 15, and 23.
     b 10 if eval("x == 123") 11 15 23
 
@@ -121,6 +127,7 @@ Delete
 
 Example:
 ::
+
     del 1 5 8 9
 
 Macro
@@ -129,6 +136,7 @@ Macro
 
 Example macro that continues to a breakpoint and prints the value of x:
 ::
+
     macro gox = c; eval("io@println(x)");
 
 Eval
@@ -138,6 +146,7 @@ repl.
 
 Example, print out the value of `x`:
 ::
+
     eval("x")
 
 !
@@ -145,7 +154,7 @@ Example, print out the value of `x`:
 `!` Open up a repl in the current context
 
 \_\_retval\_\_
----------
+--------------
 `(_)_retval` Print the most recent return value
 
 Help
@@ -153,6 +162,7 @@ Help
 `h(elp) (command)?` gives help for a given command. Running just `help` shows all available commands.
 Example:
 ::
+
     h macro
     help break
 
@@ -180,6 +190,7 @@ to the corresponding state.
 
 Explicit
 ::
+
     -- Toggle Explicit mode
     explicit
     e
