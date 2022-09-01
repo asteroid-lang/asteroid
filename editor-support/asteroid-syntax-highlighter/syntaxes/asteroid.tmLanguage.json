@@ -1,0 +1,179 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "asteroid",
+	"patterns": [
+		{
+			"name": "comment.line.double-dash.asteroid",
+			"begin": "--",
+			"beginCaptures": {
+				"0": {
+					"name": "comment.line.asteroid"
+				}
+			},
+			"end": "\\n"
+		},
+		{
+			"name": "comment.line.number-sign.asteroid",
+			"begin": "#",
+			"beginCaptures": {
+				"0": {
+					"name": "comment.line.asteroid"
+				}
+			},
+			"end": "\\n"
+		},
+		{
+			"name": "constant.numeric.asteroid",
+			"match": "\\b([0-9]+([.][0-9]+)?((e|E)(\\+|\\-)?[0-9]+)?)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "storage.modifier.global.asteroid",
+			"match": "\\b(global)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.load.asteroid",
+			"match": "\\b(load|system)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.conditional.asteroid",
+			"match": "\\b(if|elif|else)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.exception.asteroid",
+			"match": "\\b(try|catch)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.exception.asteroid",
+			"match": "\\b(throw)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.repeat.asteroid",
+			"match": "\\b(for|while|loop|repeat|until)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.statement.asteroid",
+			"match": "\\b(break|return)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.dispatch.asteroid",
+			"match": "\\b(with|orwith)\\b"
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.control.block.asteroid",
+			"match": "\\b(do|escape|end)\\b"
+		},
+		{
+			"name": "keyword",
+			"comment": "keyword.declaration.asteroid",
+			"match": "\\b(let|data)\\b"
+		},
+		{
+			"name": "keyword",
+			"comment": "keyword.operator.logical.asteroid",
+			"match": "\\b(and|is|not|or)\\b"
+
+		},
+		{
+			"name": "keyword.control",
+			"comment": "keyword.operator.comprehension.asteroid",
+			"match": "\\b(in|to|from|step)\\b"
+		},
+		{
+			"name": "keyword",
+			"comment": "keyword.other.asteroid",
+			"match": "\\b(assert|eval)\\b"
+		},
+		{
+			"name": "keyword.operator.comparison.asteroid",
+			"match": "<\\=|>\\=|\\=\\=|<|>|\\=/\\="
+		},
+		{
+			"name": "keyword.operator.arithmetic.asteroid",
+			"match": "\\+|\\-|\\*|/"
+		},
+		{
+			"name": "keyword.operator.assignment.asteroid",
+			"match": "\\="
+		},
+		{
+			"begin": "^\\s*(structure)\\s",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.structure.asteroid"
+				}
+			},
+			"contentName": "entity.name.type.structure.asteroid",
+			"end": "\\s+",
+			"name": "meta.structure.asteroid",
+			"patterns": [
+				{
+					"match": "[A-Za-z_][A-Za-z0-9_]*"
+				}
+			]
+		},
+		{
+			"begin": "^\\s*(function)\\s",
+			"beginCaptures": {
+				"1": {
+					"name": "storage.type.function.asteroid"
+				}
+			},
+			"contentName": "entity.name.function.asteroid",
+			"end": "\\s+",
+			"name": "meta.function.asteroid",
+			"patterns": [
+				{
+					"match": "[A-Za-z_][A-Za-z0-9_]*"
+				}
+			]
+		},
+		{
+			"match": "\\b(lambda)\\b",
+			"name": "storage.type.function.inline.asteroid"
+		},
+		{
+			"match": "\\b(pattern)\\b",
+			"name": "storage.type.pattern.inline.asteroid"
+		},
+		{
+			"match": "\\b(none|true|false)\\b",
+			"name": "constant.language.asteroid"
+		},
+		{
+			"name": "string.quoted.double.asteroid",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.asteroid",
+					"match": "\\\\."
+				}
+			]
+		},
+		{
+			"name": "string.quoted.single.asteroid",
+			"begin": "'",
+			"end": "'",
+			"patterns": [
+				{
+					"name": "constant.character.escape.asteroid",
+					"match": "\\\\."
+				}
+			]
+		},
+		{
+			"name": "variable.name.asteroid",
+			"match": "[A-Za-z_][A-Za-z0-9_]*"
+		}
+	],
+	"scopeName": "source.ast"
+}
