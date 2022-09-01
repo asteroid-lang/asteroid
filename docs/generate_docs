@@ -14,3 +14,6 @@ cpp -w -P -traditional "Asteroid in Action.txt" > "Asteroid in Action.rst"
 
 echo "generating Quickstart Tutorial.rst"
 cpp -w -P -traditional "Quickstart Tutorial.txt" > "Quickstart Tutorial.rst"
+
+echo "generating ADB.rst"
+cpp -w -P -traditional "ADB.txt" > "ADB.rst"
