@@ -1,4 +1,4 @@
-# Asteroid Syntax Highlighter
+# Asteroid Syntax Highlighter for Visual Studio Code
 
 A limited Asteroid syntax highlighter.
 
@@ -12,6 +12,6 @@ To use the extension with Visual Studio Code, copy the extension into the `<user
 
 ## Release Notes
 
-### 1.0.0
+### 1.1.0
 
-Initial release of the Asteriod syntax highlighter. Provides highlighting for Asteroid 1.0.0 keywords, constants, functions and structures.
+Initial release of the Asteriod syntax highlighter. Provides highlighting for Asteroid 1.1.0 keywords, constants, functions and structures.
