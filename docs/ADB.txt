@@ -1,3 +1,14 @@
+/******************************************************************
+  This is the source file from which the action doc is generated.
+  We use cpp to insert live code snippets into the document.
+  In order to generate the action doc run the following command
+  on a Unix-like system:
+
+  cpp -w -P "ADB.txt" > "ADB.rst"
+
+ ******************************************************************/
+#include "header.txt"
+
 ===================
 ADB Reference Guide
 ===================
@@ -56,10 +67,10 @@ we see running commands, listing the program, and setting and continuing to brea
   (ADB) ll
   ----- Program Listing -----
   >  1 let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
-     2 
+     2
      3 let d = pattern %[(x:*p, y:*p, z:*p)]%.
      4 let x:*p = 99.
-     5 
+     5
      6 let t:*d = (1,2,3).
      7 [EOF]
   (ADB) break 6
@@ -194,7 +205,7 @@ Explicit
     -- Toggle Explicit mode
     explicit
     e
-    
+
     -- Turn on/off
     explicit on
     e on

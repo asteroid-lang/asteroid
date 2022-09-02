@@ -2,10 +2,8 @@
 
 
 
-
-
-
-
+..
+   *** DO NOT EDIT; MACHINE GENERATED ***
 
 
 
@@ -67,10 +65,10 @@ we see running commands, listing the program, and setting and continuing to brea
   (ADB) ll
   ----- Program Listing -----
   >  1 let p = pattern %[(x:%integer) if x > 0 and x < 100]%.
-     2 
+     2
      3 let d = pattern %[(x:*p, y:*p, z:*p)]%.
      4 let x:*p = 99.
-     5 
+     5
      6 let t:*d = (1,2,3).
      7 [EOF]
   (ADB) break 6
@@ -205,7 +203,7 @@ Explicit
     -- Toggle Explicit mode
     explicit
     e
-    
+
     -- Turn on/off
     explicit on
     e on
@@ -215,3 +213,4 @@ Explicit
 Quit
 ---------
 `q(uit)` Quits the current ADB session
+
