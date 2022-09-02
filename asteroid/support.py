@@ -252,9 +252,38 @@ def term2string(term):
 
     elif TYPE == 'apply':
         (APPLY, f, args) = term
-        term_string = term2string(f)
-        term_string += ' '
-        term_string += term2string(args)
+        operator_table = {
+            '__uminus__'    : ("-", True),
+            '__uplus__'     : ("+", True),
+            '__not__'       : ("not ", True),
+            '__plus__'      : ("+", False),
+            '__minus__'     : ("-", False),
+            '__times__'     : ("*", False),
+            '__divide__'    : ("/", False),
+            '__or__'        : (" or ", False),
+            '__and__'       : (" and ", False),
+            '__eq__'        : (" == ", False),
+            '__ne__'        : (" != ", False),
+            '__le__'        : (" <= ", False),
+            '__lt__'        : (" < ", False),
+            '__ge__'        : (" >= ", False),
+            '__gt__'        : (" > ", False)
+        }
+        if isinstance(f[1], str) and f[1] in operator_table:
+            (op_symbol, is_unary) = operator_table[f[1]]
+            if is_unary:
+                term_string = "{}({})".format(
+                    op_symbol, term2string(args)
+                )
+            else:
+                (_, arglist) = args
+                term_string = "{}{}{}".format(
+                    term2string(arglist[0]), op_symbol, term2string(arglist[1])
+                )
+        else:
+            term_string = term2string(f)
+            term_string += term2string(args)
+
         return term_string
 
     elif TYPE == 'pattern':
@@ -287,10 +316,21 @@ def term2string(term):
         term_string += "]"
         return term_string
 
-    elif TYPE == 'named-pattern':       # Handle a named pattern
+    elif TYPE == 'raw-head-tail':
+        (RHT, e1, e2) = term
+        walked_e1 = term2string(e1)
+        walked_e2 = term2string(e2)
 
+        return walked_e1 + "|" + walked_e2
+
+    elif TYPE == 'named-pattern':       # Handle a named pattern
         (NAMED_PATTERN,ID,pattern) = term
-        term_string = ID[1] + ':'
+
+        if ID[0] == 'index':
+            (INDEX, i1, i2) = ID
+            term_string = term2string(i1) + "@ " + term2string(i2) + ":"
+        else:
+            term_string = ID[1] + ':'
 
         return term_string + term2string(pattern)
 
@@ -308,12 +348,14 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
-        (DEREF, (ID, pName)) = term
-        term_string = pName
-        term_string += ":"
+        (DEREF, d_exp) = term
+        term_string = "*" + term2string(d_exp)
 
         #Get the actual pattern from the symbol table
-        term_string += term2string(state.symbol_table.lookup_sym(pName))
+        # NOTE: THIS BREAKS WHEN A PATTERN IS NOT DEFINED IN SCOPE
+        # TODO: FIX THIS
+        # \/\/\/\/\/\/\/\/\/
+        #term_string += term2string(state.symbol_table.lookup_sym(pName))
         return term_string
 
     elif TYPE == 'if-exp':              # Handle a conditional pattern
@@ -322,8 +364,36 @@ def term2string(term):
         # therefore we don't print the whole tree.
         return term2string(value)+' if (condition...)'
 
+    elif TYPE == 'index':
+        (INDEX, base, ix) = term
+        return term2string(base) + "@ " + term2string(ix)
+
+    elif TYPE == 'foreign':
+        return "(foreign ...)"
+
+    elif TYPE == 'is':
+        (IS, e1, e2) = term
+
+        return term2string(e1) + " is " + term2string(e2)
+
+    elif TYPE == 'in':
+        (IN, e1, e2) = term
+
+        return term2string(e1) + " in " + term2string(e2)
+
+    elif TYPE == 'to-list':
+        (TO_LIST, (START, start), (STOP, stop), (STRIDE, stride)) = term
+        return "[" + term2string(start) + " to " + term2string(stop) + ", stride: " + term2string(stride) + "]"
+
+    elif TYPE == 'function-exp':
+        return ('function exp...')
+
+    elif TYPE == 'function-val':
+        return ('function val...')
+
+    elif TYPE == 'struct':
+        return ('struct...')
     else:
-        #lhh print(term)
         raise ValueError(
             "unknown type '{}' in term2string"
             .format(TYPE))

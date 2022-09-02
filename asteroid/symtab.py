@@ -21,6 +21,9 @@ class SymTab:
         self.globals = [[]]
         self.global_scope = self.scoped_symtab[0] # reference to global dictionary
 
+        # Stack of configs not currently in use
+        self.saved_configs = []
+
     def dump(self):
         print("*** Symbol Table Dump:")
         pprint(self.scoped_symtab)

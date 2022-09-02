@@ -117,10 +117,29 @@ class Parser:
         dbg_print("parsing STMT_LIST")
 
         sl = []
-        while self.lexer.peek().type in stmt_lookahead:
+        while self.stmt_coming_up():
             sl += [('lineinfo', state.lineinfo)]
-            sl += [('clear-ret-val',)]
-            sl += [self.stmt()]
+
+            # Get the statment
+            stmt = self.stmt()
+
+            # This set of conditionals gives us the behavior we want
+            # wrt implicit return values. There's only one situation
+            # in which we want to set the return value. That is when
+            # a top level expression is the last in a stmt_list
+
+            # If there's a statement coming up or the current statement
+            # is not a top level expression, just append the statement
+            if self.stmt_coming_up() or stmt[0] != 'top-level-exp':
+                sl += [stmt]
+
+            # Otherwhise, if there's no statement coming up and the
+            # last statement was a top level expression, set the
+            # ret val
+            else:
+                sl += [('clear-ret-val',)]
+                sl += [('set-ret-val', stmt)]             
+
         return ('list', sl)
 
     ###########################################################################################
@@ -216,18 +235,17 @@ class Parser:
             #print("opening module {}".format(ast_module_file))
 
             old_lineinfo = state.lineinfo
-
             with open(ast_module_file) as f:
                 #state.modules.append(module_name)
                 state.modules.append(ast_module_file)
                 data = f.read()
-                #fparser = Parser(module_name, self.functional_mode)
-                fparser = Parser(ast_module_file, self.functional_mode)
-                (STMT_LIST, fstmts) = fparser.parse(data)
 
+                # Give the absolute path to the parser
+                fparser = Parser(str(ast_module_path))
+                (STMT_LIST, fstmts) = fparser.parse(data)
+            
             state.lineinfo = old_lineinfo
-            (LIST, sl) = self.stmt_list()
-            return ('list', fstmts + sl)
+            return ('import_stmt', fstmts)
 
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
@@ -421,7 +439,7 @@ class Parser:
         elif tt in exp_lookahead:
             v = self.exp()
             self.lexer.match_optional('DOT')
-            return ('set-ret-val', v)
+            return ('top-level-exp', v)
 
         else:
             raise SyntaxError("syntax error at '{}'"
@@ -955,3 +973,8 @@ class Parser:
         body_list = self.body_defs()
 
         return ('function-exp', body_list)
+
+    ###########################################################################################
+    # Minor helper function
+    def stmt_coming_up(self):
+        return self.lexer.peek().type in stmt_lookahead

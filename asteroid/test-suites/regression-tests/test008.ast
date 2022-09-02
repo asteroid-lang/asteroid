@@ -1,4 +1,3 @@
-
 load system io.
 
 structure Family with
@@ -24,4 +23,3 @@ let p1 = "Harry".
 let family = eval(FAMILY).
 --__raw_print__(family).
 io @println (family @members()).
-
