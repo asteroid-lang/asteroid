@@ -2,18 +2,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
 
 
 ===================
@@ -93,27 +84,28 @@ Below is a list of the commands available to the debugger. Most of which can be 
 These shortenings are shown in parenthesis (`c(ommand)`).
 
 List
-`l(ist)` lists the lines around the currently executing line
+----
+``l(ist)`` lists the lines around the currently executing line
 
 Longlist
 ---------
-`ll (longlist)` lists the entire program
+``ll (longlist)`` lists the entire program
 
 Step
 ---------
-`s(tep)` through to the next statement or through function call.
+``s(tep)`` through to the next statement or through function call.
 
 Continue
 ---------
-`c(ontinue) cont(inue)` continue execution until the next breakpoint.
+``c(ontinue)`` ``cont(inue)`` continue execution until the next breakpoint.
 
 Next
 ---------
-`n(ext)` continue onto the next executing line at the current scope.
+``n(ext)`` continue onto the next executing line at the current scope.
 
 Until
 ---------
-`u(ntil) ?lineno` By default, continue execution until a line with a greater number
+``u(ntil) ?lineno`` By default, continue execution until a line with a greater number
 than the current one is reached.
 
 Given an optional line number, continue execution until a line number greater than
@@ -121,16 +113,16 @@ or equal to that number is reached
 
 Return
 ---------
-`(r(et))urn` Continue execution until the return of the current function is reached
+``(r(et))urn`` Continue execution until the return of the current function is reached
 
 Breakpoints
 ------------
-`b(reak) number\*` set a breakpoint at one or more lines. Running without any arguments
+``b(reak) number\*`` set a breakpoint at one or more lines. Running without any arguments
 lists your breakpoints.
 
-Example: `b 1 2 3`, `break`.
+Example: ``b 1 2 3``, ``break``.
 
-Conditional breakpoints can be set in the same way, just attach `if eval("condition")`
+Conditional breakpoints can be set in the same way, just attach ``if eval("condition")``
 after each breakpoint number.
 
 Example:
@@ -141,7 +133,7 @@ Example:
 
 Delete
 ---------
-`d(elete) (number)+` `del(ete) (number)+` delete a list of breakpoints.
+``d(elete) (number)+`` ``del(ete) (number)+`` delete a list of breakpoints.
 
 Example:
 ::
@@ -150,9 +142,9 @@ Example:
 
 Macro
 ---------
-`macro (name) (command list)`. Define a macro. Running just `macro` lists your macros.
+``macro (name) (command list)``. Define a macro. Running just ``macro`` lists your macros.
 
-Example macro that continues to a breakpoint and prints the value of x:
+Example macro that continues to a breakpoint and prints the value of ``x``:
 ::
 
     macro gox = c; eval("io@println(x)");
@@ -162,22 +154,22 @@ Eval
 `eval("asteroid code")` Evaluate the asteroid code between quotes. Works exactly like a single-line
 repl.
 
-Example, print out the value of `x`:
+Example, print out the value of ``x``:
 ::
 
     eval("x")
 
 !
 ---------
-`!` Open up a repl in the current context
+``!`` Open up a repl in the current context
 
 \_\_retval\_\_
 --------------
-`(_)_retval` Print the most recent return value
+``(_)_retval`` Print the most recent return value
 
 Help
 ---------
-`h(elp) (command)?` gives help for a given command. Running just `help` shows all available commands.
+``h(elp) (command)?`` gives help for a given command. Running just ``help`` shows all available commands.
 Example:
 ::
 
@@ -186,24 +178,24 @@ Example:
 
 Retval
 ---------
-`((r)et)val` Prints the most recent return value
+``((r)et)val`` Prints the most recent return value
 
 <
 ---------
-`<` move up one stack frame
+``<`` move up one stack frame
 
 >
 ---------
-`>` move down one stack frame
+``>`` move down one stack frame
 
 Where
 ---------
-`w(here)` displays the frame stack and the currently active frame.
+``w(here)`` displays the frame stack and the currently active frame.
 
 Explicit
 ---------
-`e(xplicit) (on|off)?` By default, this command run without an argument toggles
-explicit mode. If given a literal `on` or `off`, explicit mode will be switched
+``e(xplicit) (on|off)?`` By default, this command run without an argument toggles
+explicit mode. If given a literal ``on`` or ``off``, explicit mode will be switched
 to the corresponding state.
 
 Explicit
@@ -221,4 +213,5 @@ Explicit
 
 Quit
 ---------
-`q(uit)` Quits the current ADB session
+``q(uit)`` Quits the current ADB session
+
