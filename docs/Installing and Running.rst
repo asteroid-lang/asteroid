@@ -62,7 +62,7 @@ Asteroid program by typing::
 at the command prompt.  Asteroid also supports an interactive mode::
 
     $ asteroid
-    Asteroid Version 1.1.1
+    Asteroid Version 1.1.2
     Run "asteroid -h" for help
     Press CTRL+D to exit
     > load system io.

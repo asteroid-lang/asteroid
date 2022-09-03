@@ -1024,7 +1024,7 @@ You can easily find out where the modules are installed by issuing the ``show`` 
 ::
     ubuntu$ pip3 show asteroid-lang
     Name: asteroid-lang
-    Version: 1.1.1
+    Version: 1.1.2
     Summary: A pattern-matching oriented programming language.
     Home-page: https://asteroid-lang.org
     Author: University of Rhode Island

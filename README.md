@@ -5,7 +5,7 @@ be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
 
-## New in Release 1.1.1
+## New in Release 1.1.2
 
 * An experimental implementation of an interactive debugger that supports debugging pattern matching and in
   particular, pattern matching with first-class patterns.
