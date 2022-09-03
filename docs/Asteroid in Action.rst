@@ -15,6 +15,7 @@
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
 
+
 .. highlight:: none
 
 Asteroid in Action
@@ -2141,7 +2142,7 @@ We can use an index vector to accomplish  the same thing,
   load system math.
 
   let a = [20 to 30].
-  let array = a @[1 to a @length()-1 stride 2] .
+  let array = a @[1 to a @length()-1 step 2] .
   io @println array.
 
   assert (array == [21,23,25,27,29]).

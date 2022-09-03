@@ -2,3 +2,5 @@
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
+#define hash_comment #

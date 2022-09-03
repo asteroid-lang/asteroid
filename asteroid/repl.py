@@ -1,4 +1,4 @@
-from asteroid.interp import interp
+from asteroid.interp import interp, load_prologue
 from asteroid.version import VERSION
 from asteroid.state import state
 from asteroid.globals import ExpectationError
@@ -8,11 +8,14 @@ from asteroid.support import term2string
 from sys import stdin
 import readline
 
-def repl():
-    state.initialize()
-    print_repl_menu()
+def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
+
+    if new:
+        state.initialize()
+        load_prologue()
+        print_repl_menu()
     try:
-        run_repl()
+        run_repl(redundancy, prologue, functional_mode)
     except EOFError:
         print()
         pass
@@ -22,8 +25,7 @@ def print_repl_menu():
     print("Run \"asteroid -h\" for help")
     print("Press CTRL+D to exit")
 
-
-def run_repl():
+def run_repl(redundancy, prologue, functional_mode):
 
     # The two different prompt types either > for a new statement
     # or . for continuing one
@@ -63,7 +65,12 @@ def run_repl():
         """
         try:
             # Try to interpret the new statement
-            interp(line, initialize_state=False, exceptions=True)
+            interp(line,
+                   initialize_state=False,
+                   redundancy=redundancy,
+                   prologue=prologue,
+                   functional_mode=functional_mode,
+                   exceptions=True)
 
             # Try to
             line = ""
@@ -71,10 +78,10 @@ def run_repl():
             # Check for return value
             if function_return_value[-1]:
                 # Get the last return value (type, value)
-                (_, val) = function_return_value[-1]
+                retval = function_return_value[-1]
 
                 # If it isn't none, print out the value
-                if val is not None:
+                if retval[1] != None:
                     print(term2string(function_return_value[-1]))
 
 
@@ -92,6 +99,7 @@ def run_repl():
             print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
+            raise e
 
         else:
             current_prompt = arrow_prompt

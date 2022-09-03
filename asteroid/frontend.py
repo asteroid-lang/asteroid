@@ -74,9 +74,23 @@ stmt_lookahead = {
 ###########################################################################################
 class Parser:
 
-    def __init__(self, filename="<input>"):
+    def __init__(self, filename="<input>", functional_mode=False):
         self.lexer = Lexer()
+        self.functional_mode = functional_mode
+        self.system_modules = os.listdir(os.path.dirname( __file__ )+'/modules')
+        self.parser_file_path = os.path.split(os.path.dirname(__file__))[0]
         state.lineinfo = (filename,1)
+
+    ###########################################################################################
+    # best guess whether we are looking at a system module or not: if the parser
+    # file path is a substring of the module file path then the module is a
+    # system module
+    def is_system_module(self):
+        name = state.lineinfo[0]
+        if (os.path.split(name)[1] in self.system_modules) and (self.parser_file_path in name):
+            return True
+        else:
+            return False
 
     ###########################################################################################
     def parse(self, input):
@@ -103,10 +117,29 @@ class Parser:
         dbg_print("parsing STMT_LIST")
 
         sl = []
-        while self.lexer.peek().type in stmt_lookahead:
+        while self.stmt_coming_up():
             sl += [('lineinfo', state.lineinfo)]
-            sl += [('clear-ret-val',)]
-            sl += [self.stmt()]
+
+            # Get the statment
+            stmt = self.stmt()
+
+            # This set of conditionals gives us the behavior we want
+            # wrt implicit return values. There's only one situation
+            # in which we want to set the return value. That is when
+            # a top level expression is the last in a stmt_list
+
+            # If there's a statement coming up or the current statement
+            # is not a top level expression, just append the statement
+            if self.stmt_coming_up() or stmt[0] != 'top-level-exp':
+                sl += [stmt]
+
+            # Otherwhise, if there's no statement coming up and the
+            # last statement was a top level expression, set the
+            # ret val
+            else:
+                sl += [('clear-ret-val',)]
+                sl += [('set-ret-val', stmt)]             
+
         return ('list', sl)
 
     ###########################################################################################
@@ -120,7 +153,6 @@ class Parser:
     #    | GLOBAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | STRUCTURE ID WITH struct_stmts END
-    #    | TRAIT ID WITH trait_stmts END
     #    | LET pattern '=' exp '.'?
     #    | LOOP DO? stmt_list END
     #    | FOR pattern IN exp DO stmt_list END
@@ -189,6 +221,7 @@ class Parser:
                 ast_module_file = search_list[ix]
                 #lhh
                 #print("AST module: {}".format(ast_module_file))
+                # compute Path object so we can test if the file exists
                 ast_module_path = Path(ast_module_file)
                 if ast_module_path.is_file():
                     file_found = True
@@ -202,16 +235,17 @@ class Parser:
             #print("opening module {}".format(ast_module_file))
 
             old_lineinfo = state.lineinfo
-
             with open(ast_module_file) as f:
-                state.modules.append(module_name)
+                #state.modules.append(module_name)
+                state.modules.append(ast_module_file)
                 data = f.read()
-                fparser = Parser(module_name)
-                (STMT_LIST, fstmts) = fparser.parse(data)
 
+                # Give the absolute path to the parser
+                fparser = Parser(str(ast_module_path))
+                (STMT_LIST, fstmts) = fparser.parse(data)
+            
             state.lineinfo = old_lineinfo
-            (LIST, sl) = self.stmt_list()
-            return ('list', fstmts + sl)
+            return ('import_stmt', fstmts)
 
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
@@ -251,16 +285,19 @@ class Parser:
             return ('unify', p, v)
 
         elif tt == 'LOOP':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("loop is not supported in functional mode")
             dbg_print("parsing LOOP")
             self.lexer.match('LOOP')
             self.lexer.match_optional('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
-            #self.lexer.match_optional('LOOP')
             return ('loop',
                     ('stmt-list', sl))
 
         elif tt == 'FOR':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("for loop is not supported in functional mode")
             dbg_print("parsing FOR")
             self.lexer.match('FOR')
             e = self.exp()
@@ -272,12 +309,13 @@ class Parser:
             self.lexer.match('DO')
             sl = self.stmt_list()
             self.lexer.match('END')
-            #self.lexer.match_optional('FOR')
             return ('for',
                     ('in-exp', e),
                     ('stmt-list', sl))
 
         elif tt == 'WHILE':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("while loop is not supported in functional mode")
             dbg_print("parsing WHILE")
             self.lexer.match('WHILE')
             e = self.exp()
@@ -290,6 +328,8 @@ class Parser:
                     ('stmt-list', sl))
 
         elif tt == 'REPEAT':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("repeat loop is not supported in functional mode")
             dbg_print("parsing REPEAT")
             self.lexer.match('REPEAT')
             self.lexer.match_optional('DO')
@@ -302,11 +342,16 @@ class Parser:
                     ('until-exp', e))
 
         elif tt == 'BREAK':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("break statement is not supported in functional mode")
             dbg_print("parsing BREAK")
             self.lexer.match('BREAK')
             return ('break',)
 
         elif tt == 'IF':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("if statement is not supported in functional mode")
+
             # if statements are coded as a list of ('if-clause', condition, stmts)
             if_list = []
 
@@ -340,7 +385,6 @@ class Parser:
                 if_list.append(('if-clause', ('cond', ('boolean', True)), ('stmt-list', stmts)))
 
             self.lexer.match('END')
-            #self.lexer.match_optional('IF')
             return ('if', ('list', if_list))
 
 
@@ -395,7 +439,7 @@ class Parser:
         elif tt in exp_lookahead:
             v = self.exp()
             self.lexer.match_optional('DOT')
-            return ('set-ret-val', v)
+            return ('top-level-exp', v)
 
         else:
             raise SyntaxError("syntax error at '{}'"
@@ -625,18 +669,18 @@ class Parser:
         elif tt == 'TO':
             self.lexer.match('TO')
             v2 = self.exp()
-            if self.lexer.peek().type == 'STRIDE':
-                self.lexer.match('STRIDE')
+            if self.lexer.peek().type == 'STEP':
+                self.lexer.match('STEP')
                 v3 = self.exp()
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', v3))
+                        ('step', v3))
             else:
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', ('integer', '1')))
+                        ('step', ('integer', '1')))
 
         else:
             return v
@@ -929,3 +973,8 @@ class Parser:
         body_list = self.body_defs()
 
         return ('function-exp', body_list)
+
+    ###########################################################################################
+    # Minor helper function
+    def stmt_coming_up(self):
+        return self.lexer.peek().type in stmt_lookahead
