@@ -668,19 +668,19 @@ are written in quotes.
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-  
+
   exp
     : pattern
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%'      
+    | '%[' exp ']%'
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  
+
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -688,8 +688,8 @@ are written in quotes.
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               
-           (TO exp (STEP exp)?) |   
+           (IN exp) |
+           (TO exp (STEP exp)?) |
         )?
 
   logic_exp0
@@ -711,7 +711,7 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  
+    : primary (primary | '@' primary)* (':' pattern)?
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // primary expressions/patterns
@@ -724,14 +724,14 @@ are written in quotes.
     | FALSE
     | NONE
     | ID
-    | '*' call_or_index   
+    | '*' call_or_index
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' 
-    | '[' list_stuff ']'  
+    | '(' tuple_stuff ')'
+    | '[' list_stuff ']'
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
@@ -989,7 +989,7 @@ Here is a simple use case
    let po = pick @pick([1 to 10]).
    let objects = po @pick(3).
    io @println objects.
-   
+
 
 
 Random
@@ -1061,7 +1061,7 @@ A simple use case.
       io @ print (s @get()+" ").
    end
    io @println ("").
-   
+
 
 which outputs::
 
@@ -1140,7 +1140,7 @@ A simple example program using the ``gettype`` function,
 
    let i = 1.
    assert(type @gettype(i) == "integer").
-   
+
 
 Util
 ^^^^
@@ -1184,7 +1184,7 @@ Here is a simple example program for the ``vector`` module,
    let b = [0,1].
 
    io @println (vector @dot (a,b)).
-   
+
 
 which prints the value ``0``.
 
@@ -1209,7 +1209,7 @@ You can easily find out where the modules are installed by issuing the ``show`` 
 ::
     ubuntu$ pip3 show asteroid-lang
     Name: asteroid-lang
-    Version: 1.1.0
+    Version: 1.1.1
     Summary: A pattern-matching oriented programming language.
     Home-page: https://asteroid-lang.org
     Author: University of Rhode Island

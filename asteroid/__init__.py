@@ -19,17 +19,17 @@ def display_help():
     print("usage: asteroid [-<switch>] <input file>")
     print("")
     print("command line flags:")
-    print(" -s          enable symbol table dump")
-    print(" -t          AST dump")
-    print(" -v          version")
-    print(" -w          disable tree walk")
-    print(" -z          generate pstats")
-    print(" -p          disable prologue")
-    print(" -h          display help")
-    print(" -r          disable redundant pattern detector")
-    print(" -e          show Python exceptions")
-    print(" -F          functional mode")
-    print(" -g, --adb   run program through debugger")
+    print(" -s             enable symbol table dump")
+    print(" -t             AST dump")
+    print(" -v, --version  version")
+    print(" -w             disable tree walk")
+    print(" -z             generate pstats")
+    print(" -p             disable prologue")
+    print(" -h, --help     display help")
+    print(" -r             disable redundant pattern detector")
+    print(" -e             show Python exceptions")
+    print(" -F             functional mode")
+    print(" -g, --adb      run program through debugger")
 
 def main():
     # defaults for the flags - when the flag is set on the command line
@@ -37,15 +37,17 @@ def main():
     flags = {
         '-s' : False,  # symbol table dump flag
         '-t' : False,  # AST dump flag
+        '-version' : False,  # version flag
         '-v' : False,  # version flag
         '-w' : True,   # tree walk flag
         '-z' : False,  # generate pstats flag
         '-p' : True,   # prologue flag
+        '--help' : False,  # display help flag
         '-h' : False,  # display help flag
         '-r' : True,   # redundant pattern dectector
         '-e' : False,  # show full exceptions
         '-F' : False,  # functional mode
-        '--adb': False, # debugger flag 
+        '--adb': False, # debugger flag
         '-g': False    # Short debugger flag
     }
 
@@ -65,11 +67,11 @@ def main():
             sys.exit(0)
         flags[fl] = not flags[fl]
 
-    if flags['-h']:
+    if flags['--help'] or flags['-h']:
         display_help()
         sys.exit(0)
 
-    if flags['-v']:
+    if flags['--version'] or flags['-v']:
         print("** Asteroid Version {} **".format(VERSION))
         sys.exit(0)
 
@@ -102,7 +104,7 @@ def main():
 
         db.run(input_file)
         sys.exit(0)
-    
+
     f = open(input_file, 'r')
     input_stream = f.read()
     f.close()

@@ -5,11 +5,11 @@ be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
 
-## New in Release 1.1.0
+## New in Release 1.1.1
 
-* An experimental implementation of an interactive debugger that supports debugging pattern matching and in 
+* An experimental implementation of an interactive debugger that supports debugging pattern matching and in
   particular, pattern matching with first-class patterns.
-  
+
 * A Python API allowing the developer to call the Asteroid interpreter from within a Python program and also embed
   Python code in an Asteroid program.
 
