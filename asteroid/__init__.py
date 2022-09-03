@@ -37,7 +37,7 @@ def main():
     flags = {
         '-s' : False,  # symbol table dump flag
         '-t' : False,  # AST dump flag
-        '-version' : False,  # version flag
+        '--version' : False,  # version flag
         '-v' : False,  # version flag
         '-w' : True,   # tree walk flag
         '-z' : False,  # generate pstats flag
