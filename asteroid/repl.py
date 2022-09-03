@@ -99,7 +99,6 @@ def run_repl(redundancy, prologue, functional_mode):
             print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
-            raise e
 
         else:
             current_prompt = arrow_prompt
