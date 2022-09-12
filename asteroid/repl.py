@@ -84,6 +84,8 @@ def run_repl(redundancy, prologue, functional_mode):
                 if retval[1] != None:
                     print(term2string(function_return_value[-1]))
 
+                    # Reset the return value
+                    function_return_value[0] = None
 
         except ExpectationError as e:
             # If we expected something but found EOF, it's a continue
@@ -99,6 +101,5 @@ def run_repl(redundancy, prologue, functional_mode):
             print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
-
         else:
             current_prompt = arrow_prompt
