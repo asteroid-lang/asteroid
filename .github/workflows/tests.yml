@@ -3,7 +3,7 @@ on:
     pull_request:
         branches:
             - master
-            - dev-1.1.0
+            - dev-1.2.0
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
