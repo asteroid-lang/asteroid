@@ -16,9 +16,9 @@ load system io.
 io @println "Hello, World!".
 ```
 
-## Procedural Programming is Straightforward
+## Imperative Programming is Straightforward
 
-Procedural programming in Asteroid should seem familiar to anybody who has some programming experience.
+Imperative programming in Asteroid should seem familiar to anybody who has some programming experience.
 Intuitive  structure definitions and standard list notation makes it easy to create the data structures your
 program needs.  Here is a  program that prints out the names of persons whose name contains a lower case 'p',
 ```
