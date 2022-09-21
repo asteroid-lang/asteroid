@@ -18,7 +18,7 @@ io @println "Hello, World!".
 
 ## Imperative Programming is Straightforward
 
-Imperative programming in Asteroid should seem familiar to anybody who has some programming experience.
+Imperative programming in Asteroid should seem familiar to anybody who has some programming experience in languages like Python or JavaScript.
 Intuitive  structure definitions and standard list notation makes it easy to create the data structures your
 program needs.  Here is a  program that prints out the names of persons whose name contains a lower case 'p',
 ```
