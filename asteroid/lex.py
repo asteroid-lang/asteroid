@@ -60,7 +60,12 @@ keywords = {
 token_specs = [
 #   value:                                        display:      type:
     (r'[0-9]+([.][0-9]+)?((e|E)(\+|\-)?[0-9]+)?', "number",     'NUMBER'),
-    (r'"([^"]|\\"|\\)*"',                         "string",     'STRING'),
+    # the following is very fragil, re's are tried in order, therefore we
+    # try matching things in the following order:
+    #   1. everything that is not a double quote or a backslash
+    #   2. an escaped double quote
+    #   3 then a backslash
+    (r'"([^"\\]|\\"|\\)*"',                       "string",     'STRING'),
     (r'(--.*)|(\#.*)',                            "comment",    'COMMENT'),
     (r'[a-zA-Z_][a-zA-Z_0-9]*',                   "variable",   'ID'),
     (r'\n',                                       "\n",         'NEWLINE'),
@@ -177,6 +182,8 @@ def tokenize(code):
         elif type == 'STRING':
             #lhh
             #print(value)
+            if value[-2] == '\\' and value[-3] != '\\':
+                raise ValueError("bad escape sequence '\\\"' in string")
             lines = value.count('\n')
             (module, lineno) = state.lineinfo
             line_num += lines
@@ -191,10 +198,7 @@ def tokenize(code):
         elif type == 'WHITESPACE':
             continue
         elif type == 'MISMATCH':
-            if value == '\"':
-                raise ExpectationError(expected='\"', found='EOF')
-            else:
-                raise ValueError("unexpected character '{}'".format(value))
+            raise ValueError("unexpected character '{}'".format(value))
         # put the token onto the tokens list
         tokens.append(Token(type, value, module, line_num))
     # always append an EOF token so we never run out of tokens
@@ -266,17 +270,9 @@ class Lexer:
 
 # test lexer
 if __name__ == "__main__":
-
+    from sys import stdin
     lexer = Lexer()
-
-    prgm = \
-    '''
-    -- this is a test program
-    let y = 1.
-    let x = y - -1.
-    '''
-    lexer.input(prgm)
-
+    lexer.input(stdin.read())
     while not lexer.EOF():
         tok = lexer.peek()
         print(tok)
