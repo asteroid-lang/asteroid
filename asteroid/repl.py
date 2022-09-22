@@ -35,7 +35,10 @@ def print_repl_menu():
     print("Asteroid Version", VERSION)
     print("(c) University of Rhode Island")
     print("Type \"asteroid -h\" for help")
-    print("Press CTRL-D to exit")
+    if platform.system() == 'Windows':
+        print("Press CTRL-Z + Return to exit")
+    else:
+        print("Press CTRL-D to exit")
 
 def run_repl(redundancy, prologue, functional_mode):
 
