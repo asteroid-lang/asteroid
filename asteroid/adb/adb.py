@@ -68,14 +68,14 @@ class ADB:
         #############################
         # Name-content file dictionary
         self.program_text = {}
-        
+
         # The original filename
         self.filename = None
-        
+
         #############################
         # The parser for incoming commands
         self.dbgp = DebuggerParser()
-        
+
         #############################
         # Dictionary of macros
         self.macros = {
@@ -159,12 +159,12 @@ class ADB:
         (module, lineno) = state.lineinfo
         print("\nERROR: {}: {}: {}".format(module, lineno, e))
         if self.interp_options['exceptions']:
-            print(traceback.format_exc())   
-        
+            print(traceback.format_exc())
+
         # Set out lineinfo here to be sure that the file is in
         # our program_text dictionary
         self.set_lineinfo( (module, lineno) )
-        
+
         print("    ==>> " + self.program_text[module][lineno - 1].strip())
         print()
         self.message("Error occured, session will restart after commands")
@@ -173,7 +173,7 @@ class ADB:
         """
         This function runs the given filename through the asteroid debugger
         """
-        
+
         # Set our primary filename
         self.filename = filename
 
@@ -184,7 +184,9 @@ class ADB:
 
         from asteroid.adb.version import VERSION
         print("Welcome to ADB version {}.".format(VERSION))
-        print("Type \"help\" to recieve help.")
+        print("(c) University of Rhode Island")
+        print("Type \"help\" for help.")
+        print("Type \"quit\" to leave the debugger.")
         print("ADB is experimental and under active development")
         print("Report any suggestions or bugs to https://github.com/asteroid-lang/")
         print()
@@ -222,7 +224,7 @@ class ADB:
                     debugger=self)
 
                 asteroid.walk.debugging = True
-                
+
                 # Give us one final tick before restarting
                 # This gives us one last tick before EOF is reached
                 self.set_lineinfo( (self.filename, len(self.program_text[self.filename])) )
@@ -232,7 +234,7 @@ class ADB:
                 # Restart session
                 self.message("End of file reached, restarting session")
                 self.reset_defaults()
-            
+
             except (EOFError, KeyboardInterrupt):
                 break;
 
@@ -247,7 +249,7 @@ class ADB:
                 except (EOFError, KeyboardInterrupt):
                     # If the user tries to exit with CTRL+C/D, exit
                     break;
-                
+
                 # Reset the debugger's default state
                 self.message("Session restarted")
                 self.reset_defaults()
@@ -266,7 +268,7 @@ class ADB:
         # Preliminary check
         if not (breakpoint_at_line and in_same_file):
             return False
-        
+
         # Get the break condition for this breakpoint
         break_cond = self.breakpoints.get(self.lineinfo[1])
 
@@ -338,7 +340,7 @@ class ADB:
         from os.path import exists
 
         self.lineinfo = lineinfo
-        
+
         # If the program text isn't already loaded and the file actually exists
         # (isn't a stream line <input> or <command>)
         if lineinfo[0][0] == '<' and lineinfo[0][-1] == '>':
@@ -347,7 +349,7 @@ class ADB:
         if not self.program_text.get(lineinfo[0]) and exists(lineinfo[0]):
             with open(lineinfo[0], "r") as f:
                 self.program_text[lineinfo[0]] = f.readlines()
-            
+
             # Always add an EOF specifier
             self.program_text[lineinfo[0]].append("[EOF]\n")
 
@@ -392,7 +394,7 @@ class ADB:
         List the breakpoints and their conditions
         """
         self.message("Breakpoints")
-        
+
         # For eaxch breakpoint
         for b in self.breakpoints:
 
@@ -465,7 +467,7 @@ class ADB:
         for m in self.macros:
             print("* {} : {}".format(
                 m, self.macro_to_string(m)))
-    
+
     def macro_to_string(self, macro_name):
         contents = self.macros[macro_name]
 
@@ -495,7 +497,7 @@ class ADB:
                 ' '.join([str(n) for n in cmd[1]]))
             elif cmd == 'DELETE':                      outstr += "delete {}".format(
                 ' '.join([str(n) for n in cmd[1]]))
-            
+
             elif cmd[0] == 'NAME':                     outstr += str(cmd[1])
             elif cmd == ('QUIT', ):                    outstr += 'quit'
             elif cmd == ('NOOP', ):                    outstr += 'noop'
@@ -519,14 +521,14 @@ class ADB:
         old_lineinfo = self.lineinfo
         old_explicit = self.explicit_enabled
         old_state_lineinfo = state.lineinfo
-        
+
         # Set the explicit state to false
         self.explicit_enabled = False
-        
+
         # Set the debugging flag to false
         import asteroid.walk
         asteroid.walk.debugging = False
-        
+
         # Run the asteroid code
         try:
             interp(value,
@@ -556,11 +558,11 @@ class ADB:
 
         # Reset debugging state
         asteroid.walk.debugging = True
-        
+
         # Reset explicit mode and lineinfo
         self.explicit_enabled = old_explicit
         self.set_lineinfo(old_lineinfo)
-        
+
         # Reset the state's internal lineinfo
         state.lineinfo = old_state_lineinfo
 
@@ -579,7 +581,7 @@ class ADB:
         # Turn off debugging
         import asteroid.walk
         asteroid.walk.debugging = False
-        
+
         # Run the repl
         repl(
             new=False,
@@ -601,7 +603,7 @@ class ADB:
         Lists help options and prints help info
         """
         from asteroid.adb.help import command_description_table
-        
+
         # If a command name is supplied
         if name:
             # Get the command description for that name
@@ -615,7 +617,7 @@ class ADB:
                 self.message("Unknown command for help: {}".format(
                     name
                 ))
-        
+
         # If no command is supplied, then just print out the default command menu
         else:
             print("Type 'help NAME' to get help for a command")
@@ -636,10 +638,10 @@ class ADB:
             if self.original_config == None:
                 self.original_config = state.symbol_table.get_config()
                 self.original_lineinfo = state.lineinfo
-            
+
             # Get the associated module and line for this frame
             (module, line, _) = state.trace_stack[-self.config_offset]
-            
+
             # Set the config
             state.symbol_table.set_config(
                 state.symbol_table.saved_configs[-self.config_offset]
@@ -653,14 +655,14 @@ class ADB:
         Moves the context to the next lowest stack frame
         """
         stack = state.trace_stack
-        
+
         if self.config_offset == 0:
             self.message("At bottommost frame")
-        
+
         else:
             self.config_offset -= 1
             bottom_level = (self.config_offset == 0)
-        
+
             if bottom_level:
                 if self.original_config:
                     state.symbol_table.set_config(self.original_config)
@@ -669,12 +671,12 @@ class ADB:
                 # We're at the bottommost frame and want to go up, but need
                 # to save the original config
                 (module, line, _) = state.trace_stack[-self.config_offset]
-                
+
                 state.symbol_table.set_config(
                     state.symbol_table.saved_configs[-self.config_offset])
 
                 self.set_lineinfo( (module, line) )
-                
+
             self.print_given_line(self.lineinfo)
 
     # This function is super spaghetti but the behavior is complicated
@@ -692,23 +694,23 @@ class ADB:
         # If we're inside of some scope, append a "bottom" to the stack copy
         if len(call_stack) > 0:
             stack_copy.append((*state.lineinfo, "<bottom>"))
-        
+
         start_of_line = "*"
-        
+
         # If we're just at the top level, just note that
         if len(stack_copy) == 0:
             print("-> <toplevel>")
-        
+
         # For each list in the stack
         for i, s in enumerate(stack_copy):
             # There's only the top level
             if len(stack_copy) == 1:
                 start_of_line = ">"
-        
+
             # We're at the bottom of the stack
             elif (self.config_offset == 0 and len(stack_copy) > 0) and i == len(stack_copy) - 1:
                 start_of_line = ">"
-        
+
             # We're traversing frames
             elif self.config_offset != 0:
                 if i == (len(stack_copy) - self.config_offset) - 1:
@@ -718,7 +720,7 @@ class ADB:
             if s[2] == "<bottom>":
                 print("{} {} {}".format(start_of_line, s[0], s[1]))
                 self.print_given_line( (s[0], s[1]) , header=False)
-        
+
             else:
                 print("{} {} {} (Calling {})".format(start_of_line, s[0], s[1], s[2]))
                 self.print_given_line( (s[0], s[1]) , header=False)
@@ -754,7 +756,7 @@ class ADB:
         elif cmd == ('WHERE',):            self.do_where_command()
         elif cmd == ('LONGLIST',):         self.list_program()
         elif cmd == ('LIST',):             self.list_program(relative=True)
-    
+
         elif cmd == ('RETVAL',):
             if self.retval:
                 self.message("Most recent return value: {}".format(self.retval))
@@ -800,7 +802,7 @@ class ADB:
         elif cmd == ('NEXT', ):
             self.set_exc(next=True)
             exit_loop = True
-        # Break 
+        # Break
         elif cmd[0] == 'BREAK':
             nums, conds = cmd[1], cmd[2]
             if nums:
@@ -817,7 +819,7 @@ class ADB:
         elif cmd[0] == 'NAME':
             v = cmd[1]
             # If the command name is in macros
-            if v in self.macros:                    
+            if v in self.macros:
                 self.command_queue += self.macros[v]
             else:
                 raise ValueError("Unknown macro: {}".format(str(v)))
@@ -827,7 +829,7 @@ class ADB:
 
         elif cmd == ('NOOP', ):
             pass
-        
+
         else:
             raise ValueError("Unknown command: {}".format(str(cmd)))
 
@@ -852,7 +854,7 @@ class ADB:
 
             # Get the command
             cmd = input(query_symbol)
-            
+
             # Try to walk the command
             try:
                 # Parse the command
@@ -870,7 +872,7 @@ class ADB:
                     if exit_loop:
                         self.reset_config()
                         break;
-            
+
             # Intercept debugger command errors
             except ValueError as e:
                 print("Debugger command error [{}]".format(e))
@@ -892,7 +894,7 @@ class ADB:
         complex command execution
         """
         exit_loop = False
-        
+
         # Clear out the command queue
         while self.command_queue:
             exit_loop = self.walk_command(self.command_queue.pop(0))
@@ -900,7 +902,7 @@ class ADB:
                 if self.original_config:
                     self.reset_config()
                 return
-        
+
         # print the current line with lineinfo
         self.print_given_line(self.lineinfo)
 
@@ -909,7 +911,7 @@ class ADB:
 
         # Reset the tab level
         self.tab_level = 0
-    
+
     def notify_explicit(self):
         """
         Run a command loop ~iff~ we're in explicit mode
@@ -962,7 +964,7 @@ class ADB:
             # Grab the old and current lineinfo
             (old_file_name, old_lineno) = self.old_lineinfo
             (cur_file_name, cur_lineno) = self.lineinfo
-            
+
             # Compare them
             if (old_file_name == cur_file_name) and (cur_lineno > old_lineno):
                 self.exc['UNTIL'] = False
@@ -971,6 +973,6 @@ class ADB:
         # Otherwhise, if we're stepping through the program, always tick
         elif self.exc['STEP']:
             self.tick()
-        
+
         # Reset the top level so that nested statements don't come in
         self.set_top_level(False)
