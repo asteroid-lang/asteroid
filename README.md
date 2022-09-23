@@ -1,8 +1,14 @@
 # Asteroid
-Asteroid is a modern, multi-paradigm programming language supporting first-class patterns.  More details can
+Asteroid is a modern, multi-paradigm programming language that supports first-class patterns.  More details can
 be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
+
+## New in Release 1.1.3
+
+* Fixes a fatal bug on Windows regarding the `readline` functionality in Python 3.10.
+
+* Fixes a bug with escaped double quotes in strings.
 
 ## New in Release 1.1.2
 

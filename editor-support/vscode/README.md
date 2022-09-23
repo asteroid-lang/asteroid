@@ -9,9 +9,3 @@ The Asteroid Syntax Highlighter extension provides syntactic highlighting for ke
 ## Installation
 
 To use the extension with Visual Studio Code, copy the extension into the `<user home>/.vscode/extensions` folder and restart Visual Studio Code.
-
-## Release Notes
-
-### 1.1.2
-
-Initial release of the Asteriod syntax highlighter. Provides highlighting for Asteroid 1.1.2 keywords, constants, functions and structures.
