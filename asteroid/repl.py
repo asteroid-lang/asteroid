@@ -1,3 +1,9 @@
+###########################################################################################
+# Asteroid interpreter shell
+#
+# (c) University of Rhode Island
+###########################################################################################
+
 from asteroid.interp import interp, load_prologue
 from asteroid.version import VERSION
 from asteroid.state import state
@@ -6,7 +12,12 @@ from asteroid.walk import function_return_value
 from asteroid.support import term2string
 
 from sys import stdin
-import readline
+import platform
+
+if platform.system() == 'Windows':
+    import pyreadline3
+else:
+    import readline
 
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
@@ -22,14 +33,19 @@ def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
 def print_repl_menu():
     print("Asteroid Version", VERSION)
-    print("Run \"asteroid -h\" for help")
-    print("Press CTRL+D to exit")
+    print("(c) University of Rhode Island")
+    print("Type \"asteroid -h\" for help")
+    if platform.system() == 'Windows':
+        print("Press CTRL-Z + Return to exit")
+    else:
+        print("Press CTRL-D to exit")
 
 def run_repl(redundancy, prologue, functional_mode):
 
     # The two different prompt types either > for a new statement
     # or . for continuing one
-    arrow_prompt, continue_prompt = ("> ", ". ")
+    # lhh: changed the prompt since replit.com uses the > as their console prompt
+    arrow_prompt, continue_prompt = ("ast> ", ".... ")
     current_prompt = arrow_prompt
 
     # Our line to be interpreted
@@ -84,6 +100,8 @@ def run_repl(redundancy, prologue, functional_mode):
                 if retval[1] != None:
                     print(term2string(function_return_value[-1]))
 
+                    # Reset the return value
+                    function_return_value[0] = None
 
         except ExpectationError as e:
             # If we expected something but found EOF, it's a continue
@@ -99,6 +117,5 @@ def run_repl(redundancy, prologue, functional_mode):
             print("error: "+str(e))
             line = ""
             current_prompt = arrow_prompt
-
         else:
             current_prompt = arrow_prompt

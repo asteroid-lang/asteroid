@@ -3,7 +3,7 @@ on:
     push:
         branches:
             - master
-            - dev-1.2.0
+            - dev-1.1.3
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
