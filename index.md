@@ -169,7 +169,7 @@ buddy @add_trick "sit stay".
 buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) if tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+for (Dog(name,tricks) if type @tostring(tricks) is ".*fetch.*") in [fido,buddy] do
     io @println (name+" knows how to fetch").
 end
 ```
@@ -181,16 +181,5 @@ Fido knows how to fetch
 ```
 You can try Asteroid without installing anything in our cloud-based Asteroid installation (see 'Try it!' below) or you can install Asteroid on your machine via 'pip' (see the PyPI Project Page below).
 
-## Contributors
-
-Open source projects cannot succeed without the hard work and commitment of the contributors that make it happen,
-
-Ariel Finkle<br>
-Calvin Higgens<br>
-Christian Tropeano<br>
-Lutz Hamel<br>
-Oliver McLaughlin<br>
-Theodore Henson<br>
-Timothy Colaneri<br>
 
 [Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
