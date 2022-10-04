@@ -6,15 +6,15 @@
 load system io.
 load system type.
 
-let POS_INT = pattern with (n:%integer) if n > 0.
-let NEG_INT = pattern with (n:%integer) if n < 0.
+let POS_INT = pattern %[(x:%integer) if x > 0]%.
+let NEG_INT = pattern %[(x:%integer) if x < 0]%.
 
 function fact
     with 0 do
         return 1
-    with *POS_INT do
+    with n:*POS_INT do
         return n * fact (n-1).
-    with *NEG_INT do
+    with n:*NEG_INT do
         throw Error("undefined for "+n).
     end
 
