@@ -18,8 +18,8 @@ structure Rule with
   end
 
 let rule_table = [
-    Rule('add(x,0), 'reduce(x)),
-    Rule('add(x,s(y)), 's(reduce(add(x,y))))
+    Rule(pattern add(x,0), pattern reduce(x)),
+    Rule(pattern add(x,s(y)), pattern s(reduce(add(x,y))))
     ].
 
 function reduce
