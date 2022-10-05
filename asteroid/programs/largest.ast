@@ -7,7 +7,7 @@ load system util.
 function largest with (list:%list,fcmp:%function) do
    let largest = list@0.
    for item in list do
-      if fcmp(item,largest) do
+      if fcmp (item,largest) do
          let largest = item.
       end
    end
