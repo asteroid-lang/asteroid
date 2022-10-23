@@ -2,8 +2,7 @@ name: Run Tests
 on:
     pull_request:
         branches:
-            - master
-            - dev-1.2.0
+            - dev-1.1.4
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
