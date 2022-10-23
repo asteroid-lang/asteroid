@@ -5,13 +5,12 @@ load system io.
 
 function qsort
     with [] do
-        return [].
+        [].
     with [a] do
-        return [a].
+        [a].
     with [pivot|rest] do
         let less=[].
         let more=[].
-
         for e in rest do
             if e < pivot do
                 let less = less + [e].
@@ -19,9 +18,8 @@ function qsort
                 let more = more + [e].
             end
         end
-
-        return qsort less + [pivot] + qsort more.
-    end
+        qsort less + [pivot] + qsort more.
+end
 
 -- print the sorted list
 io @println (qsort [3,2,1,0])

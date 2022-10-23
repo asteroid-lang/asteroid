@@ -1,33 +1,32 @@
 -- implements Peano addition using a lookup table for the rewrite rules
 
-load "util".
 load system io.
 
 structure s with -- successor function constructor
   data x.
-  end
+end
 
 structure add with -- add function constructor
   data x.
   data y.
-  end
+end
 
 structure Rule with
   data lhs.
   data rhs.
-  end
+end
 
 let rule_table = [
-    Rule(pattern add(x,0), pattern reduce(x)),
-    Rule(pattern add(x,s(y)), pattern s(reduce(add(x,y))))
-    ].
+  Rule(pattern add(x,0), pattern reduce(x)),
+  Rule(pattern add(x,s(y)), pattern s(reduce(add(x,y))))
+].
 
 function reduce
-    with term do
-        for (Rule(lhs, rhs) if term is *lhs) in rule_table do
-            return eval(rhs).
-        end
-        return term.
+  with term do
+    for (Rule(lhs, rhs) if term is *lhs) in rule_table do
+        return eval(rhs).
     end
+    return term.
+end
 
 io @println (reduce(add(s(s(0)),s(s(s(0)))))).
