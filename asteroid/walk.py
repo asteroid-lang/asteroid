@@ -942,11 +942,11 @@ def handle_builtins(node):
             raise ValueError("unknown builtin unary operation '{}'".format(opname))
 
 #########################################################################
-def pop_stackframe(trace='POP_TRACE'): 
+def pop_stackframe(error_trace=False): 
     # pop frame off the stack
     state.symbol_table.pop_scope()
     state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
-    if trace == 'KEEP_TRACE':
+    if error_trace:
         state.error_trace = copy(state.trace_stack)
     state.trace_stack.pop()
 
@@ -1095,7 +1095,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # clean up our runtime stack and rethrow
         # Note: do not reset lineinfo, this way the state points at the source 
         # of the exception
-        pop_stackframe(trace='KEEP_TRACE')
+        pop_stackframe(error_trace=True)
         raise e
 
     # all done with function call -- clean up and exit
