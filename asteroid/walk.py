@@ -4,7 +4,7 @@
 # (c) University of Rhode Island
 #########################################################################
 
-from copy import deepcopy
+from copy import deepcopy,copy
 from re import match as re_match
 
 from asteroid.globals import *
@@ -942,6 +942,15 @@ def handle_builtins(node):
             raise ValueError("unknown builtin unary operation '{}'".format(opname))
 
 #########################################################################
+def pop_stackframe(error_trace=False): 
+    # pop frame off the stack
+    state.symbol_table.pop_scope()
+    state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
+    if error_trace:
+        state.error_trace = copy(state.trace_stack)
+    state.trace_stack.pop()
+
+#########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
     # Needed for later
     global debugging
@@ -1050,19 +1059,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Reset settings
     except RedundantPatternFound as r:
         debugging = old_debugging
-
-        # coming back from a function call - restore caller's env
+        # restore caller's env
         state.lineinfo = old_lineinfo
-
         # Keep debugger up to date
-        if debugging:
-            debugger.set_lineinfo(state.lineinfo)
-
-        state.symbol_table.pop_scope()
-        state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
-
-        state.trace_stack.pop()
-
+        if debugging: debugger.set_lineinfo(state.lineinfo)
+        pop_stackframe()
         raise r
 
     # execute the function
@@ -1089,17 +1090,20 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         function_return_value.pop()
         return_value = val.value
 
-    # coming back from a function call - restore caller's env
-    state.lineinfo = old_lineinfo
+    except Exception as e:
+        # we got some other kind of exception within the function call
+        # clean up our runtime stack and rethrow
+        # Note: do not reset lineinfo, this way the state points at the source 
+        # of the exception
+        pop_stackframe(error_trace=True)
+        raise e
 
+    # all done with function call -- clean up and exit
+    # restore caller's env
+    state.lineinfo = old_lineinfo
     # Keep debugger up to date
     if debugging: debugger.set_lineinfo(state.lineinfo)
-
-    state.symbol_table.pop_scope()
-    state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
-
-    state.trace_stack.pop()
-
+    pop_stackframe()
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname],
@@ -1331,6 +1335,8 @@ def try_stmt(node):
         except PatternMatchFailed:
             pass
         else:
+            # handler found - null out error_trace
+            state.error_trace = None
             declare_unifiers(unifiers)
             walk_stmt_list(catch_stmts, step_state=stepping)
             return
