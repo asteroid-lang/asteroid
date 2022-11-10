@@ -1,7 +1,7 @@
 ###########################################################################################
 # Lexer for Asteroid
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import re
@@ -13,7 +13,9 @@ from asteroid.globals import ExpectationError
 keywords = {
 #   value:          type:
     'and'           : 'AND',
+    'as'            : 'AS',
     'assert'        : 'ASSERT',
+    'bind'          : 'BIND',
     'break'         : 'BREAK',
     'catch'         : 'CATCH',
     'data'          : 'DATA',

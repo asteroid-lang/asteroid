@@ -422,7 +422,7 @@ we are dealing with a list,
 ::
       let [h | t] = [1,2,3].
 
-The ``is`` Predicate
+The Is Predicate
 %%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``exp IS pattern``
@@ -443,7 +443,7 @@ Example,
          io @println "not matched".
       end
 
-The ``in`` Predicate
+The In Predicate
 %%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``exp IN list_exp``
@@ -515,7 +515,7 @@ First-Class Patterns
 %%%%%%%%%%%%%%%%%%%%
 
 | Syntax: ``PATTERN exp``
-| Syntax: ``* exp``
+| Syntax: ``'*' exp (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
 This construction allows the user to construct a pattern as a value using
 the ``pattern`` keyword.  The advantage of patterns as values is that they
@@ -533,6 +533,21 @@ variables, e.g.
 
 Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``p``
 such that ``x`` is bound to the value ``2``.
+
+The optional ``bind`` term together with an appropriate list of variable names 
+allows the user to selectively project variable bindings from a constraint pattern 
+into the current scope.  The ``as`` keyword allows you to rename those bindings.
+Consider the following program,
+::
+      let Pair = pattern %[(x,y)]%.
+
+      -- bindings of the variables x and y are now visible as a and y respetively
+      let *Pair bind [x as a, y] = (1,2).  
+      assert( a == 1).
+      assert(y == 2).
+
+At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope 
+of the constraint pattern into our current scope.
 
 Type Patterns
 %%%%%%%%%%%%%
@@ -553,8 +568,8 @@ Named Patterns
 Syntax: ``name_exp ':' pattern``
 
 Named patterns allow you to bind the term matched by the pattern to a variable.
-Here the name expression has to evaluate to something that looks like a variable,
-object member variable, or array location.
+Here the name expression has to evaluate to either a variable,
+object member variable, or list location.
 
 Example,
 ::
@@ -562,6 +577,15 @@ Example,
 
 The variable ``x`` will be bound to the value of ``val`` if that value matches the
 type pattern ``%integer``.
+
+Named patterns are a syntactic short hand for the equivalent conditional pattern,
+::
+      name_exp if name_exp is pattern
+
+That means the following two ``let`` statements are equivalent,
+::
+      let x:(q,p) = (1,2).
+      let x if x is (q,p) = (1,2).
 
 Conditional Patterns
 %%%%%%%%%%%%%%%%%%%%

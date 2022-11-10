@@ -1,0 +1,7 @@
+let Pair = pattern (x,y).
+
+try 
+   let *Pair bind [x as a, y] = (1,2).  -- bindings of the variables x and y are now visible again
+catch Exception(errortype,s) do
+   assert(s is ".*binding term lists.*").
+end

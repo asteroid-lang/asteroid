@@ -90,7 +90,7 @@
 		{
 			"name": "keyword",
 			"comment": "keyword.other.asteroid",
-			"match": "\\b(assert|eval)\\b"
+			"match": "\\b(as|assert|bind|eval)\\b"
 		},
 		{
 			"name": "keyword.operator.comparison.asteroid",

@@ -2,18 +2,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
 
 
 ===================
@@ -223,3 +214,4 @@ Explicit
 Quit
 ---------
 ``q(uit)`` Quits the current ADB session
+
