@@ -1,3 +1,6 @@
+-- this test case is no longer valid, we no longer allow
+-- patterns as constructors, except for the simplest
+-- cases because patterns have become too complicated
 load system io.
 
 structure Family with
@@ -10,7 +13,7 @@ structure Family with
     end
   end -- structure
   
-let FAMILY = pattern with Family(*PARENT1).
+let FAMILY = pattern with Family(PARENT1).
 
 structure Parent with
   data name.

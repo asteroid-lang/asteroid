@@ -238,8 +238,8 @@ information from a ``Person`` object.
 In addition to the default constructor, structures in Asteroid also support user specified
 constructors and member functions.  We'll talk about those later when we talk about OO programming in Asteroid.
 
-The ``let`` Statement
----------------------
+The Let Statement
+-----------------
 
 The ``let`` statement is a pattern matching statement and can be viewed as Asteroid's version of the assignment statement even though statements like,
 ::
@@ -387,8 +387,8 @@ Pattern Matching
 Pattern matching lies at the heart of Asteroid.  We saw some of Asteroid's pattern matching ability when we discussed the ``let`` statement.  We can also have pattern matching
 in expressions using the ``is`` predicate.
 
-Pattern Matching in Expressions: The ``is`` Predicate
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Pattern Matching in Expressions: The Is Predicate
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Consider the following example of this predicate among some patterns,
 ::
@@ -467,8 +467,8 @@ that the integers are positive using the appropriate conditions on the input val
 we are being passed a negative integer, then we throw an error.
 
 
-Pattern Matching in ``for`` Loops
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Pattern Matching in For Loops
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We have seen pattern matching in ``for`` loops earlier.  Here we show another
 example. This combines structural matching with regular expression matching
@@ -479,8 +479,8 @@ that selects certain items from a list. Suppose we want to print out the names o
 
 Here we pattern match the ``Person`` object in the ``for`` loop and then use a regular expression to see if the name of that person matches our requirement that it contains a lower case 'p'.  We can tag the pattern with a variable name, a named pattern, so that we can print out the name if the regular expression matches. The output is ``Sophie``.
 
-Pattern Matching in ``try-catch`` Statements
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Pattern Matching in Try-Catch Statements
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Exception handling in Asteroid is very similar to exception handling in many of the other modern programming languages available today.  The example below shows an Asteroid program  that throws one of two exceptions depending on the randomly generated value ``i``,
 ::
@@ -704,6 +704,26 @@ With the ``%[...]%`` operators in place we prevent
 the pattern ``v if (v is %integer) and v > 0`` from instantiating the variable ``v`` thus preventing a non-linearity
 to occur in the argument list pattern.
 
+Sometimes we need to use constraint patterns instead of straightforward patterns
+in order to avoid non-linearities but
+we also want controlled access to the variables these constraint patterns declare.
+We achieve this by using the ``bind`` keyword at the pattern-match site.  
+Consider the following program,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-043a.ast"
+
+In the function definition of ``dot2d`` we see that the ``Pair`` pattern is used 
+twice to make sure that the function is called with a pair of pairs as its argument.
+However, in order to compute the dot product of those two pairs we need access 
+to the values each pair matched.  We use the ``bind`` keyword together with an 
+appropriate binding term list to extract the matched values.  For the first
+pair we map ``x`` and ``y`` to ``a1`` and ``a2`` and for the second 
+pair we map ``x`` and ``y`` to ``b1`` and ``b2``, respectively.
+
+As a quick aside, the ``as`` construction in the binding term list is only necessary 
+when trying to resolve non-linearities otherwise the binding term list can just consist
+of the variable names appearing in the pattern that you want to bind into the current
+scope.
 
 More on Multi-Dispatch
 ----------------------

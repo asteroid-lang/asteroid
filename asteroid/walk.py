@@ -518,13 +518,25 @@ def __unify(term, pattern, unifying = True ):
                 message_explicit("Success!", level="secondary")
                 return unifier
 
-    elif pattern[0] == 'deref':  # ('deref', v)
+    elif pattern[0] == 'deref':  # ('deref', v, bl)
         # v can be an AST representing any computation
         # that produces a pattern.
 
         message_explicit("Dereferencing {}", [gen_t2s(pattern[1])])
 
         p = walk(pattern[1])
+
+        if pattern[2][0] != 'nil': # we have a binding term list
+            if p[1][0] != 'constraint':
+                raise ValueError(
+                    "binding term lists only supported for constraint patterns")
+            else: 
+                # construct a new constraint pattern with the binding term list in place
+                p = ('pattern',
+                        ('constraint',
+                            p[1][1],
+                            pattern[2]))
+
 
         message_explicit("{} -> {}", [gen_t2s(pattern), gen_t2s(p)], 
             level="secondary")
@@ -558,12 +570,29 @@ def __unify(term, pattern, unifying = True ):
             notify=True, increase=True
         )
 
+        p = pattern[1]
+        bl = pattern[2] # binding term list
+
         state.constraint_lvl += 1
-        unifier = unify(term,pattern[1])
+        unifier = unify(term,p)
         state.constraint_lvl -= 1
 
         message_explicit("[End] constraint pattern", decrease=True)
-        return [] #Return an empty unifier
+
+        if bl[0] == 'nil':
+            return [] #Return an empty unifier
+        else:
+            # binding list is non-empty, map variables
+            # that appear in the binding list into
+            # the returned unifier
+            new_unifier = []
+            for u in unifier:
+                ((ID,x),exp) = u
+                for bt in bl[1]:
+                    (BINDING_TERM, (ID,y), new_id) = bt
+                    if x == y:
+                        new_unifier += [(new_id,exp)]
+            return new_unifier
 
     elif term[0] != pattern[0]:  # nodes are not the same
         message_explicit("Fail: {} and {} are not the same",
@@ -1873,14 +1902,9 @@ def process_lineinfo(node):
 #########################################################################
 def deref_exp(node):
 
-    (DEREF, id_exp) = node
-    assert_match(DEREF, 'deref')
-
     # deref operators are only meaningful during pattern matching
-    # ignore during a value walk.
-    # NOTE: the second walk is necessary to interpret what we retrieved
-    # through the indirection
-    return walk(walk(id_exp))
+    # it is an error to have the deref operator appear in an expression
+    raise ValueError("dereferencing patterns is not valid in expressions.")
 
 #########################################################################
 def constraint_exp(node):
@@ -1888,11 +1912,9 @@ def constraint_exp(node):
     # Constraint-only pattern matches should not exist where only an
     # expression is expected. If we get here, we have come across this
     # situation.
-    # A constraint-only pattern match AST cannot be walked and therefor
+    # A constraint-only pattern match AST cannot be walked and therefore
     # we raise an error.
-    raise ValueError(
-        "constraint pattern: '{}' cannot be used as a constructor."
-        .format(term2string(node)))
+    raise ValueError("a constraint pattern cannot be used as an expression.")
 
 #########################################################################
 def set_ret_val(node):
@@ -2023,6 +2045,8 @@ def debug_walk(node, dbg):
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
+    # Note: statement lists are now handled by separate functions outside
+    #       the walk function
     # statements - statements do not produce return values
     'lineinfo'      : process_lineinfo,
     'set-ret-val'   : set_ret_val,

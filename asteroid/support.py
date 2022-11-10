@@ -341,14 +341,18 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'constraint':          # Handle a constraint-only pattern
-        (CONSTRAINT,ptrn) = term
+        (CONSTRAINT,ptrn,bl) = term
+        if bl[0] != 'nil':
+            raise ValueError("term2string: binding term lists not supported")
         term_string = '%['
         term_string += term2string(ptrn)
         term_string += ']%'
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
-        (DEREF, d_exp) = term
+        (DEREF, d_exp, binding_list) = term
+        if binding_list[0] != 'nil':
+            raise ValueError("internal error: binding lists in term2string not supported")
         term_string = "*" + term2string(d_exp)
 
         #Get the actual pattern from the symbol table
