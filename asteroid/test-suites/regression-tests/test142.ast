@@ -1,0 +1,5 @@
+load system io.
+
+for c in (1,2,3) do
+   io @println c.
+end
