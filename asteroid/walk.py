@@ -161,15 +161,17 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Objects matched", decrease=True)
         return unifiers
 
-    elif pattern[0] == 'string' and term[0] != 'string':
+    # no implicit type conversions during pattern matching
+    # removing this code, see the discussion in issue 95
+    # elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
-        message_explicit("Matching string {} and non-string {}",
-            [gen_t2s(pattern), gen_t2s(term)],
-            notify=True
-        )
-
-        return unify(term2string(term), pattern[1])
+    #    message_explicit("Matching string {} and non-string {}",
+    #        [gen_t2s(pattern), gen_t2s(term)],
+    #        notify=True
+    #    )
+    #
+    #    return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'if-exp':
 
