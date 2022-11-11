@@ -1443,10 +1443,9 @@ def for_stmt(node):
 
     # expand the list_term
     (LIST_TYPE, list_val) = walk(list_term)
-    if LIST_TYPE not in ['list','string']:
-        raise ValueError("only iteration over strings and lists is supported")
+    if LIST_TYPE not in ['list','string','tuple']:
+        raise ValueError("iteration not supported for type '{}'".format(LIST_TYPE))
 
-    # we allow iteration over two types of structures: (1) lists (2) strings
     # if it is a string turn the list_val into a list of Asteroid characters.
     if LIST_TYPE == 'string':
         new_list = []
