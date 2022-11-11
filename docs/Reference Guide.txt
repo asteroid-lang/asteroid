@@ -293,13 +293,24 @@ can be copied into an object,
              let this @name = name.
              let this @age = age.
           end
+          function __str__ with none do
+            return this@name+" is "+this@age+" years old".
+          end
       end
 
       let betty = Person("Betty",21).  -- call constructor
       assert( betty @name == "Betty" ).
       assert( betty @age == 21 ).
 
-Also note that object identity is expressed using the ``this`` keyword.
+      load system type.
+      assert(type @tostring betty is "Betty is 21 years old").
+
+Note that object identity is expressed using the ``this`` keyword.
+Here we also supplied an instantiation of the ``__str__`` function that allows
+us to customize the stringification of the object.  See the last line
+where we cast the object ``betty`` to a string.  Without the ``__str__`` function
+Asteroid uses a default representation of the object as a string.
+The ``__str__`` function does not accept any arguments and has to return a string.
 
 Try-Catch
 %%%%%%%%%
