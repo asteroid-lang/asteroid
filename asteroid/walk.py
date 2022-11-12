@@ -120,7 +120,7 @@ def __unify(term, pattern, unifying = True ):
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
-        # Unpack a term-side name-pattern if evaluating redundant clauses
+        # Unpack a term-side named-pattern if evaluating redundant clauses
         message_explicit("Evaluating named pattern", notify=True)
         return unify(term[2],pattern,unifying)
 
@@ -351,7 +351,12 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)],
             notify=True, increase=True
         )
-        # name_exp can be an id or an index expression.
+        # name_exp has to be an id or an index expression.
+        if name_exp[0] not in ['id','index']:
+            raise ValueError(
+                "expected a variable, list element, or data member in named pattern\
+                 instead of {}".format(term2string(name_exp)))
+
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
         
         message_explicit("Matched ({} and {})", 
