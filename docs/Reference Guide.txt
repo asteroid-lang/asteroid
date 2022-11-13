@@ -467,6 +467,27 @@ Example,
 ::
       let true = 1 in [1,2,3].
 
+The Eval Function
+%%%%%%%%%%%%%%%%%
+
+The ``eval`` function allows you to evaluate Asteroid expressions.  If the expression
+is a string then the contents of the string is treated like Asteroid code and is
+interpreted accordingly in the current interpreter environment.  If that code produces a value then the ``eval`` function
+will return that value, e.g.,
+::
+      let a = eval "1+1".
+      assert(a == 2).
+
+If the expression to be evaluated is a simple, structural pattern then the pattern is 
+evaluated as a constructor where variables are instantiated from the current environment.
+For example,
+::
+      let p = pattern (x,y)
+      let x = 1.
+      let y = 2.
+      let o = eval p.
+      assert(o is (1,2)).
+
 List Comprehensions
 %%%%%%%%%%%%%%%%%%%
 

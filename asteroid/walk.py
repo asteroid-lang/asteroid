@@ -1576,26 +1576,35 @@ def eval_exp(node):
 
     (EVAL, exp) = node
     assert_match(EVAL, 'eval')
-    # lhh
-    #print("in eval with {}".format(node))
-
+ 
     # Note: eval is essentially a macro call - that is a function
     # call without pushing a symbol table record.  That means
     # we have to first evaluate the argument to 'eval' before
     # walking the term.  This is safe because if the arg is already
     # the actual term it will be quoted and nothing happens if it is
     # a variable it will be expanded to the actual term.
-    #lhh
-    #print("before expand: {}".format(exp))
+
+    state.trace_stack.append((state.lineinfo[0],
+                              state.lineinfo[1],
+                              "eval"))
+
+
+    # evaluate actual parameter
     exp_val_expand = walk(exp)
-    #lhh
-    #print("after expand: {}".format(exp_val_expand))
+
     # now walk the actual term
-    state.ignore_pattern += 1
-    exp_val = walk(exp_val_expand)
-    #lhh
-    #print("after walk: {}".format(exp_val))
-    state.ignore_pattern -= 1
+    if exp_val_expand[0] == 'string':
+        import frontend
+        parser = frontend.Parser(filename="<eval>")
+        eval_ast = parser.parse(exp_val_expand[1])
+        walk(eval_ast)
+        exp_val = function_return_value[-1]
+    else:
+        state.ignore_pattern += 1
+        exp_val = walk(exp_val_expand)
+        state.ignore_pattern -= 1
+
+    state.trace_stack.pop()
     return exp_val
 
 #########################################################################
