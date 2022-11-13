@@ -190,7 +190,7 @@ def tokenize(code):
             (module, lineno) = state.lineinfo
             line_num += lines
             state.lineinfo = (module, line_num)
-            value = value[1:-1] # strip the quotes
+            value = value[1:-1].replace('\\"','"') # strip the quotes
         elif type == 'NEWLINE':
             line_num += 1
             state.lineinfo = (module,line_num)

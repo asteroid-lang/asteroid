@@ -2,18 +2,9 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
+
 
 
 .. highlight:: none
@@ -473,6 +464,27 @@ Example,
 ::
       let true = 1 in [1,2,3].
 
+The Eval Function
+%%%%%%%%%%%%%%%%%
+
+The ``eval`` function allows you to evaluate Asteroid expressions.  If the expression
+is a string then the contents of the string is treated like Asteroid code and is
+interpreted accordingly in the current interpreter environment.  If that code produces a value then the ``eval`` function
+will return that value, e.g.,
+::
+      let a = eval "1+1".
+      assert(a == 2).
+
+If the expression to be evaluated is a simple, structural pattern then the pattern is 
+evaluated as a constructor where variables are instantiated from the current environment.
+For example,
+::
+      let p = pattern (x,y)
+      let x = 1.
+      let y = 2.
+      let o = eval p.
+      assert(o is (1,2)).
+
 List Comprehensions
 %%%%%%%%%%%%%%%%%%%
 
@@ -653,6 +665,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 are written in quotes.
 ::
 
+
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -788,6 +801,7 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
+
 
 
 Builtin Functions
@@ -1012,11 +1026,13 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 An example,
 ::
+
     load system io.
     load system math.
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
+
 
 Pick
 ^^^^
@@ -1026,6 +1042,7 @@ pick objects that allow a user to randomly pick items from a list using the ``pi
 The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
 Here is a simple use case
 ::
+
    load system io.
    load system pick.
 
@@ -1069,11 +1086,13 @@ The ``sort`` function makes use of a user-defined order predicate on the list's 
 perform the sort. The ``Quicksort`` is the underlying sort algorithm.
 The following is a simple example,
 ::
+
    load system io.
    load system sort.
    let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
                        [10,5,110,50]).
     io @println sl.
+
 
 prints the sorted list::
 
@@ -1096,6 +1115,7 @@ The following stream interface functions are available,
 
 A simple use case.
 ::
+
    load system io.
    load system stream.
 
@@ -1138,6 +1158,7 @@ The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 Here is a program that exercises some of the string formatting options,
 ::
+
     load system io.
     load system type.
     load system math.
@@ -1159,6 +1180,7 @@ Here is a program that exercises some of the string formatting options,
     let r = type @tostring(math @pi,type @stringformat(6,3)).
     io @println r.
 
+
 The output of the program is,
 ::
 
@@ -1179,6 +1201,7 @@ Notice the right justification of the various values within the given string len
 
 A simple example program using the ``gettype`` function,
 ::
+
    load system type.
 
    let i = 1.
@@ -1220,6 +1243,7 @@ The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modu
 
 Here is a simple example program for the ``vector`` module,
 ::
+
    load system io.
    load system vector.
 
@@ -1279,7 +1303,7 @@ as an argument.  Let's test drive this in the Python interactive shell,
 ::
     ubuntu$ python3
     Python 3.8.10 (default, Nov 26 2021, 20:14:08)
-    [GCC 9.3.0] on 1
+    [GCC 9.3.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from asteroid.interp import interp
     >>> interp('load system io. io @println "Hello, World!".')
@@ -1512,3 +1536,4 @@ tag we can embed Pandas functionality into Asteroid.  As an additional step we c
 wrap these individual functions into a ``structure`` with the dataframe as
 a data member and the functions as member functions of that structure.  As an
 example of this approach see the `dataframe.ast <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/dataframe.ast>`_ system module.
+
