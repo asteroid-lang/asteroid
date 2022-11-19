@@ -67,9 +67,36 @@ function sleep
 -- program sleep for secs seconds
 with secs if type @isscalar(secs) do escape
 "
-import time
+from time import sleep
 secs_val = state.symbol_table.lookup_sym('secs')
-time.sleep(secs_val[1])
+sleep(secs_val[1])
+"
+end
+
+------------------------------------------------------------------
+function time
+------------------------------------------------------------------
+-- Returns the local time as a real value in secs since 1/1/1970
+with none do return escape
+"
+global __retval__
+from time import time
+__retval__ = ('real', time())
+"
+end
+
+------------------------------------------------------------------
+function ctime
+------------------------------------------------------------------
+-- Converts the time as a real value in secs since 1/1/1970 into
+-- string representing local time.
+with t:%real do return escape
+"
+global __retval__
+from time import ctime
+(REAL, t_val) = state.symbol_table.lookup_sym('t')
+
+__retval__ = ('string', ctime(t_val))
 "
 end
 

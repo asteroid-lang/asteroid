@@ -101,7 +101,7 @@ function range
 ------------------------------------------------------------------
 function getid
 ------------------------------------------------------------------
-# get the id (physical memory address) of 'x' as an Asteroid integer
+-- get the id (physical memory address) of 'x' as an Asteroid integer
 with x do return escape
 "
 global __retval__
@@ -116,12 +116,10 @@ function isdefined
 -- return true if a variable or type name is defined in the
 -- current environment otherwise return false
 -- the variable and type name is given as a string
-with __x__ do return escape
+with __x__:%string do return escape
 "
 global __retval__
 (STRING, v)  = state.symbol_table.lookup_sym('__x__')
-if STRING != 'string':
-   raise ValueError('expected a string argument')
 try:
    state.symbol_table.lookup_sym(v)
 except ValueError:

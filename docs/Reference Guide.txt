@@ -1039,6 +1039,8 @@ The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``unzip``, given a list of pairs will return a pair of lists where the first component of the pair is the list of all the first components of the pairs of the input list and the second component of the return list is a list of all the second components of the input list.
 * Function ``ascii``, given a character ``item:%string``, returns the corresponding ASCII code of the first character of the input string.
 * Function ``achar``, given a decimal ASCII code ``item:%integer``, returns the corresponding character symbol.
+* Function ``time``, returns the local time as a real value in secs since 1/1/1970.
+* Function ``ctime``, given a real value representing seconds since 1/1/1970 this function converts it to a suitable string representation of the date.
 
 Vector
 ^^^^^^
