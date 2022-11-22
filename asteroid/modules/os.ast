@@ -160,6 +160,28 @@ __retval__ = ('string', exists(path_val))
 end -- exists
 
 ------------------------------------------------------------------
+function exit
+------------------------------------------------------------------
+with none do escape
+"
+import sys
+sys.exit(0)
+"
+with v:%integer do escape
+"
+import sys
+v_val = state.symbol_table.lookup_sym('v')
+sys.exit(v_val[1])
+"
+with msg:%string do escape
+"
+import sys
+msg_val = state.symbol_table.lookup_sym('msg')
+sys.exit(msg_val[1])
+"
+end
+
+------------------------------------------------------------------
 function getdir
 ------------------------------------------------------------------
 -- Return a string representing the current working directory.

@@ -2,22 +2,18 @@ load system io.
 load system type.
 
 structure Dog with
-
   data name.
   data tricks.
-
   function add_trick
     with new_trick:%string do
       this @tricks @append new_trick.
-    end
-
+  end
   function __init__
     with name:%string do
       let this @name = name.
       let this @tricks = [].
-    end
-
   end
+end
 
 let fido = Dog "Fido".
 fido @add_trick "play dead".
@@ -28,6 +24,11 @@ buddy @add_trick "sit stay".
 buddy @add_trick "roll over".
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) if type @tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+-- we do this with a pattern
+
+let fetch_filter = pattern %[(Dog(name,tricks) 
+                                if type @tostring tricks is ".*fetch.*")]%
+
+for *fetch_filter bind [name] in [fido,buddy] do
     io @println (name+" knows how to fetch").
 end

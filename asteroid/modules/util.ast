@@ -15,22 +15,7 @@ structure __UTIL_MODULE__ with
 -- UTILITY FUNCTIONS --
 ------------------------------------------------------------------
 
-------------------------------------------------------------------
-function exit
-------------------------------------------------------------------
-with none do escape
-"
-import sys
-sys.exit(1)
-"
-with msg:%string do escape
-"
-import sys
-msg_val = state.symbol_table.lookup_sym('msg')
-print(msg_val[1])
-sys.exit(1)
-"
-end
+
 
 ------------------------------------------------------------------
 function copy

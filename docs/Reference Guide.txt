@@ -1027,11 +1027,6 @@ Util
 
 The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/util.ast>`_ module defines utility functions and structures that don't really fit into any omodules. It supports the following functions,
 
-* Function ``exit`` exits the program. It can be called with two inputs,
-
-  1. ``none``
-  2. ``msg:%string``
-
 * Function ``copy``, given Asteroid object ``obj``, makes a deep copy of it.
 * Function ``cls`` clears the terminal screen.
 * Function ``sleep``,  programs sleep for ``secs`` seconds where the argument ``secs`` is either an integer or real value.
