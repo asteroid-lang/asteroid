@@ -732,7 +732,7 @@ are written in quotes.
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%'      
+    | '%[' exp ']%' binding_list?    
     | head_tail
 
   head_tail
@@ -796,7 +796,11 @@ are written in quotes.
 // Note: binding lists are only supported for constraint patterns
 
   binding_list
-    : BIND '[' binding_term (',' binding_term)* ']'
+    : BIND binding_list_suffix
+    
+  binding_list_suffix
+     : binding_term
+     | '[' binding_term (',' binding_term)* ']'
 
   binding_term
     : ID (AS ID)?
