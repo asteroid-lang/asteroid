@@ -896,6 +896,9 @@ An example,
 ::
 #include "../asteroid/test-suites/ref-programs/math.ast"
 
+Os
+^^
+
 Pick
 ^^^^
 
