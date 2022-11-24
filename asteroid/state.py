@@ -15,7 +15,6 @@ class State:
         self.modules = [] # loaded modules
         self.AST = None
         self.ignore_pattern = 0 # used to evaluate pattern expressions
-        self.constraint_lvl = 0 # used to evaluate constraint-only patterns
         self.cond_warning = False # used to indicate if conditional subsumption
                                   # warning has been displayed
         self.eval_redundancy = True
