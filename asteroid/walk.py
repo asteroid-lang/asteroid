@@ -204,6 +204,7 @@ def __unify(term, pattern, unifying = True ):
         unifiers = unify(term, pexp, unifying)
 
         if state.constraint_lvl:
+            print("pushing at {}".format(state.constraint_lvl))
             state.symbol_table.push_scope({})
 
         # evaluate the conditional expression in the
@@ -212,6 +213,7 @@ def __unify(term, pattern, unifying = True ):
         bool_val = map2boolean(walk(cond_exp))
 
         if state.constraint_lvl:
+            print("popping at {}".format(state.constraint_lvl))
             state.symbol_table.pop_scope()
 
         if bool_val[1]:

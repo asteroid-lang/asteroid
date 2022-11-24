@@ -571,7 +571,7 @@ class Parser:
     ###########################################################################################
     # pattern
     #    : PATTERN WITH? exp
-    #    | '%[' exp ']%'
+    #    | '%[' exp ']%' binding_list?
     #    | head_tail
     def pattern(self):
         dbg_print("parsing PATTERN")
@@ -585,7 +585,11 @@ class Parser:
             self.lexer.match('LCONSTRAINT')
             v = self.exp()
             self.lexer.match('RCONSTRAINT')
-            return ('constraint', v, ('nil',))
+            if self.lexer.peek().type == 'BIND':
+                bl = self.binding_list()            
+                return ('constraint', v, bl)
+            else:
+                return ('constraint', v, ('nil',))
         else:
             v = self.head_tail()
             return v
@@ -923,17 +927,33 @@ class Parser:
 
     ###########################################################################################
     # binding_list
-    #   : BIND '[' binding_term (',' binding_term)* ']'
+    #   : BIND binding_list_suffix
     def binding_list(self):
         dbg_print("parsing BINDING_LIST")
         self.lexer.match('BIND')
-        self.lexer.match('LBRACKET')
-        bl = [ self.binding_term() ]
-        while self.lexer.peek().type == 'COMMA':
-            self.lexer.match('COMMA')
-            bl.append(self.binding_term())
-        self.lexer.match('RBRACKET')
-        return ('binding-list', bl)
+        bl = self.binding_list_suffix()
+        return bl
+
+    ###########################################################################################
+    # binding_list_suffix
+    #   : binding_term
+    #   | '[' binding_term (',' binding_term)* ']'
+    def binding_list_suffix(self):
+        dbg_print("parsing BINDING_LIST_SUFFIX")
+        if self.lexer.peek().type == 'ID':
+            bl = [ self.binding_term() ]
+            return ('binding-list', bl)
+        elif self.lexer.peek().type == 'LBRACKET':
+            self.lexer.match('LBRACKET')
+            bl = [ self.binding_term() ]
+            while self.lexer.peek().type == 'COMMA':
+                self.lexer.match('COMMA')
+                bl.append(self.binding_term())
+            self.lexer.match('RBRACKET')
+            return ('binding-list', bl)
+        else:
+            raise SyntaxError("syntax error at '{}'"
+                        .format(self.lexer.peek().value))
 
     ###########################################################################################
     # binding_term

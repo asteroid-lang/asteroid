@@ -2,32 +2,34 @@ load system io.
 load system type.
 
 structure Dog with
-
   data name.
   data tricks.
+end
 
-  function add_trick
-    with new_trick:%string do
-      this @tricks @append new_trick.
-    end
-
-  function __init__
-    with name:%string do
-      let this @name = name.
-      let this @tricks = [].
-    end
-
-  end
-
-let fido = Dog "Fido".
-fido @add_trick "play dead".
-fido @add_trick "fetch".
-
-let buddy = Dog "Buddy".
-buddy @add_trick "sit stay".
-buddy @add_trick "roll over".
+let fido = Dog ("Fido",["play dead","fetch"]).
+let buddy = Dog ("Buddy",["sit stay","roll over"]).
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) if type @tostring(tricks) is ".*fetch.*") in [fido,buddy] do
+-- we do this with a pattern
+
+-- first class patterns defines a dog that knows how to fetch
+let fetcher = pattern %[(Dog(name,tricks) 
+                                if type @tostring tricks is ".*fetch.*")]%.
+
+let (Dog(name,tricks) if Dog(name,tricks) is *fetcher) = fido.
+assert(isdefined("name")).
+
+-- one way to do this
+for (Dog(name,tricks) if Dog(name,tricks) is *fetcher) in [fido,buddy] do
+    io @println (name+" knows how to fetch").
+end
+
+-- another way to do this
+for ((d:Dog(name,tricks)) if d is *fetcher) in [fido,buddy] do
+    io @println (name+" knows how to fetch").
+end
+
+-- yet another way of doing this
+for (*fetcher bind name) in [fido,buddy] do
     io @println (name+" knows how to fetch").
 end
