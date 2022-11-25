@@ -675,17 +675,19 @@ are written in quotes.
 Builtin Functions
 -----------------
 
-**len** x
-      Returns the length of x. The
-      function can only be applied to lists, strings, tuples, or structures.
+**getid** x
+      Returns a unique id of any Asteroid object as an integer.
 
 **hd** x:%list
       Returns the first element of a list. It is an error to apply this 
       function to an empty list.
 
-**tl** x:%list
-      Returns the rest of the list without the first element.  It is an 
-      error to apply this function to an empty list.
+**isdefined** x:%string
+      Returns true if a variable or type name is defined in the
+      current environment otherwise it returns false. The variable or type name must be given as a string.
+**len** x
+      Returns the length of x. The
+      function can only be applied to lists, strings, tuples, or structures.
 
 **range**  stop:%integer | (start:%integer, stop:%integer) | (start:%integer, stop:%integer, inc:%integer)
       Compute a list of values depending on the input values:
@@ -694,12 +696,11 @@ Builtin Functions
       2. If the start and stop values are given then the list [start to stop-1] is returned.
       3. If in addition to the start and stop values the inc values is given then the list [start to stop-1 step inc] is returned.
 
-**getid** x
-      Returns a unique id (physical memory address) of any Asteroid object as an integer.
+**tl** x:%list
+      Returns the rest of the list without the first element.  It is an 
+      error to apply this function to an empty list.
 
-**isdefined** x:%string
-      Returns true if a variable or type name is defined in the
-      current environment otherwise it returns false. The variable or type name must be given as a string.
+
 
 List and String Objects
 -----------------------
@@ -713,96 +714,155 @@ A **list** is a structured data type that consists of square brackets enclosing
 comma-separated values.
 Member functions on lists can be called on the data structure directly, e.g.::
 
-   [1,2,3] @length()
+   [1,2,3] @length ()
 
-**Member Functions**
+Member Functions
+%%%%%%%%%%%%%%%%
 
-**length** ()
-      Returns the number of elements within the list.
-
-**append** item
+list **@append** item
       Adds the item to the end of the list.
 
-**extend** item
-      Extend the list by adding all the items from the item where the item is either a list, a string or a tuple.
+list **@clear** ()
+      Removes all items from the list.
 
-**insert** (ix:%integer,item)
+list **@copy** ()
+      Returns a shallow copy of the list.
+
+list **@count** item
+      Returns the number of times item appears in the list.
+
+list **@extend** item
+      Extend the list by adding all the elements from the item to the list where the item is either a list or a tuple.
+
+list **@filter** f:%function
+      Returns a list constructed from those elements for which function f returns true. 
+
+list **@index** item | (item, loc(startix:%integer) | (item, loc(startix:%integer, endix:%integer))
+      Returns a zero-based index of the first element whose value is equal to item. 
+      It throws an exception if there is no such item. The argument loc allows you to specify 
+      startix and endix and are used to limit the search to a particular subsequence of the list. 
+      The returned index is computed relative to the beginning of the list rather than the startix argument.   
+
+list **@insert** (ix:%integer, item)
       Insert the item into the list at the position i.
       This means that ``a@insert(0, x)`` inserts x at the front of the list, and ``a@insert(a@length(), x)`` is equivalent to ``a@append(x)``.
 
-* Function ``remove``, given ``(item)``, removes the first element from the list whose value is equal to ``(item)``. It raises a ValueError if there is no such item.
-* Function ``pop``, given ``(ix:%integer)``, removes the item at the given position in the list and returns it. If no index is specified,``a@pop()`` removes and returns the last item in the list.
-* Function ``clear``, given ``(none)``, removes all items from the list.
-* Function ``index`` returns a zero-based index in the list of the first element whose value is equal to ``(item)``. It raises a ValueError exception if there is no such item. The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular subsequence of the list. The returned index is computed relative to the beginning of the full sequence rather than the ``(startix)`` argument.   This function can be called with several input configurations:
+list **@join** join_str:%string
+      Turns the list into a string using join_str between the elements.  The string is returned
+      as the return value from this function.
 
-  1. ``(item,loc(startix:%integer,endix:%integer))``
-  2. ``(item,loc(startix:%integer))``
-  3. ``item``
+list **@length** ()
+      Returns the number of elements within the list.
 
-* Function ``count``, given ``(item)``, returns the number of times ``(item)`` appears in the list.
-* Function ``sort`` sorts the items of the list in place. It can be called with several different inputs:
+list **@map** f:%function
+      Applies the function f to each element of the list in place. The modified list is returned.
 
-  1. ``(reverse:%boolean)`` if the boolean is set to true then the sorted list is reversed.
-  2. ``none`` returns the reverse list.
+list **@member** item
+      Returns true only if item exists on the list.
 
-* Function ``reverse``, reverses the elements of the list in place.
-* Function ``copy``, makes a shallow copy of the list.
-* Function ``shuffle``, returns a random permutation of a given list - in place!
-* Function ``map``, given ``(f:%function)``, applies ``f`` to each element of the list in place. The modified list is returned.
-* Function ``reduce`` reduces the value of elements in a list. This
-  function can be called with several different inputs:
+list **@pop** () | ix:%integer
+      Removes the item at the given position in the list and returns it. If no index is specified
+      removes and returns the last item in the list.
 
-  1. Input ``(f:%function)`` returns ``value``, such that ``value = f(value,this@i)``.
-  2. Input ``(f:%function,init)`` returns the same format but uses ``init`` as an initial value.
+list **@reduce** f:%function | (f:%function, init)
+      Reduce the list to a value by applying the function f to all the members of the list. The function f has to be
+      a function with two arguments where the first argument is the accumulator.  If no initial
+      value is given then the first element of the list is assumed to be the first accumulator value.
+      In order to illustrate, we have::
 
-  The first argument to ``f`` is the accumulator.
+            let value = [1,2] @reduce (lambda with (x,y) do x+y, 0).
+            assert(value == 3).
 
-* Function ``filter``, given ``(f:%function)``, constructs an output list from those elements of the list for which ``f`` returns true. If ``f`` is none, the identity function is assumed, that is, all elements of the input list that are false are removed.
-* Function ``member``, given ``(item)``, returns true only if ``item`` exists on the list.
-* Function ``join``, given ``(join:%string)``, turns the list into a string using ``join`` between the elements.  The string is returned
-  as the return value from this function.
+      is equivalent to ::
 
+            let l = [1,2].
+            let value = 0.
+            for i in range(l@length()) do
+                  let value = (lambda with (x,y) do x+y) (value,l@i).
+            end
+            assert(value == 3).
 
-See the `Prologue module <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/prologue.ast>`_ for more on all the functions above.
+list **@remove** item
+      Removes the first element from the list whose value is equal to item. 
+      It throws an exception if there is no such item.
+
+list **@reverse** ()
+      Reverses the elements of the list in place and returns the reversed list.
+
+list **@shuffle** ()
+      Creates a random permutation of the list in place and returns the randomized list.
+
+list **@sort** () | reverse:%boolean
+      Sorts the items of the list in place and returns the sorted list. 
+      If the boolean reverse is set to true then the sorted list is reversed.
 
 
 Strings
 ^^^^^^^
 
-A string is a sequence of characters that can be used as a variable or a literal constant.
+A string is a sequence of characters surrounded by double quotes.
+In Asteroid, single characters are represented as single character strings.
 Similar to lists the member functions of strings can be called directly on the
 data structure itself, e.g.::
 
-   "Hello there" @length()
+   "Hello there" @length ()
 
-* Function ``length`` returns the number of characters within that string.
-* Function ``explode``, turns a string into a list of characters.
-* Function ``trim``, given the input ``(what:%string)``, returns a copy of the string with the leading and trailing characters removed. The ``what`` argument is a string specifying the set of characters to be removed. If omitted or none, the ``what`` argument defaults to removing whitespace. The ``what`` argument is not a prefix or suffix; rather, all combinations of its values are stripped.
-* Function ``replace`` will return a copy of the string with all occurrences of regular expression pattern ``old`` replaced by the string ``new``. If the optional argument count is given, only the first count occurrences are replaced. It can be called with several different inputs:
+Member Functions
+%%%%%%%%%%%%%%%%
 
-  * ``(old:%string,new:%string,count:%integer)``
-  * ``(old:%string,new:%string)``
+string **@explode** ()
+      Returns the string as a list of characters.
 
-* Function ``split`` will return a list of the words in a given string, using ``sep`` as the delimiter string. If ``maxsplit`` is given: at most maxsplit splits are done (thus, the list will have at most maxsplit+1 elements). If maxsplit is not specified or -1, then there is no limit on the number of splits (all possible splits are made).
-  If ``sep`` is given, consecutive delimiters are not grouped together and are deemed to delimit empty strings (for example, ``"1,,2"@split(",")`` returns ``["1", "", "2"]``). The ``sep`` argument may consist of multiple characters (for example, ``"1<>2<>3"@split("<>")`` returns ``["1", "2", "3"]``). Splitting an empty string with a specified separator returns ``[""]``.
-  If ``sep`` is not specified or is None, a different splitting algorithm is applied: runs of consecutive whitespace are regarded as a single separator, and the result will contain no empty strings at the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string or a string consisting of just whitespace with a None separator returns ``[]``.
-  Function ``split`` can be called with several different inputs:
+string **@flip** ()
+      Returns a copy of the string with its characters in the reverse order.
 
-  1. Input ``(sep:%string,count:%integer)``
-  2. Input ``(sep:%string)``
-  3. Input ``(none)``
+string **@index** item:%string | (item:%string, loc(startix:%integer)) | (item:%string, loc(startix:%integer, endix:%integer))
+      Returns an integer index of the item in the string or none if item was not found.  
+      The  argument loc allows you to specify startix and endix and are used to limit the search 
+      to a particular substring of the string. The returned index is computed relative to the beginning 
+      of the full string rather than the startix.  
 
-* Function ``toupper``, converts all the lowercase letters in a string to uppercase.
-* Function ``tolower``, converts all the uppercase letters in a string to lowercase.
-* Function ``index`` allows the user to search for a given ``item`` in a list. It returns an integer index into the string or ``none`` if ``item`` was not found.  The optional argument ``loc`` allows you to specify ``(startix)`` and ``(endix)`` and are used to limit the search to a particular substring of the string. The returned index is computed relative to the beginning of the full string rather than the ``(startix)`` argument.The function can be called with several different inputs:
+string **@length** ()
+      Returns the number of characters within the string.
 
-  1. Input ``(item:%string,loc(startix:%integer,endix:%integer))``
-  2. Input ``(item:%string,loc(startix:%integer))``
-  3. Input ``(item:%string)``
+string **@replace** (old:%string, new:%string) | (old:%string, new:%string, count:%integer)
+      Return a copy of the string with all occurrences of regular expression old replaced by the 
+      string new. If the argument count is given, only the first count occurrences are replaced. 
 
-* Function ``flip`` reverses a string.
+string **@split** () | sep:%string | (sep:%string, count:%integer)
+      Return a list of the words in the string, using sep as the delimiter. If count is given then
+      at most count splits are done (thus, the list will have at most count+1 elements). If count is 
+      not specified or -1, then there is no limit on the number of splits (all possible splits are made).
+      Consecutive delimiters are not grouped together and are deemed to delimit empty strings. 
+      For example,::
+      
+            let s = "1,,2" @split ",".
+            assert (s == ["1", "", "2"]). 
+            
+      The sep argument may consist of multiple characters. 
+      For example,:: 
+      
+            let s = "1<>2<>3" @split "<>". 
+            assert (s == ["1", "2", "3"]).
+            
+      Splitting an empty string with a specified separator returns ``[""]``.
+      If sep is not specified or is None, a different splitting algorithm is applied: 
+      consecutive whitespace is regarded as a single separator, and the result will contain no empty strings at 
+      the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string 
+      or a string consisting of just whitespace with a none separator returns ``[]``.
+ 
+string **@tolower** ()
+      Returns a copy of the string in all lower case letters.
 
-See the `Prologue module <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/prologue.ast>`_  for more on all the functions above.
+string **@toupper** ()
+      Returns a copy of the string in all upper case letters.
+
+string **@trim** () | what:%string
+      Returns a copy of the string with the leading and trailing characters removed. 
+      The what argument specifies the set of characters to be removed. 
+      If omitted trim defaults to removing whitespace. 
+      The what argument is not a prefix or suffix; rather, all combinations of its characters are stripped.
+
 
 
 Asteroid Modules
@@ -816,45 +876,46 @@ we have ``println`` as one of the member functions.  To call that function::
    load system io.
    io @println "Hello there!".  -- println is a member function of the io module
 
-Bitwise
+bitwise
 ^^^^^^^
 
-The `bitwise <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/bitwise.ast>`_ module defines Bitwise operations. It supports the following functions,
+This module defines bitwise operations on integers. It supports the following functions,
 
-**bnot** x:%integer
-      Bor performs the bitwise NOT operation and returns the result as an integer.
+bitwise **@band** (x:%integer, y:%integer)
+      Performs the bitwise AND operation and returns the result as an integer.
 
-**band** (x:%integer, y:%integer)
-      Band performs the bitwise AND operation and returns the result as an integer.
+bitwise **@bclearbit** (x:%integer, i:%integer)
+      Clear the ith bit in x and returns the result as an integer.
 
-**bor** (x:%integer, y:%integer)
-      Bor performs the bitwise OR operation and returns the result as an integer.
+bitwise **@blrotate** (x:%integer, i:%integer)
+      Performs the bitwise left rotate operation by i bits and returns the result as an integer.
 
-**bxor** (x:%integer, y:%integer)
-      Bxor performs the bitwise XOR operation and returns the result as an integer.
+bitwise **@blshift** (x:%integer, y:%integer)
+      Performs the bitwise left shift operation where x is shifted by y bits and returns the result as an integer.
 
-**blshift** (x:%integer, y:%integer)
-      Blshift performs the bitwise left shift operation where x is shifted by y bits and returns the result as an integer.
+bitwise **@bnot** x:%integer
+      Performs the bitwise NOT operation and returns the result as an integer.
 
-**brshift** (x:%integer, y:%integer)
-      Brshift performs the bitwise right shift operation where x is shifted by y bits and returns the result as an integer.
+bitwise **@bor** (x:%integer, y:%integer)
+      Performs the bitwise OR operation and returns the result as an integer.
 
-**blrotate** (x:%integer, i:%integer)
-      Blrotate performs the bitwise left rotate operation by i bits and returns the result as an integer.
+bitwise **@brrotate** (x:%integer, i:%integer)
+      Performs the bitwise right rotate operation by i bits and returns the result as an integer.
 
-**brrotate** (x:%integer, i:%integer)
-      Brrotate performs the bitwise right rotate operation by i bits and returns the result as an integer.
+bitwise **@brshift** (x:%integer, y:%integer)
+      Performs the bitwise right shift operation where x is shifted by y bits and returns the result as an integer.
 
-**bsetbit** (x:%integer, i:%integer)
-      Bsetbit sets the ith bit in x and returns the result as an integer.
+bitwise **@bsetbit** (x:%integer, i:%integer)
+      Sets the ith bit in x and returns the result as an integer.
 
-**bclearbit** (x:%integer, i:%integer)
-      Bclearbit clear the ith bit in x and returns the result as an integer.
+bitwise **@bsize** x:%integer
+      Returns the bit size of x.
 
-**bsize** x:%integer
-      Bsize returns the bit size of x.
+bitwise **@bxor** (x:%integer, y:%integer)
+      Performs the bitwise XOR operation and returns the result as an integer.
 
-Hash
+
+hash
 ^^^^
 
 The `hash <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/hash.ast>`_ module implements a hash for name-values pairs. It supports the following functions,
@@ -863,7 +924,7 @@ The `hash <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``get``, given ``name``, will return the ``value`` associated with the given ``name`` as long as it can be found otherwise an exception will be thrown.
 * Function ``aslist`` returns the hash as a list of name-value pairs.
 
-IO
+io
 ^^
 
 The `io <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/io.ast>`_ module implements Asteroid's I/O system. The module defines three default streams,
@@ -884,12 +945,13 @@ Furthermore, the module supports the following functions,
 * Function ``write``, given ``(file:%FILE, what:%string)``, will write ``what`` to the given ``file``.  If ``file`` is not given then it writes to the ``__STDOUT__`` stream.
 * Function ``writeln``, works the same way as ``write`` except that it appends a newline character to the output.
 
-Math
+math
 ^^^^
 
 The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/math.ast>`_ module implements mathematical constants and functions. It supports the following functions,
 
-*Power and logarithmic functions*
+Power and logarithmic functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 * Function ``exp``, given ``x:%integer``, returns e raised to the power ``x``, where e = 2.718281… is the base of natural logarithms.
 * Function ``log`` can be called with two different argument setups,
@@ -900,7 +962,8 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``pow``, given ``(b,p:%integer)``, returns "b <sup>p</sup>" as long as b is either ``real`` or ``integer``.
 * Function ``sqrt``, given ``a``, returns its square root as long as ``a`` is either ``real`` or ``integer``.
 
-*Number-theoretic and representation functions*
+Number-theoretic and representation functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 * Function ``abs``, given ``x``, returns its absolute value.
 * Function ``ceil``, given ``x:%real``, returns the ceiling of x: the smallest integer greater than or equal to x.
@@ -913,7 +976,8 @@ The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 
 * Function ``mod``, given ``(v,d)``, will return the remainder of the operation ``v/d``, as long as ``v`` and ``d`` are either ``real`` or ``integer`` values.
 
-*Trigonometric functions*
+Trigonometric functions
+%%%%%%%%%%%%%%%%%%%%%%%
 
 * Function ``acos``, given ``x``, returns the arc cosine of x in radians. The result is between 0 and pi.
 * Function ``asin``, given ``x``, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
@@ -934,10 +998,10 @@ An example,
 ::
 #include "../asteroid/test-suites/ref-programs/math.ast"
 
-Os
+os
 ^^
 
-Pick
+pick
 ^^^^
 
 The `pick <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/pick.ast>`_ module implements
@@ -948,7 +1012,7 @@ Here is a simple use case
 #include "../asteroid/test-suites/ref-programs/pick.ast"
 
 
-Random
+random
 ^^^^^^
 
 The `random <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/random.ast>`_ module implements the ``random`` numbers. Using the functions included in this module will return a random value within a given range or interval. It supports the following functions,
@@ -962,7 +1026,7 @@ The `random <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/
 
 * Function ``seed``, given ``(sd:%integer)``, provides a seed value for the random number generator.
 
-Set
+set
 ^^^
 
 The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/set.ast>`_ module implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
@@ -973,7 +1037,7 @@ The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules
 * Function ``union``, given ``(a:%list,b:%list)``, computes the union of sets ``a`` and ``b``.
 * Function ``xunion``, given ``(a:%list,b:%list)``, returns all elements in ``a`` or ``b``, but not in both.
 
-Sort
+sort
 ^^^^
 
 The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/sort.ast>`_ module
@@ -988,7 +1052,7 @@ prints the sorted list::
 
   [5,10,50,110]
 
-Stream
+stream
 ^^^^^^
 
 The `stream <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/stream.ast>`_ module implements streams that allow
@@ -1012,12 +1076,13 @@ which outputs::
    1 2 3 4 5 6 7 8 9 10
 
 
-Type
+type
 ^^^^
 
 The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/type.ast>`_ module defines type related functions and structures.
 
-*Type Conversion*
+Type Conversion
+%%%%%%%%%%%%%%%
 
 * Function ``tointeger`` converts a given input to an integer. It can be called with two different arguments,
 
@@ -1052,7 +1117,8 @@ The output of the program is,
 Notice the right justification of the various values within the given string length.
 
 
-*Type Query Functions*
+Type Query Functions
+%%%%%%%%%%%%%%%%%%%%
 
 * Function ``islist`` returns ``true`` if given ``item`` is a list otherwise it will return ``false``.
 * Function ``isscalar`` returns ``true`` if given ``item`` is either an integer or a real value.
@@ -1063,7 +1129,7 @@ A simple example program using the ``gettype`` function,
 ::
 #include "../asteroid/test-suites/ref-programs/type.ast"
 
-Util
+util
 ^^^^
 
 The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/util.ast>`_ module defines utility functions and structures that don't really fit into any omodules. It supports the following functions,
@@ -1078,7 +1144,7 @@ The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/module
 * Function ``time``, returns the local time as a real value in secs since 1/1/1970.
 * Function ``ctime``, given a real value representing seconds since 1/1/1970 this function converts it to a suitable string representation of the date.
 
-Vector
+vector
 ^^^^^^
 
 The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/vector.ast>`_ defines functions useful for vector arithmetic. It supports the following functions.  Here ``a`` and ``b`` are vectors implemented as lists,

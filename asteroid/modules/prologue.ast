@@ -215,8 +215,7 @@ end
 function __list_extend__
 ------------------------------------------------------------------
 -- Extend the list by appending all the items
--- from the item where item is either a list,
--- a string or a tuple.
+-- from the item where item is either a list or a tuple.
 with item do return escape
 "
 global __retval__
@@ -224,7 +223,7 @@ global __retval__
 this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
-if item_val[0] not in ['list', 'string', 'tuple']:
+if item_val[0] not in ['list', 'tuple']:
     raise ValueError('extend expected a list, string, or tuple, got \'{}\''
                 .format(item_val[0]))
 
