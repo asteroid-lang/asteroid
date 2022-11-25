@@ -636,7 +636,7 @@ Here ``k`` only matches the value of ``val`` if that value is an even number.
 Pure Constraint Patterns
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-Syntax: ``%[ pattern ]%``
+Syntax: ``%[ pattern ]% (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
 A pure constraint pattern is a pattern that does not create any bindings
 in the current scope.  Any pattern can be turned into a pure constraint pattern
@@ -849,8 +849,7 @@ Member functions on lists can be called on the data structure directly, e.g.::
 
    [1,2,3] @length()
 
-Member Functions
-----------------
+**Member Functions**
 
 **length** ()
       Returns the number of elements within the list.
@@ -861,7 +860,10 @@ Member Functions
 **extend** item
       Extend the list by adding all the items from the item where the item is either a list, a string or a tuple.
 
-* Function ``insert``, given ``(ix:%integer,item)``, will insert an item at a given position. The first argument is the index of the element before which to insert, so ``a@insert(0, x)`` inserts at the front of the list, and ``a@insert(a@length(), x)`` is equivalent to ``a@append(x)``.
+**insert** (ix:%integer,item)
+      Insert the item into the list at the position i.
+      This means that ``a@insert(0, x)`` inserts x at the front of the list, and ``a@insert(a@length(), x)`` is equivalent to ``a@append(x)``.
+
 * Function ``remove``, given ``(item)``, removes the first element from the list whose value is equal to ``(item)``. It raises a ValueError if there is no such item.
 * Function ``pop``, given ``(ix:%integer)``, removes the item at the given position in the list and returns it. If no index is specified,``a@pop()`` removes and returns the last item in the list.
 * Function ``clear``, given ``(none)``, removes all items from the list.
