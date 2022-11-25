@@ -918,16 +918,29 @@ bitwise **@bxor** (x:%integer, y:%integer)
 hash
 ^^^^
 
-The `hash <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/hash.ast>`_ module implements a hash for name-values pairs. It supports the following functions,
+This module implements a hash for key-value pairs. It supports the following functions,
 
-* Function ``insert``, given the input ``(name,value)``, will insert a given name-value pair into the table.
-* Function ``get``, given ``name``, will return the ``value`` associated with the given ``name`` as long as it can be found otherwise an exception will be thrown.
-* Function ``aslist`` returns the hash as a list of name-value pairs.
+hash **@aslist** ()
+      Returns the hash as a list of key-value pairs.
+
+hash **@get** key
+      Return the value associated with the given key as long as it can be found otherwise an exception will be thrown.
+
+hash **@hash** ()
+      Returns a new hash object.
+
+hash **@insert** (key, value) | pairs:%list
+      Given a pair of the format (key, value) insert it into the table.  Given a list
+      of the format,::
+
+            [(key1, val1), (key2, val2), ...]
+
+      insert all the key-value pairs on the list into the hash.
 
 io
 ^^
 
-The `io <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/io.ast>`_ module implements Asteroid's I/O system. The module defines three default streams,
+This module implements Asteroid's I/O system. The module defines three I/O streams,
 
 1. ``__STDIN__`` - the standard input stream.
 2. ``__STDOUT__`` - the standard output stream.
@@ -935,15 +948,38 @@ The `io <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/
 
 Furthermore, the module supports the following functions,
 
-* Function ``println`` can be called with ``item``, and prints a given argument to the terminal (``__STDOUT__``) with an implicit newline character.
-* Function ``print`` can be called with ``item``, and prints a given argument. No implicit newline is appended to the output.
-* Function ``input`` can be called with a string ``prompt``.  If ``prompt`` is given it is printed and then input is read from the terminal (``__STDIN__``) and returned as a string.
-* Function ``open`` opens a file. Given ``(name:%string, mode:%string)``, it returns a file descriptor of type ``FILE``. The ``mode`` string can be ``"r"`` when the file will only be read, ``"w"`` for only writing (an existing file with the same name will be erased), and ``"a"`` opens the file for appending; any data written to the file is automatically added to the end. The ``"r+"`` opens the file for both reading and writing.
-* Function ``close``, given ``file:%FILE``, closes that file.
-* Function ``read``, given ``file:%FILE``, reads a file. If no file is given the ``__STDIN__`` stream is read.
-* Function ``readln``, given ``file:%FILE``, reads a given line of input from the file. If no file is given the ``__STDIN__`` stream is read.
-* Function ``write``, given ``(file:%FILE, what:%string)``, will write ``what`` to the given ``file``.  If ``file`` is not given then it writes to the ``__STDOUT__`` stream.
-* Function ``writeln``, works the same way as ``write`` except that it appends a newline character to the output.
+io **@println** item
+      Prints item to the terminal (__STDOUT__) with an implicit newline character.
+
+io **@print** item
+      Prints item to the terminal (__STDOUT__). No implicit newline is appended to the output.
+
+io **@input** () | prompt:%string
+      Ask the user for input from __STDIN__.  The input is returned as a string. If prompt is given it is printed and then input is read from terminal.
+
+io **@open** (name:%string, mode:%string)
+      Returns a file descriptor of type \_\_FILE\_\_. 
+      The mode string can be ``"r"`` when the file will only be read, 
+      ``"w"`` for only writing (an existing file with the same name will be erased), 
+      and ``"a"`` opens the file for appending; any data written to the file is 
+      automatically added to the end. 
+      Finally,  ``"r+"`` opens the file for both reading and writing.
+
+io **@close** file:%\_\_FILE\_\_
+      Closes file.
+
+io **@read** () | file:%\_\_FILE\_\_
+      Read a file and return the contents as a string. If no file is given the ``__STDIN__`` stream is read.
+
+io **@readln** () | file:%\_\_FILE\_\_
+      Reads a line of input from a file and returns it as a string. If no file is given the ``__STDIN__`` stream is read.
+
+io **@write** what:%string | (file:%\_\_FILE\_\_, what:%string)
+      Write what to a file.  If file is not given then it writes to the ``__STDOUT__`` stream.
+
+io **@writeln** what:%string | (file:%\_\_FILE\_\_, what:%string)
+      Write what to a file and append a newline charater.  If file is not given then it writes to the ``__STDOUT__`` stream.
+
 
 math
 ^^^^

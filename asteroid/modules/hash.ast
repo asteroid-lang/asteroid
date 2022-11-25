@@ -57,7 +57,6 @@ with item_list:%list do
   for (k,v) in item_list do
     this @insert (k,v).
   end
-  return none.
 end -- insert
 
 ------------------------------------------------------------------
