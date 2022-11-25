@@ -639,7 +639,7 @@ Here ``k`` only matches the value of ``val`` if that value is an even number.
 Pure Constraint Patterns
 %%%%%%%%%%%%%%%%%%%%%%%%
 
-Syntax: ``%[ pattern ]%``
+Syntax: ``%[ pattern ]% (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
 A pure constraint pattern is a pattern that does not create any bindings
 in the current scope.  Any pattern can be turned into a pure constraint pattern
@@ -675,30 +675,36 @@ are written in quotes.
 Builtin Functions
 -----------------
 
-* Function ``len``, when given an input value, returns the length of that input. The
-  function can only be applied to lists, strings, tuples, or structures.
+**len** x
+      Returns the length of x. The
+      function can only be applied to lists, strings, tuples, or structures.
 
-* Function ``hd``, when given a list as input returns the first element of that list.
-  It is an error to apply this function to an empty list.
+**hd** x:%list
+      Returns the first element of a list. It is an error to apply this 
+      function to an empty list.
 
-* Function ``tl``, when given a list as input returns the rest of the list without the first element.
-  It is an error to apply this function to an empty list.
+**tl** x:%list
+      Returns the rest of the list without the first element.  It is an 
+      error to apply this function to an empty list.
 
-* Function ``range`` will compute a list of values depending on the input values:
+**range**  stop:%integer | (start:%integer, stop:%integer) | (start:%integer, stop:%integer, inc:%integer)
+      Compute a list of values depending on the input values:
 
-  1. ``(start:%integer,stop:%integer)`` returns list ``[start to stop-1]``.
-  2. ``(start:%integer,stop:%integer,inc:%integer)`` returns list ``[start to stop-1 step inc]``.
-  3. ``(stop:%integer)`` returns list ``[0 to stop-1]``.
+      1. If only the stop value is given then the list [0 to stop-1] is returned.
+      2. If the start and stop values are given then the list [start to stop-1] is returned.
+      3. If in addition to the start and stop values the inc values is given then the list [start to stop-1 step inc] is returned.
 
-* Function ``getid`` returns the id (physical memory address) of any Asteroid object as an Asteroid integer.
+**getid** x
+      Returns a unique id (physical memory address) of any Asteroid object as an integer.
 
-* Function ``isdefined`` returns true if a variable or type name is defined in the
-  current environment otherwise it returns false. The variable or type name must be given as a string.
+**isdefined** x:%string
+      Returns true if a variable or type name is defined in the
+      current environment otherwise it returns false. The variable or type name must be given as a string.
 
 List and String Objects
 -----------------------
 
-In Asteroid, both ``lists`` and ``strings,`` are treated like objects. Due to this, they have member functions that can manipulate the contents of those objects.
+In Asteroid, both ``lists`` and ``strings,`` are treated like objects in the OO sense. Due to this, they have member functions that can manipulate the contents of those objects.
 
 Lists
 ^^^^^
@@ -709,9 +715,17 @@ Member functions on lists can be called on the data structure directly, e.g.::
 
    [1,2,3] @length()
 
-* Function ``length`` returns the number of elements within that list.
-* Function ``append``, given ``(item)``, adds that item to the end of a list.
-* Function ``extend``, given ``(item)``, will extend the list by adding all the items from the item where ``item`` is either a list, a string or a tuple.
+**Member Functions**
+
+**length** ()
+      Returns the number of elements within the list.
+
+**append** item
+      Adds the item to the end of the list.
+
+**extend** item
+      Extend the list by adding all the items from the item where the item is either a list, a string or a tuple.
+
 * Function ``insert``, given ``(ix:%integer,item)``, will insert an item at a given position. The first argument is the index of the element before which to insert, so ``a@insert(0, x)`` inserts at the front of the list, and ``a@insert(a@length(), x)`` is equivalent to ``a@append(x)``.
 * Function ``remove``, given ``(item)``, removes the first element from the list whose value is equal to ``(item)``. It raises a ValueError if there is no such item.
 * Function ``pop``, given ``(ix:%integer)``, removes the item at the given position in the list and returns it. If no index is specified,``a@pop()`` removes and returns the last item in the list.
@@ -804,17 +818,38 @@ Bitwise
 
 The `bitwise <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/bitwise.ast>`_ module defines Bitwise operations. It supports the following functions,
 
-* Function ``band`` can be called with the input ``(x:%integer, y:%integer)``, and performs the Bitwise AND operation.
-* Function ``bor`` can be called with the input ``(x:%integer, y:%integer)``, and performs the Bitwise OR operation.
-* Function ``bnot`` can be called with the input ``(x:%integer)``, and performs the Bitwise NOT operation.
-* Function ``bxor`` can be called with the input ``(x:%integer, y:%integer)``, and performs the Bitwise XOR operation.
-* Function ``blshift`` can be called with the input ``(x:%integer, y:%integer)``, and performs the Bitwise left shift operation.
-* Function ``brshift`` can be called with the input ``(x:%integer, y:%integer)``, and performs the Bitwise right shift operation.
-* Function ``blrotate`` can be called with the input ``(x:%integer, i:%integer)``, and performs the Bitwise left rotate operation.
-* Function ``brrotate`` can be called with the input ``(x:%integer, i:%integer)``, and performs the Bitwise right rotate operation.
-* Function ``bsetbit`` can be called with the input ``(x:%integer, i:%integer)``, and sets the ith bit.
-* Function ``bclearbit`` can be called with the input ``(x:%integer, i:%integer)``, and clears the ith bit.
-* Function ``bsize``can be called with the input ``(x:%integer)``, and returns the bit size.
+**bnot** x:%integer
+      Bor performs the bitwise NOT operation and returns the result as an integer.
+
+**band** (x:%integer, y:%integer)
+      Band performs the bitwise AND operation and returns the result as an integer.
+
+**bor** (x:%integer, y:%integer)
+      Bor performs the bitwise OR operation and returns the result as an integer.
+
+**bxor** (x:%integer, y:%integer)
+      Bxor performs the bitwise XOR operation and returns the result as an integer.
+
+**blshift** (x:%integer, y:%integer)
+      Blshift performs the bitwise left shift operation where x is shifted by y bits and returns the result as an integer.
+
+**brshift** (x:%integer, y:%integer)
+      Brshift performs the bitwise right shift operation where x is shifted by y bits and returns the result as an integer.
+
+**blrotate** (x:%integer, i:%integer)
+      Blrotate performs the bitwise left rotate operation by i bits and returns the result as an integer.
+
+**brrotate** (x:%integer, i:%integer)
+      Brrotate performs the bitwise right rotate operation by i bits and returns the result as an integer.
+
+**bsetbit** (x:%integer, i:%integer)
+      Bsetbit sets the ith bit in x and returns the result as an integer.
+
+**bclearbit** (x:%integer, i:%integer)
+      Bclearbit clear the ith bit in x and returns the result as an integer.
+
+**bsize** x:%integer
+      Bsize returns the bit size of x.
 
 Hash
 ^^^^
