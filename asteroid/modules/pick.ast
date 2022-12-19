@@ -22,7 +22,7 @@ structure __PICK__
   function pickitems
     with none do
         let ix = random @randint(0, this @items @length()-1).
-        return this @items @ix).
+        return this @items @ix.
     with n:%integer do
         let l = [].
         for i in 1 to n do
