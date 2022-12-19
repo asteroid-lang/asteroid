@@ -1,21 +1,16 @@
+/******************************************************************
+  This is the source file from which the action doc is generated.
+  We use cpp to insert live code snippets into the document.
+  In order to generate the action doc run the following command
+  on a Unix-like system:
 
+  cpp -w -P "ADB.txt" > "ADB.rst"
 
-
-
-
-
-
-
-
-
-
-
-
+ ******************************************************************/
+/* header for generated .rst files */
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
-
 ===================
 ADB Reference Guide
 ===================

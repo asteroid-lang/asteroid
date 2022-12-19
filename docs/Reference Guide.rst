@@ -1,21 +1,17 @@
+/******************************************************************
+  This is the source file from which the reference guide is
+  generated.  We use cpp to insert live code snippets into the
+  document. In order to generate the reference guide run the
+  following command on a Unix-like system in the directory of
+  this doc:
 
+  bash generate_docs
 
-
-
-
-
-
-
-
-
-
-
-
+ ******************************************************************/
+/* header for generated .rst files */
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
-
 .. highlight:: none
 
 Asteroid Reference Guide
@@ -486,7 +482,7 @@ will return that value, e.g.,
       let a = eval "1+1".
       assert(a == 2).
 
-If the expression to be evaluated is a simple, structural pattern then the pattern is 
+If the expression to be evaluated is a simple, structural pattern then the pattern is
 evaluated as a constructor where variables are instantiated from the current environment.
 For example,
 ::
@@ -574,19 +570,19 @@ variables, e.g.
 Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``p``
 such that ``x`` is bound to the value ``2``.
 
-The optional ``bind`` term together with an appropriate list of variable names 
-allows the user to selectively project variable bindings from a constraint pattern 
+The optional ``bind`` term together with an appropriate list of variable names
+allows the user to selectively project variable bindings from a constraint pattern
 into the current scope.  The ``as`` keyword allows you to rename those bindings.
 Consider the following program,
 ::
       let Pair = pattern %[(x,y)]%.
 
       -- bindings of the variables x and y are now visible as a and y respetively
-      let *Pair bind [x as a, y] = (1,2).  
+      let *Pair bind [x as a, y] = (1,2).
       assert( a == 1).
       assert(y == 2).
 
-At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope 
+At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope
 of the constraint pattern into our current scope.
 
 Type Patterns
@@ -675,7 +671,6 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -726,19 +721,19 @@ are written in quotes.
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-  
+
   exp
     : pattern
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%' binding_list?    
+    | '%[' exp ']%' binding_list?
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  
+
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -746,8 +741,8 @@ are written in quotes.
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               
-           (TO exp (STEP exp)?) |   
+           (IN exp) |
+           (TO exp (STEP exp)?) |
         )?
 
   logic_exp0
@@ -769,7 +764,7 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  
+    : primary (primary | '@' primary)* (':' pattern)?
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // primary expressions/patterns
@@ -782,14 +777,14 @@ are written in quotes.
     | FALSE
     | NONE
     | ID
-    | '*' call_or_index  binding_list? 
+    | '*' call_or_index  binding_list?
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' 
-    | '[' list_stuff ']'  
+    | '(' tuple_stuff ')'
+    | '[' list_stuff ']'
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
@@ -797,7 +792,7 @@ are written in quotes.
 
   binding_list
     : BIND binding_list_suffix
-    
+
   binding_list_suffix
      : binding_term
      | '[' binding_term (',' binding_term)* ']'
@@ -815,8 +810,6 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
-
-
 Builtin Functions
 -----------------
 
@@ -1044,7 +1037,6 @@ An example,
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
-
 Pick
 ^^^^
 
@@ -1059,9 +1051,6 @@ Here is a simple use case
    let po = pick @pick([1 to 10]).
    let objects = po @pick(3).
    io @println objects.
-   
-
-
 Random
 ^^^^^^
 
@@ -1101,7 +1090,6 @@ The following is a simple example,
    let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
                        [10,5,110,50]).
     io @println sl.
-
 prints the sorted list::
 
   [5,10,50,110]
@@ -1131,8 +1119,6 @@ A simple use case.
       io @ print (s @get()+" ").
    end
    io @println ("").
-   
-
 which outputs::
 
    1 2 3 4 5 6 7 8 9 10
@@ -1185,7 +1171,6 @@ Here is a program that exercises some of the string formatting options,
     -- if precision is missing then value is left justified and zero padded on right.
     let r = type @tostring(math @pi,type @stringformat(6,3)).
     io @println r.
-
 The output of the program is,
 ::
 
@@ -1210,8 +1195,6 @@ A simple example program using the ``gettype`` function,
 
    let i = 1.
    assert(type @gettype(i) == "integer").
-   
-
 Util
 ^^^^
 
@@ -1254,8 +1237,6 @@ Here is a simple example program for the ``vector`` module,
    let b = [0,1].
 
    io @println (vector @dot (a,b)).
-   
-
 which prints the value ``0``.
 
 Interfacing Asteroid with Python
@@ -1306,7 +1287,7 @@ as an argument.  Let's test drive this in the Python interactive shell,
 ::
     ubuntu$ python3
     Python 3.8.10 (default, Nov 26 2021, 20:14:08)
-    [GCC 9.3.0] on 1
+    [GCC 9.3.0] on linux
     Type "help", "copyright", "credits" or "license" for more information.
     >>> from asteroid.interp import interp
     >>> interp('load system io. io @println "Hello, World!".')

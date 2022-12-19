@@ -1,21 +1,16 @@
+/******************************************************************
+  This is the source file from which the action doc is generated.
+  We use cpp to insert live code snippets into the document.
+  In order to generate the action doc run the following command
+  on a Unix-like system:
 
+  cpp -w -P "Asteroid in Action.txt" > "Asteroid in Action.rst"
 
-
-
-
-
-
-
-
-
-
-
-
+ ******************************************************************/
+/* header for generated .rst files */
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
-
 .. highlight:: none
 
 Asteroid in Action
@@ -36,7 +31,6 @@ The canonical ``Hello, World!`` program.  The easiest way to write this in Aster
   load system io.
 
   io @println "Hello, World!".
-
 Output::
 
     Hello, World!
@@ -55,21 +49,17 @@ Here is our first solution using a separate function for each of the steps,
   io @print ("Enter your name: ").
   let name = io @input().
   io @print ("Hello, "+name+"!").
-
-
 Letting the function ``input`` do the prompting,
 ::
   load system io.
 
   let name = io @input("Enter your name: ").
   io @println ("Hello, "+name+"!").
-
 Doing everything in one step,
 ::
   load system io.
 
   io @println ("Hello, "+io @input("Enter your name: ")+"!").
-
 Challenge: String length
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -81,7 +71,6 @@ In order to print the length of a string we can use the function ``len`` availab
 
   load "util".
   io @println (len("Hello!")).
-
 Output::
 
     6
@@ -92,7 +81,6 @@ We can also use the string member function ``length`` in order to compute the le
   load system io.
 
   io @println ("Hello!" @length()).
-
 Output::
 
     6
@@ -121,7 +109,6 @@ Finally we use the ``reduce`` function to map a list with repeated digits to a l
                         @reduce(unique,[]).
   io @println digits.
   assert(digits == ["1","2","3"]).
-
 Output::
 
     [1,2,3]
@@ -146,7 +133,6 @@ We use the ``explode`` function to turn a string into a list of characters. Then
                             @join("").
   io @println str.
   assert(str == "!dlroW ,olleH").
-
 Output::
 
     !dlroW ,olleH
@@ -162,7 +148,6 @@ Challenge: Removing blanks from a string
                                           @replace("  ","").
   io @println str.
   assert(str == "Hello, World!").
-
 Output::
 
     Hello, World!
@@ -198,7 +183,6 @@ with a capital letter.
                       @join("").
   io @println camel_str.
   assert(camel_str == "OnceUponATime").
-
 Output::
 
     OnceUponATime
@@ -217,7 +201,6 @@ Challenge: Incrementing filenames
   for i in 1 to 5 do
       io @println (root+i+ext).
   end
-
 Output::
 
     file1.txt
@@ -256,7 +239,6 @@ In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` o
   io @println pwd.
 
   assert (pwd == "e3zvshdbS43brt#")
-
 Output::
 
     e3zvshdbS43brt#
@@ -303,7 +285,6 @@ We will solve this programming problem using Asteroid's first-class patterns. We
   io @println rna_seq.
 
   assert(rna_seq == "UGGUAGUCAG").
-
 Output::
 
     UGGUAGUCAG
@@ -361,7 +342,6 @@ w to z.
   io @println decoded_msg.
 
   assert (decoded_msg == "hello, world!")
-
 Output::
 
     dahhk, sknhz!
@@ -387,7 +367,6 @@ If there is only one file, then the phrase should be ``1 file found`` instead.
   for n in 0 to 5 do
       io @println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
   end
-
 Output::
 
     0 files found
@@ -405,7 +384,6 @@ Challenge: The most frequent word
 
 In our solution we use a hash table to count the number of word occurences.
 ::
-
   load system io.
   load system util.
   load system hash.
@@ -463,7 +441,6 @@ In our solution we use a hash table to count the number of word occurences.
   io @println most_frequent_word.
 
   assert (most_frequent_word == "sed").
-
 Output::
 
     sed
@@ -502,7 +479,6 @@ second string (``strb``).
   end
 
   assert (common == " fox ").
-
 Output::
 
     The longest common substring is ' fox '.
@@ -533,7 +509,6 @@ An anagram is a word, phrase, or name formed by rearranging the letters of anoth
   end
 
   assert (normalize(str1) == normalize(str2)).
-
 Output::
 
     Anagrams
@@ -567,7 +542,6 @@ to left.
   end
 
   assert (clean_str == clean_str @flip()).
-
 Output::
 
     Palindromic
@@ -618,7 +592,6 @@ part of the original string.
   end
 
   io @println longest_palindrome.
-
 Output::
 
     o, Wo
@@ -747,7 +720,6 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
   for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
       io @println (n_gram+": "+cnt).
   end
-
 Output::
 
     lorem ipsum dolor: 2
@@ -777,7 +749,6 @@ Challenge: Pi
   load system math. -- definition of pi
 
   io @println (math @pi).
-
 Output::
 
     3.141592653589793
@@ -791,7 +762,6 @@ Other constants are also available.
   io @println (math @tau). -- tau=2*pi
 
   assert (math @tau == 2 * math @pi)
-
 Output::
 
     2.718281828459045
@@ -811,7 +781,6 @@ By definition, the factorial of a positive integer number N is a product of all 
   let fact = [1 to n] @reduce(lambda with (a,b) do return a*b).
   io @println fact.
   assert (fact == 6).
-
 Output::
 
     6
@@ -844,7 +813,6 @@ the predicate applied to the input is true.  The last case is of some interest b
 
   io @println ("The factorial of 3 is: " + fact (3)).
   assert (fact(3) == 6).
-
 Output::
 
     The factorial of 3 is: 6
@@ -875,7 +843,6 @@ Here we give an iterative solutions.  It is clear that there exists a trivial re
 
   io @println f_1.
   assert (f_1 == 55)
-
 Output::
 
     55
@@ -895,7 +862,6 @@ Of course this is straightforward, with a ``for-loop`` over a list.  Here we sho
   io @println sq.
 
   assert (sq == [1,4,9,16,25,36,49,64,81,100])
-
 Output::
 
     [1,4,9,16,25,36,49,64,81,100]
@@ -916,7 +882,6 @@ Just as in the previous challenge, we skip the naive loop solution and give a so
   io @println p2.
 
   assert (p2 == [1,2,4,8,16,32,64,128,256,512])
-
 Output::
 
     [1,2,4,8,16,32,64,128,256,512]
@@ -939,7 +904,6 @@ We start with printing the first ten odd numbers,
 
   io @println odd.
   assert(odd == [1,3,5,7,9])
-
 Output::
 
     [1,3,5,7,9]
@@ -957,7 +921,6 @@ Now the even numbers,
 
   io @println even.
   assert(even == [2,4,6,8,10])
-
 Output:
 ::
 
@@ -979,8 +942,6 @@ Comparing non-integer numbers (which are represented as floating-point numbers) 
 
   -- equal under the user defined tolerance of 0.0001
   assert (math @isclose(2.0,2.00001,0.0001)).
-
-
 Challenge: Prime numbers
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1009,7 +970,6 @@ Prime numbers are those that can be divided only by 1, and by themselves.
 
   assert (isprime(17)).
   assert (not isprime(15)).
-
 Output:
 ::
 
@@ -1046,7 +1006,6 @@ Challenge: List of prime numbers
           break.
       end
   end
-
 Output:
 ::
 
@@ -1110,7 +1069,6 @@ Prime factors are the prime numbers that divide the given integer number exactly
   io @println factors.
 
   assert (factors == [3,5,11])
-
 Output:
 ::
 
@@ -1140,7 +1098,6 @@ Challenge: Reducing a fraction
 
   -- show that original and reduced fraction are the same value
   assert (a/b == numerator/denominator).
-
 Output:
 ::
 
@@ -1163,7 +1120,6 @@ Asteroid is an eager language, that is, expressions are evaluated as early as po
       io @println m.
   end
   io @println "We are still alive...".
-
 Output:
 ::
 
@@ -1198,7 +1154,6 @@ Asteroid has two random number generation functions: ``random()`` generates a ra
   let n = 10.
   io @println (randint(0.0,type @toreal(n))).
   io @println (randint(0,n)).
-
 Output:
 ::
 
@@ -1241,7 +1196,6 @@ To illustrate it with an example, let’s take the number 1234 as the seed. On s
   io @println rval.
 
   assert (rval == 5227)
-
 Output:
 ::
 
@@ -1268,7 +1222,6 @@ In our solution, we generate 10 random integers between 0 and 9. We then count h
   end
 
   io @println hist.
-
 Output:
 ::
 
@@ -1295,7 +1248,6 @@ A straightforward solution would be to use the Pythagorean theorem:
   io @println d.
 
   assert (d == 2.23606797749979)
-
 Output:
 ::
 
@@ -1321,7 +1273,6 @@ where ``.`` represents the dot product. In our case ``a`` would be the distance 
   io @println d.
 
   assert (d == 2.23606797749979)
-
 Output:
 ::
 
@@ -1356,7 +1307,6 @@ where :math:`n` is the number of elements in the array :math:`x`; :math:`\bar{x}
   io @println sigma.
 
   assert (sigma == 420.96248961952256)
-
 Output:
 ::
 
@@ -1408,7 +1358,6 @@ These expressions can be implemented as-is in the code:
   -- show that the recovered coordinates are the same
   -- we started with
   assert (math @isclose(1,x,0.0001) and math @isclose(2,y,0.0001)).
-
 Output:
 ::
 
@@ -1466,7 +1415,6 @@ All these variants can be implemented by using ``with`` clauses and conditional 
   -- show that the recovered coordinates are the same
   -- we started with
   assert (math @isclose(-3,x,0.0001) and math @isclose(5,y,0.0001)).
-
 Output:
 ::
 
@@ -1504,7 +1452,6 @@ To calculate the area of a circle with a radius of 1, pairs of random numbers be
   io @println area.
 
   assert (area == 3.1392).
-
 Output:
 ::
 
@@ -1537,7 +1484,6 @@ ask for the initial guess and enter the loop, which compares the guess with the 
       let guess = type @tointeger(io @input("Try again: ")).
   end
   io @println "Yes, this is it!".
-
 Challenge: Binary to integer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1553,7 +1499,6 @@ In Asteroid this is straightforward using the built-in ``tointeger`` function, p
   io @println int.
 
   assert (int == 45).
-
 Output:
 ::
 
@@ -1583,7 +1528,6 @@ In Asteroid this is easily done with the ``tobase`` function.
   assert (tointeger(tobase(val,2),2) == val).
   assert (tointeger(tobase(val,8),8) == val).
   assert (tointeger(tobase(val,16),16) == val).
-
 Output:
 ::
 
@@ -1611,7 +1555,6 @@ Pretty straightforward using string and list manipulation.
   io @println s.
 
   assert (s == 49).
-
 Output:
 ::
 
@@ -1632,7 +1575,6 @@ If we remove all the zeros from a binary number, then we are left with only ``1`
   io @println bits.
 
   assert (bits == 4).
-
 Output:
 ::
 
@@ -1653,7 +1595,6 @@ The easiest way to achieve that is to treat the numbers as strings, sort them al
   io @println a.
 
   assert (a == 8675451).
-
 Output:
 ::
 
@@ -1697,7 +1638,6 @@ In the program below, there are four such sequences: for thousands, hundreds, te
   io @println roman.
 
   assert (roman == "MMXVIII")
-
 Output:
 ::
 
@@ -1757,7 +1697,6 @@ The zero name appears only in the case when the given number is zero.
   io @println (spell_number 75).
   io @println (spell_number 987654).
   io @println (spell_number 1001).
-
 Output:
 ::
 
@@ -1789,7 +1728,6 @@ Consider the complete program:
   io @println ("a = "+a,"b = "+b).
 
   assert ((a,b) is (20,10)).
-
 Output:
 ::
 
@@ -1810,7 +1748,6 @@ This approach also works with elements of an array:
   io @println a.
 
   assert (a is [3,5,4,7]).
-
 Output:
 ::
 
@@ -1828,7 +1765,6 @@ Challenge: Reverse a list
   io @println (a @reverse()).
 
   assert(a == [50,40,30,20,10]).
-
 Output:
 ::
 
@@ -1860,7 +1796,6 @@ Asteroid does not have a built-in ``rotate`` function. However, such a function 
   io @println c.
 
   assert(b == [7,9,11,13,15,1,3,5] and c == [11,13,15,1,3,5,7,9]).
-
 Output:
 ::
 
@@ -1884,7 +1819,6 @@ This is easily accomplished with the built-in ``shuffle``.
   io @println b.
 
   assert(b == [20,6,15,5,10,14,16,19,7,13,18,11,2,12,3,17,8,9,1,4]).
-
 Output:
 ::
 
@@ -1906,7 +1840,6 @@ For this we use Asteroid's ``vector`` module, which can handle incrementing a ve
   io @println b.
 
   assert(b == [2,3,4,5,6,7,8,9,10,11]).
-
 Output:
 ::
 
@@ -1929,7 +1862,6 @@ Again, here we take advantage of Asteroid's ``vector`` module.  Note that the tw
   io @println c.
 
   assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
-
 Output:
 ::
 
@@ -1947,7 +1879,6 @@ The vector module defines a function called ``op`` that allows you to combine tw
   io @println c.
 
   assert(c == [40,42,44,46,48,50,52,54,56,58,60]).
-
 Output:
 ::
 
@@ -1968,7 +1899,6 @@ As we said above, any arbitrary binary function. Consider the relational operato
   io @println c.
 
   assert(c == [false,true,false,false,false,true,false,false,true,true]).
-
 Output:
 ::
 
@@ -1992,7 +1922,6 @@ Here we use Asteroid's ``set`` module.
   io @println c.
 
   assert(c @sort() == [1,2,3,4]).
-
 Output:
 ::
 
@@ -2014,7 +1943,6 @@ Challenge: Sum of the elements of an array
   io @println s.
 
   assert (s == 125).
-
 Output:
 ::
 
@@ -2031,7 +1959,6 @@ If summing up elements that are greater than 10,
   io @println s.
 
   assert (s == 92).
-
 Output:
 ::
 
@@ -2050,7 +1977,6 @@ Challenge: Average of an array
   io @println avg.
 
   assert (avg == 60).
-
 Output:
 ::
 
@@ -2067,7 +1993,6 @@ Challenge: Is an element in a list?
   let array = [10, 14, 0, 15, 17, 20, 30, 35].
   let x = 17.
   io @println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).
-
 Output:
 ::
 
@@ -2086,7 +2011,6 @@ We can also use a reduction function to solve this,
   else
       io @println (x+" is not in the list").
   end
-
 Output:
 ::
 
@@ -2110,7 +2034,6 @@ The easiest way to do this is with a reduction,
   let array = [2, 4, 18, 9, 16, 7, 10].
   let odd = array @reduce(lambda with (acc,i) do return i if type @isnone(acc) and mod(i,2) else acc,none).
   io @println odd.
-
 Output:
 ::
 
@@ -2129,7 +2052,6 @@ Challenge: Take every second element
   io @println array.
 
   assert (array == [21,23,25,27,29]).
-
 Output:
 ::
 
@@ -2146,7 +2068,6 @@ We can use an index vector to accomplish  the same thing,
   io @println array.
 
   assert (array == [21,23,25,27,29]).
-
 Output:
 ::
 
@@ -2171,12 +2092,11 @@ Challenge: Number of occurrences in an array
             "grape",
             "pineapple",
             "avocado"].
-            
+
   let cnt = dt @count("grape").
   io @println cnt.
 
   assert (cnt == 2).
-
 Output:
 ::
 
@@ -2202,7 +2122,6 @@ Converting a list to a set will remove all duplicate elements in the list.
   io @println a.
 
   assert (a == [2,3,4,5,6,7,10])
-
 Output:
 ::
 
@@ -2225,7 +2144,7 @@ Challenge: Minimum and maximum
   end
 
   let v = [7, 6, 12, 3, 4, 10, 2, 5, 15, 6, 7, 8, 9, 3].
-  
+
   let a = max v.
   let b = min v.
 
@@ -2233,7 +2152,6 @@ Challenge: Minimum and maximum
   io @println b.
 
   assert (a == 15 and b == 2).
-
 Output:
 ::
 
@@ -2255,7 +2173,6 @@ Challenge: Increasing sequences
   io @println b.
 
   assert (b).
-
 Output:
 ::
 
@@ -2355,7 +2272,6 @@ The procedure:
   io @println ("").
 
   assert(mt == [[1,3,5],[2,4,6]]).
-
 Output:
 ::
 
@@ -2419,7 +2335,6 @@ This task is commonly performed to sort items where the sortable parameter is on
   io @println (sort @sort(pairs,lst)).
 
   assert (sort @sort(pairs,lst) == [("Pete",20),("Joe",23),("Billie",40),("Brandi",43)])
-
 Output:
 ::
 
@@ -2466,7 +2381,6 @@ For example, a hash is a collection mapping a car’s license plate to the colou
   end
 
   io @println (sort @sort(pairs,color_lst)).
-
 Output:
 ::
 
@@ -2492,7 +2406,6 @@ We will do this with an outer loop  and a ``map`` function.
   for i in 1 to 10 do
       io @println ([1 to 10] @map(lambda with x do return format(i*x)) @join(" ")).
   end
-
 Output:
 ::
 
@@ -2575,7 +2488,6 @@ The only thing that is left to do is to iterate appropiately and format the outp
   for r in triangle do
       io @println (r @map(lambda with v do return type @tostring v) @join(" ")).
   end
-
 Output:
 ::
 
