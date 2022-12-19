@@ -203,16 +203,10 @@ def __unify(term, pattern, unifying = True ):
 
         unifiers = unify(term, pexp, unifying)
 
-        if state.constraint_lvl:
-            state.symbol_table.push_scope({})
-
         # evaluate the conditional expression in the
         # context of the unifiers.
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
-
-        if state.constraint_lvl:
-            state.symbol_table.pop_scope()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
@@ -580,12 +574,14 @@ def __unify(term, pattern, unifying = True ):
         p = pattern[1]
         bl = pattern[2] # binding term list
 
-        state.constraint_lvl += 1
+        # constraint patterns are evaluated in their own scope
+        state.symbol_table.push_scope({})
         unifier = unify(term,p)
-        state.constraint_lvl -= 1
+        state.symbol_table.pop_scope()
 
         message_explicit("[End] constraint pattern", decrease=True)
 
+        # process binding list
         if bl[0] == 'nil':
             return [] #Return an empty unifier
         else:
