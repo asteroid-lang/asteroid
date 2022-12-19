@@ -8,7 +8,7 @@
 load system type.
 
 ------------------------------------------------------------------
-structure __HASHTABLE__ with
+structure __HASH__ with
 ------------------------------------------------------------------
 -- Asteroid hash table implementation using Python dictionaries
 
@@ -124,7 +124,7 @@ with none do
   return type @tostring (this @aslist ()).
 end -- __str__
 
-end -- __HASHTABLE__
+end -- __HASH__
 
 ------------------------------------------------------------------
 structure __HASH_MODULE__
@@ -132,7 +132,7 @@ structure __HASH_MODULE__
 with
 
 function hash with none do
-   return __HASHTABLE__().
+   return __HASH__().
 end
 
 end -- __HASH_MODULE__

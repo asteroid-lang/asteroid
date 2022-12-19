@@ -14,17 +14,6 @@ structure __SET_MODULE__
 with
 
 ------------------------------------------------------------------
-function toset
-------------------------------------------------------------------
-with (lst:%list) do return escape
-"
-global __retval__
-lst_val = state.symbol_table.lookup_sym('lst')
-__retval__ = ('list', list(set(lst_val[1])))
-"
-end
-
-------------------------------------------------------------------
 function diff
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
@@ -37,18 +26,6 @@ __retval__ = ('list', list(set(a_val[1]) - set(b_val[1])))
 end
 
 ------------------------------------------------------------------
-function union
-------------------------------------------------------------------
-with (a:%list,b:%list) do return escape
-"
-global __retval__
-a_val = state.symbol_table.lookup_sym('a')
-b_val = state.symbol_table.lookup_sym('b')
-__retval__ = ('list', list(set(a_val[1]) | set(b_val[1])))
-"
-end
-
-------------------------------------------------------------------
 function intersection
 ------------------------------------------------------------------
 with (a:%list,b:%list) do return escape
@@ -57,6 +34,29 @@ global __retval__
 a_val = state.symbol_table.lookup_sym('a')
 b_val = state.symbol_table.lookup_sym('b')
 __retval__ = ('list', list(set(a_val[1]) & set(b_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function toset
+------------------------------------------------------------------
+with (lst:%list) do return escape
+"
+global __retval__
+lst_val = state.symbol_table.lookup_sym('lst')
+__retval__ = ('list', list(set(lst_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function union
+------------------------------------------------------------------
+with (a:%list,b:%list) do return escape
+"
+global __retval__
+a_val = state.symbol_table.lookup_sym('a')
+b_val = state.symbol_table.lookup_sym('b')
+__retval__ = ('list', list(set(a_val[1]) | set(b_val[1])))
 "
 end
 

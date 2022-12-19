@@ -162,6 +162,22 @@ end -- exists
 ------------------------------------------------------------------
 function exit
 ------------------------------------------------------------------
+-- Signaling an intention to exit the interpreter.
+-- When an argument value other than none is provided
+-- it is considered a status value. If it is 
+-- an integer, zero is considered “successful termination” and any 
+-- nonzero value is considered “abnormal termination” by shells and 
+-- the like. Most systems require it to be in the range 0–127, and 
+-- produce undefined results otherwise. Some systems have a 
+-- convention for assigning specific meanings to specific exit codes, 
+-- but these are generally underdeveloped; Unix programs generally 
+-- use 2 for command line syntax errors and 1 for all other kind 
+-- of errors. If none is given as an argument value then is it
+-- is considered to be a successful exit equivalent to passing a zero. 
+-- If a string is passed then it is printed printed to 
+-- __STDERR__ and results in an exit code of 1. In particular, 
+-- sys.exit("some error message") is a quick way to exit a program 
+-- when an error occurs.
 with none do escape
 "
 import sys
@@ -185,12 +201,11 @@ end
 function getdir
 ------------------------------------------------------------------
 -- Return a string representing the current working directory.
-with path:%string do return escape
+with none do return escape
 "
 global __retval__
 from os import getcwd
-(STRING, path_val) = state.symbol_table.lookup_sym('path')
-__retval__ = ('string', getcwd(path_val))
+__retval__ = ('string', getcwd())
 "
 end -- getdir
 
@@ -237,7 +252,7 @@ end -- getpathtime
 ------------------------------------------------------------------
 function getsize
 ------------------------------------------------------------------
--- Return the size, in bytes, of path. Throw exception if the file 
+-- Return the size, in bytes, of path. Throws exception if the file 
 -- does not exist or is inaccessible.
 with path:%string do return escape
 "

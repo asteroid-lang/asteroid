@@ -13,6 +13,28 @@ load system type.
 structure __VECTOR_MODULE__ with
 
 ------------------------------------------------------------------
+function add
+------------------------------------------------------------------
+with (a,b) do
+  return this @op(lambda with (x,y) do return x+y,a,b).
+end
+
+------------------------------------------------------------------
+function dot
+-- computes the dot product of two lists
+------------------------------------------------------------------
+with (a:%list,b:%list) do
+  return this @mult(a,b) @reduce(lambda with (x,y) do return x+y).
+end
+
+------------------------------------------------------------------
+function mult
+------------------------------------------------------------------
+with (a,b) do
+  return this @op(lambda with (x,y) do return x*y,a,b).
+end
+
+------------------------------------------------------------------
 function op
 ------------------------------------------------------------------
 -- worker function for actual vector arithmetic
@@ -36,33 +58,12 @@ with (f:%function,a if type @isscalar(a),b:%list) do
 end
 
 ------------------------------------------------------------------
-function add
-------------------------------------------------------------------
-with (a,b) do
-  return this @op(lambda with (x,y) do return x+y,a,b).
-end
-
-------------------------------------------------------------------
 function sub
 ------------------------------------------------------------------
 with (a,b) do
   return this @op(lambda with (x,y) do return x-y,a,b).
 end
 
-------------------------------------------------------------------
-function mult
-------------------------------------------------------------------
-with (a,b) do
-  return this @op(lambda with (x,y) do return x*y,a,b).
-end
-
-------------------------------------------------------------------
-function dot
--- computes the dot product of two lists
-------------------------------------------------------------------
-with (a:%list,b:%list) do
-  return this @mult(a,b) @reduce(lambda with (x,y) do return x+y).
-end
 
 end -- __VECTOR_MODULE__
 

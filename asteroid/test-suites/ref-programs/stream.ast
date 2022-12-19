@@ -1,9 +1,9 @@
    load system io.
    load system stream.
 
-   let s = stream @stream([1 to 10]).
-   while not s @ eof() do
-      io @ print (s @get()+" ").
+   let s = stream @stream [1 to 10].
+   while not s @eof() do
+      io @print (s @get() + " ").
    end
-   io @println ("").
+   io @println "".
    

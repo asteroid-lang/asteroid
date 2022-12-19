@@ -1,12 +1,19 @@
+..
+      /******************************************************************
+      This is the source file from which the reference guide is
+      generated.  We use cpp to insert live code snippets into the
+      document. In order to generate the reference guide run the
+      following command on a Unix-like system in the directory of
+      this doc:
 
+      bash generate_docs
 
-
+      ******************************************************************/
+..
+   /* header for generated .rst files */
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
-
-
 .. highlight:: none
 
 Asteroid Reference Guide
@@ -477,7 +484,7 @@ will return that value, e.g.,
       let a = eval "1+1".
       assert(a == 2).
 
-If the expression to be evaluated is a simple, structural pattern then the pattern is 
+If the expression to be evaluated is a simple, structural pattern then the pattern is
 evaluated as a constructor where variables are instantiated from the current environment.
 For example,
 ::
@@ -565,19 +572,19 @@ variables, e.g.
 Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``p``
 such that ``x`` is bound to the value ``2``.
 
-The optional ``bind`` term together with an appropriate list of variable names 
-allows the user to selectively project variable bindings from a constraint pattern 
+The optional ``bind`` term together with an appropriate list of variable names
+allows the user to selectively project variable bindings from a constraint pattern
 into the current scope.  The ``as`` keyword allows you to rename those bindings.
 Consider the following program,
 ::
       let Pair = pattern %[(x,y)]%.
 
       -- bindings of the variables x and y are now visible as a and y respetively
-      let *Pair bind [x as a, y] = (1,2).  
+      let *Pair bind [x as a, y] = (1,2).
       assert( a == 1).
       assert(y == 2).
 
-At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope 
+At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope
 of the constraint pattern into our current scope.
 
 Type Patterns
@@ -666,8 +673,6 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-
-
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -718,19 +723,19 @@ are written in quotes.
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-  
+
   exp
     : pattern
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%'      
+    | '%[' exp ']%'
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  
+
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -738,8 +743,8 @@ are written in quotes.
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               
-           (TO exp (STEP exp)?) |   
+           (IN exp) |
+           (TO exp (STEP exp)?) |
         )?
 
   logic_exp0
@@ -761,7 +766,7 @@ are written in quotes.
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  
+    : primary (primary | '@' primary)* (':' pattern)?
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // primary expressions/patterns
@@ -774,14 +779,14 @@ are written in quotes.
     | FALSE
     | NONE
     | ID
-    | '*' call_or_index  binding_list? 
+    | '*' call_or_index  binding_list?
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
     | ESCAPE STRING
     | EVAL primary
-    | '(' tuple_stuff ')' 
-    | '[' list_stuff ']'  
+    | '(' tuple_stuff ')'
+    | '[' list_stuff ']'
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
@@ -803,9 +808,6 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
-
-
-
 Builtin Functions
 -----------------
 
@@ -813,7 +815,7 @@ Builtin Functions
       Returns a unique id of any Asteroid object as an integer.
 
 **hd** x:%list
-      Returns the first element of a list. It is an error to apply this 
+      Returns the first element of a list. It is an error to apply this
       function to an empty list.
 
 **isdefined** x:%string
@@ -831,7 +833,7 @@ Builtin Functions
       3. If in addition to the start and stop values the inc values is given then the list [start to stop-1 step inc] is returned.
 
 **tl** x:%list
-      Returns the rest of the list without the first element.  It is an 
+      Returns the rest of the list without the first element.  It is an
       error to apply this function to an empty list.
 
 
@@ -869,13 +871,13 @@ list **@extend** item
       Extend the list by adding all the elements from the item to the list where the item is either a list or a tuple.
 
 list **@filter** f:%function
-      Returns a list constructed from those elements for which function f returns true. 
+      Returns a list constructed from those elements for which function f returns true.
 
 list **@index** item | (item, loc(startix:%integer) | (item, loc(startix:%integer, endix:%integer))
-      Returns a zero-based index of the first element whose value is equal to item. 
-      It throws an exception if there is no such item. The argument loc allows you to specify 
-      startix and endix and are used to limit the search to a particular subsequence of the list. 
-      The returned index is computed relative to the beginning of the list rather than the startix argument.   
+      Returns a zero-based index of the first element whose value is equal to item.
+      It throws an exception if there is no such item. The argument loc allows you to specify
+      startix and endix and are used to limit the search to a particular subsequence of the list.
+      The returned index is computed relative to the beginning of the list rather than the startix argument.
 
 list **@insert** (ix:%integer, item)
       Insert the item into the list at the position i.
@@ -917,7 +919,7 @@ list **@reduce** f:%function | (f:%function, init)
             assert(value == 3).
 
 list **@remove** item
-      Removes the first element from the list whose value is equal to item. 
+      Removes the first element from the list whose value is equal to item.
       It throws an exception if there is no such item.
 
 list **@reverse** ()
@@ -927,7 +929,7 @@ list **@shuffle** ()
       Creates a random permutation of the list in place and returns the randomized list.
 
 list **@sort** () | reverse:%boolean
-      Sorts the items of the list in place and returns the sorted list. 
+      Sorts the items of the list in place and returns the sorted list.
       If the boolean reverse is set to true then the sorted list is reversed.
 
 
@@ -951,40 +953,40 @@ string **@flip** ()
       Returns a copy of the string with its characters in the reverse order.
 
 string **@index** item:%string | (item:%string, loc(startix:%integer)) | (item:%string, loc(startix:%integer, endix:%integer))
-      Returns an integer index of the item in the string or none if item was not found.  
-      The  argument loc allows you to specify startix and endix and are used to limit the search 
-      to a particular substring of the string. The returned index is computed relative to the beginning 
-      of the full string rather than the startix.  
+      Returns an integer index of the item in the string or none if item was not found.
+      The  argument loc allows you to specify startix and endix and are used to limit the search
+      to a particular substring of the string. The returned index is computed relative to the beginning
+      of the full string rather than the startix.
 
 string **@length** ()
       Returns the number of characters within the string.
 
 string **@replace** (old:%string, new:%string) | (old:%string, new:%string, count:%integer)
-      Return a copy of the string with all occurrences of regular expression old replaced by the 
-      string new. If the argument count is given, only the first count occurrences are replaced. 
+      Return a copy of the string with all occurrences of regular expression old replaced by the
+      string new. If the argument count is given, only the first count occurrences are replaced.
 
 string **@split** () | sep:%string | (sep:%string, count:%integer)
       Return a list of the words in the string, using sep as the delimiter. If count is given then
-      at most count splits are done (thus, the list will have at most count+1 elements). If count is 
+      at most count splits are done (thus, the list will have at most count+1 elements). If count is
       not specified or -1, then there is no limit on the number of splits (all possible splits are made).
-      Consecutive delimiters are not grouped together and are deemed to delimit empty strings. 
+      Consecutive delimiters are not grouped together and are deemed to delimit empty strings.
       For example,::
-      
+
             let s = "1,,2" @split ",".
-            assert (s == ["1", "", "2"]). 
-            
-      The sep argument may consist of multiple characters. 
-      For example,:: 
-      
-            let s = "1<>2<>3" @split "<>". 
+            assert (s == ["1", "", "2"]).
+
+      The sep argument may consist of multiple characters.
+      For example,::
+
+            let s = "1<>2<>3" @split "<>".
             assert (s == ["1", "2", "3"]).
-            
+
       Splitting an empty string with a specified separator returns ``[""]``.
-      If sep is not specified or is None, a different splitting algorithm is applied: 
-      consecutive whitespace is regarded as a single separator, and the result will contain no empty strings at 
-      the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string 
+      If sep is not specified or is None, a different splitting algorithm is applied:
+      consecutive whitespace is regarded as a single separator, and the result will contain no empty strings at
+      the start or end if the string has leading or trailing whitespace. Consequently, splitting an empty string
       or a string consisting of just whitespace with a none separator returns ``[]``.
- 
+
 string **@tolower** ()
       Returns a copy of the string in all lower case letters.
 
@@ -992,9 +994,9 @@ string **@toupper** ()
       Returns a copy of the string in all upper case letters.
 
 string **@trim** () | what:%string
-      Returns a copy of the string with the leading and trailing characters removed. 
-      The what argument specifies the set of characters to be removed. 
-      If omitted trim defaults to removing whitespace. 
+      Returns a copy of the string with the leading and trailing characters removed.
+      The what argument specifies the set of characters to be removed.
+      If omitted trim defaults to removing whitespace.
       The what argument is not a prefix or suffix; rather, all combinations of its characters are stripped.
 
 
@@ -1054,16 +1056,16 @@ hash
 
 This module implements a hash for key-value pairs. It supports the following functions,
 
-hash **@aslist** ()
+hash **@hash** ()
+      Returns a new hash object of type __HASH__.
+
+__HASH__ **@aslist** ()
       Returns the hash as a list of key-value pairs.
 
-hash **@get** key
+__HASH__ **@get** key
       Return the value associated with the given key as long as it can be found otherwise an exception will be thrown.
 
-hash **@hash** ()
-      Returns a new hash object.
-
-hash **@insert** (key, value) | pairs:%list
+__HASH__ **@insert** (key, value) | pairs:%list
       Given a pair of the format (key, value) insert it into the table.  Given a list
       of the format,::
 
@@ -1076,167 +1078,388 @@ io
 
 This module implements Asteroid's I/O system. The module defines three I/O streams,
 
-1. ``__STDIN__`` - the standard input stream.
-2. ``__STDOUT__`` - the standard output stream.
-3. ``__STDERR__`` - the standard error stream.
+1. __STDIN__ - the standard input stream.
+2. __STDOUT__ - the standard output stream.
+3. __STDERR__ - the standard error stream.
 
 Furthermore, the module supports the following functions,
 
-io **@println** item
-      Prints item to the terminal (__STDOUT__) with an implicit newline character.
-
-io **@print** item
-      Prints item to the terminal (__STDOUT__). No implicit newline is appended to the output.
+io **@close** file:%\_\_FILE\_\_
+      Closes the file where file is a file descriptor of type \_\_FILE\_\_.
 
 io **@input** () | prompt:%string
       Ask the user for input from __STDIN__.  The input is returned as a string. If prompt is given it is printed and then input is read from terminal.
 
 io **@open** (name:%string, mode:%string)
-      Returns a file descriptor of type \_\_FILE\_\_. 
-      The mode string can be ``"r"`` when the file will only be read, 
-      ``"w"`` for only writing (an existing file with the same name will be erased), 
-      and ``"a"`` opens the file for appending; any data written to the file is 
-      automatically added to the end. 
-      Finally,  ``"r+"`` opens the file for both reading and writing.
+      Returns a file descriptor of type \_\_FILE\_\_.
+      The mode string can be "r" when the file will only be read,
+      "w" for only writing (an existing file with the same name will be erased),
+      and "a" opens the file for appending; any data written to the file is
+      automatically added to the end.
+      Finally,  "r+" opens the file for both reading and writing.
 
-io **@close** file:%\_\_FILE\_\_
-      Closes file.
+io **@print** item
+      Prints item to the terminal (__STDOUT__). No implicit newline is appended to the output.
+
+io **@println** item
+      Prints item to the terminal (__STDOUT__) with an implicit newline character.
 
 io **@read** () | file:%\_\_FILE\_\_
-      Read a file and return the contents as a string. If no file is given the ``__STDIN__`` stream is read.
+      Read a file and return the contents as a string. If no file is given the __STDIN__ stream is read.
 
 io **@readln** () | file:%\_\_FILE\_\_
-      Reads a line of input from a file and returns it as a string. If no file is given the ``__STDIN__`` stream is read.
+      Reads a line of input from a file and returns it as a string. If no file is given the __STDIN__ stream is read.
 
 io **@write** what:%string | (file:%\_\_FILE\_\_, what:%string)
-      Write what to a file.  If file is not given then it writes to the ``__STDOUT__`` stream.
+      Write what to a file.  If file is not given then it writes to the __STDOUT__ stream.
 
 io **@writeln** what:%string | (file:%\_\_FILE\_\_, what:%string)
-      Write what to a file and append a newline charater.  If file is not given then it writes to the ``__STDOUT__`` stream.
+      Write what to a file and append a newline charater.  If file is not given then it writes to  __STDOUT__.
 
 
 math
 ^^^^
 
-The `math <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/math.ast>`_ module implements mathematical constants and functions. It supports the following functions,
-
-Power and logarithmic functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-* Function ``exp``, given ``x:%integer``, returns e raised to the power ``x``, where e = 2.718281… is the base of natural logarithms.
-* Function ``log`` can be called with two different argument setups,
-
-  1. If only one argument, ``(x)``, is input, this returns the natural logarithm of x (to base e).
-  2. If two arguments, ``(x,base)``, are input, this returns the logarithm of x to the given base, calculated as log(x)/log(base).
-
-* Function ``pow``, given ``(b,p:%integer)``, returns "b <sup>p</sup>" as long as b is either ``real`` or ``integer``.
-* Function ``sqrt``, given ``a``, returns its square root as long as ``a`` is either ``real`` or ``integer``.
-
-Number-theoretic and representation functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-* Function ``abs``, given ``x``, returns its absolute value.
-* Function ``ceil``, given ``x:%real``, returns the ceiling of x: the smallest integer greater than or equal to x.
-* Function ``floor``, given ``x:%real``, returns the floor of x: the largest integer less than or equal to x.
-* Function ``gcd``, given ``(a:%integer,b:%integer)``, returns the greatest common denominator that both integers share.
-* Function ``isclose`` can be called with two different argument setups,
-
-  1. With input values ``(a,b)``, it returns returns ``true`` if the two values are close to each other and ``False`` otherwise. Default tolerance 1e-09.
-  2. With input values ``(a,b,t)``, it compares ``a`` and ``b`` with tolerance ``t``.
-
-* Function ``mod``, given ``(v,d)``, will return the remainder of the operation ``v/d``, as long as ``v`` and ``d`` are either ``real`` or ``integer`` values.
-
-Trigonometric functions
-%%%%%%%%%%%%%%%%%%%%%%%
-
-* Function ``acos``, given ``x``, returns the arc cosine of x in radians. The result is between 0 and pi.
-* Function ``asin``, given ``x``, returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
-* Function ``atan``, ,given ``x``, returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
-* Function ``cos``, given ``x``, returns the cosine of x radians.
-* Function ``sin``, given ``x``, returns the sine of x radians.
-* Function ``tan``, given ``x``, returns the tangent of x radians.
-* Function ``acosh``, given ``x``, returns the inverse hyperbolic cosine of x.
-* Function ``asinh``, given ``x``, returns the inverse hyperbolic sine of x.
-* Function ``atanh``, given ``x``, returns the inverse hyperbolic tangent of x.
-* Function ``cosh``, given ``x``, returns the hyperbolic cosine of x.
-* Function ``sinh``, given ``x``, returns the hyperbolic sine of x.
-* Function ``tanh``, given ``x``, returns the hyperbolic tangent of x.
-* Function ``degrees``, given ``x``, converts angle ``x`` from radians to degrees.
-* Function ``radians``,  given ``x``, converts angle ``x`` from degrees to radians.
-
+The math module implements mathematical constants and functions.
 An example,
 ::
-
     load system io.
     load system math.
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
+Constants
+%%%%%%%%%
+
+math **@pi**
+      The mathematical constant π = 3.141592…, to available precision.
+
+math **@e**
+      The mathematical constant e = 2.718281…, to available precision.
+
+
+Power and logarithmic functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+math **@exp** x:%integer
+      Returns e raised to the power x, where e = 2.718281… is the base of the natural logarithm.
+
+math **@log** x | (x, base:%integer)
+      If only argument x is the input, return the natural logarithm of x (to base e).
+      If two arguments, (x, base:%integer), are given as input, return the logarithm
+      of x to the given base, calculated as log(x)/log(base).
+
+math **@pow** (b, p:%integer)
+      Return b raised to the power p.  The return type depends on the type
+      of the base.
+
+math **@sqrt** x
+      Return the square root of x as a real.
+
+
+Number-theoretic and representation functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+math **@abs** x
+      Return that absolute value of x.  The return type depends on the type of x.
+
+math **@ceil** x:%real
+      Returns the ceiling of x: the smallest integer greater than or equal to x.
+
+math **@floor** x:%real
+      Returns the floor of x: the largest integer less than or equal to x.
+
+math **@gcd** (a:%integer, b:%integer)
+      Returns the greatest common denominator that both integers share.
+
+math **@isclose** (a:%real, b:%real) | (a:%real, b:%real, t:%real)
+      Return true if the values a and b are close to each other and false otherwise.
+      Default tolerance is 1e-09.  An alternative tolerance can be specified with
+      the t argument.
+
+math **@mod** (v,d)
+      Implements the modulus operation. Returns the remainder of the quotient v/d.
+
+
+Trigonometric functions
+%%%%%%%%%%%%%%%%%%%%%%%
+
+math **@acos** x
+      Returns the arc cosine of x in radians. The result is between 0 and pi.
+
+math **@asin** x
+      Returns the arc sine of x in radians. The result is between -pi/2 and pi/2.
+
+math **@atan** x
+      Returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
+
+math **@cos** x
+      Returns the cosine of x radians.
+
+math **@sin** x
+      Returns the sine of x radians.
+
+math **@tan** x
+      Returns the tangent of x radians.
+
+Hyperbolic functions
+%%%%%%%%%%%%%%%%%%%%
+
+math **@acosh** x
+      Returns the inverse hyperbolic cosine of x.
+
+math **@asinh** x
+      Returns the inverse hyperbolic sine of x.
+
+math **@atanh** x
+      Returns the inverse hyperbolic tangent of x.
+
+math **@cosh** x
+      Returns the hyperbolic cosine of x.
+
+math **@sinh** x
+      Returns the hyperbolic sine of x.
+
+math **@tanh** x
+      Returns the hyperbolic tangent of x.
+
+Angular conversion
+%%%%%%%%%%%%%%%%%%
+
+math **@degrees** x
+      Converts angle x from radians to degrees.
+
+math **@radians** x
+      Converts angle x from degrees to radians.
 
 
 os
 ^^
 
+This module provides a portable way of using operating system dependent functionality.
+
+Process Parameters
+%%%%%%%%%%%%%%%%%%
+
+os **@argv**
+      The list of command line arguments passed to an Asteroid script.
+      argv[0] is the name of the Asteroid script (it is operating
+      system dependent whether this is a full pathname or not).
+      In interactive mode argv[0] will be the empty string.
+
+os **@env**
+      A hash table where keys and values are strings that represent
+      the process environment. For example,
+            os @env @get "HOME"
+      is the pathname of your home directory (on some platforms),
+      and is equivalent to getenv("HOME") in C.
+
+os **@platform**
+      This string contains a platform identifier.
+
+
+Functions
+%%%%%%%%%
+
+os **@basename** path:%string
+      Return the base name of pathname path. This is the second element of the pair
+      returned by passing path to the function split. Note that the result of this
+      function is different from the Unix basename program; where basename for '/foo/bar/'
+      returns 'bar', the basename function returns an empty string ("").
+
+os **@chdir** path:%string
+      Change the current working directory to path.
+
+os **@dirname** path:%string
+      Return the directory name of pathname path. This is the first element of the
+      pair returned by passing path to the function split.
+
+os **@exists** path:%string
+      Return true if path refers to an existing path or an open file descriptor.
+      Returns false for broken symbolic links. On some platforms, this function
+      may return False if permission is not granted to execute stat on
+      the requested file, even if the path physically exists.
+
+os **@exit** () | v:%integer | msg:%string
+      Signaling an intention to exit the interpreter.
+      When an argument value other than none is provided
+      it is considered a status value. If it is
+      an integer, zero is considered “successful termination” and any
+      nonzero value is considered “abnormal termination” by shells and
+      the like. Most systems require it to be in the range 0–127, and
+      produce undefined results otherwise. Some systems have a
+      convention for assigning specific meanings to specific exit codes,
+      but these are generally underdeveloped; Unix programs generally
+      use 2 for command line syntax errors and 1 for all other kind
+      of errors. If none is given as an argument value then is it
+      is considered to be a successful exit equivalent to passing a zero.
+      If a string is passed then it is printed printed to
+      __STDERR__ and results in an exit code of 1. In particular,
+      sys.exit("some error message") is a quick way to exit a program
+      when an error occurs.
+
+os **@getdir** ()
+      Return a string representing the current working directory.
+
+os **@getpathtime** path:%string | (path:%string,flag:%boolean)
+      Returns a triple with (creation, access, modification) times.
+      By default the return value is a triple of real numbers
+      giving the number of seconds since 1/1/1970.  If the flag is set
+      to true then a triple of strings is returned where each string
+      represents the respective local time. Throws an exception if the file
+      does not exist or is inaccessible.
+
+os **@getsize** path:%string
+      Return the size, in bytes, of path. Throws exception if the file
+      does not exist or is inaccessible.
+
+os **@isfile** path:%string
+      Return true if path is an existing regular file. This follows
+      symbolic links.
+
+os **@isdir** path:%string
+      Return true if path is an existing directory. This follows
+      symbolic links.
+
+os **@join** (path1:%string,path2:%string)
+      Join path1 and path2 components intelligently. The return value
+      is the concatenation of path and any members of *paths with
+      exactly one directory separator following each non-empty part
+      except the last, meaning that the result will only end in a
+      separator if the last part is empty. If the second component is an
+      absolute path, the first component is thrown away.
+
+      On Windows, the drive letter is not reset when an absolute
+      path component (e.g., r'\foo') is encountered. If a component
+      contains a drive letter, all previous components are thrown away
+      and the drive letter is reset. Note that since there is a current
+      directory for each drive, os.path.join("c:", "foo") represents a
+      path relative to the current directory on drive C: (c:foo), not c:\foo.
+
+os **@split** path:%string
+      Split the pathname path into a pair, (head, tail) where tail is
+      the last pathname component and head is everything leading up to
+      that. The tail part will never contain a slash; if path ends in
+      a slash, tail will be empty. If there is no slash in path, head
+      will be empty. If path is empty, both head and tail are empty.
+      Trailing slashes are stripped from head unless it is the root
+      (one or more slashes only). Also see the functions dirname and
+      basename.
+
+os **@splitdrive** path:%string
+      Split the pathname path into a pair (drive, tail) where drive is
+      either a mount point or the empty string. On systems which do not
+      use drive specifications, drive will always be the empty string.
+      In all cases, drive + tail will be the same as path.
+
+      On Windows, splits a pathname into drive/UNC sharepoint and
+      relative path.
+
+      If the path contains a drive letter, drive will contain everything
+      up to and including the colon.
+
+os **@splitext** path:%string
+      Split the pathname path into a pair (root, ext) such that
+      root + ext == path, and the extension, ext, is empty or begins
+      with a period and contains at most one period. If the path contains
+      no extension, ext will be the empty string.
+
+os **@syscmd** cmd:%string
+      Execute a command in a subshell. This is implemented
+      by calling the Standard C function system, and has the same
+      limitations. If command generates any output, it will be
+      sent to the interpreter standard output stream.
+      The C standard does not specify the meaning of the return value of
+      the C function, so the return value of this function is
+      system-dependent.
+
+
+
+
 pick
 ^^^^
 
-The `pick <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/pick.ast>`_ module implements
-pick objects that allow a user to randomly pick items from a list using the ``pick`` function.
-The ``pick`` function can be called with ``n:%integer`` and returns a list of ``n`` randomly picked objects from the object list.
-Here is a simple use case
-::
+The pick module implements
+pick objects that allow a user to randomly pick items from a list of items using the pickitems function.
 
+pick **@pick** l:%list
+      Construct a pick object of type __PICK__.
+
+__PICK__ **@pickitems** () | n:%integer
+      Return items randomly picked from the list l.  If no input is provided
+      then pickitems will return a single, randomly picked item from the list.
+      If an integer value n is given then a list of n randomly picked items from
+      the list l is returned.  The picked item list is constructed by sampling the
+      list l with replacement.
+
+An example::
    load system io.
    load system pick.
 
    let po = pick @pick([1 to 10]).
-   let objects = po @pick(3).
+   let objects = po @pickitems 3.
    io @println objects.
-   
-
-
 random
 ^^^^^^
 
-The `random <https://github.com/lutzhamel/asteroid/blob/master/asteroid/modules/random.ast>`_ module implements the ``random`` numbers. Using the functions included in this module will return a random value within a given range or interval. It supports the following functions,
+The random module implements random number generation.
 
-* Function ``random``, given the input ``none``, returns a random floating point number in the range ``[0.0, 1.0)``.
-* Function ``randint`` returns a random value N in the interval lo <= N <= hi. The exact random value output depends on the types of the values specifying the interval. It can be called with two different number interval inputs:
+random **@randint** (lo:%integer,hi:%integer) | (lo:%real,hi:%real)
+      Return a random value N in the interval lo <= N <= hi.
+      The type of the random value depends on the types of the
+      values specifying the interval.  If the interval is specified
+      with integers then a random integer value is returned.
+      If the interval is specified with real numbers then a real value is
+      is returned, and for everything else an exception is thrown.
 
-  1. ``(lo:%integer,hi:%integer)``
-  2. ``(lo:%real,hi:%real)``
-  3. Note: any other interval specification will instead output an error message for "unsupported interval specification in randint."
+random **@random** ()
+      Return a random real number in the range [0.0, 1.0).
 
-* Function ``seed``, given ``(sd:%integer)``, provides a seed value for the random number generator.
+random **@seed** x:%integer
+      Provide the seed value x for the random number generator.
 
 set
 ^^^
 
-The `set <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/set.ast>`_ module implements Asteroid sets as lists. Unlike lists, sets do not have repeated members. It supports the following functions,
+The set module implements Asteroid sets as lists.
+Unlike lists, sets do not have repeated elements.
+Use the set member function toset to turn any list
+into a list that represents a set (remove repeated items).
 
-* Function ``toset``, given ``(lst:%list)``, converts the input list into a set.
-* Function ``diff``, given ``(a:%list,b:%list)``, computes the difference set between the two set ``a`` and ``b``.
-* Function ``intersection``, given ``(a:%list,b:%list)``, finds the intersection between  sets ``a`` and ``b``.
-* Function ``union``, given ``(a:%list,b:%list)``, computes the union of sets ``a`` and ``b``.
-* Function ``xunion``, given ``(a:%list,b:%list)``, returns all elements in ``a`` or ``b``, but not in both.
+set **@diff** (a:%list,b:%list)
+      Return the difference set between sets a and b.
+
+set **@intersection** (a:%list,b:%list)
+      Return the intersection of sets a and b.
+
+set **@toset** l:%list
+      Return list l as a set by removing repeated elements.
+
+set **@union** (a:%list,b:%list)
+      Return the union of sets a and b.
+
+set **@xunion** (a:%list,b:%list)
+      Return the elements in a or b but not both.
+
 
 sort
 ^^^^
 
-The `sort <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/sort.ast>`_ module
-defines a parameterized ``sort`` function over a list.
-The ``sort`` function makes use of a user-defined order predicate on the list's elements to
-perform the sort. The ``Quicksort`` is the underlying sort algorithm.
+The sort  module
+defines a parameterized sort function over a list.
+The sort function makes use of a user-defined order predicate on the list's elements to
+perform the sort. The QuickSort is the underlying sort algorithm.
+
+sort **@sort** (p:%function,l:%list)
+      Returns the sorted list l using the predicate p.
+
 The following is a simple example,
 ::
-
    load system io.
    load system sort.
-   let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
+   let sl = sort @sort((lambda with (x,y) do true if x<y else false),
                        [10,5,110,50]).
-    io @println sl.
-
-
+   io @println sl.
 prints the sorted list::
 
   [5,10,50,110]
@@ -1244,31 +1467,42 @@ prints the sorted list::
 stream
 ^^^^^^
 
-The `stream <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/stream.ast>`_ module implements streams that allow
-the developer to turn any list into a stream supporting interface functions like ``peeking`` ahead or ``rewinding`` the stream.
-The following stream interface functions are available,
+The stream module implements streams that allow
+the developer to turn any list into a stream supporting interface functions like peeking ahead or rewinding
+the stream.
 
-* Function ``eof`` returns ``true`` if the stream does not contain any further elements for processing. Otherwise it returns ``false``.
-* Function ``peek`` returns the current element available on the stream otherwise it returns ``none``.
-* Function ``get`` returns the current element and moves the stream pointer one ahead.
-* Function ``rewind`` resets the stream pointer to the first element of the stream.
-* Function ``map`` applies a given function to each element in the stream.
-* Function ``append``, given ``item``, adds item to the end of the stream.
-* Function ``__string__`` maps a the stream to a string representation.
+stream **@stream** l:%list
+      Returns a stream object of type __STREAM__.
 
-A simple use case.
-::
+__STREAM__ **@append** x
+      Adds x to the end of the stream.
 
+__STREAM__ **@eof** ()
+      Returns true if the stream does not contain any further elements for processing.
+      Otherwise it returns false.
+
+__STREAM__ **@get** ()
+      Returns the current element and moves
+      the stream pointer one ahead.  Returns none if no elements left in stream.
+
+__STREAM__ **@map** f:%function
+      Applies function f to each element in the stream.
+
+__STREAM__ **@peek** ()
+      Returns the current element available on the stream otherwise it returns none.
+
+__STREAM__ **@rewind** ()
+      Resets the stream pointer to the first element of the stream.
+
+A simple use case::
    load system io.
    load system stream.
 
-   let s = stream @stream([1 to 10]).
-   while not s @ eof() do
-      io @ print (s @get()+" ").
+   let s = stream @stream [1 to 10].
+   while not s @eof() do
+      io @print (s @get() + " ").
    end
-   io @println ("").
-   
-
+   io @println "".
 which outputs::
 
    1 2 3 4 5 6 7 8 9 10
@@ -1277,32 +1511,30 @@ which outputs::
 type
 ^^^^
 
-The `type <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/type.ast>`_ module defines type related functions and structures.
+The type module defines type related functions and structures.
 
 Type Conversion
 %%%%%%%%%%%%%%%
 
-* Function ``tointeger`` converts a given input to an integer. It can be called with two different arguments,
+type **@tobase** (x:%integer,base:%integer)
+      Represents the given integer x as a numeral string in different bases.
 
-  1. ``(item:%string,base:%integer)`` where ``base`` is a valid base for integer conversion
-  2. ``item`` where ``item`` is converted to a base 10 integer.
+type **@toboolean** x
+      Interpret x as a Boolean value.
 
+type **@tointeger** (x:%string,base:%integer) | x
+      Converts a given input to an integer. If a base value is specified then
+      the resulting integer is in the corresponding base.
 
-* Function ``toreal``, given ``item``, returns the input as a real number data type.
-* Function ``toboolean``, given ``item``, returns the input as a Boolean value of either true or false.
-* Function ``tostring`` converts an Asteroid object to a string. If format values are given, it applies the formatting to the object. It can be called with several different inputs where ``*TP`` indicates a``boolean``, ``integer``, or ``string`` type and ``w`` is the width specification, ``p`` is the precision specification and ``s`` is the scientific notation flag.  When no formatting information is provided a default string conversion occurs,
+type **@toreal** x
+      Returns the input as a real number.
 
-  1. ``(v:*TP,type @stringformat(w:%integer))``
-  2. ``(v:%real,type @stringformat(w:%integer))``
-  3. ``(v:%real,type @stringformat(w:%integer,p:%integer))``
-  4. ``(v:%real,type @stringformat(w:%integer,p:%integer,s:%boolean))``
-  5. ``item`` - default conversion
-
-* Function ``tobase`` represents the given integer ``x`` (*specifically* within the given input ``(x:%integer,base:%integer)``) as a string in the given base.
+type  **@tostring** x | (x,type @stringformat(width:%integer,precision:%integer,scientific:%boolean))
+      Converts an Asteroid object to a string. If format values are given,
+      it applies the formatting to the string object.
 
 Here is a program that exercises some of the string formatting options,
 ::
-
     load system io.
     load system type.
     load system math.
@@ -1323,8 +1555,6 @@ Here is a program that exercises some of the string formatting options,
     -- if precision is missing then value is left justified and zero padded on right.
     let r = type @tostring(math @pi,type @stringformat(6,3)).
     io @println r.
-
-
 The output of the program is,
 ::
 
@@ -1339,53 +1569,84 @@ Notice the right justification of the various values within the given string len
 Type Query Functions
 %%%%%%%%%%%%%%%%%%%%
 
-* Function ``islist`` returns ``true`` if given ``item`` is a list otherwise it will return ``false``.
-* Function ``isscalar`` returns ``true`` if given ``item`` is either an integer or a real value.
-* Function ``isnone`` returns ``true`` if given ``item`` is equal to the value ``none``.
-* Function ``gettype`` returns the type of a given ``item`` as an Asteroid string.
+type **@islist** x
+      Returns true if x is a list otherwise it will return false.
+
+type **@isnone** x
+      Returns true if x is equal to the value none.
+
+type **@isscalar** x
+      Returns true if x is either an integer or a real value.
+
+type **@gettype** x
+      Returns the type of x as a string.
 
 A simple example program using the ``gettype`` function,
 ::
-
    load system type.
 
    let i = 1.
    assert(type @gettype(i) == "integer").
-   
-
 util
 ^^^^
 
-The `util <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/util.ast>`_ module defines utility functions and structures that don't really fit into any omodules. It supports the following functions,
+The util module defines utility functions and structures that don't really
+fit into any other modules.
 
-* Function ``copy``, given Asteroid object ``obj``, makes a deep copy of it.
-* Function ``cls`` clears the terminal screen.
-* Function ``sleep``,  programs sleep for ``secs`` seconds where the argument ``secs`` is either an integer or real value.
-* Function ``zip``, given ``(list1:%list,list2:%list)``, will return a list where element ``i`` of the list is the tuple ``(list1@i,list2@i)``.
-* Function ``unzip``, given a list of pairs will return a pair of lists where the first component of the pair is the list of all the first components of the pairs of the input list and the second component of the return list is a list of all the second components of the input list.
-* Function ``ascii``, given a character ``item:%string``, returns the corresponding ASCII code of the first character of the input string.
-* Function ``achar``, given a decimal ASCII code ``item:%integer``, returns the corresponding character symbol.
-* Function ``time``, returns the local time as a real value in secs since 1/1/1970.
-* Function ``ctime``, given a real value representing seconds since 1/1/1970 this function converts it to a suitable string representation of the date.
+util **@achar** x
+      Given a decimal ASCII code x, return the corresponding character symbol.
+
+util **@ascii** x:%string
+      Given a character x, return the corresponding ASCII code of the first character of the input.
+
+util **@cls** ()
+      Clears the terminal screen.
+
+util **@copy** x
+      Given the object x, make a deep copy of it.
+
+util **@ctime** x:%real
+      Given a real value representing seconds since 1/1/1970 this function
+      converts it to a suitable string representation of the date.
+
+type **@sleep** x
+      Sleep for x seconds where the x is either an integer or real value.
+
+type **@time** ()
+      Returns the local time as a real value in secs since 1/1/1970.
+
+type **@unzip** x:%list
+      Given a list of pairs x this function will return a pair of lists
+      where the first component of the pair is the list of all the first
+      components of the pairs of the input list and the second component
+      of the return list is a list of all the second components of the input list.
+
+type **@zip** (list1:%list,list2:%list)
+      Returns a list where element i of the list is the tuple (list1@i,list2@i).
 
 vector
 ^^^^^^
 
-The `vector <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/vector.ast>`_ defines functions useful for vector arithmetic. It supports the following functions.  Here ``a`` and ``b`` are vectors implemented as lists,
+The vector defines functions useful for vector arithmetic. Vectors are implemented as lists.
 
-* Function ``add``, given the input ``(a,b)``, returns a vector that contains the element by element sum of the input vectors.
-* Function ``sub``, given the input ``(a,b)``, returns the element by element difference vector.
-* Function ``mult``, given the input ``(a,b)``, returns the element by element vector multiplication.
-* Function ``dot``, given ``(a,b)``, computes the dot product of the two vectors.
-* Function ``op``  allows the developer to vectorize any function. It can be called with three different inputs:
+vector **@add** (a:%list,b:%list)
+      Returns a vector that contains the element by element sum of the input vectors a and b.
 
-  1. ``(f:%function,a:%list,b:%list)``
-  2. ``(f:%function,a:%list,b if type @isscalar(b))``
-  3. ``(f:%function,a if type @isscalar(a),b:%list)``
+vector **@dot** (a:%list,b:%list)
+      Computes the dot product of the two vectors a and b.
+
+vector **@mult** (a:%list,b:%list)
+      Returns the element by element vector multiplication of vectors a and b.
+
+vector **@op** (f:%function,a:%list,b:%list) | (f:%function,a:%list,b if type @isscalar(b)) | (f:%function,a if type @isscalar(a),b:%list)
+      Allows the developer to vectorize any function f. Applying scalar values
+      to vectors is also supported by this function.
+
+vector **@sub** (a:%list,b:%list)
+      Returns the element by element difference vector.
 
 Here is a simple example program for the ``vector`` module,
 ::
-
    load system io.
    load system vector.
 
@@ -1393,8 +1654,6 @@ Here is a simple example program for the ``vector`` module,
    let b = [0,1].
 
    io @println (vector @dot (a,b)).
-   
-
 which prints the value ``0``.
 
 Interfacing Asteroid with Python
@@ -1678,4 +1937,3 @@ tag we can embed Pandas functionality into Asteroid.  As an additional step we c
 wrap these individual functions into a ``structure`` with the dataframe as
 a data member and the functions as member functions of that structure.  As an
 example of this approach see the `dataframe.ast <https://github.com/asteroid-lang/asteroid/blob/master/asteroid/modules/dataframe.ast>`_ system module.
-

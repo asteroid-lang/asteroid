@@ -9,24 +9,31 @@
 load system type.
 
 ------------------------------------------------------------------
-structure __UTIL_MODULE__ with
+structure __UTIL_MODULE__ 
+------------------------------------------------------------------
+with
 
 ------------------------------------------------------------------
--- UTILITY FUNCTIONS --
+function achar
 ------------------------------------------------------------------
-
-
-
-------------------------------------------------------------------
-function copy
-------------------------------------------------------------------
--- make a deep copy of an Asteroid object
-with obj do return escape
+-- given a decimal ASCII code return the corresponding character symbol
+with item:%integer do return escape
 "
 global __retval__
-import copy
-obj_val = state.symbol_table.lookup_sym('obj')
-__retval__ = copy.deepcopy(obj_val)
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('string', str(chr(item_val[1])))
+"
+end
+
+------------------------------------------------------------------
+function ascii
+------------------------------------------------------------------
+-- given a char return the corresponding ASCII code.
+with item:%string do return escape
+"
+global __retval__
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('integer', ord(item_val[1]))
 "
 end
 
@@ -43,6 +50,34 @@ if platform.win32_ver()[0]:
     os.system('cls')
 else:
     os.system('clear')
+"
+end
+
+------------------------------------------------------------------
+function copy
+------------------------------------------------------------------
+-- make a deep copy of an Asteroid object
+with obj do return escape
+"
+global __retval__
+import copy
+obj_val = state.symbol_table.lookup_sym('obj')
+__retval__ = copy.deepcopy(obj_val)
+"
+end
+
+------------------------------------------------------------------
+function ctime
+------------------------------------------------------------------
+-- Converts the time as a real value in secs since 1/1/1970 into
+-- string representing local time.
+with t:%real do return escape
+"
+global __retval__
+from time import ctime
+(REAL, t_val) = state.symbol_table.lookup_sym('t')
+
+__retval__ = ('string', ctime(t_val))
 "
 end
 
@@ -71,17 +106,23 @@ __retval__ = ('real', time())
 end
 
 ------------------------------------------------------------------
-function ctime
+function unzip
 ------------------------------------------------------------------
--- Converts the time as a real value in secs since 1/1/1970 into
--- string representing local time.
-with t:%real do return escape
+-- unzip a list of pairs.
+with (list:%list) do return escape
 "
 global __retval__
-from time import ctime
-(REAL, t_val) = state.symbol_table.lookup_sym('t')
+from asteroid.support import assert_match
 
-__retval__ = ('string', ctime(t_val))
+list_val = state.symbol_table.lookup_sym('list')
+
+c1list, c2list = ([],[])
+for (TUPLE, [c1,c2]) in list_val[1]:
+    assert_match(TUPLE, 'tuple')
+    c1list.append(c1)
+    c2list.append(c2)
+
+__retval__ = ('tuple', [('list', c1list), ('list',c2list)])
 "
 end
 
@@ -106,51 +147,6 @@ for (i,t) in l:
   out_list.append(('tuple',[i,t]))
 
 __retval__ = ('list', out_list)
-"
-end
-
-------------------------------------------------------------------
-function unzip
-------------------------------------------------------------------
--- unzip a list of pairs.
-with (list:%list) do return escape
-"
-global __retval__
-from asteroid.support import assert_match
-
-list_val = state.symbol_table.lookup_sym('list')
-
-c1list, c2list = ([],[])
-for (TUPLE, [c1,c2]) in list_val[1]:
-    assert_match(TUPLE, 'tuple')
-    c1list.append(c1)
-    c2list.append(c2)
-
-__retval__ = ('tuple', [('list', c1list), ('list',c2list)])
-"
-end
-
-------------------------------------------------------------------
-function ascii
-------------------------------------------------------------------
--- given a char return the corresponding ASCII code.
-with item:%string do return escape
-"
-global __retval__
-item_val = state.symbol_table.lookup_sym('item')
-__retval__ = ('integer', ord(item_val[1]))
-"
-end
-
-------------------------------------------------------------------
-function achar
-------------------------------------------------------------------
--- given a decimal ASCII code return the corresponding character symbol
-with item:%integer do return escape
-"
-global __retval__
-item_val = state.symbol_table.lookup_sym('item')
-__retval__ = ('string', str(chr(item_val[1])))
 "
 end
 
