@@ -729,7 +729,7 @@ are written in quotes.
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%'
+    | '%[' exp ']%' 
     | head_tail
 
   head_tail
@@ -793,7 +793,11 @@ are written in quotes.
 
 
   binding_list
-    : BIND '[' binding_term (',' binding_term)* ']'
+    : BIND binding_list_suffix
+
+  binding_list_suffix
+     : binding_term
+     | '[' binding_term (',' binding_term)* ']'
 
   binding_term
     : ID (AS ID)?
@@ -1128,6 +1132,7 @@ An example,
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
+
 Constants
 %%%%%%%%%
 
@@ -1460,6 +1465,7 @@ The following is a simple example,
    let sl = sort @sort((lambda with (x,y) do true if x<y else false),
                        [10,5,110,50]).
    io @println sl.
+
 prints the sorted list::
 
   [5,10,50,110]
@@ -1503,6 +1509,7 @@ A simple use case::
       io @print (s @get() + " ").
    end
    io @println "".
+
 which outputs::
 
    1 2 3 4 5 6 7 8 9 10
@@ -1587,6 +1594,7 @@ A simple example program using the ``gettype`` function,
 
    let i = 1.
    assert(type @gettype(i) == "integer").
+
 util
 ^^^^
 
