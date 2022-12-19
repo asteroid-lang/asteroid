@@ -1,0 +1,404 @@
+------------------------------------------------------------------
+-- os.ast
+--
+-- interface to the host OS
+--
+-- (c) University of Rhode Island
+------------------------------------------------------------------
+-- modeled after the Python os, os.path, and sys modules
+------------------------------------------------------------------
+load system hash.
+
+structure __OS_MODULE__ with
+
+------------------------------------------------------------------
+-- The list of command line arguments passed to an Asteroid script. 
+-- argv[0] is the name of the Asteroid script (it is operating 
+-- system dependent whether this is a full pathname or not).
+-- In interactive mode argv[0] will be the empty string.
+data argv.
+
+------------------------------------------------------------------
+-- A hash table where keys and values are strings that represent 
+-- the process environment. For example, 
+--    os @env @get "HOME"
+--  is the pathname of your home directory (on some platforms), 
+-- and is equivalent to getenv("HOME") in C.
+data env.
+
+------------------------------------------------------------------
+-- This string contains a platform identifier.
+data platform.
+
+------------------------------------------------------------------
+function __init__ 
+------------------------------------------------------------------
+-- constructor for the __OS_MODULE__
+with none do
+   let this @argv = this @__getargv().
+   let this @platform = this @__getplatform().
+   -- construct the env hashtable
+   let l = this @__getenv(). -- list of key/value pairs
+   let this @env = hash @hash ().
+   this @env @insert l.
+end
+
+------------------------------------------------------------------
+function __getargv 
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+import sys
+import copy
+import os
+import os.path
+argv = copy.copy(sys.argv)
+# pop the Asteroid interpreter
+argv.pop(0)
+# pop the flags to the Asteroid interpreter
+while len(argv) > 0 and argv[0][0] == '-':
+   argv.pop(0)
+if len(argv) == 0:
+   # if in interactive mode set argv[0] to the empty string
+   argv.append('')
+else:
+   # prepend current dir
+   if not os.path.dirname(argv[0]):
+      cwd = os.getcwd()
+      argv[0] = os.path.join(cwd,argv[0])
+# turn argv into an Asteroid list of strings
+out = []
+for e in argv:
+   out.append(('string',e))
+__retval__ = ('list', out)
+"
+end -- __getargv
+
+------------------------------------------------------------------
+function __getenv
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from os import environ
+# turn dictionary into an Asteroid list
+outlist_val = []
+for (k,v) in environ.items():
+   outlist_val.append(('tuple',[('string',k),('string',v)]))
+__retval__ = ('list', outlist_val)
+"
+end -- __getplatform
+
+------------------------------------------------------------------
+function __getplatform
+------------------------------------------------------------------
+with none do return escape
+"
+global __retval__
+from sys import platform
+__retval__ = ('string', platform)
+"
+end -- __getplatform
+
+------------------------------------------------------------------
+function basename
+------------------------------------------------------------------
+-- Return the base name of pathname path. This is the second element of the pair
+-- returned by passing path to the function split(). Note that the result of this
+-- function is different from the Unix basename program; where basename for '/foo/bar/'
+-- returns 'bar', the basename() function returns an empty string ('').
+with path:%string do return escape
+"
+global __retval__
+from os.path import basename
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('string', basename(path_val))
+"
+end -- basename
+
+------------------------------------------------------------------
+function chdir
+------------------------------------------------------------------
+-- Change the current working directory to path.
+with path:%string do escape
+"
+from os.path import chdir
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+chdir(path_val)
+"
+end -- chdir
+
+------------------------------------------------------------------
+function dirname
+------------------------------------------------------------------
+-- Return the directory name of pathname path. This is the first element of the 
+-- pair returned by passing path to the function split().
+with path:%string do return escape
+"
+global __retval__
+from os.path import dirname
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('string', dirname(path_val))
+"
+end -- dirname
+
+------------------------------------------------------------------
+function exists
+------------------------------------------------------------------
+-- Return true if path refers to an existing path or an open file descriptor. 
+-- Returns false for broken symbolic links. On some platforms, this function 
+-- may return False if permission is not granted to execute os.stat() on 
+-- the requested file, even if the path physically exists.
+with path:%string do return escape
+"
+global __retval__
+from os.path import exists
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('string', exists(path_val))
+"
+end -- exists
+
+------------------------------------------------------------------
+function exit
+------------------------------------------------------------------
+-- Signaling an intention to exit the interpreter.
+-- When an argument value other than none is provided
+-- it is considered a status value. If it is 
+-- an integer, zero is considered “successful termination” and any 
+-- nonzero value is considered “abnormal termination” by shells and 
+-- the like. Most systems require it to be in the range 0–127, and 
+-- produce undefined results otherwise. Some systems have a 
+-- convention for assigning specific meanings to specific exit codes, 
+-- but these are generally underdeveloped; Unix programs generally 
+-- use 2 for command line syntax errors and 1 for all other kind 
+-- of errors. If none is given as an argument value then is it
+-- is considered to be a successful exit equivalent to passing a zero. 
+-- If a string is passed then it is printed printed to 
+-- __STDERR__ and results in an exit code of 1. In particular, 
+-- sys.exit("some error message") is a quick way to exit a program 
+-- when an error occurs.
+with none do escape
+"
+import sys
+sys.exit(0)
+"
+with v:%integer do escape
+"
+import sys
+v_val = state.symbol_table.lookup_sym('v')
+sys.exit(v_val[1])
+"
+with msg:%string do escape
+"
+import sys
+msg_val = state.symbol_table.lookup_sym('msg')
+sys.exit(msg_val[1])
+"
+end
+
+------------------------------------------------------------------
+function getdir
+------------------------------------------------------------------
+-- Return a string representing the current working directory.
+with none do return escape
+"
+global __retval__
+from os import getcwd
+__retval__ = ('string', getcwd())
+"
+end -- getdir
+
+------------------------------------------------------------------
+function getpathtime
+------------------------------------------------------------------
+-- Returns a triple with (creation,access,modification) times.
+-- By default the return value is a triple of real numbers
+-- giving the number of seconds since 1/1/1970.  If the flag is set
+-- to true then a triple of strings is returned where each string
+-- represents the respective local time. Throws an exception if the file 
+-- does not exist or is inaccessible.
+with path:%string do return escape
+"
+global __retval__
+from os.path import getctime, getatime, getmtime
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+ct = ('real', getctime(path_val))
+at = ('real', getatime(path_val))
+mt = ('real', getmtime(path_val))
+__retval__ = ('tuple',[ct, at, mt])
+"
+with (path:%string,flag:%boolean) do return escape
+"
+global __retval__
+from os.path import getctime, getatime, getmtime
+from time import ctime
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+(BOOLEAN, flag_val) = state.symbol_table.lookup_sym('flag')
+
+if not flag_val:
+   ct = ('real', getctime(path_val))
+   at = ('real', getatime(path_val))
+   mt = ('real', getmtime(path_val))
+else:
+   ct = ('string', ctime(getctime(path_val)))
+   at = ('string', ctime(getatime(path_val)))
+   mt = ('string', ctime(getmtime(path_val)))
+
+__retval__ = ('tuple',[ct, at, mt])
+"
+end -- getpathtime
+
+------------------------------------------------------------------
+function getsize
+------------------------------------------------------------------
+-- Return the size, in bytes, of path. Throws exception if the file 
+-- does not exist or is inaccessible.
+with path:%string do return escape
+"
+global __retval__
+from os.path import getsize
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('integer', getsize(path_val))
+"
+end -- getsize
+
+------------------------------------------------------------------
+function isfile
+------------------------------------------------------------------
+-- Return true if path is an existing regular file. This follows 
+-- symbolic links.
+with path:%string do return escape
+"
+global __retval__
+from os.path import isfile
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('boolean', isfile(path_val))
+"
+end -- isfile
+
+------------------------------------------------------------------
+function isdir
+------------------------------------------------------------------
+-- Return true if path is an existing directory. This follows 
+-- symbolic links.
+with path:%string do return escape
+"
+global __retval__
+from os.path import isdir
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+__retval__ = ('boolean', isdir(path_val))
+"
+end -- isdir
+
+------------------------------------------------------------------
+function join
+------------------------------------------------------------------
+-- Join path1 and path2 components intelligently. The return value 
+-- is the concatenation of path and any members of *paths with 
+-- exactly one directory separator following each non-empty part 
+-- except the last, meaning that the result will only end in a 
+-- separator if the last part is empty. If the second component is an 
+-- absolute path, the first component is thrown away. 
+--
+-- On Windows, the drive letter is not reset when an absolute 
+-- path component (e.g., r'\foo') is encountered. If a component 
+-- contains a drive letter, all previous components are thrown away 
+-- and the drive letter is reset. Note that since there is a current 
+-- directory for each drive, os.path.join("c:", "foo") represents a 
+-- path relative to the current directory on drive C: (c:foo), not c:\foo.
+with (path1:%string,path2:%string) do return escape
+"
+global __retval__
+from os.path import join
+(STRING, path1_val) = state.symbol_table.lookup_sym('path1')
+(STRING, path2_val) = state.symbol_table.lookup_sym('path2')
+__retval__ = ('string', join(path1_val,path2_val))
+"
+end -- join
+
+------------------------------------------------------------------
+function split
+------------------------------------------------------------------
+-- Split the pathname path into a pair, (head, tail) where tail is 
+-- the last pathname component and head is everything leading up to 
+-- that. The tail part will never contain a slash; if path ends in 
+-- a slash, tail will be empty. If there is no slash in path, head 
+-- will be empty. If path is empty, both head and tail are empty. 
+-- Trailing slashes are stripped from head unless it is the root 
+-- (one or more slashes only). Also see the functions dirname and 
+-- basename.
+with path:%string do return escape
+"
+global __retval__
+from os.path import split
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+(head, tail) = split(path_val)
+__retval__ = ('tuple', [('string',head),('string',tail)])
+"
+end -- split
+
+------------------------------------------------------------------
+function splitdrive
+------------------------------------------------------------------
+-- Split the pathname path into a pair (drive, tail) where drive is 
+-- either a mount point or the empty string. On systems which do not 
+-- use drive specifications, drive will always be the empty string. 
+-- In all cases, drive + tail will be the same as path.
+--
+-- On Windows, splits a pathname into drive/UNC sharepoint and 
+-- relative path.
+--
+-- If the path contains a drive letter, drive will contain everything 
+-- up to and including the colon.
+with path:%string do return escape
+"
+global __retval__
+from os.path import splitdrive
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+(drive, tail) = splitdrive(path_val)
+__retval__ = ('tuple', [('string',drive),('string',tail)])
+"
+end -- splitdrive
+
+------------------------------------------------------------------
+function splitext
+------------------------------------------------------------------
+-- Split the pathname path into a pair (root, ext) such that 
+-- root + ext == path, and the extension, ext, is empty or begins 
+-- with a period and contains at most one period. If the path contains 
+-- no extension, ext will be the empty string.
+with path:%string do return escape
+"
+global __retval__
+from os.path import splitext
+(STRING, path_val) = state.symbol_table.lookup_sym('path')
+(root, ext) = splitext(path_val)
+__retval__ = ('tuple', [('string',root),('string',ext)])
+"
+end -- splitext
+
+------------------------------------------------------------------
+function syscmd
+------------------------------------------------------------------
+-- Execute a command (a string) in a subshell. This is implemented 
+-- by calling the Standard C function system(), and has the same 
+-- limitations. If command generates any output, it will be 
+-- sent to the interpreter standard output stream. 
+-- The C standard does not specify the meaning of the return value of 
+-- the C function, so the return value of this function is 
+-- system-dependent.
+with cmd:%string do return escape
+"
+global __retval__
+from os import system
+(STRING, cmd_val) = state.symbol_table.lookup_sym('cmd')
+status = sytem(cmd_val)
+__retval__ = ('integer', status)
+"
+end -- syscmd
+
+end -- __OS_MODULE__
+
+------------------------------------------------------------------
+let os = __OS_MODULE__().

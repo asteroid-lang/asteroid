@@ -5,16 +5,19 @@
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
+load system type.
 
 ------------------------------------------------------------------
-structure __HASHTABLE__
+structure __HASH__ with
 ------------------------------------------------------------------
 -- Asteroid hash table implementation using Python dictionaries
-with
 
+------------------------------------------------------------------
 data table.
 
+------------------------------------------------------------------
 function __init__
+------------------------------------------------------------------
 -- constructor for HashTable initializes the underlying dictionary
 with none do escape
 "
@@ -29,10 +32,11 @@ this_val = state.symbol_table.lookup_sym('this')
 # store the dictionary as a foreign object in this slot
 memory[0] = ('foreign', dict())
 "
-return none
-end
+end -- __init__
 
+------------------------------------------------------------------
 function insert
+------------------------------------------------------------------
 with (name,value) do escape
 "
 this_val = state.symbol_table.lookup_sym('this')
@@ -49,10 +53,15 @@ value_val = state.symbol_table.lookup_sym('value')
 (FOREIGN, dictionary) = memory[0]
 dictionary[name_val] = value_val
 "
-return none
-end
+with item_list:%list do
+  for (k,v) in item_list do
+    this @insert (k,v).
+  end
+end -- insert
 
+------------------------------------------------------------------
 function get
+------------------------------------------------------------------
 with name do return escape
 "
 global __retval__
@@ -73,9 +82,11 @@ if name_val not in dictionary.keys():
 else:
     __retval__ = dictionary[name_val]
 "
-end
+end -- get
 
+------------------------------------------------------------------
 function aslist
+------------------------------------------------------------------
 with none do return escape
 "
 global __retval__
@@ -104,9 +115,16 @@ for (i,t) in l:
 
 __retval__ = ('list', out_list)
 "
-end
+end -- aslist
 
-end -- __HASHTABLE__
+------------------------------------------------------------------
+function __str__
+------------------------------------------------------------------
+with none do
+  return type @tostring (this @aslist ()).
+end -- __str__
+
+end -- __HASH__
 
 ------------------------------------------------------------------
 structure __HASH_MODULE__
@@ -114,7 +132,7 @@ structure __HASH_MODULE__
 with
 
 function hash with none do
-   return __HASHTABLE__().
+   return __HASH__().
 end
 
 end -- __HASH_MODULE__

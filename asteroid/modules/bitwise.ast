@@ -14,9 +14,9 @@ structure __BITWISE_MODULE__
 with
 
 ------------------------------------------------------------------
- -- Bitwise AND
 function band
 ------------------------------------------------------------------
+ -- Bitwise AND
 with(x:%integer, y:%integer) do return escape
 "
 global __retval__
@@ -28,9 +28,9 @@ __retval__ = ('integer', x_val[1] & y_val[1])
 end
 
 ------------------------------------------------------------------
- -- Bitwise OR
 function bor
 ------------------------------------------------------------------
+ -- Bitwise OR
 with(x:%integer, y:%integer) do return escape
 "
 global __retval__
@@ -42,9 +42,9 @@ __retval__ = ('integer', x_val[1] | y_val[1])
 end
 
 ------------------------------------------------------------------
- -- Bitwise NOT
 function bnot
 ------------------------------------------------------------------
+ -- Bitwise NOT
 with(x:%integer) do return escape
 "
 global __retval__
@@ -55,9 +55,9 @@ __retval__ = ('integer', ~x_val[1])
 end
 
 ------------------------------------------------------------------
- -- Bitwise XOR
 function bxor
 ------------------------------------------------------------------
+ -- Bitwise XOR
 with(x:%integer, y:%integer) do return escape
 "
 global __retval__
@@ -69,9 +69,9 @@ __retval__ = ('integer', x_val[1] ^ y_val[1])
 end
 
 ------------------------------------------------------------------
- -- Bitwise left shift
 function blshift
 ------------------------------------------------------------------
+ -- Bitwise left shift
 with(x:%integer, y:%integer) do return escape
 "
 global __retval__
@@ -83,9 +83,9 @@ __retval__ = ('integer', x_val[1] << y_val[1])
 end
 
 ------------------------------------------------------------------
- -- Bitwise right shift
 function brshift
 ------------------------------------------------------------------
+ -- Bitwise right shift
 with(x:%integer, y:%integer) do return escape
 "
 global __retval__
@@ -97,9 +97,9 @@ __retval__ = ('integer', x_val[1] >> y_val[1])
 end
 
 ------------------------------------------------------------------
--- Bitwise left rotate
 function blrotate
 ------------------------------------------------------------------
+-- Bitwise left rotate
 with(x:%integer, i:%integer) do return escape
 "
 global __retval__
@@ -117,9 +117,9 @@ __retval__ = ('integer', final)
 end
 
 ------------------------------------------------------------------
--- Bitwise right rotate
 function brrotate
 ------------------------------------------------------------------
+-- Bitwise right rotate
 with(x:%integer, i:%integer) do return escape
 "
 global __retval__
@@ -138,9 +138,9 @@ __retval__ = ('integer', final)
 end
 
 ------------------------------------------------------------------
--- Set the ith bit
 function bsetbit
 ------------------------------------------------------------------
+-- Set the ith bit
 with(x:%integer, i:%integer) do return escape
 "
 global __retval__
@@ -153,9 +153,9 @@ __retval__ = ('integer', final)
 end
 
 ------------------------------------------------------------------
--- Clear the ith bit
 function bclearbit
 ------------------------------------------------------------------
+-- Clear the ith bit
 with(x:%integer, i:%integer) do return escape
 "
 global __retval__
@@ -168,9 +168,9 @@ __retval__ = ('integer' , final)
 end
 
 ------------------------------------------------------------------
--- Get the bit size
 function bsize
 ------------------------------------------------------------------
+-- Get the bit size
 with(x:%integer) do return escape
 "
 global __retval__

@@ -28,7 +28,7 @@ end
 function randint -- random interval
 ------------------------------------------------------------------
 -- return a random value N in the interval lo <= N <= hi.
--- The of the random value depends on the types of the
+-- The type of the random value depends on the types of the
 -- values specifying the interval.
 with (lo:%integer,hi:%integer) do return escape
 "

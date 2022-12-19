@@ -137,7 +137,7 @@
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
-// Note: binding lists are only supported for constraint patterns
+/* Note: binding lists are only supported for constraint patterns */
 
   binding_list
     : BIND binding_list_suffix
