@@ -1,4 +1,11 @@
-    load system io.
+    structure Person with
+        data name.
+        data age.
+        data profession.
+    end
 
-    let [x,2,y] = [1+0,1+1,1+2].
-    io @println (x,y).
+    let joe = Person("Joe", 32, "Cook").  -- construct an object
+    let Person(n,a,p) = joe.              -- pattern match object
+
+    assert (n=="Joe" and a==32 and p=="Cook").
+    

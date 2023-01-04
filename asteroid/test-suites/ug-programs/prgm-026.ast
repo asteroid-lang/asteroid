@@ -11,9 +11,9 @@
 
             for e in rest do
                 if e < pivot do
-                    let less = less + [e].
+                    less @append e.
                 else
-                    let more = more + [e].
+                    more @append e.
                 end
             end
 

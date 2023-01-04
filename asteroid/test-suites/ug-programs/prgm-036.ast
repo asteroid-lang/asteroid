@@ -3,14 +3,12 @@
     structure Person with
         data name.
         -- the function is defined in the middle of the data fields
-        function hello
-            with none do
-                io @println ("Hello, my name is "+this @name).
-            end
-        data age.
-        data gender.
+        function hello with none do
+            io @println ("Hello, my name is "+this@name).
         end
+        data age.
+    end
 
     -- pattern matching ignores function definitions
-    let Person(name,age,_) = Person("Scarlett",28,"F").
+    let Person(name,age) = Person("Scarlett",28).
     io @println (name+" is "+age+" years old").

@@ -729,7 +729,7 @@ are written in quotes.
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%' 
+    | '%[' exp ']%' binding_list?
     | head_tail
 
   head_tail
@@ -812,6 +812,20 @@ are written in quotes.
 
   function_const
     : LAMBDA body_defs
+Notes on Function Argument Notation
+-----------------------------------
+
+Functions in Asteroid are multi-dispatch functions and therefore can be called with a variety
+of input configurations.  This is reflected in the documentation of built-in functions and
+functions belonging to modules: when a function can be called with different input argument
+configurations then the documentation reflects this by providing different argument configuration
+separated by a '``|``' symbol.  E.g.,
+
+      list @pop () | ix:%integer
+
+indicating that the list member function ``pop`` can be called either with the empty argument ``()`` or with a
+single integer value.
+
 Builtin Functions
 -----------------
 
@@ -974,13 +988,13 @@ string **@split** () | sep:%string | (sep:%string, count:%integer)
       at most count splits are done (thus, the list will have at most count+1 elements). If count is
       not specified or -1, then there is no limit on the number of splits (all possible splits are made).
       Consecutive delimiters are not grouped together and are deemed to delimit empty strings.
-      For example,::
+      For example::
 
             let s = "1,,2" @split ",".
             assert (s == ["1", "", "2"]).
 
       The sep argument may consist of multiple characters.
-      For example,::
+      For example::
 
             let s = "1<>2<>3" @split "<>".
             assert (s == ["1", "2", "3"]).
@@ -1071,7 +1085,7 @@ __HASH__ **@get** key
 
 __HASH__ **@insert** (key, value) | pairs:%list
       Given a pair of the format (key, value) insert it into the table.  Given a list
-      of the format,::
+      of the format::
 
             [(key1, val1), (key2, val2), ...]
 
@@ -1125,14 +1139,13 @@ math
 ^^^^
 
 The math module implements mathematical constants and functions.
-An example,
+An example:
 ::
     load system io.
     load system math.
 
     let x = math @sin( math @pi / 2 ).
     io @println("The sine of pi / 2 is " + x + ".").
-
 Constants
 %%%%%%%%%
 
@@ -1386,7 +1399,14 @@ pick
 
 The pick module implements
 pick objects that allow a user to randomly pick items from a list of items using the pickitems function.
+An example:
+::
+   load system io.
+   load system pick.
 
+   let po = pick @pick([1 to 10]).
+   let objects = po @pickitems 3.
+   io @println objects.
 pick **@pick** l:%list
       Construct a pick object of type __PICK__.
 
@@ -1397,13 +1417,7 @@ __PICK__ **@pickitems** () | n:%integer
       the list l is returned.  The picked item list is constructed by sampling the
       list l with replacement.
 
-An example::
-   load system io.
-   load system pick.
 
-   let po = pick @pick([1 to 10]).
-   let objects = po @pickitems 3.
-   io @println objects.
 random
 ^^^^^^
 
@@ -1454,21 +1468,20 @@ The sort  module
 defines a parameterized sort function over a list.
 The sort function makes use of a user-defined order predicate on the list's elements to
 perform the sort. The QuickSort is the underlying sort algorithm.
-
-sort **@sort** (p:%function,l:%list)
-      Returns the sorted list l using the predicate p.
-
-The following is a simple example,
+The following is a simple example:
 ::
    load system io.
    load system sort.
    let sl = sort @sort((lambda with (x,y) do true if x<y else false),
                        [10,5,110,50]).
    io @println sl.
-
 prints the sorted list::
 
   [5,10,50,110]
+
+sort **@sort** (p:%function,l:%list)
+      Returns the sorted list l using the predicate p.
+
 
 stream
 ^^^^^^
@@ -1476,6 +1489,20 @@ stream
 The stream module implements streams that allow
 the developer to turn any list into a stream supporting interface functions like peeking ahead or rewinding
 the stream.
+A simple use case:
+::
+   load system io.
+   load system stream.
+
+   let s = stream @stream [1 to 10].
+   while not s @eof() do
+      io @print (s @get() + " ").
+   end
+   io @println "".
+which outputs::
+
+   1 2 3 4 5 6 7 8 9 10
+
 
 stream **@stream** l:%list
       Returns a stream object of type __STREAM__.
@@ -1500,47 +1527,12 @@ __STREAM__ **@peek** ()
 __STREAM__ **@rewind** ()
       Resets the stream pointer to the first element of the stream.
 
-A simple use case::
-   load system io.
-   load system stream.
-
-   let s = stream @stream [1 to 10].
-   while not s @eof() do
-      io @print (s @get() + " ").
-   end
-   io @println "".
-
-which outputs::
-
-   1 2 3 4 5 6 7 8 9 10
-
 
 type
 ^^^^
 
 The type module defines type related functions and structures.
-
-Type Conversion
-%%%%%%%%%%%%%%%
-
-type **@tobase** (x:%integer,base:%integer)
-      Represents the given integer x as a numeral string in different bases.
-
-type **@toboolean** x
-      Interpret x as a Boolean value.
-
-type **@tointeger** (x:%string,base:%integer) | x
-      Converts a given input to an integer. If a base value is specified then
-      the resulting integer is in the corresponding base.
-
-type **@toreal** x
-      Returns the input as a real number.
-
-type  **@tostring** x | (x,type @stringformat(width:%integer,precision:%integer,scientific:%boolean))
-      Converts an Asteroid object to a string. If format values are given,
-      it applies the formatting to the string object.
-
-Here is a program that exercises some of the string formatting options,
+Here is a program that exercises some of the string formatting options:
 ::
     load system io.
     load system type.
@@ -1572,6 +1564,27 @@ The output of the program is,
 
 Notice the right justification of the various values within the given string length.
 
+Type Conversion
+%%%%%%%%%%%%%%%
+
+type **@tobase** (x:%integer,base:%integer)
+      Represents the given integer x as a numeral string in different bases.
+
+type **@toboolean** x
+      Interpret x as a Boolean value.
+
+type **@tointeger** (x:%string,base:%integer) | x
+      Converts a given input to an integer. If a base value is specified then
+      the resulting integer is in the corresponding base.
+
+type **@toreal** x
+      Returns the input as a real number.
+
+type  **@tostring** x | (x,type @stringformat(width:%integer,precision:%integer,scientific:%boolean))
+      Converts an Asteroid object to a string. If format values are given,
+      it applies the formatting to the string object.
+
+
 
 Type Query Functions
 %%%%%%%%%%%%%%%%%%%%
@@ -1594,7 +1607,6 @@ A simple example program using the ``gettype`` function,
 
    let i = 1.
    assert(type @gettype(i) == "integer").
-
 util
 ^^^^
 
@@ -1636,6 +1648,16 @@ vector
 ^^^^^^
 
 The vector defines functions useful for vector arithmetic. Vectors are implemented as lists.
+Here is a simple example program for the ``vector`` module:
+::
+   load system io.
+   load system vector.
+
+   let a = [1,0].
+   let b = [0,1].
+
+   io @println (vector @dot (a,b)).
+which prints the value ``0``.
 
 vector **@add** (a:%list,b:%list)
       Returns a vector that contains the element by element sum of the input vectors a and b.
@@ -1653,16 +1675,6 @@ vector **@op** (f:%function,a:%list,b:%list) | (f:%function,a:%list,b if type @i
 vector **@sub** (a:%list,b:%list)
       Returns the element by element difference vector.
 
-Here is a simple example program for the ``vector`` module,
-::
-   load system io.
-   load system vector.
-
-   let a = [1,0].
-   let b = [0,1].
-
-   io @println (vector @dot (a,b)).
-which prints the value ``0``.
 
 Interfacing Asteroid with Python
 --------------------------------

@@ -236,8 +236,7 @@ In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` o
   let pick_list = int_list+lc_list+uc_list+sp_list.
 
   -- generate the password and print it.
-  let pwd = pick @pick pick_list @pick(15)
-                           @join("").
+  let pwd = pick @pick pick_list @pickitems 15 @join("").
   io @println pwd.
 
   assert (pwd == "e3zvshdbS43brt#")
@@ -760,10 +759,10 @@ Other constants are also available.
   load system io.
   load system math.
 
-  io @println (math @e).
-  io @println (math @tau). -- tau=2*pi
+  let tau = 2 * math @pi.
 
-  assert (math @tau == 2 * math @pi)
+  io @println (math @e).
+  io @println tau.
 Output::
 
     2.718281828459045

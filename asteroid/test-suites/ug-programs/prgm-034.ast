@@ -3,9 +3,8 @@
     structure Person with
         data name.
         data age.
-        data gender.
-        end
+    end
 
-    let scarlett = Person("Scarlett",28,"F").
+    let scarlett = Person("Scarlett",28).
     -- access the name field of the structure instance
-    io @println (scarlett @name).
+    io @println (scarlett@name).
