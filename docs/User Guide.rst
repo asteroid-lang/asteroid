@@ -1003,7 +1003,7 @@ The relevant patterns are now stored in the variables ``POS_INT`` and ``NEG_INT`
 which are then used in the function definitions.
 
 Constraint Patterns
--------------------
+^^^^^^^^^^^^^^^^^^^
 
 Sometimes we want to use patterns as constraints on other patterns.  Consider
 the following (somewhat artificial) example,
