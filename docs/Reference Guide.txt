@@ -94,8 +94,8 @@ For-Loop
 
 Syntax: ``FOR pattern IN exp DO stmt_list END``
 
-In a for-loop the expression must evaluate to a list.  The pattern is then matched to
-each element of the list sequentially starting with the first element of the list.
+In a for-loop the expression must evaluate to either a list or a tuple.  The pattern is then matched to
+each component of the expression value sequentially starting with the first component.
 The loop body is executed for each successful match.
 
 In the following program the body of the loop is executed exactly once when

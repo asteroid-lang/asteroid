@@ -76,7 +76,7 @@ where automatic type promotion is used to put together a string from different d
 
 Here we associate the string ``"value: 1"`` with the variable ``x`` by first promoting the integer value ``1`` to the string ``"1"`` using the fact that ``integer`` < ``string``  according to our type hierarchy  and then interpreting the ``+`` operator as a string concatenation operator.
 
-Asteroid supports two more built-in data types:
+Asteroid also supports the built-in data types:
 
 * ``list``
 * ``tuple``
@@ -101,7 +101,7 @@ That is, any list or tuple can be viewed as a string.  This is very convenient f
 
 Here the ``+`` operator acts like a string concantenation operator with the list ``[1,2,3]`` promoted to a string according to the above type hierarchy.
 
-Finally, Asteroid supports one more type, namely the ``none`` type.  The ``none`` type has
+Asteroid supports the ``none`` type.  The ``none`` type has
 only one member: A constant named ``none``.  However, it turns out that the null-tuple, a tuple with no components
 indicated by ``()``, also belongs to this type rather than the tuple type discussed earlier. But the ``none``
 data type only has one constant, this implies that ``()`` and ``none`` mean the same thing and can be used
@@ -111,6 +111,10 @@ interchangeably.  That is, the following ``let`` statements will succeed,
 
 showing that ``()`` and ``none`` are equivalent and pattern-match each other.
 The ``none`` data type itself does not belong to any type hierarchy.
+
+We should mention here that because functions and patterns are both first-class citizens in Asteroid we 
+also have the types ``function`` and ``pattern``.  Just like the ``none`` type, neither of these types are 
+part of a type hierarchy but we can use them in type patterns (see below).
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different as we will see when we discuss pattern matching in more detail.
 
@@ -491,7 +495,9 @@ Here we see that first, we make sure that we are being passed integers and secon
 that the integers are positive using the appropriate conditions on the input values. If
 we are being passed a negative integer, then we throw an error.
 
-The above factorial program can be simplified by rewriting the first condition on ``n`` as a named pattern and also taking advantage of the fact that the last expression evaluated in a function body provides an implicit return value gives us,
+The above factorial program can be simplified by rewriting the first condition on ``n`` in the conditional patterns as a named pattern.
+We can also take advantage of the fact that the last expression evaluated in a function body provides an implicit return value.
+This gives us,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-031a.ast"
 
