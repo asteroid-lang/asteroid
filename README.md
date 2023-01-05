@@ -18,6 +18,8 @@ Documentation on Asteroid can be found at
 
 * Structures now support a `__str__` member function that allows the user
   to specify a string representation of the structure.
+  
+* Updated user and reference guides.
 
 * Lots of bug fixes.
 
