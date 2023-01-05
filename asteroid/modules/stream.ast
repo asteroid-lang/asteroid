@@ -25,21 +25,17 @@ function __init__
     let this @curr_ix = 0.
   end
 
+function append
+  with item do
+    this @stream @append item.
+  end
+
 function eof
   with none do
     if this @curr_ix == this @stream @length() do
       return true.
     else do
       return false.
-    end
-  end
-
-function peek
-  with none do
-    if this @eof() do
-      return none.
-    else do
-      return this @stream @(this @curr_ix).
     end
   end
 
@@ -54,11 +50,6 @@ function get
     end
   end
 
-function rewind
-  with none do
-    let this @curr_ix = 0.
-  end
-
 function map
   with f:%function do
     for i in range(this @stream @length()) do
@@ -66,9 +57,18 @@ function map
     end
   end
 
-function append
-  with item do
-    this @stream @append item.
+function peek
+  with none do
+    if this @eof() do
+      return none.
+    else do
+      return this @stream @(this @curr_ix).
+    end
+  end
+
+function rewind
+  with none do
+    let this @curr_ix = 0.
   end
 
 function __string__

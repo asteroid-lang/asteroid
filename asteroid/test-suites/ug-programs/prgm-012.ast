@@ -1,7 +1,7 @@
     load system io.
     load system math.
 
-    let a = [1 to 10] @map(lambda with x do return math @mod(x,2))
-                      @map(lambda with x do return 1 if x else -1).
+    let a = [1 to 10] @map (lambda with x do math @mod (x,2))
+                      @map (lambda with x do 1 if x else -1).
 
     io @println a.

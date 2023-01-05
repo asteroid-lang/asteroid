@@ -11,9 +11,45 @@ if exists("b:current_syntax")
 	finish
 endif
 
-syn keyword basic with end do load let for function structure in is pattern 
-syn keyword basic throw this system data global return to step if not
-syn keyword basic else or and
+syn keyword basic and
+syn keyword basic as
+syn keyword basic assert
+syn keyword basic bind
+syn keyword basic break
+syn keyword basic catch
+syn keyword basic data
+syn keyword basic do
+syn keyword basic elif
+syn keyword basic else
+syn keyword basic end
+syn keyword basic escape
+syn keyword basic eval
+syn keyword basic for
+syn keyword basic from
+syn keyword basic function
+syn keyword basic global
+syn keyword basic if
+syn keyword basic in
+syn keyword basic is
+syn keyword basic lambda
+syn keyword basic let
+syn keyword basic load
+syn keyword basic loop
+syn keyword basic not
+syn keyword basic or
+syn keyword basic orwith
+syn keyword basic pattern
+syn keyword basic repeat
+syn keyword basic return
+syn keyword basic step
+syn keyword basic structure
+syn keyword basic system
+syn keyword basic throw
+syn keyword basic to
+syn keyword basic try
+syn keyword basic until
+syn keyword basic while
+syn keyword basic with
 
 syn keyword delimeter escape
 

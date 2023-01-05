@@ -8,6 +8,7 @@
 import cProfile
 import sys
 import os
+import os.path
 from asteroid.interp import interp
 from asteroid.repl import repl
 from asteroid.version import VERSION
@@ -52,21 +53,28 @@ def main():
     }
 
     flag_names = list(flags.keys())
+    argv_ix = 1
+    asteroid_ext = '.ast'
 
-    if len(sys.argv) == 1:
-        repl(redundancy=flags['-r'],
-             prologue=flags['-p'],
-             functional_mode=flags['-F'])
-        sys.exit(0)
+    # logic of command line parameters
+    # - process all flags to Asteroid interpreter
+    # - determine if we need to respond to special flags and exit
+    # - determine if we are starting in interactive mode or not
+    #  if not in interactive mode execute the asteroid script
 
-    for fl in sys.argv:
-        if fl[0] != '-':
-            continue
-        elif fl not in flag_names:
-            print("unknown flag {}".format(fl))
-            sys.exit(0)
-        flags[fl] = not flags[fl]
+    # process all flags to interpreter
+    while argv_ix < len(sys.argv):
+        fl = sys.argv[argv_ix]
+        if fl[0] == '-':
+            if fl not in flag_names:
+                raise ValueError("unknown flag {}".format(fl))
+            else:
+                flags[fl] = not flags[fl]
+            argv_ix += 1
+        else:
+            break
 
+    # determine if we need to respond to special flags and exit
     if flags['--help'] or flags['-h']:
         display_help()
         sys.exit(0)
@@ -75,25 +83,38 @@ def main():
         print("** Asteroid Version {} **".format(VERSION))
         sys.exit(0)
 
-    input_file = sys.argv[-1]
+    debug_flag = flags['--adb'] or flags['-g']
 
-    if input_file[0] == '-':
-        if flags['--adb']:
-            print("Please provide a file to debug")
-            sys.exit(1)
+    # determine if we are starting in interactive mode or not
+    # Note: first non-switch argument has to be an Asteroid source file
+    if len(sys.argv) == argv_ix:
+        input_file = ''
+    else:
+        input_file = sys.argv[argv_ix]
+    (input_root,input_ext) = os.path.splitext(input_file)
+    if input_file and input_ext != asteroid_ext:
+        print("error: file '{}' is not an Asteroid source file".format(input_file))
+        sys.exit(1)
+
+    # run the REPL
+    if input_ext == '' and not debug_flag:
         repl(redundancy=flags['-r'],
              prologue=flags['-p'],
              functional_mode=flags['-F'])
         sys.exit(0)
 
-    if not os.path.isfile(input_file):
-        print("unknown file {}".format(input_file))
-        sys.exit(0)
+    # we have an input file, check if it exists
+    if input_file and not os.path.isfile(input_file):
+        print("error: unknown file '{}'".format(input_file))
+        sys.exit(1)
 
-    if flags['--adb'] or flags['-g']:
+    # run the debugger
+    if debug_flag:
+        if input_ext == '':
+            print("error: please provide a file to debug")
+            sys.exit(1)
         # Create a new debugger
         db = adb.ADB()
-
         # Set the debugger's internal interpretation options
         db.interp_options = {
             'redundancy': flags['-r'],
@@ -101,10 +122,10 @@ def main():
             'functional_mode': flags['-F'],
             'exceptions': flags['-e'],
         }
-
         db.run(input_file)
         sys.exit(0)
 
+    # execute the interpreter
     f = open(input_file, 'r')
     input_stream = f.read()
     f.close()

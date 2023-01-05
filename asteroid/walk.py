@@ -4,7 +4,7 @@
 # (c) University of Rhode Island
 #########################################################################
 
-from copy import deepcopy
+from copy import deepcopy,copy
 from re import match as re_match
 
 from asteroid.globals import *
@@ -120,7 +120,7 @@ def __unify(term, pattern, unifying = True ):
     
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
-        # Unpack a term-side name-pattern if evaluating redundant clauses
+        # Unpack a term-side named-pattern if evaluating redundant clauses
         message_explicit("Evaluating named pattern", notify=True)
         return unify(term[2],pattern,unifying)
 
@@ -161,15 +161,17 @@ def __unify(term, pattern, unifying = True ):
         message_explicit("Objects matched", decrease=True)
         return unifiers
 
-    elif pattern[0] == 'string' and term[0] != 'string':
+    # no implicit type conversions during pattern matching
+    # removing this code, see the discussion in issue 95
+    # elif pattern[0] == 'string' and term[0] != 'string':
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
-        message_explicit("Matching string {} and non-string {}",
-            [gen_t2s(pattern), gen_t2s(term)],
-            notify=True
-        )
-
-        return unify(term2string(term), pattern[1])
+    #    message_explicit("Matching string {} and non-string {}",
+    #        [gen_t2s(pattern), gen_t2s(term)],
+    #        notify=True
+    #    )
+    #
+    #    return unify(term2string(term), pattern[1])
 
     elif pattern[0] == 'if-exp':
 
@@ -201,16 +203,10 @@ def __unify(term, pattern, unifying = True ):
 
         unifiers = unify(term, pexp, unifying)
 
-        if state.constraint_lvl:
-            state.symbol_table.push_scope({})
-
         # evaluate the conditional expression in the
         # context of the unifiers.
         declare_unifiers(unifiers)
         bool_val = map2boolean(walk(cond_exp))
-
-        if state.constraint_lvl:
-            state.symbol_table.pop_scope()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
@@ -349,7 +345,12 @@ def __unify(term, pattern, unifying = True ):
             [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)],
             notify=True, increase=True
         )
-        # name_exp can be an id or an index expression.
+        # name_exp has to be an id or an index expression.
+        if name_exp[0] not in ['id','index']:
+            raise ValueError(
+                "expected a variable, list element, or data member in named pattern\
+                 instead of {}".format(term2string(name_exp)))
+
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
         
         message_explicit("Matched ({} and {})", 
@@ -518,13 +519,25 @@ def __unify(term, pattern, unifying = True ):
                 message_explicit("Success!", level="secondary")
                 return unifier
 
-    elif pattern[0] == 'deref':  # ('deref', v)
+    elif pattern[0] == 'deref':  # ('deref', v, bl)
         # v can be an AST representing any computation
         # that produces a pattern.
 
         message_explicit("Dereferencing {}", [gen_t2s(pattern[1])])
 
         p = walk(pattern[1])
+
+        if pattern[2][0] != 'nil': # we have a binding term list
+            if p[1][0] != 'constraint':
+                raise ValueError(
+                    "binding term lists only supported for constraint patterns")
+            else: 
+                # construct a new constraint pattern with the binding term list in place
+                p = ('pattern',
+                        ('constraint',
+                            p[1][1],
+                            pattern[2]))
+
 
         message_explicit("{} -> {}", [gen_t2s(pattern), gen_t2s(p)], 
             level="secondary")
@@ -558,12 +571,31 @@ def __unify(term, pattern, unifying = True ):
             notify=True, increase=True
         )
 
-        state.constraint_lvl += 1
-        unifier = unify(term,pattern[1])
-        state.constraint_lvl -= 1
+        p = pattern[1]
+        bl = pattern[2] # binding term list
+
+        # constraint patterns are evaluated in their own scope
+        state.symbol_table.push_scope({})
+        unifier = unify(term,p)
+        state.symbol_table.pop_scope()
 
         message_explicit("[End] constraint pattern", decrease=True)
-        return [] #Return an empty unifier
+
+        # process binding list
+        if bl[0] == 'nil':
+            return [] #Return an empty unifier
+        else:
+            # binding list is non-empty, map variables
+            # that appear in the binding list into
+            # the returned unifier
+            new_unifier = []
+            for u in unifier:
+                ((ID,x),exp) = u
+                for bt in bl[1]:
+                    (BINDING_TERM, (ID,y), new_id) = bt
+                    if x == y:
+                        new_unifier += [(new_id,exp)]
+            return new_unifier
 
     elif term[0] != pattern[0]:  # nodes are not the same
         message_explicit("Fail: {} and {} are not the same",
@@ -942,6 +974,15 @@ def handle_builtins(node):
             raise ValueError("unknown builtin unary operation '{}'".format(opname))
 
 #########################################################################
+def pop_stackframe(error_trace=False): 
+    # pop frame off the stack
+    state.symbol_table.pop_scope()
+    state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
+    if error_trace:
+        state.error_trace = copy(state.trace_stack)
+    state.trace_stack.pop()
+
+#########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
     # Needed for later
     global debugging
@@ -1050,19 +1091,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Reset settings
     except RedundantPatternFound as r:
         debugging = old_debugging
-
-        # coming back from a function call - restore caller's env
+        # restore caller's env
         state.lineinfo = old_lineinfo
-
         # Keep debugger up to date
-        if debugging:
-            debugger.set_lineinfo(state.lineinfo)
-
-        state.symbol_table.pop_scope()
-        state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
-
-        state.trace_stack.pop()
-
+        if debugging: debugger.set_lineinfo(state.lineinfo)
+        pop_stackframe()
         raise r
 
     # execute the function
@@ -1089,17 +1122,20 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         function_return_value.pop()
         return_value = val.value
 
-    # coming back from a function call - restore caller's env
-    state.lineinfo = old_lineinfo
+    except Exception as e:
+        # we got some other kind of exception within the function call
+        # clean up our runtime stack and rethrow
+        # Note: do not reset lineinfo, this way the state points at the source 
+        # of the exception
+        pop_stackframe(error_trace=True)
+        raise e
 
+    # all done with function call -- clean up and exit
+    # restore caller's env
+    state.lineinfo = old_lineinfo
     # Keep debugger up to date
     if debugging: debugger.set_lineinfo(state.lineinfo)
-
-    state.symbol_table.pop_scope()
-    state.symbol_table.set_config(state.symbol_table.saved_configs.pop())
-
-    state.trace_stack.pop()
-
+    pop_stackframe()
     message_explicit("Return: {} from {}",
             [("None" if (not return_value[1]) else gen_t2s(return_value)), 
             fname],
@@ -1331,6 +1367,8 @@ def try_stmt(node):
         except PatternMatchFailed:
             pass
         else:
+            # handler found - null out error_trace
+            state.error_trace = None
             declare_unifiers(unifiers)
             walk_stmt_list(catch_stmts, step_state=stepping)
             return
@@ -1406,10 +1444,9 @@ def for_stmt(node):
 
     # expand the list_term
     (LIST_TYPE, list_val) = walk(list_term)
-    if LIST_TYPE not in ['list','string']:
-        raise ValueError("only iteration over strings and lists is supported")
+    if LIST_TYPE not in ['list','string','tuple']:
+        raise ValueError("iteration not supported for type '{}'".format(LIST_TYPE))
 
-    # we allow iteration over two types of structures: (1) lists (2) strings
     # if it is a string turn the list_val into a list of Asteroid characters.
     if LIST_TYPE == 'string':
         new_list = []
@@ -1535,26 +1572,35 @@ def eval_exp(node):
 
     (EVAL, exp) = node
     assert_match(EVAL, 'eval')
-    # lhh
-    #print("in eval with {}".format(node))
-
+ 
     # Note: eval is essentially a macro call - that is a function
     # call without pushing a symbol table record.  That means
     # we have to first evaluate the argument to 'eval' before
     # walking the term.  This is safe because if the arg is already
     # the actual term it will be quoted and nothing happens if it is
     # a variable it will be expanded to the actual term.
-    #lhh
-    #print("before expand: {}".format(exp))
+
+    state.trace_stack.append((state.lineinfo[0],
+                              state.lineinfo[1],
+                              "eval"))
+
+
+    # evaluate actual parameter
     exp_val_expand = walk(exp)
-    #lhh
-    #print("after expand: {}".format(exp_val_expand))
+
     # now walk the actual term
-    state.ignore_pattern += 1
-    exp_val = walk(exp_val_expand)
-    #lhh
-    #print("after walk: {}".format(exp_val))
-    state.ignore_pattern -= 1
+    if exp_val_expand[0] == 'string':
+        import frontend
+        parser = frontend.Parser(filename="<eval>")
+        eval_ast = parser.parse(exp_val_expand[1])
+        walk(eval_ast)
+        exp_val = function_return_value[-1]
+    else:
+        state.ignore_pattern += 1
+        exp_val = walk(exp_val_expand)
+        state.ignore_pattern -= 1
+
+    state.trace_stack.pop()
     return exp_val
 
 #########################################################################
@@ -1867,14 +1913,9 @@ def process_lineinfo(node):
 #########################################################################
 def deref_exp(node):
 
-    (DEREF, id_exp) = node
-    assert_match(DEREF, 'deref')
-
     # deref operators are only meaningful during pattern matching
-    # ignore during a value walk.
-    # NOTE: the second walk is necessary to interpret what we retrieved
-    # through the indirection
-    return walk(walk(id_exp))
+    # it is an error to have the deref operator appear in an expression
+    raise ValueError("dereferencing patterns is not valid in expressions.")
 
 #########################################################################
 def constraint_exp(node):
@@ -1882,11 +1923,9 @@ def constraint_exp(node):
     # Constraint-only pattern matches should not exist where only an
     # expression is expected. If we get here, we have come across this
     # situation.
-    # A constraint-only pattern match AST cannot be walked and therefor
+    # A constraint-only pattern match AST cannot be walked and therefore
     # we raise an error.
-    raise ValueError(
-        "constraint pattern: '{}' cannot be used as a constructor."
-        .format(term2string(node)))
+    raise ValueError("a constraint pattern cannot be used as an expression.")
 
 #########################################################################
 def set_ret_val(node):
@@ -2017,6 +2056,8 @@ def debug_walk(node, dbg):
 
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
+    # Note: statement lists are now handled by separate functions outside
+    #       the walk function
     # statements - statements do not produce return values
     'lineinfo'      : process_lineinfo,
     'set-ret-val'   : set_ret_val,

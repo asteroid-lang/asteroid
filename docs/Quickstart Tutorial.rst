@@ -1,21 +1,19 @@
+..
+   /******************************************************************
+   This is the source file from which the reference guide is
+   generated.  We use cpp to insert live code snippets into the
+   document. In order to generate the reference guide run the
+   following command on a Unix-like system in the directory of
+   this doc:
 
+   bash generate_docs
 
-
-
-
-
-
-
-
-
-
-
-
+   ******************************************************************/
+..
+   /* header for generated .rst files */
 
 ..
    *** DO NOT EDIT; MACHINE GENERATED ***
-
-
 .. highlight:: none
 
 .. role:: raw-html(raw)

@@ -1,5 +1,5 @@
     load system io.
 
     let a = [1,2,3].
-    let b = a @reverse(). -- reverse list using member function 'reverse'
+    let b = a @reverse (). -- reverse list using member function 'reverse'
     io @println b.

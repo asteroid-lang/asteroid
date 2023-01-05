@@ -1,7 +1,7 @@
 ###########################################################################################
 # Lexer for Asteroid
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import re
@@ -13,7 +13,9 @@ from asteroid.globals import ExpectationError
 keywords = {
 #   value:          type:
     'and'           : 'AND',
+    'as'            : 'AS',
     'assert'        : 'ASSERT',
+    'bind'          : 'BIND',
     'break'         : 'BREAK',
     'catch'         : 'CATCH',
     'data'          : 'DATA',
@@ -188,7 +190,7 @@ def tokenize(code):
             (module, lineno) = state.lineinfo
             line_num += lines
             state.lineinfo = (module, line_num)
-            value = value[1:-1] # strip the quotes
+            value = value[1:-1].replace('\\"','"') # strip the quotes
         elif type == 'NEWLINE':
             line_num += 1
             state.lineinfo = (module,line_num)

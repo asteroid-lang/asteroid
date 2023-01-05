@@ -1,0 +1,9 @@
+   load system type.
+
+   -- define a function
+   function inc with x do
+      return x+1.
+   end
+
+   -- show that 'inc' is of type 'function'
+   assert (type @gettype(inc) == "function").

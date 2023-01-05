@@ -1,5 +1,5 @@
    load system io.
    load system sort.
-   let sl = sort @sort((lambda with (x,y) do return true if x<y else false),
+   let sl = sort @sort((lambda with (x,y) do true if x<y else false),
                        [10,5,110,50]).
-    io @println sl.
+   io @println sl.

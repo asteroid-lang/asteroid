@@ -47,6 +47,41 @@ structure __TYPE_MODULE__ with
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
+function tobase
+------------------------------------------------------------------
+-- represent the given integer x as a numeral in different bases
+with (x:%integer,base:%integer) do return escape
+"
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+base_val = state.symbol_table.lookup_sym('base')
+
+if base_val[1] == 2:
+  __retval__ = ('string', format(x_val[1],'b'))
+elif base_val[1] == 8:
+  __retval__ = ('string', format(x_val[1],'o'))
+elif base_val[1] == 16:
+  __retval__ = ('string', format(x_val[1],'X'))
+else:
+  raise ValueError('illegal base value {}'
+          .format(base_val[1]))
+"
+end
+
+------------------------------------------------------------------
+function toboolean
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('boolean', bool(item_val[1]))
+"
+end
+
+------------------------------------------------------------------
 function tointeger
 ------------------------------------------------------------------
 with (item:%string,base:%integer) do return escape
@@ -74,18 +109,6 @@ global __retval__
 
 item_val = state.symbol_table.lookup_sym('item')
 __retval__ = ('real', float(item_val[1]))
-"
-end
-
-------------------------------------------------------------------
-function toboolean
-------------------------------------------------------------------
-with item do return escape
-"
-global __retval__
-
-item_val = state.symbol_table.lookup_sym('item')
-__retval__ = ('boolean', bool(item_val[1]))
 "
 end
 
@@ -167,29 +190,6 @@ with l:%integer do
 end
 
 ------------------------------------------------------------------
-function tobase
-------------------------------------------------------------------
--- represent the given integer x as a numeral in different bases
-with (x:%integer,base:%integer) do return escape
-"
-global __retval__
-
-x_val = state.symbol_table.lookup_sym('x')
-base_val = state.symbol_table.lookup_sym('base')
-
-if base_val[1] == 2:
-  __retval__ = ('string', format(x_val[1],'b'))
-elif base_val[1] == 8:
-  __retval__ = ('string', format(x_val[1],'o'))
-elif base_val[1] == 16:
-  __retval__ = ('string', format(x_val[1],'X'))
-else:
-  raise ValueError('illegal base value {}'
-          .format(base_val[1]))
-"
-end
-
-------------------------------------------------------------------
 -- TYPE QUERY FUNCTIONS --
 ------------------------------------------------------------------
 
@@ -201,13 +201,6 @@ with item do
 end
 
 ------------------------------------------------------------------
-function isscalar
-------------------------------------------------------------------
-with item do
-  return (item is %integer) or (item is %real).
-end
-
-------------------------------------------------------------------
 function isnone
 ------------------------------------------------------------------
 with x do
@@ -215,15 +208,28 @@ with x do
 end
 
 ------------------------------------------------------------------
+function isscalar
+------------------------------------------------------------------
+with item do
+  return (item is %integer) or (item is %real).
+end
+
+------------------------------------------------------------------
 function gettype
 ------------------------------------------------------------------
-# get the type of 'x' as an Asteroid string
+-- get the type of 'x' as an Asteroid string
 with x do return escape
 "
 global __retval__
 val = state.symbol_table.lookup_sym('x')
 if val[0] == 'object':
   (OBJECT, (STRUCT_ID, (ID, x_type)), OBJECT_MEMORY) = val
+elif val[0] in ['function-val','member-function-val']:
+  # internally we store functions as function values
+  # but to the user these look like functions as the 
+  # type counter part to the %function type pattern
+  # will match both function-val and member-function-val
+  x_type = 'function'
 else:
   x_type = val[0]
 __retval__ = ('string', x_type)

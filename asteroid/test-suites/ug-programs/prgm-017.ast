@@ -8,15 +8,15 @@
 
     -- make a list of persons
     let people = [
-        -- use default constructors to construct Person instances
+        -- use default constructors to construct Person objects
         Person("George", 32, "man"),
         Person("Sophie", 46, "woman"),
         Person("Oliver", 21, "man")
     ].
 
     -- retrieve the second person on the list and use pattern
-    -- matching to extract member values
-    let Person(name,age,gender) = people @1.
+    -- matching on Person objects to extract member values
+    let Person(name,age,gender) = people@1.
 
     -- print out the member values
     io @println (name + " is " + age + " years old and is a " +  gender + ".").

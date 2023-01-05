@@ -1,19 +1,24 @@
 #!/bin/bash
 
 echo "generating User Guide.rst"
-cpp -w -P -traditional "User Guide.txt" > "User Guide.rst"
+#cpp -w -P -traditional "User Guide.txt" > "User Guide.rst"
+pcpp --passthru-comments --line-directive nothing "User Guide.txt" > "User Guide.rst"
 
 echo "generating Reference Guide.rst"
 # note: we need to strip multiline C comments manually
 #       because cpp likes to preserve newlines of multiline comments...
 bash strip ../asteroid/grammar.txt >/tmp/grammar.tmp
-cpp -w -P -traditional "Reference Guide.txt" > "Reference Guide.rst"
+#cpp -w -P -traditional "Reference Guide.txt" > "Reference Guide.rst"
+pcpp --passthru-comments --line-directive nothing "Reference Guide.txt" > "Reference Guide.rst"
 
 echo "generating Asteroid in Action.rst"
-cpp -w -P -traditional "Asteroid in Action.txt" > "Asteroid in Action.rst"
+#cpp -w -P -traditional "Asteroid in Action.txt" > "Asteroid in Action.rst"
+pcpp --passthru-comments --line-directive nothing "Asteroid in Action.txt" > "Asteroid in Action.rst"
 
 echo "generating Quickstart Tutorial.rst"
-cpp -w -P -traditional "Quickstart Tutorial.txt" > "Quickstart Tutorial.rst"
+#cpp -w -P -traditional "Quickstart Tutorial.txt" > "Quickstart Tutorial.rst"
+pcpp --passthru-comments --line-directive nothing "Quickstart Tutorial.txt" > "Quickstart Tutorial.rst"
 
 echo "generating ADB.rst"
-cpp -w -P -traditional "ADB.txt" > "ADB.rst"
+#cpp -w -P -traditional "ADB.txt" > "ADB.rst"
+pcpp --passthru-comments --line-directive nothing "ADB.txt" > "ADB.rst"

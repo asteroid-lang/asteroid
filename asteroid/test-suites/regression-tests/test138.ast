@@ -1,0 +1,18 @@
+-- test case for issue #209
+load system io.
+
+function goo with none do
+   throw Error("exception").
+end
+
+function foo with none do
+   let a = 1.
+   try
+      goo().
+   catch _ do
+      io @println "exception caught".
+   end
+   assert(a==1).  -- make that a is still in scope
+end
+
+foo ().

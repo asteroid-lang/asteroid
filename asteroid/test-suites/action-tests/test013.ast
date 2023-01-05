@@ -15,8 +15,7 @@
   let pick_list = int_list+lc_list+uc_list+sp_list.
 
   -- generate the password and print it.
-  let pwd = pick @pick pick_list @pick(15)
-                           @join("").
+  let pwd = pick @pick pick_list @pickitems 15 @join("").
   io @println pwd.
 
   assert (pwd == "e3zvshdbS43brt#")

@@ -1,0 +1,9 @@
+-- test binding terms
+let Pair = pattern %[(x,y)]%.
+
+function add with ( *Pair bind [x as a, y as b], 
+                    *Pair bind [x as c, y as d] ) do
+   return (a+c, b+d).
+end 
+
+assert(add((1,2),(3,4))== (4,6)).

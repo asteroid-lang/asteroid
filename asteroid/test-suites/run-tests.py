@@ -7,7 +7,7 @@
 # the following is a list of directories of test cases the script will run
 
 dirs = [
-	'action-tests',
+	    'action-tests',
         'first-class-redundant-pattern-tests',
         'redundant-pattern-test',
         'ref-programs',
@@ -41,8 +41,12 @@ import os
 # the working directory to that path
 file_path = os.path.dirname(os.path.abspath( __file__ ))
 os.chdir(file_path)
+# append the parent dir of our current dir to the PYTHONPATH
+# so that we can easily find our Asteroid modules
+(parent_dir,_) = os.path.split(file_path)
+sys.path.append(parent_dir)
 
-from asteroid.interp import interp
+from interp import interp
 
 for d in dirs:
     tests = os.listdir(d)

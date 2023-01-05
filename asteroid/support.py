@@ -239,13 +239,37 @@ def term2string(term):
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, object_memory))) = term
-        data_memory = data_only(object_memory)
-        term_string = struct_id + '('
-        for ix in range(0, len(data_memory)):
-            term_string += term2string(data_memory[ix])
-            term_string += ',' if ix != len(data_memory)-1 else ''
-        term_string += ')'
-        return term_string
+
+        struct_val = state.symbol_table.lookup_sym(struct_id)
+
+        (STRUCT,
+            (MEMBER_NAMES, (LIST, member_names)),
+            (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
+
+        # if __str__ function exists for this object use it
+        if '__str__' in member_names:
+            slot_ix = member_names.index('__str__')
+            str_fval = object_memory[slot_ix]
+            # calling a __str__ member function
+            import walk
+            # for some reason we have to reinitialize unify again
+            if walk.debugging:
+                walk.unify = walk.debug_unify
+            else:
+                walk.unify = walk.__unify
+            (STRING, obj_str) = walk.handle_call(term, # object reference
+                                    str_fval,
+                                    ('none', None),
+                                    'member function __str__')
+            return obj_str
+        else:
+            data_memory = data_only(object_memory)
+            term_string = struct_id + '('
+            for ix in range(0, len(data_memory)):
+                term_string += term2string(data_memory[ix])
+                term_string += ',' if ix != len(data_memory)-1 else ''
+            term_string += ')'
+            return term_string
 
     elif TYPE in ['function-val', 'member-function-val']:
         return '(function ...)'
@@ -341,14 +365,18 @@ def term2string(term):
         return term_string
 
     elif TYPE == 'constraint':          # Handle a constraint-only pattern
-        (CONSTRAINT,ptrn) = term
+        (CONSTRAINT,ptrn,bl) = term
+        if bl[0] != 'nil':
+            raise ValueError("term2string: binding term lists not supported")
         term_string = '%['
         term_string += term2string(ptrn)
         term_string += ']%'
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
-        (DEREF, d_exp) = term
+        (DEREF, d_exp, binding_list) = term
+        if binding_list[0] != 'nil':
+            raise ValueError("internal error: binding lists in term2string not supported")
         term_string = "*" + term2string(d_exp)
 
         #Get the actual pattern from the symbol table

@@ -1,0 +1,5 @@
+let p = pattern (x,y)
+let x = 1.
+let y = 2.
+let o = eval p.
+assert(o is (1,2)).

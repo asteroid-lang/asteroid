@@ -1,23 +1,20 @@
-    -- implements Peano addition on terms
-    load system io.
+    structure Node with -- internal tree node with a value
+        data value.
+        data left_child.
+        data right_child.
+    end
 
-    structure s with
-        data val.
-        end
+    structure Leaf with -- leaf node with a value
+        data value.
+    end
 
-    structure add with
-        data left.
-        data right.
-        end
+    -- traverse a tree and collect all the values in the tree in a list
+    function traverse
+        with Leaf(v) do
+            return [v].
+        with Node(v,l,r) do
+            return [v] + traverse l + traverse r.
+    end
 
-    function reduce
-        with add(x,0) do
-            return reduce(x).
-        with add(x,s(y))  do
-            return s(reduce(add(x,y))).
-        with term do
-            return term.
-        end
-
-    -- add 2 3
-    io @println (reduce(add(s(s(0)),s(s(s(0)))))).
+    let tree = Node(1,Leaf(2),Leaf(3)).
+    assert (traverse(tree) == [1,2,3]).

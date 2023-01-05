@@ -9,7 +9,7 @@
  - Use C++ style comments for any comments that you DO want to be displayed
    in the target documentation.
  - C style comments for any comments that you DO NOT want to be displayed
-   in the target documentation.
+   in the target documentation -- like the one you are reading right now...
  **************************************************************************************/
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
@@ -72,7 +72,7 @@
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%'      /* constraint-only pattern match */
+    | '%[' exp ']%' binding_list?    /* constraint-only pattern match */
     | head_tail
 
   head_tail
@@ -126,7 +126,7 @@
     | FALSE
     | NONE
     | ID
-    | '*' call_or_index   /* pattern dereferencing */
+    | '*' call_or_index  binding_list? /* pattern dereferencing */
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
@@ -136,6 +136,18 @@
     | '[' list_stuff ']'  /* list or list access */
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
+
+/* Note: binding lists are only supported for constraint patterns */
+
+  binding_list
+    : BIND binding_list_suffix
+    
+  binding_list_suffix
+     : binding_term
+     | '[' binding_term (',' binding_term)* ']'
+
+  binding_term
+    : ID (AS ID)?
 
   tuple_stuff
     : exp (',' exp?)*

@@ -9,39 +9,31 @@
 load system type.
 
 ------------------------------------------------------------------
-structure __UTIL_MODULE__ with
+structure __UTIL_MODULE__ 
+------------------------------------------------------------------
+with
 
 ------------------------------------------------------------------
--- UTILITY FUNCTIONS --
+function achar
 ------------------------------------------------------------------
-
-------------------------------------------------------------------
-function exit
-------------------------------------------------------------------
-with none do escape
+-- given a decimal ASCII code return the corresponding character symbol
+with item:%integer do return escape
 "
-import sys
-sys.exit(1)
-"
-with msg:%string do escape
-"
-import sys
-msg_val = state.symbol_table.lookup_sym('msg')
-print(msg_val[1])
-sys.exit(1)
+global __retval__
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('string', str(chr(item_val[1])))
 "
 end
 
 ------------------------------------------------------------------
-function copy
+function ascii
 ------------------------------------------------------------------
--- make a deep copy of an Asteroid object
-with obj do return escape
+-- given a char return the corresponding ASCII code.
+with item:%string do return escape
 "
 global __retval__
-import copy
-obj_val = state.symbol_table.lookup_sym('obj')
-__retval__ = copy.deepcopy(obj_val)
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('integer', ord(item_val[1]))
 "
 end
 
@@ -62,38 +54,54 @@ else:
 end
 
 ------------------------------------------------------------------
+function copy
+------------------------------------------------------------------
+-- make a deep copy of an Asteroid object
+with obj do return escape
+"
+global __retval__
+import copy
+obj_val = state.symbol_table.lookup_sym('obj')
+__retval__ = copy.deepcopy(obj_val)
+"
+end
+
+------------------------------------------------------------------
+function ctime
+------------------------------------------------------------------
+-- Converts the time as a real value in secs since 1/1/1970 into
+-- string representing local time.
+with t:%real do return escape
+"
+global __retval__
+from time import ctime
+(REAL, t_val) = state.symbol_table.lookup_sym('t')
+
+__retval__ = ('string', ctime(t_val))
+"
+end
+
+------------------------------------------------------------------
 function sleep
 ------------------------------------------------------------------
 -- program sleep for secs seconds
 with secs if type @isscalar(secs) do escape
 "
-import time
+from time import sleep
 secs_val = state.symbol_table.lookup_sym('secs')
-time.sleep(secs_val[1])
+sleep(secs_val[1])
 "
 end
 
 ------------------------------------------------------------------
-function zip
+function time
 ------------------------------------------------------------------
--- implements Python's zip function
-with (list1:%list,list2:%list) do return escape
+-- Returns the local time as a real value in secs since 1/1/1970
+with none do return escape
 "
 global __retval__
-
-list1_val = state.symbol_table.lookup_sym('list1')
-list2_val = state.symbol_table.lookup_sym('list2')
-
-# zip it with Python's zip
-l = list(zip(list1_val[1], list2_val[1]))
-
-# turn Python tuples into Asteroid tuples and
-# put them onto an output list
-out_list = []
-for (i,t) in l:
-  out_list.append(('tuple',[i,t]))
-
-__retval__ = ('list', out_list)
+from time import time
+__retval__ = ('real', time())
 "
 end
 
@@ -119,26 +127,26 @@ __retval__ = ('tuple', [('list', c1list), ('list',c2list)])
 end
 
 ------------------------------------------------------------------
-function ascii
+function zip
 ------------------------------------------------------------------
--- given a char return the corresponding ASCII code.
-with item:%string do return escape
+-- implements Python's zip function
+with (list1:%list,list2:%list) do return escape
 "
 global __retval__
-item_val = state.symbol_table.lookup_sym('item')
-__retval__ = ('integer', ord(item_val[1]))
-"
-end
 
-------------------------------------------------------------------
-function achar
-------------------------------------------------------------------
--- given a decimal ASCII code return the corresponding character symbol
-with item:%integer do return escape
-"
-global __retval__
-item_val = state.symbol_table.lookup_sym('item')
-__retval__ = ('string', str(chr(item_val[1])))
+list1_val = state.symbol_table.lookup_sym('list1')
+list2_val = state.symbol_table.lookup_sym('list2')
+
+# zip it with Python's zip
+l = list(zip(list1_val[1], list2_val[1]))
+
+# turn Python tuples into Asteroid tuples and
+# put them onto an output list
+out_list = []
+for (i,t) in l:
+  out_list.append(('tuple',[i,t]))
+
+__retval__ = ('list', out_list)
 "
 end
 

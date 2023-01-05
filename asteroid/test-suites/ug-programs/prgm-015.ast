@@ -3,4 +3,4 @@
              ("d","e","f"),
              ("g","h","i")].
     -- Access an element in the nested structure.
-    assert(b @1 @1 == "e").
+    assert (b@0@1 == "b").
