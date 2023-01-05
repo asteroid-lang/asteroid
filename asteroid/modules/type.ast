@@ -217,13 +217,19 @@ end
 ------------------------------------------------------------------
 function gettype
 ------------------------------------------------------------------
-# get the type of 'x' as an Asteroid string
+-- get the type of 'x' as an Asteroid string
 with x do return escape
 "
 global __retval__
 val = state.symbol_table.lookup_sym('x')
 if val[0] == 'object':
   (OBJECT, (STRUCT_ID, (ID, x_type)), OBJECT_MEMORY) = val
+elif val[0] in ['function-val','member-function-val']:
+  # internally we store functions as function values
+  # but to the user these look like functions as the 
+  # type counter part to the %function type pattern
+  # will match both function-val and member-function-val
+  x_type = 'function'
 else:
   x_type = val[0]
 __retval__ = ('string', x_type)
