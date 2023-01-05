@@ -1,7 +1,6 @@
-    function reduce
-        with (a,b) do -- pattern match the actual argument
-            return a*b.
-        end
+    function reduce with (a,b) do -- pattern match the actual argument
+        return a*b.
+    end
 
     let r = reduce (2,4).  -- function call via juxtaposition
-    assert( r == 8 ).
+    assert (r == 8).

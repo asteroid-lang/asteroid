@@ -2,10 +2,10 @@
 
     function factorial
         with 0 do
-            return 1
-        with n if (n is %integer) and (n > 0) do
-            return n * factorial (n-1).
-        with n if (n is %integer) and (n < 0) do
+            1
+        with (n:%integer) if n > 0 do
+            n * factorial (n-1).
+        with (n:%integer) if n < 0 do
             throw Error("factorial is not defined for "+n).
     end
 

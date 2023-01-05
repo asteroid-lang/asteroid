@@ -6,5 +6,5 @@
 
     -- reverse the list using a slice computed as comprehension
     let slice = [4 to 0 step -1]. -- list comprehension
-    let b = a @slice.
+    let b = a@slice.
     io @println ("reversed list: " + b).

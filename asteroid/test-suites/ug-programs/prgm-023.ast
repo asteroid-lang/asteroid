@@ -1,6 +1,9 @@
     load system io.
     load system util
 
-    for (ix,bird) in util @zip (["first","second","third"],["turkey","duck","chicken"]) do
+    let indexes = ["first","second","third"].
+    let birds = ["turkey","duck","chicken"].
+
+    for (ix,bird) in util @zip (indexes,birds) do
         io @println ("the "+ix+" bird is a "+bird).
     end

@@ -3,16 +3,16 @@
     structure Person with
         data name.
         data age.
-        end
+    end
 
     -- define a list of persons
     let people = [
         Person("George", 32),
         Person("Sophie", 46),
         Person("Oliver", 21)
-        ].
+    ].
 
     -- print names that contain 'p'
-    for Person(name:".*p.*",_) in people do
+    for Person(name if name is ".*p.*",age) in people do
         io @println name.
     end

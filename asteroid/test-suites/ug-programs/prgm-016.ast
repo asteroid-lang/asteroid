@@ -3,7 +3,7 @@
     let b = ("a","b","c"). -- build a tuple
     
     try
-        let b @1 = "z". -- attempt to modify an element in the tuple
-    catch Exception(kind,message) do
+        let b@1 = "z". -- attempt to modify an element in the tuple
+    catch Exception (kind,message) do
         io @println (kind+": "+message).
     end.
