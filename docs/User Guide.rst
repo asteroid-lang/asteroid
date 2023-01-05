@@ -122,7 +122,18 @@ showing that ``()`` and ``none`` are equivalent and pattern-match each other.
 The ``none`` data type itself does not belong to any type hierarchy.
 
 We should mention here that because functions and patterns are both first-class citizens in Asteroid we
-also have the types ``function`` and ``pattern``.  Just like the ``none`` type, neither of these types are
+also have the types ``function`` and ``pattern``,
+::
+   load system type.
+
+   -- define a function
+   function inc with x do
+      return x+1.
+   end
+
+   -- show that 'inc' is of type 'function'
+   assert (type @gettype(inc) == "function").
+Just like the ``none`` type, neither of these types are
 part of a type hierarchy but we can use them in type patterns (see below).
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different as we will see when we discuss pattern matching in more detail.
