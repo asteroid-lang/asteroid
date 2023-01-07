@@ -132,7 +132,7 @@ end
 ```
 ## Object-Oriented Programming in Asteroid
 
-Asteroid supports OO programming.  Here is a program loosely based on the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation.  This example builds a list of dog objects that all know some tricks.  We then loop over the list and find all the dogs that know to 'fetch'.
+Asteroid supports OO programming.  Here is a program loosely based on the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation.  This example builds a list of dog objects that all know some tricks.  After the dogs introduce themselves we loop over the list and find all the dogs that know to 'fetch'.
 ```
 load system io.
 load system type.
@@ -144,6 +144,11 @@ structure Dog with
       let this@name = name.
       let this@tricks = tricks.
    end
+   function hello_string with () do -- member function
+      let hello_str = "Hello, my name is " + this@name + " and my tricks are ".
+      let trick_str = this@tricks @reduce (lambda with (x,y) do x + " and " + y).
+      return hello_str + trick_str.
+   end
 end
 
 let fido = Dog("Fido",["play dead","fetch"]).
@@ -152,15 +157,27 @@ let bella = Dog("Bella",["roll over","fetch"]).
 
 let dogs = [fido,buddy,bella].
 
+-- let dogs introduce themselves
+for d in dogs do
+   let hs = d @hello_string (). -- call member function on object
+   io @println hs.
+end
+
 -- print out all the dogs that know how to fetch
 for (Dog(name,tricks) if type @tostring tricks is ".*fetch.*") in dogs do
    io @println (name+" knows how to fetch").
 end
 ```
+Notice that we have a user supplied constructor function `__init__` as well as a member function `hello_string`
+in the structure.  Object identity in functions in supplied via the `this` keyword.
+
 What is perhaps striking in the for loop is that rather than searching through the list of tricks for a "fetch" trick for each dog
 match at a loop iteration, we cast the list of tricks as a string
 and then use regular expression matching on it to see if it contains a "fetch" trick. The output is,
 ```
+Hello, my name is Fido and my tricks are play dead and fetch
+Hello, my name is Buddy and my tricks are sit stay and roll over
+Hello, my name is Bella and my tricks are roll over and fetch
 Fido knows how to fetch
 Bella knows how to fetch
 ```
