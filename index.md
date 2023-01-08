@@ -1,16 +1,14 @@
-![asteroid](asteroid-small.png)
-
-# Asteroid: The Programming Language
 
 [Documentation](https://asteroid-lang.readthedocs.io) | [PyPI Project Page](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
 
+![asteroid](asteroid-small.png)
+
+## A Quick Intro to Asteroid
+
+
 Asteroid is a modern, application-oriented programming language designed from the ground up with the user in mind. Its expressive syntax is easy to learn and seamlessly supports procedural, functional, and object-based programming.  Its novel approach to pattern matching provides new solutions to old programming problems.
 
-Here are some example programs that highlight various aspects of Asteroid.
-
-### Hello, World!
-
-Simple things are simple. Here is the ''Hello, World!'' program written in Asteroid,
+To kick things off: simple things are simple. Here is the ''Hello, World!'' program written in Asteroid,
 ```
 load system io.
 io @println "Hello, World!".

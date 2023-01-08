@@ -1,5 +1,5 @@
-title: The Asteriod Programming Language
+title: Asteriod: The Programming Language
 description: Asteroid is a multi-paradigm, application-oriented programming language supporting first-class patterns.
-show_downloads: true
+show_downloads: false
 google_analytics:
 theme: jekyll-theme-slate
