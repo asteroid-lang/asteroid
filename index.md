@@ -4,7 +4,7 @@
 ![asteroid](asteroid-small.png)
 
 
-## A Quick Intro to Asteroid
+## A Quick Overview of Asteroid
 
 Asteroid is a modern, application-oriented programming language designed from the ground up with the user in mind. Its expressive syntax is easy to learn and seamlessly supports procedural, functional, and object-oriented programming.  Its novel approach to pattern matching provides new solutions to old programming problems.
 
