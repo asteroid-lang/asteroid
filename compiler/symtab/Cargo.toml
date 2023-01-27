@@ -7,4 +7,3 @@ edition = "2021"
 
 [dependencies]
 ast = { path = "C:/Users/Timothy/Desktop/avm/ast" }
-lazy_static = "1.4.0"

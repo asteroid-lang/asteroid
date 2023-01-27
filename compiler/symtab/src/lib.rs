@@ -3,6 +3,7 @@
 /* Symtab Module                                                              */
 /*                                                                            */
 /******************************************************************************/   
+#![allow(unused)]
 
 use std::collections::HashMap;
 use ast::*;                   //Asteroid AST representation
@@ -11,17 +12,18 @@ const SCOPES_HINT: usize = 10;
 const NAMESPACE_HINT: usize = 32;
 const GLOBAL_LVL: usize = 0;
 /******************************************************************************/
+#[derive( Clone,PartialEq)]
 pub struct Symtab {
-    scoped_symtab: Vec<HashMap<String, ast::ASTNode>>, //A Vector of hashmaps,
+    pub scoped_symtab: Vec<HashMap<String, ast::ASTNode>>, //A Vector of hashmaps,
                                 // each hashmap represents a namespace/scope.
                                 // Keys are strings which represent variable
                                 // names and values are ASTNodes.
-    globals: Vec<Vec<String>>,  // Vector of vectors of strings. Each internal
+    pub globals: Vec<Vec<String>>,  // Vector of vectors of strings. Each internal
                                 // vector represents a global namespace/scope 
                                 // and its contents indicate all of the 
                                 // variables that have been declared global
                                 // at that level.
-    curr_scope: usize,          // Keeps track of the scope level that program
+    pub curr_scope: usize,          // Keeps track of the scope level that program
                                 // execution is currently happening in.
 }
 /******************************************************************************/

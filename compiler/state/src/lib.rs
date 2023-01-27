@@ -2,15 +2,18 @@
 /* Asteroid                                                                   */ 
 /* State Module                                                               */
 /*                                                                            */
-/******************************************************************************/   
+/******************************************************************************/ 
+#![allow(unused)]
+
 use symtab::*;  //Asteroid symbol table
 use ast::*;     //Asteroid AST representation
 
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
-/******************************************************************************/                           
-struct State {
-    symbol_table: symtab::Symtab,   // Symbol table
+/******************************************************************************/  
+#[derive( Clone,PartialEq)]                         
+pub struct State {
+    pub symbol_table: symtab::Symtab,   // Symbol table
     modules: Vec<String>,           // List of currently loaded modules
     ast: ast::ASTNode,              // Abstrat syntax tree
     ignore_quote: bool,             // flags when to ignore quoted vars
@@ -24,6 +27,7 @@ struct State {
                                     // pattern detector on or off.
     lineinfo: (String,usize),       // Used to know what module/line number is
                                     // currently being executed.
+    
 }
 impl State {
     /**************************************************************************/
@@ -166,6 +170,26 @@ impl State {
     pub fn warning( &self, msg:&str ){
         let (module,lineno) = self.get_lineinfo().unwrap();
         println!("Warning: {}: {}: {}",module,lineno,msg);
+    }
+    /**************************************************************************/
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> Option<&ASTNode> {
+        self.symbol_table.lookup_sym(id,strict)
+    }
+    /**************************************************************************/
+    pub fn enter_sym( &mut self, id: &str, value: ASTNode ){
+        self.symbol_table.enter_sym(id,value);
+    }
+    /**************************************************************************/
+    pub fn find_sym( &self, id: &str) -> Option<usize> {
+        self.symbol_table.find_sym(id)
+    }
+    /**************************************************************************/
+    pub fn push_scope( &mut self ){
+        self.symbol_table.push_scope();
+    }
+    /**************************************************************************/
+    pub fn pop_scope( &mut self ){
+        self.symbol_table.pop_scope();
     }
     /**************************************************************************/
 } 
