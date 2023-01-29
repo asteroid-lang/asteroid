@@ -14,16 +14,16 @@ const GLOBAL_LVL: usize = 0;
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct Symtab {
-    pub scoped_symtab: Vec<HashMap<String, ast::ASTNode>>, //A Vector of hashmaps,
+    pub scoped_symtab: Vec<HashMap<String, ast::ASTNode>>,//A Vector of hashmaps,
                                 // each hashmap represents a namespace/scope.
                                 // Keys are strings which represent variable
                                 // names and values are ASTNodes.
-    pub globals: Vec<Vec<String>>,  // Vector of vectors of strings. Each internal
+    pub globals: Vec<Vec<String>>,// Vector of vectors of strings. Each internal
                                 // vector represents a global namespace/scope 
                                 // and its contents indicate all of the 
                                 // variables that have been declared global
                                 // at that level.
-    pub curr_scope: usize,          // Keeps track of the scope level that program
+    pub curr_scope: usize,      // Keeps track of the scope level that program
                                 // execution is currently happening in.
 }
 /******************************************************************************/
@@ -75,7 +75,7 @@ impl Symtab {
     pub fn lookup_sym( &self, id: &str, strict: bool) -> Option<&ASTNode> {
         let scope = self.find_sym(id);
         if let None = scope {
-            if let True = strict {
+            if let true = strict {
                 panic!("'{}' is not defined.",id);
             }
         }
@@ -171,7 +171,6 @@ impl Symtab {
     // Function enter_global enters an id unto the current scopes list of 
     // global variables.
     pub fn enter_global(&mut self, id: String) {
-
         self.globals[self.curr_scope].push(id);
         
     }
@@ -186,9 +185,6 @@ impl Symtab {
         self.curr_scope -= 1;
     }
     /**************************************************************************/
-    pub fn get_scope(&self) -> Option<usize>{
-        Some( self.curr_scope )
-    }
     /**************************************************************************/
 }
 /******************************************************************************/

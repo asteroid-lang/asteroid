@@ -26,7 +26,7 @@ use ast::*;
 pub fn map2boolean<'a>(node: &'a ASTNode) -> Option<ASTNode> {
     match node {
         ASTNode::ASTInteger( ASTInteger{id:0,value:0} ) => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
-        ASTNode::ASTReal( ASTReal{id:1,value:0.0} ) => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
+        ASTNode::ASTReal( ASTReal{id:1,value} ) if *value == 0.0 => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
         ASTNode::ASTNone(_) => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
         ASTNode::ASTNil(_) => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
         ASTNode::ASTBool( ASTBool{id:2,value:false} ) => Some( ASTNode::ASTBool(ASTBool::new(false).unwrap() )),
@@ -229,13 +229,13 @@ pub fn term2string_object<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected object in term2string_object")};
 
     let mut out = String::new();
-    out += &struct_id.get_id().unwrap();
+    out += &struct_id.name;
     out += "( ";
-    for i in 0..object_memory.get_length().unwrap() {
+    for i in 0..object_memory.length {
         if i != 0 {
             out += " , "
         }
-        out += &term2string(&object_memory.get_element(i).unwrap()).unwrap();
+        out += &term2string(&object_memory.contents[i]).unwrap();
     }
     out += " )";
     Some(out)
@@ -310,7 +310,7 @@ pub fn term2string_namedpattern<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected named pattern in term2string_namedpattern")};
 
     let mut out = String::new();
-    out += &name.get_id().unwrap();
+    out += &name.name;
     out += ":%";
     out += &term2string(&pattern[0]).unwrap();
 
@@ -321,7 +321,7 @@ pub fn term2string_deref<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected deref in term2string_deref")};
 
     let mut out = String::new();
-    out += &name.get_id().unwrap();
+    out += &name.name;
     out += ":%";
     out += &term2string(&pattern[0]).unwrap();
 

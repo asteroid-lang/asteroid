@@ -118,9 +118,9 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
             // If we are evaluating subsumption between two different conditional patterns
             // we want to 'punt' and print a warning message.
             if term_type == "if" {
-                if !state.get_cond_warning().unwrap() {
+                if !state.cond_warning {
                     state.warning("Redundant pattern detection is not supported for conditional pattern expressions.");
-                    state.cond_warning_on();
+                    state.cond_warning = true;
                 }
                 return Err( ("PatternMatchFailed",format!("Subsumption relatioship broken, pattern will not be rendered redundant."))) // User should never see
             }
@@ -136,7 +136,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
 
         let  unifiers = unify(term,&then_exp[0],state,unifying).unwrap();
         
-        if state.get_constraint_lvl().unwrap() > 0 {
+        if state.constraint_lvl > 0 {
             state.push_scope();
         }
 
@@ -145,7 +145,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
         declare_unifiers(&unifiers);
         let bool_val = map2boolean(&walk(&cond_exp[0],state).unwrap()).unwrap();
 
-        if state.get_constraint_lvl().unwrap() > 0 {
+        if state.constraint_lvl > 0 {
             state.pop_scope();
         }
 
@@ -281,7 +281,7 @@ pub fn walk<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
 /******************************************************************************/
 pub fn process_lineinfo<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
     match node {
-        ast::ASTNode::ASTLineInfo(ASTLineInfo{ id, module, line_number }) => state.set_lineinfo((module.clone(),*line_number)),
+        ast::ASTNode::ASTLineInfo(ASTLineInfo{ id, module, line_number }) => state.lineinfo = (module.clone(),*line_number),
         _ => panic!("lineinfo error."),
     }
     Some( node.clone() )
@@ -418,7 +418,7 @@ pub fn quote_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNod
         else { panic!("ERROR: walk: expected quote expression in quote_exp().") };  
 
     // quoted code should be treated like a constant if not ignore_quote
-    if state.get_ignore_quote().unwrap() {
+    if state.ignore_quote {
         Some(walk(&expression[0],state).unwrap())
     } else {
         Some(node.clone())
@@ -652,23 +652,23 @@ mod tests {
         let newline = ASTLineInfo::new( String::from("test1"),123 ).unwrap();
         let mut state = State::new().unwrap();
         {
-            let out1 = State::get_lineinfo(&state).unwrap();
-            assert_eq!(*out1,(String::from("<input>"),1));
+            let out1 = state.lineinfo.clone();
+            assert_eq!(out1,(String::from("<input>"),1));
         }
 
         walk( &ASTNode::ASTLineInfo(newline),&mut state );
 
         {
-            let out2 = State::get_lineinfo(&state).unwrap();
-            assert_eq!(*out2,(String::from("test1"),123));
+            let out2 = state.lineinfo.clone();
+            assert_eq!(out2,(String::from("test1"),123));
         }
 
         let newline = ASTLineInfo::new( String::from("math"), 987654321).unwrap();
         walk( &ASTNode::ASTLineInfo(newline),&mut state );
 
         {
-            let out3 = State::get_lineinfo(&state).unwrap();
-            assert_eq!(*out3,(String::from("math"), 987654321));
+            let out3 = state.lineinfo.clone();
+            assert_eq!(out3,(String::from("math"), 987654321));
         }
     }
     #[test]
@@ -684,8 +684,8 @@ mod tests {
         walk( &ASTNode::ASTList(newlist),&mut state);
 
         {
-            let out1 = State::get_lineinfo(&state).unwrap();
-            assert_eq!(*out1,(String::from("test3"),123));
+            let out1 = state.lineinfo;
+            assert_eq!(out1,(String::from("test3"),123));
         }
     }
     #[test]

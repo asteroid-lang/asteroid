@@ -13,20 +13,20 @@ const MODULES_HINT: usize = 8;
 /******************************************************************************/  
 #[derive( Clone,PartialEq)]                         
 pub struct State {
-    pub symbol_table: symtab::Symtab,   // Symbol table
-    modules: Vec<String>,           // List of currently loaded modules
-    ast: ast::ASTNode,              // Abstrat syntax tree
-    ignore_quote: bool,             // flags when to ignore quoted vars
-    constraint_lvl: usize,          // indicated current constraint bracket
-                                    // depth level.
-    cond_warning: bool,             // Flags when a conditional pattern warning
-                                    // has already been displayed. Used to 
-                                    // prevent repeating the same warning.
-    eval_redundancy: bool,          // Flags is we should evaluate overlapping
-                                    // patterns. This turns the redundant 
-                                    // pattern detector on or off.
-    lineinfo: (String,usize),       // Used to know what module/line number is
-                                    // currently being executed.
+    pub symbol_table: symtab::Symtab,// Symbol table
+    pub modules: Vec<String>,        // List of currently loaded modules
+    pub ast: ast::ASTNode,           // Abstrat syntax tree
+    pub ignore_quote: bool,          // flags when to ignore quoted vars
+    pub constraint_lvl: usize,       // indicated current constraint bracket
+                                     // depth level.
+    pub cond_warning: bool,          // Flags when a conditional pattern warning
+                                     // has already been displayed. Used to 
+                                     // prevent repeating the same warning.
+    pub eval_redundancy: bool,       // Flags is we should evaluate overlapping
+                                     // patterns. This turns the redundant 
+                                     // pattern detector on or off.
+    pub lineinfo: (String,usize),    // Used to know what module/line number is
+                                     // currently being executed.
     
 }
 impl State {
@@ -40,22 +40,8 @@ impl State {
                       constraint_lvl: 0,
                       cond_warning: false,
                       eval_redundancy: true,
-                      lineinfo: (String::from("<input>"),1),                   } )
+                      lineinfo: (String::from("<input>"),1),                   })
     }
-    /**************************************************************************/
-    // Getter : &symbol_table
-    // Retrieves a reference to the states symbol table. Variable/value pairs are
-    // directly stored in the symbol table. 
-    pub fn get_symbol_table(&self) -> Option<&Symtab> {
-        Some( &self.symbol_table )
-    }
-    /**************************************************************************/
-    // Getter : &self.modules
-    // Retrieves a reference to the modules vector. A name:&String entry for
-    // every module loaded in the state is stored in this vector.  
-    pub fn get_modules(&self) -> Option<&Vec<String>> {
-        Some( &self.modules)
-    }  
     /**************************************************************************/
     // Function add_module() is used to add a new module name to the list 
     // of loaded modules.
@@ -63,38 +49,17 @@ impl State {
         self.modules.push( String::from(new) );
     }
     /**************************************************************************/
-    // Setter : ast
-    // Sets the ast field with a new ASTNode.
-    pub fn set_ast(&mut self, ast: ast::ASTNode) {
-        self.ast = ast;
-    }
-    /**************************************************************************/
-    // Getter : ast
-    // Retrieves a reference to the ast field. This is a representation of the
-    // state's program's Abstract Syntax Tree. details in 'ast' module.
-    pub fn get_ast(&mut self) -> Option<&ASTNode>{
-        Some( &self.ast )
-    }
-    /**************************************************************************/
-    // Setter : ignore_quote -> true
     // Function ignore_quote_on sets the states ignore_quote field to true. This
     // lets a program know when to ignore quoted/dereferenced pattern variables.
     pub fn ignore_quote_on(&mut self) {
         self.ignore_quote = true;
     }
     /**************************************************************************/
-    // Setter : ignore_quote -> false
     // Function ignore_quote_on sets the states ignore_quote field to false. 
     // This lets a program know when to ignore quoted/dereferenced pattern 
     // variables.
     pub fn ignore_quote_off(&mut self) {
         self.ignore_quote = false;
-    }
-    /**************************************************************************/
-    // Getter : ignore_quote
-    // Retrieves the current value of the ignore_quote field.
-    pub fn get_ignore_quote(&self) -> Option<bool> {
-        Some( self.ignore_quote )
     }
     /**************************************************************************/
     // Function inc_constraint_lvl increments the state's constraint level 
@@ -112,63 +77,12 @@ impl State {
         self.constraint_lvl -= 1;
     }
     /**************************************************************************/
-    // Getter : constraint_lvl
-    // Retrieves the current value of the state's constraint_lvl field.
-    pub fn get_constraint_lvl(&self) -> Option<usize> {
-        Some(self.constraint_lvl)
-    }
     /**************************************************************************/
-    // Setter : cond_warning -> true
-    // Sets the value of the state's cond_warning field to be true.
-    pub fn cond_warning_on(&mut self) {
-        self.cond_warning = true;
-    }
     /**************************************************************************/
-    // Setter : cond_warning -> false
-    // Sets the value of the state's cond_warning field to be false.
-    pub fn cond_warning_off(&mut self) {
-        self.cond_warning = false;
-    }
-    /**************************************************************************/
-    // Getter : cond_warning
-    // Retrieves the current value of the states cond_warning field.
-    pub fn get_cond_warning(&self) -> Option<bool> {
-        Some( self.cond_warning )
-    }
-    /**************************************************************************/
-    // Setter : eval_redundancy -> true
-    // Sets the state's eval_redundancy field to true.
-    pub fn eval_redundancy_on(&mut self) {
-        self.eval_redundancy = true;
-    }
-    /**************************************************************************/
-    // Setter : eval_redundancy -> false
-    // Sets the state's eval_redundancy field to false. 
-    pub fn eval_redundancy_off(&mut self) {
-        self.eval_redundancy = false;
-    }
-    /**************************************************************************/
-    // Getter : eval_redundancy
-    // Gets the current value of the state's eval_redundancy field.
-    pub fn get_eval_redundancy(&self) -> Option<bool> {
-        Some( self.eval_redundancy )
-    }
-    /**************************************************************************/
-    // Getter : lineinfo
-    // Retrieves the current value of the states lineinfo field.
-    pub fn get_lineinfo(&self) -> Option<&(String,usize)> {
-        Some( &self.lineinfo )
-    }
-    /**************************************************************************/
-    // Setter : lineinfo
-    // Sets the state's lineinfo field to the passed in lineinfo tuple.
-    pub fn set_lineinfo(&mut self, li: (String,usize)) {
-        self.lineinfo = li;
-    }
     /**************************************************************************/
     // Function warning used to print warning message to console.
     pub fn warning( &self, msg:&str ){
-        let (module,lineno) = self.get_lineinfo().unwrap();
+        let (module,lineno) = &self.lineinfo;
         println!("Warning: {}: {}: {}",module,lineno,msg);
     }
     /**************************************************************************/
