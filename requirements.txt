@@ -1,3 +1,4 @@
 pandas
 numpy
 matplotlib
+pyreadline3; platform_system == "Windows"
