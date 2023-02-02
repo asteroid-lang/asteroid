@@ -94,10 +94,10 @@ impl ASTNil {
 pub struct ASTList {
     pub id: u8,
     pub length: usize,
-    pub contents: Vec<ASTNode>,
+    pub contents: Vec<Box<ASTNode>>,
 }
 impl ASTList {
-    pub fn new(l: usize, c: Vec<ASTNode> ) -> Option<Self>{
+    pub fn new(l: usize, c: Vec<Box<ASTNode>> ) -> Option<Self>{
         Some(ASTList { id: 7, length: l, contents: c })
     }
 }
@@ -107,10 +107,10 @@ impl ASTList {
 pub struct ASTTuple {
     pub id: u8,
     pub length: usize,
-    pub contents: Vec<ASTNode>,
+    pub contents: Vec<Box<ASTNode>>,
 }
 impl ASTTuple {
-    pub fn new(l: usize, c: Vec<ASTNode> ) -> Option<Self>{
+    pub fn new(l: usize, c: Vec<Box<ASTNode>> ) -> Option<Self>{
         Some(ASTTuple{ id: 8, length: l, contents: c })
     }
 }
@@ -119,12 +119,12 @@ impl ASTTuple {
 #[derive( Clone,PartialEq)]
 pub struct ASTToList {
     pub id: u8,
-    pub start: Vec<ASTNode>,
-    pub stop: Vec<ASTNode>,
-    pub stride: Vec<ASTNode>,
+    pub start: Box<ASTNode>,
+    pub stop: Box<ASTNode>,
+    pub stride: Box<ASTNode>,
 }
 impl ASTToList {
-    pub fn new(start: Vec<ASTNode>, stop: Vec<ASTNode>, stride: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(start: Box<ASTNode>, stop: Box<ASTNode>, stride: Box<ASTNode>) -> Option<Self> {
         Some(ASTToList { id: 9, start: start, stop: stop, stride: stride })
     }
 }
@@ -133,11 +133,11 @@ impl ASTToList {
 #[derive( Clone,PartialEq)]
 pub struct ASTHeadTail {
     pub id: u8,
-    pub head: Vec<ASTNode>,
-    pub tail: Vec<ASTNode>,
+    pub head: Box<ASTNode>,
+    pub tail: Box<ASTNode>,
 }
 impl ASTHeadTail {
-    pub fn new(h: Vec<ASTNode>, t: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(h: Box<ASTNode>, t: Box<ASTNode>) -> Option<Self> {
         Some(ASTHeadTail { id: 10, head: h, tail: t})
     }
 }
@@ -146,12 +146,12 @@ impl ASTHeadTail {
 #[derive( Clone,PartialEq)]
 pub struct ASTRawToList {
     pub id: u8,
-    pub start: Vec<ASTNode>,
-    pub stop: Vec<ASTNode>,
-    pub stride: Vec<ASTNode>,
+    pub start: Box<ASTNode>,
+    pub stop: Box<ASTNode>,
+    pub stride: Box<ASTNode>,
 }
 impl ASTRawToList {
-    pub fn new(start: Vec<ASTNode>, stop: Vec<ASTNode>, stride: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(start: Box<ASTNode>, stop: Box<ASTNode>, stride: Box<ASTNode>) -> Option<Self> {
         Some(ASTRawToList { id: 11, start: start, stop: stop, stride: stride })
     }
 }
@@ -160,11 +160,11 @@ impl ASTRawToList {
 #[derive( Clone,PartialEq)]
 pub struct ASTRawHeadTail {
     pub id: u8,
-    pub head: Vec<ASTNode>,
-    pub tail: Vec<ASTNode>,
+    pub head: Box<ASTNode>,
+    pub tail: Box<ASTNode>,
 }
 impl ASTRawHeadTail {
-    pub fn new(h: Vec<ASTNode>, t: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(h: Box<ASTNode>, t: Box<ASTNode>) -> Option<Self> {
         Some(ASTRawHeadTail { id: 12, head: h, tail: t})
     }
 }
@@ -173,11 +173,11 @@ impl ASTRawHeadTail {
 #[derive( Clone,PartialEq)]
 pub struct ASTSequence {
     pub id: u8,
-    pub first: Vec<ASTNode>,
-    pub second: Vec<ASTNode>,
+    pub first: Box<ASTNode>,
+    pub second: Box<ASTNode>,
 }
 impl ASTSequence {
-    pub fn new(f: Vec<ASTNode>, s: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(f: Box<ASTNode>, s: Box<ASTNode>) -> Option<Self>{
         Some(ASTSequence {id: 13, first: f, second: s})        
     }
 }
@@ -198,10 +198,10 @@ impl ASTFunction {
 #[derive( Clone,PartialEq)]
 pub struct ASTEval {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
 }
 impl ASTEval {
-    pub fn new(expr: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(expr: Box<ASTNode>) -> Option<Self>{
         Some(ASTEval { id: 15, expression: expr})
     }
 }
@@ -210,10 +210,10 @@ impl ASTEval {
 #[derive( Clone,PartialEq)]
 pub struct ASTQuote {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
 }
 impl ASTQuote {
-    pub fn new(expr: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(expr: Box<ASTNode>) -> Option<Self>{
         Some(ASTQuote { id: 16, expression: expr})
     }
 }
@@ -222,10 +222,10 @@ impl ASTQuote {
 #[derive( Clone,PartialEq)]
 pub struct ASTConstraint {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
 }
 impl ASTConstraint {
-    pub fn new(expr: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(expr: Box<ASTNode>) -> Option<Self>{
         Some(ASTConstraint { id: 17, expression: expr})
     }
 }
@@ -234,10 +234,10 @@ impl ASTConstraint {
 #[derive( Clone,PartialEq)]
 pub struct ASTTypeMatch {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
 }
 impl ASTTypeMatch {
-    pub fn new(expr: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(expr: Box<ASTNode>) -> Option<Self>{
         Some(ASTTypeMatch { id: 18, expression: expr})
     }
 }
@@ -283,11 +283,11 @@ impl ASTObject {
 #[derive( Clone,PartialEq)]
 pub struct ASTApply {
     pub id: u8,
-    pub function: Vec<ASTNode>,
-    pub argument: Vec<ASTNode>,
+    pub function: Box<ASTNode>,
+    pub argument: Box<ASTNode>,
 }
 impl ASTApply {
-    pub fn new(f: Vec<ASTNode>, a: Vec<ASTNode>) -> Option<Self>{
+    pub fn new(f: Box<ASTNode>, a: Box<ASTNode>) -> Option<Self>{
         Some( ASTApply { id: 23, function: f, argument: a } )
     }
 }
@@ -296,11 +296,11 @@ impl ASTApply {
 #[derive( Clone,PartialEq)]
 pub struct ASTIndex {
     pub id: u8,
-    pub structure: Vec<ASTNode>,
-    pub index_exp: Vec<ASTNode>,
+    pub structure: Box<ASTNode>,
+    pub index_exp: Box<ASTNode>,
 }
 impl ASTIndex {
-    pub fn new(s: Vec<ASTNode>, i: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(s: Box<ASTNode>, i: Box<ASTNode>) -> Option<Self> {
         Some( ASTIndex { id: 24, structure: s, index_exp: i} )
     }
 }
@@ -321,11 +321,11 @@ impl ASTEscape {
 #[derive( Clone,PartialEq)]
 pub struct ASTIs {
     pub id: u8,
-    pub pattern: Vec<ASTNode>,
-    pub term: Vec<ASTNode>,
+    pub pattern: Box<ASTNode>,
+    pub term: Box<ASTNode>,
 }
 impl ASTIs {
-    pub fn new(p: Vec<ASTNode>, t: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(p: Box<ASTNode>, t: Box<ASTNode>) -> Option<Self> {
         Some( ASTIs { id: 26, pattern: p, term: t} )
     }
 }
@@ -334,11 +334,11 @@ impl ASTIs {
 #[derive( Clone,PartialEq)]
 pub struct ASTIn {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
-    pub expression_list: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
+    pub expression_list: Box<ASTNode>,
 }
 impl ASTIn {
-    pub fn new(e: Vec<ASTNode>, l: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(e: Box<ASTNode>, l: Box<ASTNode>) -> Option<Self> {
         Some( ASTIn { id: 27, expression: e, expression_list: l} )
     }
 }
@@ -347,12 +347,12 @@ impl ASTIn {
 #[derive( Clone,PartialEq)]
 pub struct ASTIf {
     pub id: u8,
-    pub cond_exp: Vec<ASTNode>,
-    pub then_exp: Vec<ASTNode>,
-    pub else_exp: Vec<ASTNode>,
+    pub cond_exp: Box<ASTNode>,
+    pub then_exp: Box<ASTNode>,
+    pub else_exp: Box<ASTNode>,
 }
 impl ASTIf {
-    pub fn new(c: Vec<ASTNode>, t: Vec<ASTNode>, e: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(c: Box<ASTNode>, t: Box<ASTNode>, e: Box<ASTNode>) -> Option<Self> {
         Some(ASTIf { id: 28, cond_exp: c, then_exp: t, else_exp: e})
     }
 }
@@ -362,10 +362,10 @@ impl ASTIf {
 pub struct ASTNamedPattern {
     pub id: u8,
     pub name: ASTID,
-    pub pattern: Vec<ASTNode>,
+    pub pattern: Box<ASTNode>,
 }
 impl ASTNamedPattern {
-    pub fn new(n: ASTID, p: Vec<ASTNode>) ->Option<Self>{
+    pub fn new(n: ASTID, p: Box<ASTNode>) ->Option<Self>{
         Some( ASTNamedPattern { id: 29, name: n, pattern: p})
     }
 }
@@ -374,10 +374,10 @@ impl ASTNamedPattern {
 #[derive( Clone,PartialEq)]
 pub struct ASTDeref {
     pub id: u8,
-    pub expression: Vec<ASTNode>,
+    pub expression: Box<ASTNode>,
 }
 impl ASTDeref {
-    pub fn new(e: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(e: Box<ASTNode>) -> Option<Self> {
         Some( ASTDeref { id: 30, expression: e })
     }
 }
@@ -386,11 +386,11 @@ impl ASTDeref {
 #[derive( Clone,PartialEq)]
 pub struct ASTStruct {
     pub id: u8,
-    pub member_names: Vec<ASTNode>,
-    pub struct_memory: Vec<ASTNode>
+    pub member_names: Box<ASTNode>,
+    pub struct_memory: Box<ASTNode>
 }
 impl ASTStruct {
-    pub fn new(mn: Vec<ASTNode>,sm: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(mn: Box<ASTNode>,sm: Box<ASTNode>) -> Option<Self> {
         Some( ASTStruct { id: 31, member_names: mn, struct_memory: sm})
     }
 }
@@ -398,11 +398,11 @@ impl ASTStruct {
 #[derive( Clone,PartialEq)]
 pub struct ASTMemberFunctionVal {
     pub id: u8,
-    pub argument: Vec<ASTNode>,
-    pub body: Vec<ASTNode>,
+    pub argument: Box<ASTNode>,
+    pub body: Box<ASTNode>,
 }
 impl ASTMemberFunctionVal {
-    pub fn new(arg: Vec<ASTNode>,body: Vec<ASTNode>) -> Option<Self> {
+    pub fn new(arg: Box<ASTNode>,body: Box<ASTNode>) -> Option<Self> {
         Some( ASTMemberFunctionVal{id:32,argument:arg,body:body})
     }
 }

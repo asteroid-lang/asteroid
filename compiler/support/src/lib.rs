@@ -146,11 +146,11 @@ pub fn term2string_tolist<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "to-list: start=";
-    out += term2string(&start[0]).unwrap().as_str();
+    out += term2string(start).unwrap().as_str();
     out += " ,stop=";
-    out += term2string(&stop[0]).unwrap().as_str();
+    out += term2string(stop).unwrap().as_str();
     out += " ,stride=";
-    out += term2string(&stride[0]).unwrap().as_str();
+    out += term2string(stride).unwrap().as_str();
     Some(out)
 }
 pub fn term2string_headtail<'a>(node: &'a ASTNode) -> Option<String> {
@@ -159,9 +159,9 @@ pub fn term2string_headtail<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "[ ";
-    out += term2string(&head[0]).unwrap().as_str();
+    out += term2string(head).unwrap().as_str();
     out += " | ";
-    out += term2string(&tail[0]).unwrap().as_str();
+    out += term2string(tail).unwrap().as_str();
     out += " ]";
     Some(out)
 }
@@ -171,9 +171,9 @@ pub fn term2string_sequence<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "sequence: first=";
-    out += term2string(&first[0]).unwrap().as_str();
+    out += term2string(first).unwrap().as_str();
     out += ", second=";
-    out += term2string(&second[0]).unwrap().as_str();
+    out += term2string(second).unwrap().as_str();
     Some(out)
 }
 pub fn term2string_function<'a>(node: &'a ASTNode) -> Option<String> {
@@ -192,7 +192,7 @@ pub fn term2string_eval<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "eval( ";
-    out += term2string(&expression[0]).unwrap().as_str();
+    out += term2string(expression).unwrap().as_str();
     out += " )";
     Some(out)
 }
@@ -202,7 +202,7 @@ pub fn term2string_quote<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "*";
-    out += term2string(&expression[0]).unwrap().as_str();
+    out += term2string(expression).unwrap().as_str();
     Some(out)
 }
 pub fn term2string_constraint<'a>(node: &'a ASTNode) -> Option<String> {
@@ -211,7 +211,7 @@ pub fn term2string_constraint<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "%[ ";
-    out += term2string(&expression[0]).unwrap().as_str();
+    out += term2string(expression).unwrap().as_str();
     out += " ]%";
     Some(out)
 }
@@ -221,7 +221,7 @@ pub fn term2string_typematch<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += ":%";
-    out += term2string(&expression[0]).unwrap().as_str();
+    out += term2string(expression).unwrap().as_str();
     Some(out)
 }
 pub fn term2string_object<'a>(node: &'a ASTNode) -> Option<String> {
@@ -245,9 +245,9 @@ pub fn term2string_apply<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected apply expression in term2string_apply")};
 
     let mut out = String::new();
-    out += &term2string(&function[0]).unwrap();
+    out += &term2string(function).unwrap();
     out += "( ";
-    out += &term2string(&argument[0]).unwrap();
+    out += &term2string(argument).unwrap();
     out += " )";
     Some(out)
 }
@@ -256,9 +256,9 @@ pub fn term2string_index<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected index expression in term2string_index")};
 
     let mut out = String::new();
-    out += &term2string(&structure[0]).unwrap();
+    out += &term2string(structure).unwrap();
     out += "@";
-    out += &term2string(&index_exp[0]).unwrap();
+    out += &term2string(index_exp).unwrap();
     Some(out)
 }
 pub fn term2string_escape<'a>(node: &'a ASTNode) -> Option<String> {
@@ -276,9 +276,9 @@ pub fn term2string_is<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected is expression in term2string_is")};
 
     let mut out = String::new();
-    out += &term2string(&pattern[0]).unwrap();
+    out += &term2string(pattern).unwrap();
     out += " is ";
-    out += &term2string(&term[0]).unwrap();
+    out += &term2string(term).unwrap();
     Some(out)
 }
 pub fn term2string_in<'a>(node: &'a ASTNode) -> Option<String> {
@@ -286,9 +286,9 @@ pub fn term2string_in<'a>(node: &'a ASTNode) -> Option<String> {
         else {panic!("Expected in expression in term2string_in")};
 
     let mut out = String::new();
-    out += &term2string(&expression[0]).unwrap();
+    out += &term2string(expression).unwrap();
     out += " in ";
-    out += &term2string(&expression_list[0]).unwrap();
+    out += &term2string( expression_list).unwrap();
     Some(out)
 }
 pub fn term2string_if<'a>(node: &'a ASTNode) -> Option<String> {
@@ -297,11 +297,11 @@ pub fn term2string_if<'a>(node: &'a ASTNode) -> Option<String> {
 
     let mut out = String::new();
     out += "If ";
-    out += &term2string(&cond_exp[0]).unwrap();
+    out += &term2string(cond_exp).unwrap();
     out += " then ";
-    out += &term2string(&then_exp[0]).unwrap();
+    out += &term2string(then_exp).unwrap();
     out += " else ";
-    out += &term2string(&else_exp[0]).unwrap();
+    out += &term2string(else_exp).unwrap();
 
     Some(out)
 }
@@ -312,18 +312,16 @@ pub fn term2string_namedpattern<'a>(node: &'a ASTNode) -> Option<String> {
     let mut out = String::new();
     out += &name.name;
     out += ":%";
-    out += &term2string(&pattern[0]).unwrap();
+    out += &term2string(pattern).unwrap();
 
     Some(out)
 }
 pub fn term2string_deref<'a>(node: &'a ASTNode) -> Option<String> {
-    let ASTNode::ASTNamedPattern(ASTNamedPattern{id,name,pattern}) = node
+    let ASTNode::ASTDeref(ASTDeref{id,expression}) = node
         else {panic!("Expected deref in term2string_deref")};
 
     let mut out = String::new();
-    out += &name.name;
-    out += ":%";
-    out += &term2string(&pattern[0]).unwrap();
+    out += &term2string(expression).unwrap();
 
     Some(out)
 }
