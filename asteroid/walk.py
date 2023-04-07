@@ -575,11 +575,16 @@ def __unify(term, pattern, unifying = True ):
         bl = pattern[2] # binding term list
 
         # constraint patterns are evaluated in their own scope
-        state.symbol_table.push_scope({})
-        unifier = unify(term,p)
-        state.symbol_table.pop_scope()
-
-        message_explicit("[End] constraint pattern", decrease=True)
+        try:
+            state.symbol_table.push_scope({})
+            unifier = unify(term,p)
+            state.symbol_table.pop_scope()
+            message_explicit("[End] constraint pattern", decrease=True)
+        except PatternMatchFailed as e:
+            state.symbol_table.pop_scope()
+            message_explicit("[End] constraint pattern", decrease=True)
+            # rethrow exception so that pattern match failure is properly propagated
+            raise e 
 
         # process binding list
         if bl[0] == 'nil':
