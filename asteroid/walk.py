@@ -70,26 +70,26 @@ def __unify(term, pattern, unifying = True ):
     # Python level values, if they don't match exactly then we have
     # a pattern match fail.
     if isinstance(term, str): # apply regular expression match
-        message_explicit("Regex match: {} and {}", [pattern, term], level="secondary")
+        if debugging: message_explicit("Regex match: {} and {}", [pattern, term], level="secondary")
 
         if isinstance(pattern, str) and re_match("^"+pattern+"$", term):
             # Note: a pattern needs to match the whole term.
-            message_explicit("Matched!", level="tertiary")
+            if debugging: message_explicit("Matched!", level="tertiary")
             return [] # return empty unifier
         else:
-            message_explicit("Failed!", level="tertiary")
+            if debugging: message_explicit("Failed!", level="tertiary")
             raise PatternMatchFailed(
                 "regular expression '{}' did not match '{}'"
                 .format(pattern, term))
 
     elif isinstance(term, (int, float, bool)):
-        message_explicit("Literal match: {} and {}", [pattern, term], level="primary")
+        if debugging: message_explicit("Literal match: {} and {}", [pattern, term], level="primary")
 
         if term == pattern:
-            message_explicit("Matched!", level="secondary")
+            if debugging: message_explicit("Matched!", level="secondary")
             return [] # return an empty unifier
         else:
-            message_explicit("Failed! {} != {}", [pattern, term], level="secondary")
+            if debugging: message_explicit("Failed! {} != {}", [pattern, term], level="secondary")
             raise PatternMatchFailed(
                 "'{}' is not the same as '{}'"
                 .format(term, pattern))
@@ -102,8 +102,8 @@ def __unify(term, pattern, unifying = True ):
             raise PatternMatchFailed(
                 "term and pattern lists/tuples are not the same length")
         else:
-            message_explicit("Matching lists: {} and {}",
-                [gen_t2s( ('list', pattern) ), gen_t2s( ('list', term) )],
+            if debugging: message_explicit("Matching lists: {} and {}",
+                [term2string( ('list', pattern) ), term2string( ('list', term) )],
                 increase=True, notify=True)
 
             # Make our unifier(s)
@@ -111,7 +111,7 @@ def __unify(term, pattern, unifying = True ):
             for i in range(len(term)):
                 unifier += unify(term[i], pattern[i], unifying)
 
-            message_explicit("Matched!", decrease=True)
+            if debugging: message_explicit("Matched!", decrease=True)
 
             # Ensure we have no non-linear patterns
             check_repeated_symbols(unifier)
@@ -121,7 +121,7 @@ def __unify(term, pattern, unifying = True ):
     elif ((not unifying) and (term[0] == 'named-pattern')):
 
         # Unpack a term-side named-pattern if evaluating redundant clauses
-        message_explicit("Evaluating named pattern", notify=True)
+        if debugging: message_explicit("Evaluating named pattern", notify=True)
         return unify(term[2],pattern,unifying)
 
     elif ((not unifying) and (term[0] == 'deref')):
@@ -143,8 +143,8 @@ def __unify(term, pattern, unifying = True ):
                 "pattern type '{}' and term type '{}' do not agree"
                 .format(pid,tid))
 
-        message_explicit("Matching objects {}{} and {}{}",
-            [pid, gen_t2s( ('tuple', pl) ), tid, gen_t2s( ('tuple', tl) )],
+        if debugging: message_explicit("Matching objects {}{} and {}{}",
+            [pid, term2string( ('tuple', pl) ), tid, term2string( ('tuple', tl) )],
             increase=True
         )
 
@@ -158,7 +158,7 @@ def __unify(term, pattern, unifying = True ):
             if tl[i][0] != 'function-val':
                 unifiers += unify(tl[i], pl[i])
         
-        message_explicit("Objects matched", decrease=True)
+        if debugging: message_explicit("Objects matched", decrease=True)
         return unifiers
 
     # no implicit type conversions during pattern matching
@@ -167,7 +167,7 @@ def __unify(term, pattern, unifying = True ):
         # regular expression applied to a non-string structure
         # this is possible because all data types are subtypes of string
     #    message_explicit("Matching string {} and non-string {}",
-    #        [gen_t2s(pattern), gen_t2s(term)],
+    #        [term2string(pattern), term2string(term)],
     #        notify=True
     #    )
     #
@@ -196,8 +196,8 @@ def __unify(term, pattern, unifying = True ):
             raise PatternMatchFailed("conditional patterns do not support 'else' clauses")
 
         # Explicit messaging
-        message_explicit("Conditional match: if ({})",
-            [gen_t2s(cond_exp)],
+        if debugging: message_explicit("Conditional match: if ({})",
+            [term2string(cond_exp)],
             notify=True, increase=True
         )
 
@@ -209,13 +209,13 @@ def __unify(term, pattern, unifying = True ):
         bool_val = map2boolean(walk(cond_exp))
 
         if bool_val[1]:
-            message_explicit("Condition met, {}",
-                [gen_t2s(cond_exp)], decrease=True
+            if debugging: message_explicit("Condition met, {}",
+                [term2string(cond_exp)], decrease=True
             )
             return unifiers
         else:
-            message_explicit("Condition ({}) failed",
-                [gen_t2s(cond_exp)], decrease=True
+            if debugging: message_explicit("Condition ({}) failed",
+                [term2string(cond_exp)], decrease=True
             )
             raise PatternMatchFailed(
                 "conditional pattern match failed")
@@ -240,7 +240,7 @@ def __unify(term, pattern, unifying = True ):
         typematch = pattern[1]
         nextIndex = 0 #indicates index of where we will 'look' next
         
-        message_explicit("Typematch {} to type {}", [gen_t2s(term), typematch])
+        if debugging: message_explicit("Typematch {} to type {}", [term2string(term), typematch])
 
         if typematch in ['string','real','integer','list','tuple','boolean','none']:
 
@@ -256,10 +256,10 @@ def __unify(term, pattern, unifying = True ):
                         return []
 
             if typematch == term[nextIndex]:
-                message_explicit("Success!", level="secondary")
+                if debugging: message_explicit("Success!", level="secondary")
                 return []
             else:
-                message_explicit("Failure", level="secondary")
+                if debugging: message_explicit("Failure", level="secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got a term of type '{}'"
                     .format(typematch, term[nextIndex]))
@@ -267,10 +267,10 @@ def __unify(term, pattern, unifying = True ):
         elif typematch == 'function':
             # matching function and member function values
             if term[0] in ['function-val','member-function-val']:
-                message_explicit("Success!", level="secondary")
+                if debugging: message_explicit("Success!", level="secondary")
                 return []
             else:
-                message_explicit("Failure", level="secondary")
+                if debugging: message_explicit("Failure", level="secondary")
                 raise PatternMatchFailed(
                     "expected type '{}' got a term of type '{}'"
                     .format(typematch, term[0]))
@@ -281,10 +281,10 @@ def __unify(term, pattern, unifying = True ):
                 # any kind of structure can be a pattern, and variables
                 # see globals.py for a definition of 'patterns'
                 if term[nextIndex] in patterns:
-                    message_explicit("Success!", level="secondary")
+                    if debugging: message_explicit("Success!", level="secondary")
                     return []
                 else:
-                    message_explicit("Failure", level="secondary")
+                    if debugging: message_explicit("Failure", level="secondary")
                     raise PatternMatchFailed(
                             "expected type '{}' got a term of type '{}'"
                             .format(typematch, term[0]))
@@ -297,14 +297,14 @@ def __unify(term, pattern, unifying = True ):
                 #handle lists/head-tails subsuming each other
                 if (term[0] in ["list","head-tail"]):
                     if ((typematch == 'list')):
-                        message_explicit("Success!", level="secondary")
+                        if debugging: message_explicit("Success!", level="secondary")
                         return []
 
                 if term[nextIndex] in pattern_subsumes:
-                    message_explicit("Success!", level="secondary")
+                    if debugging: message_explicit("Success!", level="secondary")
                     return []
                 else:
-                    message_explicit("Failure", level="secondary")
+                    if debugging: message_explicit("Failure", level="secondary")
                     raise PatternMatchFailed(
                         "expected type '{}' got a term of type '{}'"
                         .format(typematch, term[nextIndex]))
@@ -317,21 +317,21 @@ def __unify(term, pattern, unifying = True ):
                 (STRUCT_ID, (ID, struct_id)),
                 (OBJECT_MEMORY, LIST)) = term
             if struct_id == typematch:
-                message_explicit("Success!", level="secondary")
+                if debugging: message_explicit("Success!", level="secondary")
                 return []
             else:
-                message_explicit("Failure", level="secondary", increase=True)
+                if debugging: message_explicit("Failure", level="secondary", increase=True)
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, struct_id))
 
         else:
             if state.symbol_table.lookup_sym(typematch)[0] != 'struct':
-                message_explicit("Failure", level="secondary", increase=True)
+                if debugging: message_explicit("Failure", level="secondary", increase=True)
 
                 raise PatternMatchFailed( "'{}' is not a type".format(typematch) )
             else:
-                message_explicit("Failure", level="secondary", increase=True)
+                if debugging: message_explicit("Failure", level="secondary", increase=True)
 
                 raise PatternMatchFailed(
                     "expected type '{}' got an object of type '{}'"
@@ -341,8 +341,8 @@ def __unify(term, pattern, unifying = True ):
     elif pattern[0] == 'named-pattern':
         # unpack pattern
         (NAMED_PATTERN, name_exp, p) = pattern
-        message_explicit("Matching term {} and pattern {} to [{}]",
-            [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)],
+        if debugging: message_explicit("Matching term {} and pattern {} to [{}]",
+            [term2string(term), term2string(p), term2string(name_exp)],
             notify=True, increase=True
         )
         # name_exp has to be an id or an index expression.
@@ -353,8 +353,8 @@ def __unify(term, pattern, unifying = True ):
 
         unifiers = unify(term, p, unifying) + [(name_exp, term)]
         
-        message_explicit("Matched ({} and {})", 
-            [gen_t2s(unifiers[0][0]), gen_t2s(unifiers[0][1])],
+        if debugging: message_explicit("Matched ({} and {})", 
+            [term2string(unifiers[0][0]), term2string(unifiers[0][1])],
             decrease=True
         )
 
@@ -362,13 +362,13 @@ def __unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
-            message_explicit("{} and none do not match",
-                [gen_t2s(term)]
+            if debugging: message_explicit("{} and none do not match",
+                [term2string(term)]
             )
             raise PatternMatchFailed("expected 'none' got '{}'"
                     .format(term[0]))
         else:
-            message_explicit("None and None match", level="secondary")
+            if debugging: message_explicit("None and None match", level="secondary")
             return []
 
     # NOTE: functions/foreign are allowed in terms as long as they are matched
@@ -419,9 +419,9 @@ def __unify(term, pattern, unifying = True ):
             pattern_list = [arg]
 
         # only pattern match on object data members
-        message_explicit("Matching object {}{} and pattern {}{}",
-            [apply_id,  gen_t2s( ('tuple', data_only(obj_memory)) ),
-            struct_id, gen_t2s( ('tuple', pattern_list) )],
+        if debugging: message_explicit("Matching object {}{} and pattern {}{}",
+            [apply_id,  term2string( ('tuple', data_only(obj_memory)) ),
+            struct_id, term2string( ('tuple', pattern_list) )],
             notify=True
         )
         # Running through the list elements indivuidually allows for
@@ -454,8 +454,8 @@ def __unify(term, pattern, unifying = True ):
             return [unifier]
 
     elif pattern[0] in ['head-tail', 'raw-head-tail']:
-        message_explicit("Matching {} to {}",
-            [gen_t2s(term), gen_t2s(pattern)],
+        if debugging: message_explicit("Matching {} to {}",
+            [term2string(term), term2string(pattern)],
             notify=True
         )
         # if we are unifying or we are not evaluating subsumption
@@ -465,13 +465,13 @@ def __unify(term, pattern, unifying = True ):
             (LIST, list_val) = term
 
             if LIST != 'list':
-                message_explicit("Failed", level="secondary")
+                if debugging: message_explicit("Failed", level="secondary")
                 raise PatternMatchFailed(
                     "head-tail operator expected type 'list' got type '{}'"
                     .format(LIST))
 
             if not len(list_val):
-                message_explicit("Failed", level="secondary")
+                if debugging: message_explicit("Failed", level="secondary")
 
                 raise PatternMatchFailed(
                     "head-tail operator expected a non-empty list")
@@ -484,7 +484,7 @@ def __unify(term, pattern, unifying = True ):
             unifier += unify(list_tail, pattern_tail, unifying)
 
             check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
-            message_explicit("Success!", level="secondary")
+            if debugging: message_explicit("Success!", level="secondary")
 
             return unifier
 
@@ -498,7 +498,7 @@ def __unify(term, pattern, unifying = True ):
 
             if (lengthH > lengthL): # If the length of the higher presedence pattern is greater
                                     # then length of the lower precedence pattern, it is not redundant
-                message_explicit("Failed", level="secondary")
+                if debugging: message_explicit("Failed", level="secondary")
                 raise PatternMatchFailed(
                     "Subsumption relatioship broken, pattern will not be rendered redundant.")
 
@@ -516,14 +516,14 @@ def __unify(term, pattern, unifying = True ):
                         break
 
                 check_repeated_symbols(unifier) #Ensure we have no non-linear patterns
-                message_explicit("Success!", level="secondary")
+                if debugging: message_explicit("Success!", level="secondary")
                 return unifier
 
     elif pattern[0] == 'deref':  # ('deref', v, bl)
         # v can be an AST representing any computation
         # that produces a pattern.
 
-        message_explicit("Dereferencing {}", [gen_t2s(pattern[1])])
+        if debugging: message_explicit("Dereferencing {}", [term2string(pattern[1])])
 
         p = walk(pattern[1])
 
@@ -539,7 +539,7 @@ def __unify(term, pattern, unifying = True ):
                             pattern[2]))
 
 
-        message_explicit("{} -> {}", [gen_t2s(pattern), gen_t2s(p)], 
+        if debugging: message_explicit("{} -> {}", [term2string(pattern), term2string(p)], 
             level="secondary")
 
         notify_explicit()
@@ -566,8 +566,8 @@ def __unify(term, pattern, unifying = True ):
         return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] == 'constraint':
-        message_explicit("[Begin] constraint pattern: {}",
-            [gen_t2s(pattern[1])],
+        if debugging: message_explicit("[Begin] constraint pattern: {}",
+            [term2string(pattern[1])],
             notify=True, increase=True
         )
 
@@ -579,10 +579,10 @@ def __unify(term, pattern, unifying = True ):
             state.symbol_table.push_scope({})
             unifier = unify(term,p)
             state.symbol_table.pop_scope()
-            message_explicit("[End] constraint pattern", decrease=True)
+            if debugging: message_explicit("[End] constraint pattern", decrease=True)
         except PatternMatchFailed as e:
             state.symbol_table.pop_scope()
-            message_explicit("[End] constraint pattern", decrease=True)
+            if debugging: message_explicit("[End] constraint pattern", decrease=True)
             # rethrow exception so that pattern match failure is properly propagated
             raise e 
 
@@ -603,7 +603,7 @@ def __unify(term, pattern, unifying = True ):
             return new_unifier
 
     elif term[0] != pattern[0]:  # nodes are not the same
-        message_explicit("Fail: {} and {} are not the same",
+        if debugging: message_explicit("Fail: {} and {} are not the same",
             [term[0], pattern[0]], level="secondary")
         
         raise PatternMatchFailed(
@@ -611,7 +611,7 @@ def __unify(term, pattern, unifying = True ):
             .format(term[0], pattern[0]))
 
     elif len(term) != len(pattern): # nodes are not of same the arity
-        message_explicit("Fail: {} and {} are not the same arity",
+        if debugging: message_explicit("Fail: {} and {} are not the same arity",
             [term[0], pattern[0]], level="secondary")
 
         raise PatternMatchFailed(
@@ -1016,8 +1016,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.push_scope({})
 
     # Explicit message
-    message_explicit("Call: {}({})",
-        [fname, gen_t2s(actual_val_args)],
+    if debugging: message_explicit("Call: {}({})",
+        [fname, term2string(actual_val_args)],
         increase=True
     )
 
@@ -1041,8 +1041,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         (PATTERN, p),
         (STMT_LIST, stmts)) = body_list_val[ i + 1]
 
-        message_explicit("Attempting to match {} with pattern {}",
-            [gen_t2s(actual_val_args), gen_t2s(p)], level="primary",
+        if debugging: message_explicit("Attempting to match {} with pattern {}",
+            [term2string(actual_val_args), term2string(p)], level="primary",
             notify=True, increase=True
         )
         
@@ -1052,7 +1052,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
             unified = True
 
             # Do our explicit message
-            message_explicit("Success! Matched function body", level="primary", decrease=True)
+            if debugging: message_explicit("Success! Matched function body", level="primary", decrease=True)
 
         except PatternMatchFailed:
             # Reset the tab level
@@ -1060,7 +1060,7 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
                 debugger.tab_level = cur_tab_level + 1
 
             # Print the explicit messaging
-            message_explicit("Failed to match function body", level="tertiary", decrease=True)
+            if debugging: message_explicit("Failed to match function body", level="tertiary", decrease=True)
 
             unifiers = []
             unified = False
@@ -1141,8 +1141,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Keep debugger up to date
     if debugging: debugger.set_lineinfo(state.lineinfo)
     pop_stackframe()
-    message_explicit("Return: {} from {}",
-            [("None" if (not return_value[1]) else gen_t2s(return_value)), 
+    if debugging: message_explicit("Return: {} from {}",
+            [("None" if (not return_value[1]) else term2string(return_value)), 
             fname],
             decrease=True
     )
@@ -1192,15 +1192,15 @@ def declare_unifiers(unifiers):
             for (lval, value) in unifiers[:-1]:
                 # Add to our format string and our terms
                 fstring += "{} = {}, "
-                terms += [gen_t2s(lval), gen_t2s(value)]
+                terms += [term2string(lval), term2string(value)]
 
             # Get the last unifier and add it to the terms and fstring
             (lval, value) = unifiers[-1]
             fstring += "{} = {}"
-            terms += [gen_t2s(lval), gen_t2s(value)]
+            terms += [term2string(lval), term2string(value)]
 
             # Print our message
-            message_explicit(fstring, terms)
+            if debugging: message_explicit(fstring, terms)
 
 #########################################################################
 # node functions
@@ -1222,7 +1222,7 @@ def global_stmt(node):
         state.symbol_table.enter_global(id_val)
         global_str += "{}, ".format(id_val)
     
-    message_explicit("Global defs: {}", [global_str[:-1]] )
+    if debugging: message_explicit("Global defs: {}", [global_str[:-1]] )
 
 #########################################################################
 def assert_stmt(node):
@@ -2059,6 +2059,7 @@ def debug_walk(node, dbg):
         debugger.set_top_level(True)
         walk(e)
 
+#########################################################################
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
     # Note: statement lists are now handled by separate functions outside
@@ -2223,7 +2224,7 @@ def check_redundancy( body_list, f_name ):
 #   Helper function that returns if the debugger has stepped into a function
 #   body or other compound statement
 #
-# gen_t2s:
+# term2string:
 #   A generator function used in place of term2string in message_explicit calls.
 #   This allows the computation to be deferred or completely ignored. Much like
 #   a function returning a lambda function
@@ -2258,8 +2259,6 @@ def message_explicit(fmt_message, terms=None, level="primary",
     notify: Makes a notify_explicit call to stop the debugger within
             a pattern
     """
-    from types import GeneratorType
-
     if explicit_enabled():
         if decrease: decrease_tab_level()
 
@@ -2268,10 +2267,7 @@ def message_explicit(fmt_message, terms=None, level="primary",
         else:
             expressed_terms = []
             for t in terms:
-                if isinstance(t, GeneratorType):
-                    expressed_terms.append(next(t))
-                else:
-                    expressed_terms.append(t)
+                expressed_terms.append(t)
             
             expressed_string = fmt_message.format(*expressed_terms)
             debugger.message_explicit(expressed_string, level)
@@ -2318,15 +2314,6 @@ def explicit_enabled():
     of explicit mode if debugging is enableds
     """
     return debugging and debugger.explicit_enabled
-
-#########################################################################
-def gen_t2s(node):
-    """
-    Generator function for term2string. This cuts down on
-    runtime as it defers term2string computations to when
-    they're actually needed.
-    """
-    yield term2string(node)
 
 #########################################################################
 def debugger_has_stepped():
