@@ -57,21 +57,6 @@ class SymTab:
             self.globals.pop(CURR_SCOPE)
             return scope
 
-    def get_curr_scope(self, option="items"):
-        if option == "items":
-            return list(self.scoped_symtab[CURR_SCOPE].items())
-        elif option == "unifiers":
-            unifiers = []
-            for (sym,val) in self.scoped_symtab[CURR_SCOPE].items():
-                unifiers += [(('id',sym),val)]
-            return unifiers
-        elif option == "keys":
-            return list(self.scoped_symtab[CURR_SCOPE].keys())
-        elif option == "values":
-            return list(self.scoped_symtab[CURR_SCOPE].values())
-        else:
-            raise ValueError("unknown option")
-
     def enter_sym(self, sym, value):
         # enter the symbol in the appropriate scope
         if sym in self.globals[CURR_SCOPE]:
