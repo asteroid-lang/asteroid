@@ -15,6 +15,12 @@ dirs = [
         'ug-programs',
        ]
 
+#exclusion_list = ['test015.ast']
+exclusion_list = []
+
+if exclusion_list:
+    print("Exclusion list: {}".format(exclusion_list))
+
 # set the following to True if you encounter failed test cases. It will
 # give you details and a stack dump.
 verbose_failure = False
@@ -51,6 +57,7 @@ from interp import interp
 for d in dirs:
     tests = os.listdir(d)
     tests.sort()
+    tests = list(set(tests) - set(exclusion_list))
 
     for testname in tests:
         # check that we are actually looking at test case

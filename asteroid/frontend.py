@@ -1,7 +1,7 @@
 ###########################################################################################
 # front end for Asteroid
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import os
@@ -11,6 +11,7 @@ from pathlib import Path, PurePath
 from asteroid.globals import asteroid_file_suffix, ExpectationError
 from asteroid.lex import Lexer, token_lookup
 from asteroid.state import state, warning
+from asteroid.support import gettemp
 
 ###########################################################################################
 def dbg_print(string):
@@ -792,10 +793,20 @@ class Parser:
                 ix = self.primary()
                 v = ('index', v, ix)
 
-        if self.lexer.peek().type == 'COLON': # if ':' exists - named pattern
+        # if ':' exists - constraint pattern
+        # 'p1:p2' is equivalent to 't if (t is p1) and (t is p2)'
+        # therefore we map the constraint pattern into
+        # a conditional pattern with a generated temp variable
+        if self.lexer.peek().type == 'COLON': 
             self.lexer.match('COLON')
             e = self.exp()
-            v = ('named-pattern', v, e)
+            t = gettemp()
+            v = ('if-exp',
+                    ('apply',
+                        ('id', '__and__'),
+                        ('tuple', [('is', ('id', t), v), ('is', ('id', t), e)])),
+                    ('id', t),
+                    ('null',))
 
         return v
 
