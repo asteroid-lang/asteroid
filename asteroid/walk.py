@@ -118,12 +118,6 @@ def __unify(term, pattern, unifying = True ):
 
             return unifier
     
-    elif ((not unifying) and (term[0] == 'named-pattern')):
-
-        # Unpack a term-side named-pattern if evaluating redundant clauses
-        message_explicit("Evaluating named pattern", notify=True)
-        return unify(term[2],pattern,unifying)
-
     elif ((not unifying) and (term[0] == 'deref')):
 
         # Unpack a term-side first-class pattern if evaluating redundant clauses
@@ -201,12 +195,17 @@ def __unify(term, pattern, unifying = True ):
             notify=True, increase=True
         )
 
-        unifiers = unify(term, pexp, unifying)
 
         # evaluate the conditional expression in the
-        # context of the unifiers.
-        declare_unifiers(unifiers)
+        # context of the unifiers and only expose all
+        # unifiers if conditional was successful
+        state.symbol_table.push_scope({})
+        declare_unifiers(unify(term, pexp, unifying))
         bool_val = map2boolean(walk(cond_exp))
+        # copy unifiers out of the temporary scope of the
+        # if expression.
+        unifiers = state.symbol_table.get_curr_scope("unifiers")
+        state.symbol_table.pop_scope()
 
         if bool_val[1]:
             message_explicit("Condition met, {}",
@@ -337,28 +336,6 @@ def __unify(term, pattern, unifying = True ):
                     "expected type '{}' got an object of type '{}'"
                     .format(typematch, term[0]))
 
-
-    elif pattern[0] == 'named-pattern':
-        # unpack pattern
-        (NAMED_PATTERN, name_exp, p) = pattern
-        message_explicit("Matching term {} and pattern {} to [{}]",
-            [gen_t2s(term), gen_t2s(p), gen_t2s(name_exp)],
-            notify=True, increase=True
-        )
-        # name_exp has to be an id or an index expression.
-        if name_exp[0] not in ['id','index']:
-            raise ValueError(
-                "expected a variable, list element, or data member in named pattern\
-                 instead of {}".format(term2string(name_exp)))
-
-        unifiers = unify(term, p, unifying) + [(name_exp, term)]
-        
-        message_explicit("Matched ({} and {})", 
-            [gen_t2s(unifiers[0][0]), gen_t2s(unifiers[0][1])],
-            decrease=True
-        )
-
-        return unifiers
 
     elif pattern[0] == 'none':
         if term[0] != 'none':
@@ -575,11 +552,16 @@ def __unify(term, pattern, unifying = True ):
         bl = pattern[2] # binding term list
 
         # constraint patterns are evaluated in their own scope
-        state.symbol_table.push_scope({})
-        unifier = unify(term,p)
-        state.symbol_table.pop_scope()
-
-        message_explicit("[End] constraint pattern", decrease=True)
+        try:
+            state.symbol_table.push_scope({})
+            unifier = unify(term,p)
+            state.symbol_table.pop_scope()
+            message_explicit("[End] constraint pattern", decrease=True)
+        except PatternMatchFailed as e:
+            state.symbol_table.pop_scope()
+            message_explicit("[End] constraint pattern", decrease=True)
+            # rethrow exception so that pattern match failure is properly propagated
+            raise e 
 
         # process binding list
         if bl[0] == 'nil':
@@ -1887,16 +1869,6 @@ def function_exp(node):
             state.symbol_table.get_closure())
 
 #########################################################################
-# Named patterns - when walking a named pattern we are interpreting a
-# a pattern as a constructor - ignore the name
-def named_pattern_exp(node):
-
-    (NAMED_PATTERN, name, pattern) = node
-    assert_match(NAMED_PATTERN,'named-pattern')
-
-    return walk(pattern)
-
-#########################################################################
 def process_lineinfo(node):
 
     (LINEINFO, lineinfo_val) = node
@@ -2108,7 +2080,6 @@ dispatch_dict = {
     'is'            : is_exp,
     'in'            : in_exp,
     'if-exp'        : if_exp,
-    'named-pattern' : named_pattern_exp,
     'member-function-val' : lambda node : node,
     'deref'         : deref_exp,
 }
