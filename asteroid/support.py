@@ -1,12 +1,23 @@
 ###########################################################################################
 # Asteroid support code
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 import re
 
 from asteroid.state import state
+
+###########################################################################################
+_temp_prefix = "__AST__TEMP"
+_temp_postfix = "__"
+_tempval = 0
+
+def gettemp():
+    global _tempval
+    new_name = _temp_prefix + str(_tempval) + _temp_postfix
+    _tempval += 1
+    return new_name
 
 ###########################################################################################
 def dump_AST(node):
@@ -349,17 +360,6 @@ def term2string(term):
         walked_e2 = term2string(e2)
 
         return walked_e1 + "|" + walked_e2
-
-    elif TYPE == 'named-pattern':       # Handle a named pattern
-        (NAMED_PATTERN,ID,pattern) = term
-
-        if ID[0] == 'index':
-            (INDEX, i1, i2) = ID
-            term_string = term2string(i1) + "@ " + term2string(i2) + ":"
-        else:
-            term_string = ID[1] + ':'
-
-        return term_string + term2string(pattern)
 
     elif TYPE == 'typematch':           # Handle a type pattern
         (TYPECLASS,cType) = term
