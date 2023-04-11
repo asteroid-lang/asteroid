@@ -187,6 +187,9 @@ def data_ix_list(memory):
     return ix_list
 
 ###########################################################################################
+# term2string is an unparsing function mapping AST into a string
+# it supports as much unparsing as is currently needed.
+
 # the following two tables are used in format processing of strings
 # in term2string to support "\\", "\n", "\t", and "\"" characters.
 named_re_list = [
@@ -262,13 +265,13 @@ def term2string(term):
             slot_ix = member_names.index('__str__')
             str_fval = object_memory[slot_ix]
             # calling a __str__ member function
-            import walk
+            import asteroid.walk
             # for some reason we have to reinitialize unify again
-            if walk.debugging:
-                walk.unify = walk.debug_unify
+            if asteroid.walk.debugging:
+                asteroid.walk.unify = asteroid.walk.debug_unify
             else:
-                walk.unify = walk.__unify
-            (STRING, obj_str) = walk.handle_call(term, # object reference
+                asteroid.walk.unify = asteroid.walk.__unify
+            (STRING, obj_str) = asteroid.walk.handle_call(term, # object reference
                                     str_fval,
                                     ('none', None),
                                     'member function __str__')
@@ -366,24 +369,28 @@ def term2string(term):
 
     elif TYPE == 'constraint':          # Handle a constraint-only pattern
         (CONSTRAINT,ptrn,bl) = term
-        if bl[0] != 'nil':
-            raise ValueError("term2string: binding term lists not supported")
         term_string = '%['
         term_string += term2string(ptrn)
         term_string += ']%'
+        if bl[0] != 'nil':
+            term_string += '(binding list...)'
         return term_string
 
     elif TYPE == 'deref':               # Handle a first-class pattern
         (DEREF, d_exp, binding_list) = term
-        if binding_list[0] != 'nil':
-            raise ValueError("internal error: binding lists in term2string not supported")
         term_string = "*" + term2string(d_exp)
 
         #Get the actual pattern from the symbol table
         # NOTE: THIS BREAKS WHEN A PATTERN IS NOT DEFINED IN SCOPE
         # TODO: FIX THIS
+        # NOTE: this is NOT possible in the general case because the 
+        # pattern could be produced by a function call: *foo()
         # \/\/\/\/\/\/\/\/\/
         #term_string += term2string(state.symbol_table.lookup_sym(pName))
+
+        if binding_list[0] != 'nil':
+            term_string += '(binding list...)'
+
         return term_string
 
     elif TYPE == 'if-exp':              # Handle a conditional pattern
@@ -413,18 +420,8 @@ def term2string(term):
         (TO_LIST, (START, start), (STOP, stop), (STRIDE, stride)) = term
         return "[" + term2string(start) + " to " + term2string(stop) + ", stride: " + term2string(stride) + "]"
 
-    elif TYPE == 'function-exp':
-        return ('function exp...')
-
-    elif TYPE == 'function-val':
-        return ('function val...')
-
-    elif TYPE == 'struct':
-        return ('struct...')
     else:
-        raise ValueError(
-            "unknown type '{}' in term2string"
-            .format(TYPE))
+        return '('+TYPE+'...)'
 
 ##############################################################################################
 # Function head_tail_length determines the lenth of a head-tail node by walking to the end.
