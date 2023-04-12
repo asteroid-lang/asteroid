@@ -27,6 +27,7 @@ verbose_failure = False
 
 # control whether to do redundancy checks
 redundancy = True
+cond_warnings = False
 
 # if your test case needs input from stdin please provide
 # a file named,
@@ -71,5 +72,8 @@ for d in dirs:
             print("**********"+d+"/"+testname+"************")
             print(p)
             print("**********output***********")
-            interp(p,exceptions=verbose_failure,redundancy=redundancy)
+            interp(p,
+                   exceptions=verbose_failure,
+                   redundancy=redundancy,
+                   cond_patterns=cond_warnings)
             f.close()
