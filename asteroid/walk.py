@@ -176,9 +176,8 @@ def __unify(term, pattern, unifying = True ):
             # we want to 'punt' and print a warning message.
             if term[0] == 'if-exp':
 
-                if not state.cond_warning:
+                if state.cond_warning:
                     warning("Redundant pattern detection is not supported for conditional pattern expressions.")
-                    state.cond_warning = True
 
             # Otherwise if the term is not another cmatch the clauses are correctly ordered.
             raise PatternMatchFailed(
