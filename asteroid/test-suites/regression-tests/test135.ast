@@ -7,7 +7,7 @@ end
 
 try
    let B(x,y) = A(1,2).
-catch Exception(t,m) do
-   assert(m is "'B' is not defined").
+catch e:Exception(t,m) do
+   assert(m is "illegal pattern, 'B' is not a type").
 end
 

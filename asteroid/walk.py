@@ -378,13 +378,13 @@ def __unify(term, pattern, unifying = True ):
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
-        # unpack pattern
+        # only constructors are allowed in patterns
         (APPLY,
          (ID, apply_id),
          arg) = pattern
-        type = state.symbol_table.lookup_sym(apply_id)
-        if type[0] != 'struct':
-            raise PatternMatchFailed("'{}' is not a type".format(apply_id))
+        type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if not type or type[0] != 'struct':
+            raise ValueError("illegal pattern, '{}' is not a type".format(apply_id))
 
         if struct_id != apply_id:
             raise PatternMatchFailed("expected type '{}' got type '{}'"
@@ -525,6 +525,15 @@ def __unify(term, pattern, unifying = True ):
 
     # builtin operators look like apply lists with operator names
     elif pattern[0] == 'apply':
+
+        # only constructors are allowed in patterns
+        (APPLY,
+         (ID, apply_id),
+         arg) = pattern
+        type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if not type or type[0] != 'struct':
+            raise ValueError("illegal pattern, function or operator '{}' not supported".format(apply_id))
+
         if term[0] != pattern[0]: # make sure both are applys
             raise PatternMatchFailed(
                 "term and pattern disagree on structure")
