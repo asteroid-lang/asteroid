@@ -1,8 +1,4 @@
   load system io.
-  load system type.
-
-  let tobase = type @tobase.
-  let tointeger = type @tointeger.
 
   let val = 42.
 

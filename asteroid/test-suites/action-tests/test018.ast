@@ -7,13 +7,13 @@
   for startix in 0 to stra @length()-1 do
       for endix in startix to stra @length()-1 do
           let s = stra @[startix to endix].
-          if strb @index(s) and s @length() > common @length() do
+          if strb @index(s) =/= -1 and s @length() > common @length() do
               let common = s.
           end
       end
   end
 
-  if common do
+  if common =/= "" do
       io @println ("The longest common substring is '"+common+"'.").
   else do
       io @println ("There are no common substrings.").

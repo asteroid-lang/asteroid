@@ -6,8 +6,6 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
-load system type.
-
 ------------------------------------------------------------------
 structure __UTIL_MODULE__ 
 ------------------------------------------------------------------
@@ -85,7 +83,7 @@ end
 function sleep
 ------------------------------------------------------------------
 -- program sleep for secs seconds
-with secs if type @isscalar(secs) do escape
+with secs if isscalar secs do escape
 "
 from time import sleep
 secs_val = state.symbol_table.lookup_sym('secs')

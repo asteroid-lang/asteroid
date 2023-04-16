@@ -6,6 +6,7 @@
 
 from copy import deepcopy,copy
 from re import match as re_match
+from math import isclose
 
 from asteroid.globals import *
 from asteroid.support import *
@@ -200,7 +201,10 @@ def __unify(term, pattern, unifying = True ):
         # unifiers if conditional was successful
         state.symbol_table.push_scope({})
         declare_unifiers(unify(term, pexp, unifying))
-        bool_val = map2boolean(walk(cond_exp))
+        bool_val = walk(cond_exp)
+        if bool_val[0] != 'boolean':
+            raise ValueError("found '{}' expected 'boolean' in conditional pattern"
+                             .format(bool_val[0]))
         # copy unifiers out of the temporary scope of the
         # if expression.
         unifiers = state.symbol_table.get_curr_scope("unifiers")
@@ -853,99 +857,238 @@ def handle_builtins(node):
         val_b = walk(bin_args[1])
 
         if opname == '__plus__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'boolean']:
-                return (type, val_a[1] + val_b[1])
-            elif type == 'string':
-                return (type, term2string(val_a) + term2string(val_b))
+            if val_a[0] in ['integer', 'real', 'list', 'string']:
+                if val_b[0] in ['integer', 'real', 'list', 'string']:
+                    if val_a[0]==val_b[0]:
+                        return (val_a[0], val_a[1] + val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} + {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} + {}' expected '{} + {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '+'".format(val_b[0]))
             else:
-                raise ValueError("unsupported type '{}' in +".format(type))
+                raise ValueError("unsupported type '{}' in '+'".format(val_a[0]))
         elif opname == '__minus__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return (type, val_a[1] - val_b[1])
+            if val_a[0] in ['integer', 'real']:
+                if val_b[0] in ['integer', 'real']:
+                    if val_a[0]==val_b[0]:
+                        return (val_a[0], val_a[1] - val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} - {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} - {}' expected '{} - {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '-'".format(val_b[0]))
             else:
-                raise ValueError("unsupported type '{}' in -".format(type))
+                raise ValueError("unsupported type '{}' in '-'".format(val_a[0]))
         elif opname == '__times__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return (type, val_a[1] * val_b[1])
+            if val_a[0] in ['integer', 'real']:
+                if val_b[0] in ['integer', 'real']:
+                    if val_a[0]==val_b[0]:
+                        return (val_a[0], val_a[1] * val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} * {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} * {}' expected '{} * {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '*'".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in *')
+                raise ValueError("unsupported type '{}' in '*'".format(val_a[0]))
         elif opname == '__divide__':
-            type = promote(val_a[0], val_b[0])
-            if type == 'integer':
-                return (type, int(val_a[1]) // int(val_b[1]))
-            elif type == 'real':
-                return ('real', float(val_a[1]) / float(val_b[1]))
+            if val_a[0] in ['integer', 'real']:
+                if val_b[0] in ['integer', 'real']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'integer':
+                            return ('integer', val_a[1] // val_b[1])
+                        elif val_a[0] == 'real':
+                            return ('real', val_a[1] / val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} / {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} / {}' expected '{} / {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '/'".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in /')
+                raise ValueError("unsupported type '{}' in '/'".format(val_a[0]))
         elif opname == '__or__':
-            # NOTE: do we need to typecheck here?
-            if map2boolean(val_a)[1] == True or map2boolean(val_b)[1] == True:
-               return ('boolean', True)
+            if val_a[0] == 'boolean' and val_b[0] == 'boolean':
+                return ('boolean', val_a[1] or val_b[1])
             else:
-               return ('boolean', False)
+                raise ValueError(
+                    "found '{} or {}' expected 'boolean or boolean'"
+                    .format(val_a[0],val_b[0]))
         elif opname == '__and__':
-            # NOTE: do we need to typecheck here?
-            if map2boolean(val_a)[1] == True and map2boolean(val_b)[1] == True:
-               return ('boolean', True)
+            if val_a[0] == 'boolean' and val_b[0] == 'boolean':
+                return ('boolean', val_a[1] and val_b[1])
             else:
-               return ('boolean', False)
+                raise ValueError(
+                    "found '{} and {}' expected 'boolean and boolean'"
+                    .format(val_a[0],val_b[0]))
         elif opname == '__eq__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'tuple', 'boolean', 'none']:
-                return ('boolean', val_a[1] == val_b[1])
-            elif type == 'string':
-                return ('boolean', term2string(val_a) == term2string(val_b))
+            if val_a[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
+                if val_b[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] == val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} == {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} == {}' expected '{} == {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '=='".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in ==')
+                raise ValueError("unsupported type '{}' in '=='".format(val_a[0]))
         elif opname  == '__ne__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real', 'list', 'tuple', 'boolean', 'none']:
-                return ('boolean', val_a[1] != val_b[1])
-            elif type == 'string':
-                return ('boolean', term2string(val_a) != term2string(val_b))
+            if val_a[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
+                if val_b[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] != val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} =/= {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} =/= {}' expected '{} =/= {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '=/='".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in =/=')
+                raise ValueError("unsupported type '{}' in '=/='".format(val_a[0]))
         elif opname == '__le__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return ('boolean', val_a[1] <= val_b[1])
+            if val_a[0] in ['integer', 'real', 'string']:
+                if val_b[0] in ['integer', 'real', 'string']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] <= val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} <= {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} <= {}' expected '{} <= {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '<='".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in <=')
+                raise ValueError("unsupported type '{}' in '<='".format(val_a[0]))
         elif opname == '__lt__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return ('boolean', val_a[1] < val_b[1])
+            if val_a[0] in ['integer', 'real', 'string']:
+                if val_b[0] in ['integer', 'real', 'string']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] < val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} < {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} < {}' expected '{} < {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '<'".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in <')
+                raise ValueError("unsupported type '{}' in '<'".format(val_a[0]))
         elif opname == '__ge__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return ('boolean', val_a[1] >= val_b[1])
+            if val_a[0] in ['integer', 'real', 'string']:
+                if val_b[0] in ['integer', 'real', 'string']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] >= val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} >= {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} >= {}' expected '{} >= {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '>='".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in >=')
+                raise ValueError("unsupported type '{}' in '>='".format(val_a[0])) 
         elif opname == '__gt__':
-            type = promote(val_a[0], val_b[0])
-            if type in ['integer', 'real']:
-                return ('boolean', val_a[1] > val_b[1])
+            if val_a[0] in ['integer', 'real', 'string']:
+                if val_b[0] in ['integer', 'real', 'string']:
+                    if val_a[0]==val_b[0]:
+                        if val_a[0] == 'real' and val_a[1] != val_b[1] and isclose(val_a[1],val_b[1]):
+                            warning("possible rounding error issue")
+                        return ('boolean', val_a[1] > val_b[1])
+                    else:
+                        type = promote(val_a[0], val_b[0])
+                        if type == None:
+                            raise ValueError(
+                                "operation '{} > {}' not supported"
+                                .format(val_a[0],val_b[0]))
+                        else:
+                            raise ValueError(
+                                "found '{} > {}' expected '{} > {}'"
+                                .format(val_a[0],val_b[0],type,type))
+                else:
+                    raise ValueError("unsupported type '{}' in '>'".format(val_b[0]))
             else:
-                raise ValueError('unsupported type in >')
+                raise ValueError("unsupported type '{}' in '>'".format(val_a[0])) 
         else:
             raise ValueError("unknown builtin binary operation '{}'".format(opname))
 
     elif opname in unary_operators:
-        arg_val = walk(args)
-
+        arg_val = walk(args)             
         if opname == '__not__':
-            val = map2boolean(arg_val)
-            if val[1] == False:
-                return ('boolean', True)
-            elif val[1] == True:
-                return ('boolean', False)
+            if arg_val[0] == 'boolean':
+                if arg_val[1] == False:
+                    return ('boolean', True)
+                else:
+                    return ('boolean', False)
             else:
-                raise ValueError("not a boolean value in 'not'")
+                raise ValueError("found 'not {}' expected 'not boolean'"
+                                 .format(arg_val[0]))
         elif opname == '__uminus__':
             if arg_val[0] in ['integer', 'real']:
                 return (arg_val[0], - arg_val[1])
@@ -1395,10 +1538,16 @@ def while_stmt(node):
     try:
         stepping = debugger_has_stepped()
 
-        (COND_TYPE, cond_val) = map2boolean(walk(cond))
+        (cond_type, cond_val) = walk(cond)
+        if cond_type != 'boolean':
+            raise ValueError("found '{}' expected 'boolean' in while loop"
+                             .format(cond_type))
         while cond_val:
             walk_stmt_list(body, step_state=stepping)
-            (COND_TYPE, cond_val) = map2boolean(walk(cond))
+            (cond_type, cond_val) = walk(cond)
+            if cond_type != 'boolean':
+                raise ValueError("found '{}' expected 'boolean' in while loop"
+                                .format(cond_type))
     except Break:
         pass
 
@@ -1416,7 +1565,10 @@ def repeat_stmt(node):
         stepping = debugger_has_stepped()
         while True:
             walk_stmt_list(body, step_state=stepping)
-            (COND_TYPE, cond_val) = map2boolean(walk(cond))
+            (cond_type, cond_val) = walk(cond)
+            if cond_type != 'boolean':
+                raise ValueError("found '{}' expected 'boolean' in repeat loop"
+                                .format(cond_type))
             if cond_val:
                 break
 
@@ -1483,7 +1635,10 @@ def if_stmt(node):
          (COND, cond),
          (STMT_LIST, stmts)) = if_list[ i + 1 ]
 
-        (BOOLEAN, cond_val) = map2boolean(walk(cond))
+        (cond_type, cond_val) = walk(cond)
+        if cond_type != 'boolean':
+            raise ValueError("found '{}' expected 'boolean' in if clause"
+                            .format(cond_type))
 
         if cond_val:
             walk_stmt_list(stmts)
@@ -1795,8 +1950,10 @@ def if_exp(node):
     if else_exp[0] == 'null':
         raise ValueError("if expressions need an 'else' clause")
 
-    (BOOLEAN, cond_val) = map2boolean(walk(cond_exp))
-
+    (cond_type, cond_val) = walk(cond_exp)
+    if cond_type != 'boolean':
+        raise ValueError("found '{}' expected 'boolean' in if expression"
+                        .format(cond_type))
     if cond_val:
         return walk(then_exp)
     else:

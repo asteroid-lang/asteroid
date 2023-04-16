@@ -1,7 +1,6 @@
   load system io.
   load system math.
   load system util.
-  load system type.
 
   -- define common math functions locally so the
   -- formulas are easy to read
@@ -11,7 +10,6 @@
   let pow = math @pow.
   let atan = math @atan.
   let pi = math @pi.
-  let toreal = type @toreal.
 
   function polar_to_cartesian with (r,psi) do
       -- return a tuple: (x,y)
@@ -24,11 +22,11 @@
 
   function cartesian_to_psi
       with (x,y) if x > 0  do
-          return atan(toreal(y)/x).
+          return atan(toreal y/toreal x).
       with (x,y) if x < 0 and y >= 0 do
-          return atan(toreal(y)/x)+pi.
+          return atan(toreal y/toreal x)+pi.
       with (x,y) if x < 0 and y < 0 do
-          return atan(toreal(y)/x)-pi.
+          return atan(toreal y/toreal x)-pi.
       with (x,y) if x == 0 and y > 0 do
           return pi/2.
       with (x,y) if x == 0 and y < 0 do

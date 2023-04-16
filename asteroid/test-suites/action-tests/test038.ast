@@ -1,7 +1,6 @@
   load system io.
   load system random.
   load system util.
-  load system type.
 
   let randint = random @randint.
 
@@ -13,5 +12,5 @@
 
   -- generating a random number in the appropriate interval
   let n = 10.
-  io @println (randint(0.0,type @toreal(n))).
+  io @println (randint(0.0, toreal n)).
   io @println (randint(0,n)).

@@ -5,7 +5,7 @@
 --------------------------------------
 --------------------------------------
 load system io.
-load "util".
+load system util.
 
 let ptrn1 = pattern with person1:( fname, lname).
 let ptrn2 = pattern with person2:( fname, lname1, lname2).
@@ -29,10 +29,12 @@ try
     let x = testFunction( 3 , 4 ).
 
     -- If the function test worked, print the output we got.
-    io @println( "The value returned is: " + x ).
+    io @println( "The value returned is: " + tostring x ).
+    throw Error("we should not be here").
+
 catch Exception("RedundantPatternFound",s) do
     io @println("PASS.").
 catch e do
     io @println("FAIL.").
-    throw Error("FAIL: unexpected error "+e).
+    throw Error("FAIL: unexpected error "+ tostring e).
 end.

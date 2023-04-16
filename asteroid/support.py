@@ -119,13 +119,8 @@ def promote(type1, type2):
         return 'list'
     elif type1 == 'tuple' and type2 == 'tuple':
         return 'tuple'
-    elif type1 == 'none' and type2 == 'none':
-        return 'none'
     else:
-        if type1 == type2:
-            raise ValueError("binary operation on type '{}' not supported".format(type1))
-        else:
-            raise ValueError("type '{}' and type '{}' are incompatible".format(type1, type2))
+        return 'none'
 
 ###########################################################################################
 # Asteroid uses truth values similar to Python's Pythonic truth values:
@@ -203,7 +198,8 @@ combined_re = '|'.join(named_re_list)
 
 def term2string(term):
     TYPE = term[0]
-
+    #lhh
+    #print(term)
     if TYPE == 'string':
         val = term[1]
         output_str = ""

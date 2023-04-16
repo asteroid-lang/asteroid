@@ -831,7 +831,7 @@ string **@flip** ()
       Returns a copy of the string with its characters in the reverse order.
 
 string **@index** item:%string | (item:%string, loc(startix:%integer)) | (item:%string, loc(startix:%integer, endix:%integer))
-      Returns an integer index of the item in the string or none if item was not found.  
+      Returns an integer index of the item in the string or -1 if item was not found.  
       The  argument loc allows you to specify startix and endix and are used to limit the search 
       to a particular substring of the string. The returned index is computed relative to the beginning 
       of the full string rather than the startix.  

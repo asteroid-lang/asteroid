@@ -1,8 +1,7 @@
   load system io.
-  load system type.
 
   let bin = "101101".
-  let int = type @tointeger(bin,2).
+  let int = tointeger(bin,2).
   io @println int.
 
   assert (int == 45).

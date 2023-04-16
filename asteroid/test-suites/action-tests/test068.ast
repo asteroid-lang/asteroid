@@ -59,6 +59,6 @@ function sum with lst:%list do
 end
 
 let dt = [1 to 100] @map(lambda with _ do return random @random()).
-let mavg = [3 to 96] @map(lambda with i do return sum(window(dt,i))/7).
+let mavg = [3 to 96] @map(lambda with i do return sum(window(dt,i))/toreal 7).
 
 plot(dt @[3 to 96],mavg).

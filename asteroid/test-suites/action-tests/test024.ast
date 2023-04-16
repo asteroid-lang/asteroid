@@ -1,7 +1,7 @@
   load system io.
   load system math.
 
-  let tau = 2 * math @pi.
+  let tau = 2.0 * math @pi.
 
   io @println (math @e).
   io @println tau.

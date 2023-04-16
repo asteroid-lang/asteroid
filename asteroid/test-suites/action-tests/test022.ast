@@ -104,7 +104,7 @@
       -- Note: make this code more general
       let n_gram = [word_list@i, word_list@(i+1), word_list @(i+2)] @join(" ").
       -- put the N-gram into a hash table, the value is the count of the N-gram in the text.
-      if not ht @get(n_gram) do
+      if ht @get(n_gram) is none do
           ht @insert(n_gram,1).
       else do
           ht @insert(n_gram,ht @get(n_gram)+1).
@@ -112,5 +112,5 @@
   end
 
   for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
-      io @println (n_gram+": "+cnt).
+      io @println (n_gram+": "+ tostring cnt).
   end

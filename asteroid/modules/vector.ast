@@ -7,7 +7,6 @@
 ------------------------------------------------------------------
 
 load system util.
-load system type.
 
 ------------------------------------------------------------------
 structure __VECTOR_MODULE__ with
@@ -45,12 +44,12 @@ with (f:%function,a:%list,b:%list) do
   end
   let v = util @zip(a,b).
   return v @map(f).
-with (f:%function,a:%list,b if type @isscalar(b)) do
+with (f:%function,a:%list,b if isscalar b) do
   -- promote b to a vector
   let bv = [1 to a @length()] @map(lambda with _ do return b).
   let v = util @zip(a,bv).
   return v @map(f).
-with (f:%function,a if type @isscalar(a),b:%list) do
+with (f:%function,a if isscalar a,b:%list) do
   -- promote a to a vector
   let av = [1 to b @length()] @map(lambda with _ do return a).
   let v = util @zip(av,b).

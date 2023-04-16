@@ -6,8 +6,6 @@
 -- (c) University of Rhode Island
 
 
-load system type.
-
 ------------------------------------------------------------------
 -- Basic file i/o
 ------------------------------------------------------------------
@@ -141,7 +139,7 @@ what_val = state.symbol_table.lookup_sym('what')
 
 (FOREIGN, f_val) = memory[0]
 
-f_val.write(what_val[1])
+f_val.write(term2string(what_val))
 "
 end
 
@@ -246,14 +244,14 @@ end
 function println
 ------------------------------------------------------------------
 with item do
-    this @writeln(type @tostring item).
+    this @writeln(tostring item).
 end
 
 ------------------------------------------------------------------
 function print
 ------------------------------------------------------------------
 with item do
-    this @write(type @tostring item).
+    this @write(tostring item).
 end
 
 ------------------------------------------------------------------
@@ -263,7 +261,7 @@ function input
 with none do
     return this @readln() @replace("\n","").
 with prompt do
-    this @write (type @tostring prompt).
+    this @write (tostring prompt).
     return this @readln() @replace("\n","").
 end
 

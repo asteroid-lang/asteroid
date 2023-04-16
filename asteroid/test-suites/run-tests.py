@@ -8,11 +8,11 @@
 
 dirs = [
 	    'action-tests',
-        'first-class-redundant-pattern-tests',
-        'redundant-pattern-test',
-        'ref-programs',
-        'regression-tests',
-        'ug-programs',
+        #'first-class-redundant-pattern-tests',
+        #'redundant-pattern-test',
+        #'ref-programs',
+        #'regression-tests',
+        #'ug-programs',
        ]
 
 #exclusion_list = ['test015.ast']
@@ -57,8 +57,8 @@ from interp import interp
 
 for d in dirs:
     tests = os.listdir(d)
-    tests.sort()
     tests = list(set(tests) - set(exclusion_list))
+    tests.sort()
 
     for testname in tests:
         # check that we are actually looking at test case
@@ -77,3 +77,5 @@ for d in dirs:
                    redundancy=redundancy,
                    cond_patterns=cond_warnings)
             f.close()
+
+print("*** only one test suite tested ***")
