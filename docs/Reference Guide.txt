@@ -1044,6 +1044,10 @@ math **@ceil** x:%real
 math **@floor** x:%real
       Returns the floor of x: the largest integer less than or equal to x.
 
+math **@round** x:%real
+      Returns x rounded to the nearest integer. If two integers are equally
+      close, x is rounded to the nearest even integer.
+
 math **@gcd** (a:%integer, b:%integer)
       Returns the greatest common denominator that both integers share.
 

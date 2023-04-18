@@ -166,6 +166,21 @@ __retval__ = ('integer', math.floor(val_x[1]))
 end
 
 ------------------------------------------------------------------
+function round
+------------------------------------------------------------------
+-- Return x rounded to the nearest integer. If two integers are equally close,
+-- x is rounded to the nearest even integer.
+with (x:%real) do return escape
+"
+global __retval__
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('integer', round(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
 function gcd
 ------------------------------------------------------------------
 with (a:%integer,b:%integer) do return escape
