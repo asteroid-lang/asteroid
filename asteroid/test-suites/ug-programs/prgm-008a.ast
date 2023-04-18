@@ -1,4 +1,3 @@
-   load system type.
 
    -- define a function
    function inc with x do
@@ -6,4 +5,4 @@
    end
 
    -- show that 'inc' is of type 'function'
-   assert (type @gettype(inc) == "function").
+   assert (gettype(inc) == "function").

@@ -1,6 +1,6 @@
 
 load system io.
-load "util".
+load system util.
 
 structure Person with
     data name.
@@ -21,7 +21,7 @@ for Person(_,age,_) in people do
     let sum = sum + age.
 end 
 
-io @println ("Average Age: " + (sum/n)).
+io @println ("Average Age: " + tostring (sum/n)).
 assert ((sum/n) == 33).
 
 for Person(name,_,"M") in people do

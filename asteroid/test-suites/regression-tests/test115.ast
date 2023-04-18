@@ -1,9 +1,6 @@
 -- testing the builtin 'len' function
 
 load system io.
-load system type.
-
-let tostring = type @tostring.
 
 structure Foo with
    data one.
@@ -11,9 +8,9 @@ structure Foo with
    data three.
    function hello
       with none do
-        io @println (tostring(this @one)+
-                 tostring(this @two)+
-                 tostring(this @three)).
+        io @println (tostring(this@one)+
+                 tostring(this@two)+
+                 tostring(this@three)).
       end
    end
 

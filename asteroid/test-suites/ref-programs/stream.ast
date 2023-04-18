@@ -3,7 +3,7 @@
 
    let s = stream @stream [1 to 10].
    while not s @eof() do
-      io @print (s @get() + " ").
+      io @print (tostring (s @get()) + " ").
    end
    io @println "".
    

@@ -10,8 +10,8 @@ dirs = [
 	    'action-tests',
         #'first-class-redundant-pattern-tests',
         #'redundant-pattern-test',
-        #'ref-programs',
-        #'regression-tests',
+        'ref-programs',
+        'regression-tests',
         #'ug-programs',
        ]
 
@@ -78,4 +78,4 @@ for d in dirs:
                    cond_patterns=cond_warnings)
             f.close()
 
-print("*** only one test suite tested ***")
+print("*** only some test suite tested ***")

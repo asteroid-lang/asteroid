@@ -7,6 +7,8 @@ escape
 from asteroid.interp import interp
 from asteroid.state import state
 
+print(1)
+
 program = ''
 program += 'let x = 1.\n'
 program += 'let y = 0.\n'
@@ -23,6 +25,8 @@ except:
     pass
 
 assert( state.lineinfo[1] == 6)
+
+print(2)
 
 program = ''
 program += 'let x = 1.\n'
@@ -45,6 +49,8 @@ except:
     pass
 
 assert( state.lineinfo[1] == 8)
+
+print(3)
 
 program = ''
 program += 'let x = 1.\n'
@@ -74,11 +80,13 @@ except:
 
 assert( state.lineinfo[1] == 12)
 
+print(4)
+
 program = ''
 program += 'let x = 1.\n'
 program += 'let y = 0.\n'
 program += '\n'
-program += 'while (1) do\n'
+program += 'while (true) do\n'
 program += '    if ( x < 0) do\n'
 program += '        ...\n'
 program += '    elif ( x < 1 ) do\n'
@@ -100,6 +108,6 @@ try:
     interp(program,exceptions=True)
 except:
     pass
-
+    
 assert( state.lineinfo[1] == 13 )
 "

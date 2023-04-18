@@ -1,7 +1,7 @@
 
 load system io.
-load "util".
+load system util.
 
 let [h|t] = [1,2,3].
-io @println ("head: " + h + " tail: " + t).
+io @println ("head: " + tostring h + " tail: " + tostring t).
 assert(h == 1 and t == [2,3]).

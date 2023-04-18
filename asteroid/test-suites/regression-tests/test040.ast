@@ -1,6 +1,6 @@
 
 load system io.
-load "util".
+load system util.
 
 structure Dog with
 
@@ -33,8 +33,8 @@ buddy @add_trick("roll over").
 buddy @add_trick("sit stay").
 
 -- io @println out the tricks
-io @println ("Fido: " + fido @tricks).
-io @println ("Buddy: " + buddy @tricks).
+io @println ("Fido: " + tostring (fido@tricks)).
+io @println ("Buddy: " + tostring (buddy@tricks)).
 
 assert(fido @tricks is ["roll over", "play dead"]).
 assert(buddy @tricks is ["roll over", "sit stay"]).

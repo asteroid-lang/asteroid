@@ -1,6 +1,5 @@
 
 load system io.
-load system type.
 
-let (l:%list) if type @tostring l is "\[.*2.*\]" = [1,2,3].
+let (l:%list) if tostring l is "\[.*2.*\]" = [1,2,3].
 assert(l == [1,2,3]).

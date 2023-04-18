@@ -261,7 +261,7 @@ function tostring
 with (v:*__TP__,__STRINGFORMAT__(w:%integer,none,none)) do
   -- booleans, integers, and strings (see TP pattern) with width spec are
   -- right justified. if width spec is too narrow it is ignored.
-  let vs = this @tostring(v).
+  let vs = tostring v.
   let padl = w - vs @length().
   if padl > 0 do
     return [1 to padl] @map(lambda with _ do return " ") @join("") + vs.
