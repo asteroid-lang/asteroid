@@ -266,11 +266,6 @@ def term2string(term):
             str_fval = object_memory[slot_ix]
             # calling a __str__ member function
             import asteroid.walk
-            # for some reason we have to reinitialize unify again
-            if asteroid.walk.debugging:
-                asteroid.walk.unify = asteroid.walk.debug_unify
-            else:
-                asteroid.walk.unify = asteroid.walk.__unify
             (STRING, obj_str) = asteroid.walk.handle_call(term, # object reference
                                     str_fval,
                                     ('none', None),
