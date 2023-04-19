@@ -57,8 +57,8 @@ from interp import interp
 
 for d in dirs:
     tests = os.listdir(d)
-    tests.sort()
     tests = list(set(tests) - set(exclusion_list))
+    tests.sort()
 
     for testname in tests:
         # check that we are actually looking at test case
