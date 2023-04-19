@@ -1,6 +1,5 @@
     load system io.
     load system random.
-    load system type.
 
     structure Head with
         data val.
@@ -18,7 +17,7 @@
             throw Tail i.
         end
     catch Head v do
-        io @println ("you win with "+type @tostring (v,type @stringformat (4,2))).
+        io @println ("you win with "+tostring (v,stringformat (4,2))).
     catch Tail v do
-        io @println ("you loose with "+type @tostring (v,type @stringformat (4,2))).
+        io @println ("you loose with "+tostring (v,stringformat (4,2))).
     end

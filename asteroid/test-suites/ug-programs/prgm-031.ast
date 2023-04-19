@@ -9,4 +9,4 @@
             throw Error("factorial is not defined for "+n).
     end
 
-    io @println ("The factorial of 3 is: " + factorial 3).
+    io @println ("The factorial of 3 is: " + tostring (factorial 3)).

@@ -11,4 +11,4 @@
 
     -- pattern matching ignores function definitions
     let Person(name,age) = Person("Scarlett",28).
-    io @println (name+" is "+age+" years old").
+    io @println (name+" is "+ tostring age+" years old").

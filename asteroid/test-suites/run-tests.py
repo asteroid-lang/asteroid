@@ -8,11 +8,11 @@
 
 dirs = [
 	    'action-tests',
-        #'first-class-redundant-pattern-tests',
-        #'redundant-pattern-test',
+        'first-class-redundant-pattern-tests',
+        'redundant-pattern-test',
         'ref-programs',
         'regression-tests',
-        #'ug-programs',
+        'ug-programs',
        ]
 
 #exclusion_list = ['test015.ast']
@@ -78,4 +78,3 @@ for d in dirs:
                    cond_patterns=cond_warnings)
             f.close()
 
-print("*** only some test suite tested ***")
