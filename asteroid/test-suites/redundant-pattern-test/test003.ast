@@ -23,10 +23,9 @@ try
     let x = testFunction( 1 ).
 
     -- If the function test worked, print the output we got.
-    io @println( "The value returned is: " + x ).
+    io @println( "The value returned is: " + tostring x ).
+    throw Error("Fail: subsumption not detected")
+
 catch Exception("RedundantPatternFound",s) do
     io @println("PASS.").
-catch e do
-    io @println("FAIL.").
-    throw Error("FAIL: unexpected error "+e).
 end.

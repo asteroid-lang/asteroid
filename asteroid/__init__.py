@@ -152,7 +152,7 @@ def main():
     if flags['-z']:
         # generates pstats into the file 'pstats'
         # see https://docs.python.org/3/library/profile.html
-        cProfile.run(interp_object, 'pstats')
+        cProfile.runctx(interp_object, globals(), locals(), filename='pstats')
     else:
         exec(interp_object)
 
