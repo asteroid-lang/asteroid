@@ -780,6 +780,11 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
 
+    # if we have an obj reference bind it to the
+    # variable 'this'
+    if obj_ref:
+        state.symbol_table.enter_sym('this', obj_ref)
+
     # iterate over the bodies to find one that unifies with the actual parameters
     (BODY_LIST, (LIST, body_list_val)) = body_list
     unified = False
@@ -809,11 +814,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         raise ValueError("actual argument '{}' not recognized by function '{}'"
                          .format(term2string(actual_val_args),fname))
     declare_formal_args(unifiers)
-
-    # if we have an obj reference bind it to the
-    # variable 'this'
-    if obj_ref:
-        state.symbol_table.enter_sym('this', obj_ref)
 
     # OWM: The following segment is a repeat of the bottom of this function.
     # We need to do this because redundant patterns can break scope and
