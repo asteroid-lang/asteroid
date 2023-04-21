@@ -283,13 +283,6 @@ def term2string(term):
     elif TYPE in ['function-val', 'member-function-val']:
         return '(function ...)'
 
-    elif TYPE == 'pattern':
-        return '(pattern ...)'
-
-    elif TYPE == 'foreign':
-        return "(foreign ...)"
-
     else:
-        raise ValueError("internal error: type '"+TYPE+"' not supported in term2string")
         return '('+TYPE+'...)'
 
