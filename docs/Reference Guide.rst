@@ -971,7 +971,7 @@ string **@flip** ()
       Returns a copy of the string with its characters in the reverse order.
 
 string **@index** item:%string | (item:%string, loc(startix:%integer)) | (item:%string, loc(startix:%integer, endix:%integer))
-      Returns an integer index of the item in the string or none if item was not found.
+      Returns an integer index of the item in the string or -1 if item was not found.
       The  argument loc allows you to specify startix and endix and are used to limit the search
       to a particular substring of the string. The returned index is computed relative to the beginning
       of the full string rather than the startix.
@@ -1144,8 +1144,8 @@ An example:
     load system io.
     load system math.
 
-    let x = math @sin( math @pi / 2 ).
-    io @println("The sine of pi / 2 is " + x + ".").
+    let x = math @sin( math @pi / 2.0 ).
+    io @println("The sine of pi / 2 is " + tostring x + ".").
 Constants
 %%%%%%%%%
 
@@ -1496,7 +1496,7 @@ A simple use case:
 
    let s = stream @stream [1 to 10].
    while not s @eof() do
-      io @print (s @get() + " ").
+      io @print (tostring (s @get()) + " ").
    end
    io @println "".
 which outputs::
@@ -1535,24 +1535,23 @@ The type module defines type related functions and structures.
 Here is a program that exercises some of the string formatting options:
 ::
     load system io.
-    load system type.
     load system math.
 
     -- if the width specifier is larger than the length of the value
     -- then the value will be right justified
-    let b = type @tostring(true,type @stringformat(10)).
+    let b = tostring(true,stringformat(10)).
     io @println b.
 
-    let i = type @tostring(5,type @stringformat(5)).
+    let i = tostring(5,stringformat(5)).
     io @println i.
 
     -- we can format a string by applying tostring to the string
-    let s = type @tostring("hello there!",type @stringformat(30)).
+    let s = tostring("hello there!",stringformat(30)).
     io @println s.
 
     -- for floating point values: first value is width, second value precision.
     -- if precision is missing then value is left justified and zero padded on right.
-    let r = type @tostring(math @pi,type @stringformat(6,3)).
+    let r = tostring(math@pi,stringformat(6,3)).
     io @println r.
 The output of the program is,
 ::
@@ -1603,10 +1602,8 @@ type **@gettype** x
 
 A simple example program using the ``gettype`` function,
 ::
-   load system type.
-
    let i = 1.
-   assert(type @gettype(i) == "integer").
+   assert(gettype(i) == "integer").
 util
 ^^^^
 

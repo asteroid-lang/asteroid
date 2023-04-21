@@ -65,17 +65,6 @@ As with most programming languages we are familiar with, Asteroid has variables 
 * ``string``, e.g. ``"Hello, World!"``
 * ``boolean``, e.g. ``true``
 
-Asteroid arranges these primitive data types in a type hierarchy,
-
-``boolean`` < ``integer`` < ``real`` < ``string``
-
-Type hierarchies facilitate automatic type promotion.  Here is an example
-where automatic type promotion is used to put together a string from different data types,
-::
-#include "../asteroid/test-suites/ug-programs/prgm-004.ast"
-
-Here we associate the string ``"value: 1"`` with the variable ``x`` by first promoting the integer value ``1`` to the string ``"1"`` using the fact that ``integer`` < ``string``  according to our type hierarchy  and then interpreting the ``+`` operator as a string concatenation operator.
-
 Asteroid also supports the built-in data types:
 
 * ``list``
@@ -90,16 +79,13 @@ As we said above, in order to distinguish it from a parenthesized value the sing
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-006.ast"
 
-Lists are mutable objects whereas tuples are immutable.  Lists and tuples themselves are also embedded in type hierarchies, although very simple ones:
+Lists are mutable objects whereas tuples are immutable.  
 
-* ``list`` < ``string``
-* ``tuple`` < ``string``
-
-That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples,
+We can cast lists and tuples to strings for easy printing,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-007.ast"
 
-Here the ``+`` operator acts like a string concantenation operator with the list ``[1,2,3]`` promoted to a string according to the above type hierarchy.
+Here the ``+`` operator acts like a string concantenation operator with the list ``[1,2,3]`` promoted to a string. 
 
 Asteroid supports the ``none`` type.  The ``none`` type has
 only one member: A constant named ``none``.  However, it turns out that the null-tuple, a tuple with no components
@@ -110,15 +96,18 @@ interchangeably.  That is, the following ``let`` statements will succeed,
 #include "../asteroid/test-suites/ug-programs/prgm-008.ast"
 
 showing that ``()`` and ``none`` are equivalent and pattern-match each other.
-The ``none`` data type itself does not belong to any type hierarchy.
 
 We should mention here that because functions and patterns are both first-class citizens in Asteroid we 
 also have the types ``function`` and ``pattern``,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-008a.ast"
 
-Just like the ``none`` type, neither of these types are 
-part of a type hierarchy but we can use them in type patterns (see below).
+Data types in Asteroid do not form type hierarchies as in C/C++ and Java, for example.  
+Therefore, in mixed type arithmetic statements we have to explicitly convert data types as in,
+::
+#include "../asteroid/test-suites/ug-programs/prgm-008b.ast"
+
+Asteroid shares this view of data types with prgogramming languages like SML and Rust.  
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different as we will see when we discuss pattern matching in more detail.
 
