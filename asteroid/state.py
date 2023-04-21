@@ -15,8 +15,6 @@ class State:
         self.modules = [] # loaded modules
         self.AST = None
         self.ignore_pattern = 0 # used to evaluate pattern expressions
-        self.cond_warning = False # used to indicate if conditional subsumption
-                                  # warning should be displayed
         self.eval_redundancy = True
         self.warning = True # switch for general warnings
         self.lineinfo = (module, 1) # tuple: module, lineno

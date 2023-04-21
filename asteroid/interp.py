@@ -54,7 +54,6 @@ def interp(program,
            prologue=True,
            debugger=None,
            functional_mode=False,
-           cond_patterns=False,
            warnings=True,
            initialize_state = True
            ):
@@ -73,7 +72,6 @@ def interp(program,
       * prologue: a flag indicating whether the Asteroid prologue file should be loaded
       * functional_mode: if set then the Asteroid interpreter behaves like an interpreter
                          functional programming language.
-      * cond_patterns: if set will display warnings about redundant conditional patterns
       * warnings: if set will display warnings
       * initialize_state: if set then the interpreter will (re)initialize its state.  
     '''
@@ -87,7 +85,6 @@ def interp(program,
 
         # initialize state flags
         state.eval_redundancy = redundancy
-        state.cond_warning = cond_patterns
         state.warning = warnings
 
         # build the AST
