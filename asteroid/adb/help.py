@@ -80,17 +80,6 @@ command_description_table = {
     Exit ADB
     """,
     
-    'explicit':     """[e]xplicit (on|off)?
-    Toggle explicit mode or set explicit mode to a specific state.
-
-    For more information about explicit mode, refer to "ADB in action".
-
-    Example:
-        explicit    -- Toggles explicit mode
-        explicit on -- Turns explicit mode on
-        explcit off -- Turns explicit mode off
-    """,
-    
     'help':         """[h]elp ?(name)
     Get help for a command
     """

@@ -38,10 +38,9 @@ function testFunction
 try    
     let x = testFunction( Person("George", 32, "M") ).
     io @println ( x ).
+    throw Error("Fail: subsumption not detected")
+
 catch Exception("RedundantPatternFound",s) do
     io @println("PASS.").
-catch e do
-    io @println("FAIL.").
-    throw Error("FAIL: unexpected error "+e).
 end.
 

@@ -1,7 +1,7 @@
 ###########################################################################################
 # globals for Asteroid
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 from asteroid.support import term2string #Used by redundantPatternFound exception
@@ -121,11 +121,9 @@ class RedundantPatternFound(Exception):
         if (location1 != None):
             self.file = location1[0]
         self.function = function_name
-        self.message = "Redundant Pattern Detected\n"
-        self.message += "\tFunction: " + self.function + " from file " + self.file
-        self.message += "\n\tPattern: " + term2string(self.pattern1) + " on line " + self.line1
-        self.message += "\n\twill consume all matches for"
-        self.message += "\n\tPattern: " + term2string(self.pattern2) + " on line " + self.line2
+        self.message = "redundant pattern detected in '{}': ".format(self.function)
+        self.message += "the pattern on line {} will consume all matches for pattern on line {}"\
+                            .format(self.line1,self.line2)
         super().__init__(self.message)
 
     def __str__(self):
@@ -141,7 +139,6 @@ unify_not_allowed = {
     'where-list',
     'raw-to-list',
     'raw-where-list',
-    'if-exp',
     'foreign',
     'escape',
     'is',

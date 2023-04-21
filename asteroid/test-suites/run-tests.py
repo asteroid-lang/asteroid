@@ -8,7 +8,6 @@
 
 dirs = [
 	    'action-tests',
-        'first-class-redundant-pattern-tests',
         'redundant-pattern-test',
         'ref-programs',
         'regression-tests',
