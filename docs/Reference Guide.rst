@@ -832,6 +832,9 @@ Builtin Functions
 **getid** x
       Returns a unique id of any Asteroid object as an integer.
 
+**gettype** x
+      Returns the type of x as a string.
+
 **hd** x:%list
       Returns the first element of a list. It is an error to apply this
       function to an empty list.
@@ -839,6 +842,15 @@ Builtin Functions
 **isdefined** x:%string
       Returns true if a variable or type name is defined in the
       current environment otherwise it returns false. The variable or type name must be given as a string.
+**islist** x
+      Returns true if x is a list otherwise it will return false.
+
+**isnone** x
+      Returns true if x is equal to the value none.
+
+**isscalar** x
+      Returns true if x is either an integer or a real value.
+
 **len** x
       Returns the length of x. The
       function can only be applied to lists, strings, tuples, or structures.
@@ -854,6 +866,22 @@ Builtin Functions
       Returns the rest of the list without the first element.  It is an
       error to apply this function to an empty list.
 
+**tobase** (x:%integer,base:%integer)
+      Represents the given integer x as a numeral string in different bases.
+
+**toboolean** x
+      Interpret x as a Boolean value.
+
+**tointeger** (x:%string,base:%integer) | x
+      Converts a given input to an integer. If a base value is specified then
+      the resulting integer is in the corresponding base.
+
+**toreal** x
+      Returns the input as a real number.
+
+**tostring** x | (x,stringformat(width:%integer,precision:%integer,scientific:%boolean))
+      Converts an Asteroid object to a string. If format values are given,
+      it applies the formatting to the string object.
 
 
 List and String Objects
@@ -1528,82 +1556,7 @@ __STREAM__ **@rewind** ()
       Resets the stream pointer to the first element of the stream.
 
 
-type
-^^^^
 
-The type module defines type related functions and structures.
-Here is a program that exercises some of the string formatting options:
-::
-    load system io.
-    load system math.
-
-    -- if the width specifier is larger than the length of the value
-    -- then the value will be right justified
-    let b = tostring(true,stringformat(10)).
-    io @println b.
-
-    let i = tostring(5,stringformat(5)).
-    io @println i.
-
-    -- we can format a string by applying tostring to the string
-    let s = tostring("hello there!",stringformat(30)).
-    io @println s.
-
-    -- for floating point values: first value is width, second value precision.
-    -- if precision is missing then value is left justified and zero padded on right.
-    let r = tostring(math@pi,stringformat(6,3)).
-    io @println r.
-The output of the program is,
-::
-
-          true
-        5
-                      hello there!
-     3.142
-
-Notice the right justification of the various values within the given string length.
-
-Type Conversion
-%%%%%%%%%%%%%%%
-
-type **@tobase** (x:%integer,base:%integer)
-      Represents the given integer x as a numeral string in different bases.
-
-type **@toboolean** x
-      Interpret x as a Boolean value.
-
-type **@tointeger** (x:%string,base:%integer) | x
-      Converts a given input to an integer. If a base value is specified then
-      the resulting integer is in the corresponding base.
-
-type **@toreal** x
-      Returns the input as a real number.
-
-type  **@tostring** x | (x,type @stringformat(width:%integer,precision:%integer,scientific:%boolean))
-      Converts an Asteroid object to a string. If format values are given,
-      it applies the formatting to the string object.
-
-
-
-Type Query Functions
-%%%%%%%%%%%%%%%%%%%%
-
-type **@islist** x
-      Returns true if x is a list otherwise it will return false.
-
-type **@isnone** x
-      Returns true if x is equal to the value none.
-
-type **@isscalar** x
-      Returns true if x is either an integer or a real value.
-
-type **@gettype** x
-      Returns the type of x as a string.
-
-A simple example program using the ``gettype`` function,
-::
-   let i = 1.
-   assert(gettype(i) == "integer").
 util
 ^^^^
 
