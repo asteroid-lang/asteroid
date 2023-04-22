@@ -31,9 +31,8 @@ function reduce
     
 try    
     io @println(reduce(add(add(add(S(S(0)),S(S(S(0)))),S(0)),S(0)))).
+    throw Error("Fail: subsumption not detected")
+
 catch Exception("RedundantPatternFound",s) do
     io @println("PASS.").
-catch e do
-    io @println("FAIL.").
-    throw Error("FAIL: unexpected error "+e).
 end.

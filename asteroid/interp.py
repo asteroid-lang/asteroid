@@ -11,7 +11,7 @@ from asteroid.globals import *
 from asteroid.support import *
 from asteroid.frontend import Parser
 from asteroid.state import state, dump_trace
-from asteroid.walk import walk_program, debug_walk
+from asteroid.walk import walk, debug_walk
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
@@ -41,7 +41,7 @@ def load_prologue():
         (LIST, pstmts) = pparser.parse(data)
 
     state.AST = ('list', pstmts)
-    walk_program(state.AST)
+    walk(state.AST)
     state.AST = None
 
 def interp(program,
@@ -54,7 +54,6 @@ def interp(program,
            prologue=True,
            debugger=None,
            functional_mode=False,
-           cond_patterns=False,
            warnings=True,
            initialize_state = True
            ):
@@ -73,7 +72,6 @@ def interp(program,
       * prologue: a flag indicating whether the Asteroid prologue file should be loaded
       * functional_mode: if set then the Asteroid interpreter behaves like an interpreter
                          functional programming language.
-      * cond_patterns: if set will display warnings about redundant conditional patterns
       * warnings: if set will display warnings
       * initialize_state: if set then the interpreter will (re)initialize its state.  
     '''
@@ -87,7 +85,6 @@ def interp(program,
 
         # initialize state flags
         state.eval_redundancy = redundancy
-        state.cond_warning = cond_patterns
         state.warning = warnings
 
         # build the AST
@@ -102,7 +99,7 @@ def interp(program,
             if debugger:
                 debug_walk(state.AST, debugger)
             else:
-                walk_program(state.AST)
+                walk(state.AST)
         if symtab_dump:
             state.symbol_table.dump()
 

@@ -21,7 +21,6 @@ def display_help():
     print("")
     print("command line flags:")
     print(" -a, --adb      run program through debugger")
-    print(" -c             enable conditional pattern match warnings")
     print(" -e             show Python exceptions")
     print(" -F             functional mode")
     print(" -h, --help     display help")
@@ -40,7 +39,6 @@ def main():
     flags = {
         '--adb' : False, # debugger flag
         '-a' : False,    # Short debugger flag
-        '-c' : False,     # conditional pattern match warnings
         '-e' : False,  # show full exceptions
         '-F' : False,  # functional mode
         '--help' : False,  # display help flag
@@ -138,7 +136,6 @@ def main():
     interp_object = \
     '''interp(program=input_stream,
            program_name = input_file,
-           cond_patterns=flags['-c'],
            exceptions=flags['-e'],
            functional_mode=flags['-F'],
            prologue=flags['-p'],
@@ -152,7 +149,7 @@ def main():
     if flags['-z']:
         # generates pstats into the file 'pstats'
         # see https://docs.python.org/3/library/profile.html
-        cProfile.run(interp_object, 'pstats')
+        cProfile.runctx(interp_object, globals(), locals(), filename='pstats')
     else:
         exec(interp_object)
 

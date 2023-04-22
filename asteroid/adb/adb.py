@@ -486,8 +486,6 @@ class ADB:
             elif cmd == ('RETVAL',):                   outstr += '__retval__'
             elif cmd[0] ==  'UNTIL':                   outstr += 'until{}'.format((" "+cmd[1]) if cmd[1] else "")
             elif cmd == ('RETURN',):                   outstr += 'return'
-            elif cmd[0] == 'EXPLICIT':                 outstr += 'explicit {}'.format(
-                cmd[1] if cmd[1] else "")
             elif cmd == ('STEP', ):                    outstr += 'step'
             elif cmd == ('CONTINUE', ):                outstr += 'continue'
             elif cmd == ('NEXT', ):                    outstr += 'next'

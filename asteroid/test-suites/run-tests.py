@@ -8,7 +8,6 @@
 
 dirs = [
 	    'action-tests',
-        'first-class-redundant-pattern-tests',
         'redundant-pattern-test',
         'ref-programs',
         'regression-tests',
@@ -27,7 +26,6 @@ verbose_failure = False
 
 # control whether to do redundancy checks
 redundancy = True
-cond_warnings = False
 
 # if your test case needs input from stdin please provide
 # a file named,
@@ -74,7 +72,6 @@ for d in dirs:
             print("**********output***********")
             interp(p,
                    exceptions=verbose_failure,
-                   redundancy=redundancy,
-                   cond_patterns=cond_warnings)
+                   redundancy=redundancy)
             f.close()
 

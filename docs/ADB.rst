@@ -198,24 +198,6 @@ Where
 ---------
 ``w(here)`` displays the frame stack and the currently active frame.
 
-Explicit
----------
-``e(xplicit) (on|off)?`` By default, this command run without an argument toggles
-explicit mode. If given a literal ``on`` or ``off``, explicit mode will be switched
-to the corresponding state.
-
-Explicit
-::
-
-    -- Toggle Explicit mode
-    explicit
-    e
-
-    -- Turn on/off
-    explicit on
-    e on
-    explicit off
-    e off
 
 Quit
 ---------

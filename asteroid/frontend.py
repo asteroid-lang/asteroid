@@ -458,7 +458,8 @@ class Parser:
         #self.lexer.match('FUNCTION')
 
         # check if any useless patterns exist within the function
-        #lhh check_redundancy( body_list, id_tok )
+        #from asteroid.walk import check_redundancy
+        #check_redundancy( body_list, id_tok )
 
         # functions are function expressions bound to names
         return ('unify',
