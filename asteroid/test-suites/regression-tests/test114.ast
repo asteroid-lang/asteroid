@@ -1,11 +1,8 @@
 -- tests for formatting
 
 load system io.
-load system type.
 load system math.
 
-let tostring = type @tostring.
-let stringformat = type @stringformat.
 
 let b = tostring(true,stringformat(10)).
 io @println b.

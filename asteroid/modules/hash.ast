@@ -5,7 +5,6 @@
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
-load system type.
 
 ------------------------------------------------------------------
 structure __HASH__ with
@@ -121,7 +120,7 @@ end -- aslist
 function __str__
 ------------------------------------------------------------------
 with none do
-  return type @tostring (this @aslist ()).
+  return tostring (this @aslist ()).
 end -- __str__
 
 end -- __HASH__

@@ -18,7 +18,7 @@
 
   let color_hash = hash @hash().
   for (_,color) in fruit_lst do
-      if not color_hash @get(color) do
+      if color_hash @get(color) is none do
           color_hash @insert(color,1).
       else
           color_hash @insert(color, color_hash @get(color) +1).

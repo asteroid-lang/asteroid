@@ -19,4 +19,4 @@
     let Person(name,age,gender) = people@1.
 
     -- print out the member values
-    io @println (name + " is " + age + " years old and is a " +  gender + ".").
+    io @println (name + " is " + tostring age + " years old and is a " +  gender + ".").

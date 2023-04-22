@@ -2,7 +2,7 @@
 assert(lambda with x do return x+1).
 assert(pattern x).
 assert((1,2)).
-assert(not ()).
+-- assert(not ()).
 
 structure A with
    data a.

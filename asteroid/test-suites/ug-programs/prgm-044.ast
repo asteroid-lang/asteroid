@@ -1,13 +1,12 @@
     load system io.
-    load system type.
 
-    let pos_num = pattern %[x if type @isscalar(x) and x > 0]%.
+    let pos_num = pattern %[x if isscalar(x) and x > 0]%.
    
     structure Asteroid with
        data size.
        function __init_
           with v:*pos_num do
-             let this @size = v.
+             let this@size = v.
           end
     end
 
@@ -15,7 +14,7 @@
         data size.
        function __init_
           with v:*pos_num do
-             let this @size = v.
+             let this@size = v.
           end
     end
 

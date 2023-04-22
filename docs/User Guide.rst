@@ -76,16 +76,6 @@ As with most programming languages we are familiar with, Asteroid has variables 
 * ``string``, e.g. ``"Hello, World!"``
 * ``boolean``, e.g. ``true``
 
-Asteroid arranges these primitive data types in a type hierarchy,
-
-``boolean`` < ``integer`` < ``real`` < ``string``
-
-Type hierarchies facilitate automatic type promotion.  Here is an example
-where automatic type promotion is used to put together a string from different data types,
-::
-    let x:%string = "value: " + 1.
-Here we associate the string ``"value: 1"`` with the variable ``x`` by first promoting the integer value ``1`` to the string ``"1"`` using the fact that ``integer`` < ``string``  according to our type hierarchy  and then interpreting the ``+`` operator as a string concatenation operator.
-
 Asteroid also supports the built-in data types:
 
 * ``list``
@@ -99,16 +89,13 @@ Here are some examples,
 As we said above, in order to distinguish it from a parenthesized value the single element in a 1-tuple has to be followed by a comma, like so,
 ::
     let one_tuple = (1,).  -- this is a 1-tuple
-Lists are mutable objects whereas tuples are immutable.  Lists and tuples themselves are also embedded in type hierarchies, although very simple ones:
+Lists are mutable objects whereas tuples are immutable.
 
-* ``list`` < ``string``
-* ``tuple`` < ``string``
-
-That is, any list or tuple can be viewed as a string.  This is very convenient for printing lists and tuples,
+We can cast lists and tuples to strings for easy printing,
 ::
     load system io.
-    io @println ("this is my list: " + [1,2,3]).
-Here the ``+`` operator acts like a string concantenation operator with the list ``[1,2,3]`` promoted to a string according to the above type hierarchy.
+    io @println ("this is my list: " + tostring [1,2,3]).
+Here the ``+`` operator acts like a string concantenation operator with the list ``[1,2,3]`` promoted to a string.
 
 Asteroid supports the ``none`` type.  The ``none`` type has
 only one member: A constant named ``none``.  However, it turns out that the null-tuple, a tuple with no components
@@ -119,22 +106,22 @@ interchangeably.  That is, the following ``let`` statements will succeed,
     let none = ().
     let () = none.
 showing that ``()`` and ``none`` are equivalent and pattern-match each other.
-The ``none`` data type itself does not belong to any type hierarchy.
 
 We should mention here that because functions and patterns are both first-class citizens in Asteroid we
 also have the types ``function`` and ``pattern``,
 ::
-   load system type.
-
    -- define a function
    function inc with x do
       return x+1.
    end
 
    -- show that 'inc' is of type 'function'
-   assert (type @gettype(inc) == "function").
-Just like the ``none`` type, neither of these types are
-part of a type hierarchy but we can use them in type patterns (see below).
+   assert (gettype(inc) == "function").
+Data types in Asteroid do not form type hierarchies as in C/C++ and Java, for example.
+Therefore, in mixed type arithmetic statements we have to explicitly convert data types as in,
+::
+   let x = 1.1 + toreal(1).
+Asteroid shares this view of data types with prgogramming languages like SML and Rust.
 
 By now you probably figured out that statements are terminated with a period and that comments start with a ``--`` symbol and continue till the end of the line.  You probably also figured out that the ``let`` statement is Asteroid's version of assignment even though the underlying mechanism is a bit different as we will see when we discuss pattern matching in more detail.
 
@@ -186,12 +173,12 @@ an optional step specifier allowing you to generate integer values within that r
 
     -- build a list of odd values
     let a = [1 to 10 step 2].  -- list comprehension
-    io @println ("list: " + a).
+    io @println ("list: " + tostring a).
 
     -- reverse the list using a slice computed as comprehension
     let slice = [4 to 0 step -1]. -- list comprehension
     let b = a@slice.
-    io @println ("reversed list: " + b).
+    io @println ("reversed list: " + tostring b).
 The output is,
 ::
 
@@ -206,7 +193,7 @@ a list of alternating 1 and -1,
     load system math.
 
     let a = [1 to 10] @map (lambda with x do math @mod (x,2))
-                      @map (lambda with x do 1 if x else -1).
+                      @map (lambda with x do 1 if x==1 else -1).
 
     io @println a.
 where the output is,
@@ -307,7 +294,7 @@ The following is a more involved example,
     let Person(name,age,gender) = people@1.
 
     -- print out the member values
-    io @println (name + " is " + age + " years old and is a " +  gender + ".").
+    io @println (name + " is " + tostring age + " years old and is a " +  gender + ".").
 The output is,
 ::
 
@@ -464,9 +451,8 @@ iterate pattern matching on each of the pairs on the list with the pattern ``(ix
 The following is a short program that demonstrates an ``if`` statement,
 ::
     load system io.
-    load system type.
 
-    let x = type @tointeger (io @input "Please enter an integer: ").
+    let x = tointeger (io @input "Please enter an integer: ").
 
     if x < 0 do
         let x = 0.
@@ -583,9 +569,9 @@ Consider the following example,
     let p = (1,2).
 
     if p is (x,y,z) do
-        io @println ("it's a triple with: "+x+","+y+","+z)
+        io @println ("it's a triple with: "+ tostring x +","+ tostring y +","+ tostring z)
     elif p is (x,y) do
-        io @println ("it's a pair with: "+x+","+y).
+        io @println ("it's a pair with: "+ tostring x +","+ tostring y).
     else do
         io @println "it's something else".
     end
@@ -681,7 +667,7 @@ the kind of values that are being passed to a particular function body,
             throw Error("factorial is not defined for "+n).
     end
 
-    io @println ("The factorial of 3 is: " + factorial 3).
+    io @println ("The factorial of 3 is: " + tostring (factorial 3)).
 Here we see that first, we make sure that we are being passed integers and second,
 that the integers are positive using the appropriate conditions on the input values. If
 we are being passed a negative integer, then we throw an error.
@@ -701,7 +687,7 @@ This gives us,
             throw Error("factorial is not defined for "+n).
     end
 
-    io @println ("The factorial of 3 is: " + factorial 3).
+    io @println ("The factorial of 3 is: " + tostring (factorial 3)).
 The parentheses as they appear in the conditional pattern expressions are necessary.
 
 Pattern Matching in For Loops
@@ -739,7 +725,6 @@ Exception handling in Asteroid is very similar to exception handling in many of 
 ::
     load system io.
     load system random.
-    load system type.
 
     structure Head with
         data val.
@@ -757,9 +742,9 @@ Exception handling in Asteroid is very similar to exception handling in many of 
             throw Tail i.
         end
     catch Head v do
-        io @println ("you win with "+type @tostring (v,type @stringformat (4,2))).
+        io @println ("you win with "+tostring (v,stringformat (4,2))).
     catch Tail v do
-        io @println ("you loose with "+type @tostring (v,type @stringformat (4,2))).
+        io @println ("you loose with "+tostring (v,stringformat (4,2))).
     end
 The ``Head`` and ``Tail`` exceptions are handled by their corresponding ``catch`` statements, respectively.  In both cases the exception object is unpacked using pattern matching and the unpacked value is used in the appropriate message printed to the screen.
 
@@ -844,7 +829,7 @@ data fields.  So even if we declare a structure like this,
 
     -- pattern matching ignores function definitions
     let Person(name,age) = Person("Scarlett",28).
-    io @println (name+" is "+age+" years old").
+    io @println (name+" is "+ tostring age+" years old").
 where the function ``hello`` is defined in the middle of the data fields,
 pattern matching simply ignores the function definition and pattern matches
 only on the data fields.  The output of the program is,
@@ -861,7 +846,6 @@ initializes the data members of the object.
 Here is the program listing for the example in Asteroid,
 ::
    load system io.
-   load system type.
 
    structure Dog with
       data name.
@@ -879,7 +863,7 @@ Here is the program listing for the example in Asteroid,
    let dogs = [fido,buddy,bella].
 
    -- print out all the dogs that know how to fetch
-   for (Dog(name,tricks) if type @tostring tricks is ".*fetch.*") in dogs do
+   for (Dog(name,tricks) if tostring tricks is ".*fetch.*") in dogs do
       io @println (name+" knows how to fetch").
    end
 After declaring the structure we instantiate the dogs with their
@@ -1104,7 +1088,7 @@ I/O functions are defined as member functions of the ``io`` module. The ``printl
 
     let a = 1.
     let b = 2.
-    io @println ("a + b = " + (a + b)).
+    io @println ("a + b = " + tostring (a + b)).
 The output is
 ::
 
@@ -1121,24 +1105,23 @@ The width specifier tells the ``tostring`` function how many characters to reser
 Here is a program that exercises some of the string formatting options,
 ::
     load system io.
-    load system type.
     load system math.
 
     -- if the width specifier is larger than the length of the value
     -- then the value will be right justified
-    let b = type @tostring(true,type @stringformat(10)).
+    let b = tostring(true,stringformat(10)).
     io @println b.
 
-    let i = type @tostring(5,type @stringformat(5)).
+    let i = tostring(5,stringformat(5)).
     io @println i.
 
     -- we can format a string by applying tostring to the string
-    let s = type @tostring("hello there!",type @stringformat(30)).
+    let s = tostring("hello there!",stringformat(30)).
     io @println s.
 
     -- for floating point values: first value is width, second value precision.
     -- if precision is missing then value is left justified and zero padded on right.
-    let r = type @tostring(math @pi,type @stringformat(6,3)).
+    let r = tostring(math@pi,stringformat(6,3)).
     io @println r.
 The output of the program is,
 ::
@@ -1170,9 +1153,8 @@ We can use the type casting functions such as ``tointeger`` or ``toreal`` define
 ``type`` module to convert the string returned from ``input`` into a numeric value,
 ::
     load system io.
-    load system type.
 
-    let i if i > 0  = type @tointeger(io @input("Please enter a positive integer value: ")).
+    let i if i > 0  = tointeger(io @input("Please enter a positive integer value: ")).
 
     for k in 1 to i do
         io @println k.
@@ -1217,8 +1199,8 @@ Say that you wanted to load the ``math`` module so you could execute a certain t
     load system io.
     load system math.
 
-    let x = math @sin( math @pi / 2 ).
-    io @println("The sine of pi / 2 is " + x + ".").
+    let x = math @sin( math@pi / 2.0 ).
+    io @println("The sine of pi / 2 is " + tostring x + ".").
 Both the function ``sin`` and the constant value ``pi`` are defined in the ``math`` module.
 In addition, the ``io`` module is where all input/output functions in Asteroid (such as ``println``) come from.
 If you want the complete list of modules, make sure to check out the reference guide `here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html>`_.
@@ -1318,12 +1300,11 @@ exception object itself.  Here is an example using a ``wildcard``,
 Here is an example using a variable,
 ::
     load system io.
-    load system type.
 
     try
         let (x,y) = (1,2,3).
     catch e do
-        io @println ("something happened: "+type @tostring(e)).
+        io @println ("something happened: "+ tostring e).
     end
 In this last example we simply convert the caught exception object into a string
 and print it,
@@ -1346,15 +1327,14 @@ In order to demonstrate this type of multi-dispatch, we show the example program
 written in Asteroid,
 ::
     load system io.
-    load system type.
 
-    let pos_num = pattern %[x if type @isscalar(x) and x > 0]%.
+    let pos_num = pattern %[x if isscalar(x) and x > 0]%.
 
     structure Asteroid with
        data size.
        function __init_
           with v:*pos_num do
-             let this @size = v.
+             let this@size = v.
           end
     end
 
@@ -1362,7 +1342,7 @@ written in Asteroid,
         data size.
        function __init_
           with v:*pos_num do
-             let this @size = v.
+             let this@size = v.
           end
     end
 

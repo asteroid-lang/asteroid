@@ -1,7 +1,6 @@
   load system io.
-  load system type.
 
-  let a = type @tointeger([67, 8, 1, 5, 45] @map(type @tostring) @sort(true) @join("")).
+  let a = tointeger ([67, 8, 1, 5, 45] @map tostring @sort true @join "").
   io @println a.
 
   assert (a == 8675451).

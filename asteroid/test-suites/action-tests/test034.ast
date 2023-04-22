@@ -4,7 +4,7 @@
   function isprime with x do
       if x >= 2 do
           for y in range(2,x) do
-              if not math @mod(x,y) do
+              if math @mod(x,y) == 0 do
                   return false.
               end
           end

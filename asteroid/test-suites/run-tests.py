@@ -74,3 +74,4 @@ for d in dirs:
                    exceptions=verbose_failure,
                    redundancy=redundancy)
             f.close()
+

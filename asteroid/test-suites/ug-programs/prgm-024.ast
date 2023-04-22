@@ -1,7 +1,6 @@
     load system io.
-    load system type.
 
-    let x = type @tointeger (io @input "Please enter an integer: ").
+    let x = tointeger (io @input "Please enter an integer: ").
 
     if x < 0 do
         let x = 0.

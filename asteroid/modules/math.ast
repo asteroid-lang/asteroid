@@ -227,22 +227,19 @@ end
 ------------------------------------------------------------------
 function mod
 ------------------------------------------------------------------
-with (v,d) do return escape
+-- only defined as a function over integers for now
+with (v:%integer,d:%integer) do return escape
 "
 global __retval__
-from asteroid.state import state
-from asteroid.support import promote
 
 val_v = state.symbol_table.lookup_sym('v')
 val_d = state.symbol_table.lookup_sym('d')
 
-if val_v[0] not in ['integer','real']:
-  raise ValueError('unsupported type \'{}\' for mod'.format(val_v[0]))
-
-if val_d[0] not in ['integer','real']:
-  raise ValueError('unsupported type \'{}\' for mod'.format(val_d[0]))
-
-__retval__ = (promote(val_v[0],val_d[0]),val_v[1] % val_d[1])
+__retval__ = ('integer',val_v[1] % val_d[1])
+"
+with _ do escape 
+"
+raise ValueError('unsupported type in \'mod\'')
 "
 end
 

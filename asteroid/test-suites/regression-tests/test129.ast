@@ -6,18 +6,18 @@ let n = E + e - 4.00e01 + 0.1.
 io @println(n).
 assert(n == -69.8999999999897).
 
-let s = type @tostring(n,type @stringformat(10,10,true)).
+let s = tostring(n,stringformat(10,10,true)).
 io @println(s).
 assert(s == "-6.9900000000e+01").
 
-let s = type @tostring(n,type @stringformat(10,10,false)).
+let s = tostring(n,stringformat(10,10,false)).
 io @println(s).
 assert(s == "-69.9000000000").
 
 let y = 1.
-io @println(type @gettype(y)).
-assert(type @gettype(y) == "integer").
+io @println(gettype(y)).
+assert(gettype(y) == "integer").
 
 let z = 1.0.
-io @println(type @gettype(z)).
-assert(type @gettype(z) == "real").
+io @println(gettype(z)).
+assert(gettype(z) == "real").

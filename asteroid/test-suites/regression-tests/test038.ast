@@ -1,4 +1,4 @@
 
 load system io.
 let t = (1,2).
-io @println ("tuple = " + t).
+io @println ("tuple = " + tostring t).

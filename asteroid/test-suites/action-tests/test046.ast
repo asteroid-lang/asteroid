@@ -16,7 +16,7 @@
           let inside = inside+1.
       end
   end
-  let area = 4.0 * inside / n.
+  let area = 4.0 * toreal inside / toreal n.
   io @println area.
 
   assert (area == 3.1392).

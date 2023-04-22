@@ -6,7 +6,7 @@ assert(x == 2).
 let y = +3.0.
 assert(y == 3.0).
 
-let z = +x + +y - +x * +-x.
+let z = toreal(+x) + +y - toreal(+x) * + toreal(-x).
 assert(z == 9.0).
 
 assert(+12 == 12).

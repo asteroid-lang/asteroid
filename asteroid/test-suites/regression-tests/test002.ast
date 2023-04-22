@@ -1,9 +1,7 @@
 
 load system io.
 load system util.
-load system type.
 
-let isnone = type @isnone.
 
 -----------------------------------------------------------------------
 let x = [1,2].

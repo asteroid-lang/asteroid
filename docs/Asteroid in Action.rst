@@ -201,7 +201,7 @@ Challenge: Incrementing filenames
   let ext = ".txt".
 
   for i in 1 to 5 do
-      io @println (root+i+ext).
+      io @println (root + tostring i + ext).
   end
 Output::
 
@@ -220,7 +220,6 @@ Challenge: Random passwords
 In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` object maintains a list of items that we can randomly select from using the ``pick`` member function.  As input to the ``Pick`` object, we compute a bunch of lists of characters that are useful for password construction.  The function ``achar`` converts a decimal ASCII code to a single character string.
 ::
   load system io.
-  load system type.
   load system util.
   load system pick.
   load system random.
@@ -228,7 +227,7 @@ In our solution we take advantage of Asteroid's ``Pick`` object.  The ``Pick`` o
   random @seed(42).
 
   -- make up lists of symbols useful for password construction
-  let int_list = [0 to 9] @map(type @tostring).
+  let int_list = [0 to 9] @map(tostring).
   let lc_list = [97 to 122] @map(util @achar). -- lower case characters
   let uc_list = [65 to 90] @map(util @achar). --upper case characters
   let sp_list = ["!","_","#","$","%","*"].
@@ -366,7 +365,7 @@ If there is only one file, then the phrase should be ``1 file found`` instead.
   load system io.
 
   for n in 0 to 5 do
-      io @println (n+" file"+("s " if n>1 or n==0 else " ")+"found").
+      io @println (tostring n + " file" + ("s " if n>1 or n==0 else " ") + "found").
   end
 Output::
 
@@ -427,7 +426,7 @@ In our solution we use a hash table to count the number of word occurences.
   -- put the words into a hash table, the value is the count of the words
   let ht = hash @hash().
   for w in wl do
-      if not ht @get(w) do
+      if ht @get(w) is none do
           ht @insert(w,1).
       else do
           ht @insert(w,ht @get(w)+1).
@@ -467,13 +466,13 @@ second string (``strb``).
   for startix in 0 to stra @length()-1 do
       for endix in startix to stra @length()-1 do
           let s = stra @[startix to endix].
-          if strb @index(s) and s @length() > common @length() do
+          if strb @index(s) =/= -1 and s @length() > common @length() do
               let common = s.
           end
       end
   end
 
-  if common do
+  if common =/= "" do
       io @println ("The longest common substring is '"+common+"'.").
   else do
       io @println ("There are no common substrings.").
@@ -711,7 +710,7 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
       -- Note: make this code more general
       let n_gram = [word_list@i, word_list@(i+1), word_list @(i+2)] @join(" ").
       -- put the N-gram into a hash table, the value is the count of the N-gram in the text.
-      if not ht @get(n_gram) do
+      if ht @get(n_gram) is none do
           ht @insert(n_gram,1).
       else do
           ht @insert(n_gram,ht @get(n_gram)+1).
@@ -719,7 +718,7 @@ We do this by finding and hashing N-grams after the appropriate preprocessing.  
   end
 
   for ((n_gram,cnt) if cnt > 1) in ht @aslist() do
-      io @println (n_gram+": "+cnt).
+      io @println (n_gram+": "+ tostring cnt).
   end
 Output::
 
@@ -759,7 +758,7 @@ Other constants are also available.
   load system io.
   load system math.
 
-  let tau = 2 * math @pi.
+  let tau = 2.0 * math @pi.
 
   io @println (math @e).
   io @println tau.
@@ -812,7 +811,7 @@ the predicate applied to the input is true.  The last case is of some interest b
           throw Error("factorial is not defined for "+n).
       end
 
-  io @println ("The factorial of 3 is: " + fact (3)).
+  io @println ("The factorial of 3 is: " + tostring(fact 3)).
   assert (fact(3) == 6).
 Output::
 
@@ -956,7 +955,7 @@ Prime numbers are those that can be divided only by 1, and by themselves.
   function isprime with x do
       if x >= 2 do
           for y in range(2,x) do
-              if not math @mod(x,y) do
+              if math @mod(x,y) == 0 do
                   return false.
               end
           end
@@ -989,7 +988,7 @@ Challenge: List of prime numbers
   function isprime with x do
       if x >= 2 do
           for y in range(2,x) do
-              if not math @mod(x,y) do
+              if math @mod(x,y) == 0 do
                   return false.
               end
           end
@@ -1035,7 +1034,7 @@ Prime factors are the prime numbers that divide the given integer number exactly
   function isprime with x do
       if x >= 2 do
           for y in range(2,x) do
-              if not math @mod(x,y) do
+              if math @mod(x,y) == 0 do
                   return false.
               end
           end
@@ -1061,7 +1060,7 @@ Prime factors are the prime numbers that divide the given integer number exactly
   while n > 1 do
       let factor = primes_list @ix.
       let ix = ix+1.
-      if not math @mod(n,factor) do
+      if math @mod(n,factor) == 0 do
           let ix = 0.
           let n = n/factor.
           let factors = factors+[factor].
@@ -1141,7 +1140,6 @@ Asteroid has two random number generation functions: ``random()`` generates a ra
   load system io.
   load system random.
   load system util.
-  load system type.
 
   let randint = random @randint.
 
@@ -1153,7 +1151,7 @@ Asteroid has two random number generation functions: ``random()`` generates a ra
 
   -- generating a random number in the appropriate interval
   let n = 10.
-  io @println (randint(0.0,type @toreal(n))).
+  io @println (randint(0.0, toreal n)).
   io @println (randint(0,n)).
 Output:
 ::
@@ -1182,18 +1180,17 @@ To illustrate it with an example, let’s take the number 1234 as the seed. On s
 ::
   load system io.
   load system util.
-  load system type.
 
   let n = 1234.
   let sq = n*n.
-  let sq_str = type @tostring(sq).
+  let sq_str = tostring sq.
   if sq_str @length() < 8 do
       let prefix = [1 to 8-sq_str@length()] @map(lambda with _ do return "0")
                                             @join("").
       let sq_str = prefix + sq_str.
   end
   let rstr = sq_str @[2 to 5].
-  let rval = type @tointeger(rstr).
+  let rval = tointeger rstr.
   io @println rval.
 
   assert (rval == 5227)
@@ -1300,11 +1297,11 @@ where :math:`n` is the number of elements in the array :math:`x`; :math:`\bar{x}
 
   let values = [727.7, 1086.5, 1091.0, 1361.3, 1490.5, 1956.1].
 
-  let avg = values @reduce(lambda with (x,y) do return x+y) / values @length().
+  let avg = values @reduce(lambda with (x,y) do return x+y) / toreal(values @length()).
   let diff_sq = values @map(lambda with x do return math @pow(x-avg,2)).
   let numerator = diff_sq @reduce(lambda with (x,y) do return x+y).
   let denominator = values @length() -1.
-  let sigma = math @sqrt(numerator/denominator).
+  let sigma = math @sqrt(numerator/toreal denominator).
   io @println sigma.
 
   assert (sigma == 420.96248961952256)
@@ -1372,7 +1369,6 @@ All these variants can be implemented by using ``with`` clauses and conditional 
   load system io.
   load system math.
   load system util.
-  load system type.
 
   -- define common math functions locally so the
   -- formulas are easy to read
@@ -1382,7 +1378,6 @@ All these variants can be implemented by using ``with`` clauses and conditional 
   let pow = math @pow.
   let atan = math @atan.
   let pi = math @pi.
-  let toreal = type @toreal.
 
   function polar_to_cartesian with (r,psi) do
       -- return a tuple: (x,y)
@@ -1395,11 +1390,11 @@ All these variants can be implemented by using ``with`` clauses and conditional 
 
   function cartesian_to_psi
       with (x,y) if x > 0  do
-          return atan(toreal(y)/x).
+          return atan(toreal y/toreal x).
       with (x,y) if x < 0 and y >= 0 do
-          return atan(toreal(y)/x)+pi.
+          return atan(toreal y/toreal x)+pi.
       with (x,y) if x < 0 and y < 0 do
-          return atan(toreal(y)/x)-pi.
+          return atan(toreal y/toreal x)-pi.
       with (x,y) if x == 0 and y > 0 do
           return pi/2.
       with (x,y) if x == 0 and y < 0 do
@@ -1449,7 +1444,7 @@ To calculate the area of a circle with a radius of 1, pairs of random numbers be
           let inside = inside+1.
       end
   end
-  let area = 4.0 * inside / n.
+  let area = 4.0 * toreal inside / toreal n.
   io @println area.
 
   assert (area == 3.1392).
@@ -1470,19 +1465,18 @@ ask for the initial guess and enter the loop, which compares the guess with the 
   load system io.
   load system random.
   load system util.
-  load system type.
 
   random @seed(42).
 
   let n = random @randint(0,10).
-  let guess = type @tointeger(io @input("Guess my number between 0 and 10: ")).
+  let guess = tointeger(io @input("Guess my number between 0 and 10: ")).
   while guess =/= n do
       if guess < n do
           io @println "Too small.".
       elif guess > n  do
            io @println "Too big.".
       end
-      let guess = type @tointeger(io @input("Try again: ")).
+      let guess = tointeger(io @input("Try again: ")).
   end
   io @println "Yes, this is it!".
 Challenge: Binary to integer
@@ -1493,10 +1487,9 @@ Challenge: Binary to integer
 In Asteroid this is straightforward using the built-in ``tointeger`` function, passing it a string representation of the binary number and the base.
 ::
   load system io.
-  load system type.
 
   let bin = "101101".
-  let int = type @tointeger(bin,2).
+  let int = tointeger(bin,2).
   io @println int.
 
   assert (int == 45).
@@ -1514,10 +1507,6 @@ Challenge: Integer as binary, octal, and hex
 In Asteroid this is easily done with the ``tobase`` function.
 ::
   load system io.
-  load system type.
-
-  let tobase = type @tobase.
-  let tointeger = type @tointeger.
 
   let val = 42.
 
@@ -1545,14 +1534,13 @@ Challenge: Sum of digits
 Pretty straightforward using string and list manipulation.
 ::
   load system io.
-  load system type.
 
   let number = 139487854.
 
 
-  let s = type @tostring number @explode()
-                                @map(type @tointeger)
-                                @reduce(lambda with (x,y) do return x+y).
+  let s = tostring number @explode()
+                          @map tointeger
+                          @reduce (lambda with (x,y) do x+y).
   io @println s.
 
   assert (s == 49).
@@ -1590,9 +1578,8 @@ Challenge: Compose the largest number
 The easiest way to achieve that is to treat the numbers as strings, sort them alphabetically in descending order, concatenate the pieces to a single string, and get the resulting integer.
 ::
   load system io.
-  load system type.
 
-  let a = type @tointeger([67, 8, 1, 5, 45] @map(type @tostring) @sort(true) @join("")).
+  let a = tointeger ([67, 8, 1, 5, 45] @map tostring @sort true @join "").
   io @println a.
 
   assert (a == 8675451).
@@ -1617,7 +1604,6 @@ In the program below, there are four such sequences: for thousands, hundreds, te
   load system math.
   load system util.
   load system hash.
-  load system type.
 
   let roman_hash = hash @hash().
   roman_hash @insert(1000,["","M","MM","MMM"]).
@@ -1626,11 +1612,11 @@ In the program below, there are four such sequences: for thousands, hundreds, te
   roman_hash @insert(1,["","I","II","III","IV","V","VI","VII","VIII","IX"]).
 
   let n = 2018.
-  let p10 = range(type @tostring n @length()) @map(lambda with x do return math @pow(10,x))
-                                              @reverse().
-  let digits = type @tostring n @explode()
-                                @map(type @tointeger).
-  let z = util @zip(digits, p10).
+  let p10 = range(tostring n @length()) @map(lambda with x do math @pow (10,x))
+                                        @reverse().
+  let digits = tostring n @explode ()
+                          @map tointeger.
+  let z = util @zip (digits, p10).
   io @println z.
   let roman = "".
   for (d,p) in z do
@@ -1680,7 +1666,7 @@ The zero name appears only in the case when the given number is zero.
           return names @n.
       with (n:%integer) if n < 100 do
           let r = names @(n / 10 + 18).
-          let r = r + ("-" + names @(mod(n,10))) if mod(n,10) else "".
+          let r = r + ("-" + names @(mod(n,10))) if mod(n,10) =/= 0 else "".
           return r.
       with (n:%integer) if n < 1000 do
           return spell_part(n,100,"hundred").
@@ -1691,7 +1677,7 @@ The zero name appears only in the case when the given number is zero.
   function spell_part
       with (n:%integer,base:%integer,name:%string) do
           let r = spell_number(n/base) + " " + name.
-          return r + " " + spell_number(mod(n,base)) if mod(n,base) else r.
+          return r + " " + spell_number(mod(n,base)) if mod(n,base) =/= 0 else r.
       end
 
   io @println (spell_number 15).
@@ -1726,7 +1712,7 @@ Consider the complete program:
 
   let (a,b) = (10,20).
   let (b,a) = (a,b).
-  io @println ("a = "+a,"b = "+b).
+  io @println ("a = "+ tostring a,"b = "+ tostring b).
 
   assert ((a,b) is (20,10)).
 Output:
@@ -1993,7 +1979,9 @@ Challenge: Is an element in a list?
 
   let array = [10, 14, 0, 15, 17, 20, 30, 35].
   let x = 17.
-  io @println ((x+" is in the list") if array @member(x) else (x+" is not in the list")).
+  io @println ((tostring x +" is in the list")
+          if array @member x
+          else (tostring x + " is not in the list")).
 Output:
 ::
 
@@ -2007,10 +1995,10 @@ We can also use a reduction function to solve this,
   let array = [10, 14, 0, 15, 17, 20, 30, 35].
   let x = 17.
 
-  if array @reduce(lambda with (acc,i) do return true if i==x else acc,false) do
-      io @println (x+" is in the list").
+  if array @reduce(lambda with (acc,i) do true if i==x else acc,false) do
+      io @println (tostring x + " is in the list").
   else
-      io @println (x+" is not in the list").
+      io @println (tostring x + " is not in the list").
   end
 Output:
 ::
@@ -2028,12 +2016,11 @@ The easiest way to do this is with a reduction,
   load system io.
   load system math.
   load system util.
-  load system type.
 
   let mod = math @mod.
 
   let array = [2, 4, 18, 9, 16, 7, 10].
-  let odd = array @reduce(lambda with (acc,i) do return i if type @isnone(acc) and mod(i,2) else acc,none).
+  let odd = array @reduce (lambda with (acc,i) do i if isnone acc and mod(i,2) =/= 0 else acc,none).
   io @println odd.
 Output:
 ::
@@ -2049,7 +2036,7 @@ Challenge: Take every second element
   load system io.
   load system math.
 
-  let array = [20 to 30] @filter(lambda with x do return math @mod(x,2)).
+  let array = [20 to 30] @filter(lambda with x do math @mod(x,2)=/=0).
   io @println array.
 
   assert (array == [21,23,25,27,29]).
@@ -2166,14 +2153,13 @@ Challenge: Increasing sequences
 > Check if the given array contains increasing (or decreasing) numbers.
 ::
   load system io.
-  load system type.
 
   let a = [3, 7, 19, 20, 34].
-  let b = type @toboolean(a @reduce(lambda with (x,y) do return y if x<y else false)).
+  let b = a @reduce(lambda with ((_,x),y) do (true,y) if x<=y else (false,y),(true,a@0)).
 
-  io @println b.
+  io @println (b@0).
 
-  assert (b).
+  assert (b@0).
 Output:
 ::
 
@@ -2242,7 +2228,7 @@ The procedure:
       io @println "".
       for r in m do
           for e in r do
-              io @print (e + " ").
+              io @print (tostring e + " ").
           end
           io @println ("").
       end
@@ -2369,7 +2355,7 @@ For example, a hash is a collection mapping a car’s license plate to the colou
 
   let color_hash = hash @hash().
   for (_,color) in fruit_lst do
-      if not color_hash @get(color) do
+      if color_hash @get(color) is none do
           color_hash @insert(color,1).
       else
           color_hash @insert(color, color_hash @get(color) +1).
@@ -2396,16 +2382,15 @@ Challenge: Product table
 We will do this with an outer loop  and a ``map`` function.
 ::
   load system io.
-  load system type.
 
   function format with v do
       let maxlen = 3.
-      let vstr = type @tostring v.
-      return [1 to maxlen-len(vstr)] @map(lambda with _ do return " ") @join("") + vstr.
+      let vstr = tostring v.
+      return [1 to maxlen-len(vstr)] @map(lambda with _ do " ") @join("") + vstr.
   end
 
   for i in 1 to 10 do
-      io @println ([1 to 10] @map(lambda with x do return format(i*x)) @join(" ")).
+      io @println ([1 to 10] @map(lambda with x do format(i*x)) @join(" ")).
   end
 Output:
 ::
@@ -2472,7 +2457,6 @@ The only thing that is left to do is to iterate appropiately and format the outp
   load system io.
   load system vector.
   load system util.
-  load system type.
 
   let triangle = [[1]].
   let ix = 0.
@@ -2487,7 +2471,7 @@ The only thing that is left to do is to iterate appropiately and format the outp
   end
 
   for r in triangle do
-      io @println (r @map(lambda with v do return type @tostring v) @join(" ")).
+      io @println (r @map(lambda with v do tostring v) @join(" ")).
   end
 Output:
 ::

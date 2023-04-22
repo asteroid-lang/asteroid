@@ -1,5 +1,4 @@
 
 load system io.
-load system type.
-let l if type @tostring l is "\[.*\]" = [1,2,3].
+let l if tostring l is "\[.*\]" = [1,2,3].
 io @println l.
