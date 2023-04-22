@@ -11,7 +11,7 @@ from asteroid.globals import *
 from asteroid.support import *
 from asteroid.frontend import Parser
 from asteroid.state import state, dump_trace
-from asteroid.walk import walk, debug_walk
+from asteroid.walk import walk
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
@@ -95,11 +95,10 @@ def interp(program,
         # walk the AST
         if tree_dump:
             dump_AST(state.AST)
+        if debugger:
+            set_debugger(debugger)
         if do_walk:
-            if debugger:
-                debug_walk(state.AST, debugger)
-            else:
-                walk(state.AST)
+            walk(state.AST)
         if symtab_dump:
             state.symbol_table.dump()
 

@@ -167,3 +167,11 @@ patterns = {
 # list of structures that a pattern type-pattern will subsume/overlap
 
 pattern_subsumes = patterns - {'id'}
+
+###########################################################################################
+# the debugger object set by the interpreter at start time
+debugger = None
+
+def set_debugger(dbg):
+    debugger = dbg
+
