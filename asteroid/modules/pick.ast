@@ -1,3 +1,4 @@
+module pick with
 ------------------------------------------------------------------
 -- pick.ast
 --
@@ -9,7 +10,7 @@
 load system random.
 
 ------------------------------------------------------------------
-structure __PICK__
+structure Pick
 ------------------------------------------------------------------
 -- A pick object holds a list of items that
 -- we can randomly pick from with the 'pickitems'
@@ -37,18 +38,13 @@ structure __PICK__
       let this @items = l.
   end
 
-end -- __PICK__
+end -- Pick
 
 ------------------------------------------------------------------
-structure __PICK_MODULE__
+function pick 
 ------------------------------------------------------------------
-with
-
-function pick with l:%list do
-   return __PICK__(l).
+with l:%list do
+   return Pick(l).
 end
 
-end -- __PICK_MODULE__
-
-------------------------------------------------------------------
-let pick = __PICK_MODULE__().
+end -- Pick module

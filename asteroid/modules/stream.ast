@@ -1,3 +1,4 @@
+module stream with
 ------------------------------------------------------------------
 -- stream.ast
 --
@@ -11,7 +12,7 @@
 load system util.
 
 ------------------------------------------------------------------
-structure __STREAM__
+structure Stream
 ------------------------------------------------------------------
 -- Asteroid stream implementation based on lists
 with
@@ -71,7 +72,7 @@ function rewind
     let this @curr_ix = 0.
   end
 
-function __string__
+function __str__
 with none do return
 escape
 "
@@ -83,25 +84,21 @@ this_val = state.symbol_table.lookup_sym('this')
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 __retval__ = ('string', term2string(memory[0]))
 "
 end
 
-end -- __STREAM__
+end -- Stream structure
 
 
 ------------------------------------------------------------------
-structure __STREAM_MODULE__
+function stream 
 ------------------------------------------------------------------
-with
-
-function stream with l:%list do
-   return __STREAM__(l).
+with l:%list do
+   return Stream(l).
 end
 
-end -- __STREAM_MODULE__
-
-------------------------------------------------------------------
-let stream = __STREAM_MODULE__().
+end -- stream module

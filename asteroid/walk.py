@@ -13,15 +13,6 @@ from asteroid.support import *
 from asteroid.state import state, warning
 
 #########################################################################
-# These two variables are used by the debugger. "Debugging" is a flag
-# to tell if we're currently in debugging mode and "Debugger" is a
-# debugger object. For more information on the debugger's helper
-# functions. See the function definitions in this file.
-#########################################################################
-debugging = False
-debugger = None
-
-#########################################################################
 # this dictionary maps list member function names to function
 # implementations given in the Asteroid prologue.
 # see 'prologue.ast' for details
@@ -227,6 +218,7 @@ def unify(term, pattern, unifying = True ):
                         .format(typematch_kind) )
             (OBJECT,
                 (STRUCT_ID, (ID, struct_id)),
+                (MEMBER_NAMES, LIST),
                 (OBJECT_MEMORY, LIST)) = term
             if struct_id == typematch_kind:
                 return []
@@ -299,8 +291,8 @@ def unify(term, pattern, unifying = True ):
         # to an object as a pattern, e.g.
         #    let o = A(1,2). -- A is a structure with 2 data members
         #    let *o = o.
-        (OBJECT, (STRUCT_ID, (ID, pid)), (OBJECT_MEMORY, (LIST, pl))) = pattern
-        (OBJECT, (STRUCT_ID, (ID, tid)), (OBJECT_MEMORY, (LIST, tl))) = term
+        (OBJECT, (STRUCT_ID, (ID, pid)), pml, (OBJECT_MEMORY, (LIST, pl))) = pattern
+        (OBJECT, (STRUCT_ID, (ID, tid)), tml, (OBJECT_MEMORY, (LIST, tl))) = term
         if pid != tid:
             raise PatternMatchFailed(
                 "pattern type '{}' and term type '{}' do not agree"
@@ -316,14 +308,29 @@ def unify(term, pattern, unifying = True ):
         # in patterns constructor functions match objects, e.g.
         #   let A(x,y) = A(1,2)
         # only constructors are allowed in patterns
-        (APPLY,
-         (ID, apply_id),
-         arg) = pattern
+        f = pattern[1]
+        if f[0] == 'index':
+            # scope qualified pattern name
+            (APPLY,
+              (INDEX,
+                (ID, modname),
+                (ID, apply_id)),
+              arg) = pattern
+        else:
+            modname = None
+            (APPLY,
+              (ID, apply_id),
+              arg) = pattern
         # unpack term
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
+         (MEMBER_NAMES, (LIST, member_names)),
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
+        if modname:
+            orig_config = set_module_env(modname)        
         type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if modname:
+            set_config(orig_config)
         if not type or type[0] != 'struct':
             raise ValueError("illegal pattern, '{}' is not a type".format(apply_id))
         if struct_id != apply_id:
@@ -340,6 +347,10 @@ def unify(term, pattern, unifying = True ):
         return unify(data_list, arg_list, unifying)
 
     elif (not unifying) and pattern[0] == 'apply' and term[0] == 'apply':
+        fp = pattern[1]
+        ft = term[1]
+        if fp[0] != 'id' or ft[0] != 'id':
+            raise ValueError("pattern subsumption not supported")
         # unpack the apply structures
         (APPLY, (ID, t_id), t_arg) = term
         (APPLY, (ID, p_id), p_arg) = pattern
@@ -498,19 +509,20 @@ def read_at_ix(structure_val, ix):
     elif structure_val[0] == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
-         (OBJECT_MEMORY, (LIST, memory))) = structure_val
-        # compute the index -- for objects this has to be done
-        # in the context of the struct scope
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-        # unpack the struct value
-        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
-
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
         if ix[0] == 'id' and ix[1] in member_names:
             ix_val = ('integer', member_names.index(ix[1]))
         else:
             ix_val = walk(ix)
+
+    elif structure_val[0] == 'module':
+        (MODULE, id, (CLOSURE, closure)) = structure_val
+        config = state.symbol_table.get_config()
+        state.symbol_table.set_config(closure)
+        val = walk(ix)
+        state.symbol_table.set_config(config)
+        return val
 
     elif structure_val[0] == 'pattern':
         # simple patterns are just structures - skip the pattern operator
@@ -569,23 +581,26 @@ def store_at_ix(structure_val, ix, value):
     elif structure_val[0] == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
-         (OBJECT_MEMORY, (LIST, memory))) = structure_val
-        # compute the index -- for objects this has to be done
-        # in the context of the struct scope
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-        # unpack the struct value
-        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
-
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
         if ix[0] == 'id' and ix[1] in member_names:
             ix_val = ('integer', member_names.index(ix[1]))
         else:
             ix_val = walk(ix)
 
+    elif structure_val[0] == 'module':
+        (MODULE, id, (CLOSURE, closure)) = structure_val
+        config = state.symbol_table.get_config()
+        state.symbol_table.set_config(closure)
+        # execute an assignment in the context of the module
+        walk(('unify', ix, value))
+        state.symbol_table.set_config(config)
+        return
+
     elif structure_val[0] == 'pattern':
         # simple patterns are just structures - skip the pattern operator
-        return store_at_ix(structure_val[1], ix, value)
+        store_at_ix(structure_val[1], ix, value)
+        return
 
     else:
         raise ValueError("term '{}' is not a mutable structure"
@@ -618,12 +633,26 @@ def store_at_ix(structure_val, ix, value):
             # corresponding rval value
             (INTEGER, location) = lval[i]
             memory[location] = rval[i]
-
         return
 
     else:
         raise ValueError("index op '{}' in patterns not supported"
                          .format(ix_val[0]))
+
+#########################################################################
+# set module environment
+def set_module_env(modname):
+    module_val = state.symbol_table.lookup_sym(modname)
+    if module_val[0] != 'module':
+        raise ValueError("{} is not a module".format(modname))
+    (MODULE, id, (CLOSURE, closure)) = module_val
+    config = state.symbol_table.get_config()
+    state.symbol_table.set_config(closure)
+    return config
+
+#########################################################################
+def set_config(config):
+    state.symbol_table.set_config(config)
 
 #########################################################################
 def handle_builtins(node):
@@ -897,8 +926,6 @@ def pop_stackframe(error_trace=False):
 
 #########################################################################
 def handle_call(obj_ref, fval, actual_val_args, fname):
-    # Needed for later
-    global debugging
 
     # function calls transfer control - save our caller's lineinfo
     # we save the debug information here to preserve lineinfo between
@@ -916,6 +943,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Note: we have to do this here because unifying
     # over the body patterns can introduce variable declarations,
     # think conditional pattern matching.
+    # Note: we are keeping a stack of configs so that
+    # the debugger can look at contents of 
+    # Asteroid stack frames
     state.symbol_table.saved_configs.append(
         state.symbol_table.get_config()
     )
@@ -939,8 +969,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
         # Deconstruct function body
         (BODY,
-        (PATTERN, p),
-        (STMT_LIST, stmts)) = body_list_val[ i + 1]
+          (PATTERN, p),
+          stmts) = body_list_val[ i + 1]
 
         try:
             # Attempt to unify the actual args and the pattern
@@ -965,37 +995,24 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Check for useless patterns
     try:
         if state.eval_redundancy:
-            old_debugging = debugging
-            debugging = False
             check_redundancy(body_list, fname)
-            debugging = old_debugging
 
     # Reset settings
     except RedundantPatternFound as r:
-        debugging = old_debugging
         # restore caller's env
         state.lineinfo = old_lineinfo
-        # Keep debugger up to date
-        if debugging: debugger.set_lineinfo(state.lineinfo)
         pop_stackframe()
+        if debugger: debugger.set_lineinfo(state.lineinfo)
         raise r
 
     # execute the function
     global function_return_value
-
     try:
         function_return_value.append(None)
-
-        walk_stmt_list(stmts)
-
-        # Pop the return value
+        walk(stmts)
         val = function_return_value.pop()
-
-        # If we have one, set it as the retval
         if val:
             return_value = val
-
-        # Otherwhise default the return value to none
         else:
             return_value = ('none', None)
 
@@ -1015,10 +1032,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # all done with function call -- clean up and exit
     # restore caller's env
     state.lineinfo = old_lineinfo
-    # Keep debugger up to date
-    if debugging: debugger.set_lineinfo(state.lineinfo)
+    if debugger: debugger.set_lineinfo(state.lineinfo)
     pop_stackframe()
-
     return return_value
 
 #########################################################################
@@ -1055,8 +1070,18 @@ def declare_unifiers(unifiers):
 #########################################################################
 # node functions
 #########################################################################
+def stmt_list(node):
+
+    (STMT_LIST, (LIST, stmts)) = node
+    assert_match(STMT_LIST, 'stmt-list')
+    assert_match(LIST, 'list')
+    
+    for s in stmts:            
+        walk(s)
+
+#########################################################################
 def global_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (GLOBAL, (LIST, id_list)) = node
     assert_match(GLOBAL, 'global')
@@ -1074,31 +1099,29 @@ def global_stmt(node):
  
 #########################################################################
 def assert_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
 
     exp_val = walk(exp)
-
     # mapping asteroid assert into python assert
     assert exp_val[1], 'assert failed'
+
 #########################################################################
 def unify_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
 
     term = walk(exp)
-
     unifiers = unify(term, pattern)
-
     declare_unifiers(unifiers)
 
 #########################################################################
 def return_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
@@ -1109,7 +1132,8 @@ def return_stmt(node):
 
 #########################################################################
 def break_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
+
 
     (BREAK,) = node
     assert_match(BREAK, 'break')
@@ -1118,7 +1142,7 @@ def break_stmt(node):
 
 #########################################################################
 def throw_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (THROW, object) = node
     assert_match(THROW, 'throw')
@@ -1129,15 +1153,15 @@ def throw_stmt(node):
 
 #########################################################################
 def try_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (TRY,
-     (STMT_LIST, try_stmts),
+     try_stmts,
      (CATCH_LIST, (LIST, catch_list))) = node
 
-    stepping = debugger_has_stepped()
+    if debugger: debugger.has_stepped(state)
     try:
-        walk_stmt_list(try_stmts)
+        walk(try_stmts)
 
     # NOTE: in Python the 'as inst' variable is only local to the catch block???
     # NOTE: we map user visible Python exceptions into standard Asteroid exceptions
@@ -1153,6 +1177,7 @@ def try_stmt(node):
     except PatternMatchFailed as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'PatternMatchFailed'),
@@ -1162,6 +1187,7 @@ def try_stmt(node):
     except RedundantPatternFound as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'RedundantPatternFound'),
@@ -1171,6 +1197,7 @@ def try_stmt(node):
     except NonLinearPatternError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'NonLinearPatternError'),
@@ -1180,6 +1207,7 @@ def try_stmt(node):
     except ArithmeticError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'ArithmeticError'),
@@ -1189,6 +1217,7 @@ def try_stmt(node):
     except FileNotFoundError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'FileNotFound'),
@@ -1199,6 +1228,7 @@ def try_stmt(node):
         # mapping general Python exceptions into Asteroid's SystemError
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'SystemError'),
@@ -1214,7 +1244,7 @@ def try_stmt(node):
     for catch_val in catch_list:
         (CATCH,
          (CATCH_PATTERN, catch_pattern),
-         (CATCH_STMTS, catch_stmts)) = catch_val
+         catch_stmts) = catch_val
         try:
             unifiers = unify(except_val, catch_pattern)
         except PatternMatchFailed:
@@ -1223,7 +1253,7 @@ def try_stmt(node):
             # handler found - null out error_trace
             state.error_trace = None
             declare_unifiers(unifiers)
-            walk_stmt_list(catch_stmts, step_state=stepping)
+            walk(catch_stmts)
             return
 
     # no exception handler found - rethrow the exception
@@ -1231,39 +1261,34 @@ def try_stmt(node):
 
 #########################################################################
 def loop_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (LOOP, body_stmts) = node
     assert_match(LOOP, 'loop')
 
-    (STMT_LIST, body) = body_stmts
-
     try:
-        stepping = debugger_has_stepped()
+        if debugger: debugger.has_stepped(state)
         while True:
-            walk_stmt_list(body, step_state=stepping)
+            walk(body_stmts)
     except Break:
         pass
 
 #########################################################################
 def while_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
-    (WHILE, cond_exp, body_stmts) = node
+    (WHILE, (COND_EXP, cond), body_stmts) = node
     assert_match(WHILE, 'while')
 
-    (COND_EXP, cond) = cond_exp
-    (STMT_LIST, body) = body_stmts
-
     try:
-        stepping = debugger_has_stepped()
+        if debugger: debugger.has_stepped(state)
 
         (cond_type, cond_val) = walk(cond)
         if cond_type != 'boolean':
             raise ValueError("found '{}' expected 'boolean' in while loop"
                              .format(cond_type))
         while cond_val:
-            walk_stmt_list(body, step_state=stepping)
+            walk(body_stmts)
             (cond_type, cond_val) = walk(cond)
             if cond_type != 'boolean':
                 raise ValueError("found '{}' expected 'boolean' in while loop"
@@ -1273,18 +1298,15 @@ def while_stmt(node):
 
 #########################################################################
 def repeat_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
-    (REPEAT, body_stmts, cond_exp) = node
+    (REPEAT, body_stmts, (COND_EXP, cond)) = node
     assert_match(REPEAT, 'repeat')
 
-    (COND_EXP, cond) = cond_exp
-    (STMT_LIST, body) = body_stmts
-
     try:
-        stepping = debugger_has_stepped()
+        if debugger: debugger.has_stepped(state)
         while True:
-            walk_stmt_list(body, step_state=stepping)
+            walk(body_stmts)
             (cond_type, cond_val) = walk(cond)
             if cond_type != 'boolean':
                 raise ValueError("found '{}' expected 'boolean' in repeat loop"
@@ -1297,9 +1319,10 @@ def repeat_stmt(node):
 
 #########################################################################
 def for_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
-    (FOR, (IN_EXP, in_exp), (STMT_LIST, stmt_list)) = node
+
+    (FOR, (IN_EXP, in_exp), stmt_list) = node
     assert_match(FOR, 'for')
 
     (IN, pattern, list_term) = in_exp
@@ -1325,7 +1348,7 @@ def for_stmt(node):
     #             print y.
     #      end for
     try:
-        stepping = debugger_has_stepped()
+        if debugger: debugger.has_stepped(state)
         for term in list_val:
             try:
                 unifiers = unify(term,pattern)
@@ -1333,14 +1356,14 @@ def for_stmt(node):
                 pass
             else:
                 declare_unifiers(unifiers)
-                walk_stmt_list(stmt_list, step_state=stepping)
+                walk(stmt_list)
                 
     except Break:
         pass
 
 #########################################################################
 def if_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
@@ -1353,7 +1376,7 @@ def if_stmt(node):
 
         (IF_CLAUSE,
          (COND, cond),
-         (STMT_LIST, stmts)) = if_list[ i + 1 ]
+         stmts) = if_list[ i + 1 ]
 
         (cond_type, cond_val) = walk(cond)
         if cond_type != 'boolean':
@@ -1361,11 +1384,12 @@ def if_stmt(node):
                             .format(cond_type))
 
         if cond_val:
-            walk_stmt_list(stmts)
+            walk(stmts)
             break
+
 #########################################################################
 def struct_def_stmt(node):
-    notify_debugger()
+    if debugger: debugger.notify(state)
 
     (STRUCT_DEF, (ID, struct_id), (MEMBER_LIST, (LIST, member_list))) = node
     assert_match(STRUCT_DEF, 'struct-def')
@@ -1405,32 +1429,28 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
-def import_stmt(node):
-    notify_debugger()
+def module_def_stmt(node):
+    (MODULE_DEF, (ID, modname), stmts) = node
+    assert_match(MODULE_DEF, 'module-def')
 
-    global debugging
-    old_debugging = debugging
-    debugging = False
+    state.symbol_table.push_scope({})
+    walk(stmts)
+    closure = state.symbol_table.get_closure()
+    state.symbol_table.pop_scope()
 
-    (LIST, inlist) = node
-    assert_match(LIST, 'import_stmt')
-
-    for e in inlist:
-        walk(e)
-
-    debugging = old_debugging
-
-    return
+    module_type = ('module', ('id', modname), ('scope', closure))
+    state.symbol_table.enter_sym(modname, module_type)
 
 #########################################################################
-def top_level_exp_stmt(node):
+def load_stmt(node):
+    if debugger: debugger.notify(state)
 
-    (TOP_LEVEL_EXP, exp) = node
-    assert_match(TOP_LEVEL_EXP, 'top-level-exp')
+    (LOAD_STMT, inlist) = node
+    assert_match(LOAD_STMT, 'load-stmt')
 
-    notify_debugger()
+    walk(inlist)
 
-    return walk(exp)
+    return
 
 #########################################################################
 def eval_exp(node):
@@ -1486,11 +1506,11 @@ def apply_exp(node):
         # computed.
         f_name = 'lambda'
     elif f[0] == 'index':
-        # object member function
+        # member/module function
         (INDEX, ix, (ID, f_name)) = f
-        # 'str' is necessary in case we use an index value
-        # instead of a function name -- see regression test test085.ast
-        f_name = "member function " + str(f_name)
+        if not isinstance(f_name, str):
+            raise ValueError("function names have to be strings")
+        f_name = "member/module function " + f_name
     else:
         # just a regular function call
         (ID, f_name) = f
@@ -1516,7 +1536,13 @@ def apply_exp(node):
 
     # object constructor call
     elif f_val[0] == 'struct':
-        (ID, struct_id) = f
+        if f[0] == 'index':
+            # constructor name qualified with a module name
+            (INDEX, (ID, modname), (ID, struct_id)) = f
+        else: 
+            # inscope constructor call
+            modname = None
+            (ID, struct_id) = f
         (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
          (STRUCT_MEMORY, (LIST, struct_memory))) = f_val
@@ -1527,6 +1553,7 @@ def apply_exp(node):
         # create our object
         obj_ref = ('object',
                    ('struct-id', ('id', struct_id)),
+                   ('member-names', ('list', member_names)),
                    ('object-memory', ('list', object_memory)))
         # if the struct has an __init__ function call it on the object
         # NOTE: constructor functions do not have return values.
@@ -1534,11 +1561,15 @@ def apply_exp(node):
         if '__init__' in member_names:
             slot_ix = member_names.index('__init__')
             init_fval = struct_memory[slot_ix]
-            # calling a member function - push struct scope
+            # calling a member function
+            if modname:
+                orig_config = set_module_env(modname)
             handle_call(obj_ref,
                         init_fval,
                         arg_val,
                         f_name)
+            if modname:
+                set_config(orig_config)
         # the struct does not have an __init__ function but
         # we have a constructor call with args, e.g. Foo(1,2)
         # try to apply a default constructor by copying the
@@ -1759,8 +1790,7 @@ def process_lineinfo(node):
     (LINEINFO, lineinfo_val) = node
     assert_match(LINEINFO, 'lineinfo')
 
-    if debugging:
-        debugger.set_lineinfo(lineinfo_val)
+    if debugger: debugger.set_lineinfo(lineinfo_val)
 
     #lhh
     #print("lineinfo: {}".format(lineinfo_val))
@@ -1796,60 +1826,21 @@ def set_ret_val(node):
 
     # Debugger keeps track of the most recent
     # return value
-    if debugging and val:
-        debugger.retval = term2string(val)
+    if debugger and val: debugger.retval = term2string(val)
 
     return
 
 #########################################################################
-def walk_stmt_list(stmts, step_state=None):
-    # step_stae is a flag to tell us if we actually
-    # want to step through to the next line of the stmt
-    # list while debugging
-    
-    # We only want to do this if we're debugging
-    # and we've stepped through to this point or
-    # have continued to this point. Basically, this
-    # flag tells us if we've stepped or continued 
-    # into this function call, effectively telling
-    # the debugger to treat it as the top level
+def clear_ret_val(node):
+    (CLEAR_RET_VAL,) = node
+    assert_match(CLEAR_RET_VAL, 'clear-ret-val')
 
-    # This also allows us to keep loop execution
-    # control working with the debugger. Meaning
-    # we can do a "next" on the last line in a 
-    # loop and go back to the top as opposed to the
-    # next line after the loop
-    if step_state:
-        stepping = step_state
-    else:
-        stepping = debugger_has_stepped()
-
-    for s in stmts[1]:
-
-        if debugging:
-            # Set the debugger's info reflect new "top level"
-            if stepping: debugger.set_top_level(True)
-
-            # If we've hit a return and we're in continue-until-return
-            # mode, notify the debugger
-
-            # TODO: (OWM) get this working for implicit returns as well.
-            # This currently doesn't work because you can have an implicit
-            # return before a return statement. In this case, the return
-            # statement consumes the return behavior because it is the
-            # final statement in the stmt_list
-
-            # OWM -- This is still true but I'm not sure the fix for it
-            # nor if it should even be fixed
-
-            # The statement is a return the debugger is executing until return
-            # then notify the debugger
-            if debugging and \
-                debugger.exc['RETURN'] and s[0] == 'return':
-                
-                notify_debugger(at_return=True)
-            
-        walk(s)
+    global function_return_value    
+    # If we have no function return value, then append None    
+    if function_return_value != []:
+        function_return_value.pop()       
+    function_return_value.append(None)
+    return
 
 #########################################################################
 # walk
@@ -1858,50 +1849,20 @@ def walk(node):
     # node format: (TYPE, [child1[, child2[, ...]]])
     type = node[0]
 
-    if type == 'clear-ret-val':
-        # implemented here instead of dictionary for efficiency reasons
-        global function_return_value    
-
-        # If we have no function return value, then append None    
-        if function_return_value != []:
-            function_return_value.pop()
-        
-        function_return_value.append(None)
-        return
-    elif type in dispatch_dict:
+    if type in dispatch_dict:
         node_function = dispatch_dict[type]
         return node_function(node)
     else:
         raise ValueError("feature '{}' not yet implemented".format(type))
 
 #########################################################################
-# debug_walk
-#########################################################################
-def debug_walk(node, dbg):
-    """
-    This function allows us to keep the top-level distinction
-    at the program level.
-    """
-    global debugging, debugger, unify
-    debugging, debugger = (True, dbg)
-
-    (LIST, inlist) = node
-
-    for e in inlist:
-        # We want to differentiate between top level and nested
-        # statements. So, we run the list of statements outright
-        # so we can control when we know we are at the top level
-        debugger.set_top_level(True)
-        walk(e)
-
-#########################################################################
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
-    # Note: statement lists are now handled by separate functions outside
-    #       the walk function
     # statements - statements do not produce return values
+    'stmt-list'     : stmt_list,
     'lineinfo'      : process_lineinfo,
     'set-ret-val'   : set_ret_val,
+    'clear-ret-val' : clear_ret_val,
     'noop'          : lambda node : None,
     'assert'        : assert_stmt,
     'unify'         : unify_stmt,
@@ -1916,10 +1877,10 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
-    'top-level-exp' : top_level_exp_stmt,
+    'module-def'    : module_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    'import_stmt'   : import_stmt,
+    'load-stmt'     : load_stmt,
     'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
@@ -2031,55 +1992,4 @@ def check_redundancy( body_list, f_name ):
                 pass
             else:                               #CONFLICTION
                 raise RedundantPatternFound( ptrn_h , ptrn_l , f_name, location_h, location_l )
-
-#######################################################################################
-# *** Asteroid Debugger (ADB) helper functions ***
-# 
-# notify_debugger:
-#   Notifies the debugger of the current program position. If the debugger is
-#   accepting notifications at the time of call, the debugger will pause and
-#   run the interactive prompt.
-#  
-# decrease_tab_level:
-#   A simple helper function to manage debugger tab level decrementing.
-#
-# debugger_has_stepped::
-#   Helper function that returns if the debugger has stepped into a function
-#   body or other compound statement
-#
-#######################################################################################
-def notify_debugger(at_return=False):
-    """
-    If the debugger is accepting notifications at the time of call,
-    the debugger will pause and run the interactive prompt.
-    """
-    if debugging:
-        # We need to save the old lineinfo in case we go into a REPL
-        old_lineinfo = state.lineinfo
-
-        debugger.notify(at_return)
-
-        # Reset our lineinfo
-        state.lineinfo = old_lineinfo
-        debugger.set_lineinfo(state.lineinfo)
-
-
-#########################################################################
-def debugger_has_stepped():
-    """
-    Returns the step/continue state of the debugger
-    """
-    return debugging and \
-            (debugger.exc['STEP'] or debugger.exc['CONTINUE'])
-
-#########################################################################
-def decrease_tab_level():
-    """
-    Decreases/handles the debugger's tab level
-    """
-    if debugging:
-        debugger.tab_level = debugger.tab_level - 1
-
-        if debugger.tab_level < 0:
-            debugger.tab_level = 0
 

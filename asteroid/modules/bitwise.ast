@@ -1,3 +1,4 @@
+module bitwise with
 ------------------------------------------------------------------
 -- bitwise.ast
 --
@@ -5,13 +6,6 @@
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
-
--- define the bitwise module object
-
-------------------------------------------------------------------
-structure __BITWISE_MODULE__
-------------------------------------------------------------------
-with
 
 ------------------------------------------------------------------
 function band
@@ -180,8 +174,4 @@ __retval__ = ('integer', x_val.bit_length())
 "
 end
 
-end -- __BITWISE__
-
-------------------------------------------------------------------
--- instantiate the bitwise module object
-let bitwise = __BITWISE_MODULE__().
+end -- bitwise
