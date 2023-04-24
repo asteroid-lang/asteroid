@@ -1,3 +1,4 @@
+module dataframe with
 ------------------------------------------------------------------
 -- Defines the Asteroid DataFrames structure.
 --
@@ -7,9 +8,8 @@
 ------------------------------------------------------------------
 
 ------------------------------------------------------------------
-structure __DATAFRAME__
+structure DataFrame with
 ------------------------------------------------------------------
-with
 
 ------------------------------------------------------------------
 data df.
@@ -30,6 +30,7 @@ header_row_val = state.symbol_table.lookup_sym('header_row')
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # read as Pandas dataframe
@@ -56,6 +57,7 @@ ix_val = state.symbol_table.lookup_sym('ix')
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
  # the dataframe is in the first slot in the object memory
@@ -95,6 +97,7 @@ ix_val = state.symbol_table.lookup_sym('ix')
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
  # the dataframe is in the first slot in the object memory
@@ -132,6 +135,7 @@ this_val = state.symbol_table.lookup_sym('this')
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
  # the dataframe is in the first slot in the object memory
@@ -152,6 +156,7 @@ this_val = state.symbol_table.lookup_sym('this')
 # destructure object
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
  # the dataframe is in the first slot in the object memory
@@ -159,18 +164,12 @@ this_val = state.symbol_table.lookup_sym('this')
 __retval__ = ('integer', df_val.shape[1])
 "
 end
-end -- __DATAFRAME__
+end -- DataFrame structure
 
-------------------------------------------------------------------
-structure __DATAFRAME_MODULE__
-------------------------------------------------------------------
-with
 
 function dataframe with none do
-  return __DATAFRAME__().
+  return DataFrame().
 end
 
-end -- __DATAFRAME_MODULE__
+end -- dataframe module
 
-------------------------------------------------------------------
-let dataframe = __DATAFRAME_MODULE__().

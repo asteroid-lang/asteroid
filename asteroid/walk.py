@@ -218,6 +218,7 @@ def unify(term, pattern, unifying = True ):
                         .format(typematch_kind) )
             (OBJECT,
                 (STRUCT_ID, (ID, struct_id)),
+                (MEMBER_NAMES, LIST),
                 (OBJECT_MEMORY, LIST)) = term
             if struct_id == typematch_kind:
                 return []
@@ -290,8 +291,8 @@ def unify(term, pattern, unifying = True ):
         # to an object as a pattern, e.g.
         #    let o = A(1,2). -- A is a structure with 2 data members
         #    let *o = o.
-        (OBJECT, (STRUCT_ID, (ID, pid)), (OBJECT_MEMORY, (LIST, pl))) = pattern
-        (OBJECT, (STRUCT_ID, (ID, tid)), (OBJECT_MEMORY, (LIST, tl))) = term
+        (OBJECT, (STRUCT_ID, (ID, pid)), pml, (OBJECT_MEMORY, (LIST, pl))) = pattern
+        (OBJECT, (STRUCT_ID, (ID, tid)), tml, (OBJECT_MEMORY, (LIST, tl))) = term
         if pid != tid:
             raise PatternMatchFailed(
                 "pattern type '{}' and term type '{}' do not agree"
@@ -307,14 +308,29 @@ def unify(term, pattern, unifying = True ):
         # in patterns constructor functions match objects, e.g.
         #   let A(x,y) = A(1,2)
         # only constructors are allowed in patterns
-        (APPLY,
-         (ID, apply_id),
-         arg) = pattern
+        f = pattern[1]
+        if f[0] == 'index':
+            # scope qualified pattern name
+            (APPLY,
+              (INDEX,
+                (ID, modname),
+                (ID, apply_id)),
+              arg) = pattern
+        else:
+            modname = None
+            (APPLY,
+              (ID, apply_id),
+              arg) = pattern
         # unpack term
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
+         (MEMBER_NAMES, (LIST, member_names)),
          (OBJECT_MEMORY, (LIST, obj_memory))) = term
+        if modname:
+            orig_config = set_module_env(modname)        
         type = state.symbol_table.lookup_sym(apply_id,strict=False)
+        if modname:
+            set_config(orig_config)
         if not type or type[0] != 'struct':
             raise ValueError("illegal pattern, '{}' is not a type".format(apply_id))
         if struct_id != apply_id:
@@ -331,6 +347,10 @@ def unify(term, pattern, unifying = True ):
         return unify(data_list, arg_list, unifying)
 
     elif (not unifying) and pattern[0] == 'apply' and term[0] == 'apply':
+        fp = pattern[1]
+        ft = term[1]
+        if fp[0] != 'id' or ft[0] != 'id':
+            raise ValueError("pattern subsumption not supported")
         # unpack the apply structures
         (APPLY, (ID, t_id), t_arg) = term
         (APPLY, (ID, p_id), p_arg) = pattern
@@ -489,19 +509,20 @@ def read_at_ix(structure_val, ix):
     elif structure_val[0] == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
-         (OBJECT_MEMORY, (LIST, memory))) = structure_val
-        # compute the index -- for objects this has to be done
-        # in the context of the struct scope
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-        # unpack the struct value
-        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
-
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
         if ix[0] == 'id' and ix[1] in member_names:
             ix_val = ('integer', member_names.index(ix[1]))
         else:
             ix_val = walk(ix)
+
+    elif structure_val[0] == 'module':
+        (MODULE, id, (CLOSURE, closure)) = structure_val
+        config = state.symbol_table.get_config()
+        state.symbol_table.set_config(closure)
+        val = walk(ix)
+        state.symbol_table.set_config(config)
+        return val
 
     elif structure_val[0] == 'pattern':
         # simple patterns are just structures - skip the pattern operator
@@ -560,23 +581,26 @@ def store_at_ix(structure_val, ix, value):
     elif structure_val[0] == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
-         (OBJECT_MEMORY, (LIST, memory))) = structure_val
-        # compute the index -- for objects this has to be done
-        # in the context of the struct scope
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-        # unpack the struct value
-        (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
-         (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
-
+         (OBJECT_MEMORY, (LIST, memory))) = structure_val
         if ix[0] == 'id' and ix[1] in member_names:
             ix_val = ('integer', member_names.index(ix[1]))
         else:
             ix_val = walk(ix)
 
+    elif structure_val[0] == 'module':
+        (MODULE, id, (CLOSURE, closure)) = structure_val
+        config = state.symbol_table.get_config()
+        state.symbol_table.set_config(closure)
+        # execute an assignment in the context of the module
+        walk(('unify', ix, value))
+        state.symbol_table.set_config(config)
+        return
+
     elif structure_val[0] == 'pattern':
         # simple patterns are just structures - skip the pattern operator
-        return store_at_ix(structure_val[1], ix, value)
+        store_at_ix(structure_val[1], ix, value)
+        return
 
     else:
         raise ValueError("term '{}' is not a mutable structure"
@@ -609,12 +633,26 @@ def store_at_ix(structure_val, ix, value):
             # corresponding rval value
             (INTEGER, location) = lval[i]
             memory[location] = rval[i]
-
         return
 
     else:
         raise ValueError("index op '{}' in patterns not supported"
                          .format(ix_val[0]))
+
+#########################################################################
+# set module environment
+def set_module_env(modname):
+    module_val = state.symbol_table.lookup_sym(modname)
+    if module_val[0] != 'module':
+        raise ValueError("{} is not a module".format(modname))
+    (MODULE, id, (CLOSURE, closure)) = module_val
+    config = state.symbol_table.get_config()
+    state.symbol_table.set_config(closure)
+    return config
+
+#########################################################################
+def set_config(config):
+    state.symbol_table.set_config(config)
 
 #########################################################################
 def handle_builtins(node):
@@ -905,6 +943,9 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     # Note: we have to do this here because unifying
     # over the body patterns can introduce variable declarations,
     # think conditional pattern matching.
+    # Note: we are keeping a stack of configs so that
+    # the debugger can look at contents of 
+    # Asteroid stack frames
     state.symbol_table.saved_configs.append(
         state.symbol_table.get_config()
     )
@@ -1136,6 +1177,7 @@ def try_stmt(node):
     except PatternMatchFailed as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'PatternMatchFailed'),
@@ -1145,6 +1187,7 @@ def try_stmt(node):
     except RedundantPatternFound as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'RedundantPatternFound'),
@@ -1154,6 +1197,7 @@ def try_stmt(node):
     except NonLinearPatternError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'NonLinearPatternError'),
@@ -1163,6 +1207,7 @@ def try_stmt(node):
     except ArithmeticError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'ArithmeticError'),
@@ -1172,6 +1217,7 @@ def try_stmt(node):
     except FileNotFoundError as inst:
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'FileNotFound'),
@@ -1182,6 +1228,7 @@ def try_stmt(node):
         # mapping general Python exceptions into Asteroid's SystemError
         except_val = ('object',
                          ('struct-id', ('id', 'Exception')),
+                         ('member-names', ('list',["kind","val","__init__"])),
                          ('object-memory',
                           ('list',
                            [('string', 'SystemError'),
@@ -1382,6 +1429,19 @@ def struct_def_stmt(node):
     state.symbol_table.enter_sym(struct_id, struct_type)
 
 #########################################################################
+def module_def_stmt(node):
+    (MODULE_DEF, (ID, modname), stmts) = node
+    assert_match(MODULE_DEF, 'module-def')
+
+    state.symbol_table.push_scope({})
+    walk(stmts)
+    closure = state.symbol_table.get_closure()
+    state.symbol_table.pop_scope()
+
+    module_type = ('module', ('id', modname), ('scope', closure))
+    state.symbol_table.enter_sym(modname, module_type)
+
+#########################################################################
 def load_stmt(node):
     if debugger: debugger.notify(state)
 
@@ -1446,11 +1506,11 @@ def apply_exp(node):
         # computed.
         f_name = 'lambda'
     elif f[0] == 'index':
-        # object member function
+        # member/module function
         (INDEX, ix, (ID, f_name)) = f
-        # 'str' is necessary in case we use an index value
-        # instead of a function name -- see regression test test085.ast
-        f_name = "member function " + str(f_name)
+        if not isinstance(f_name, str):
+            raise ValueError("function names have to be strings")
+        f_name = "member/module function " + f_name
     else:
         # just a regular function call
         (ID, f_name) = f
@@ -1476,7 +1536,13 @@ def apply_exp(node):
 
     # object constructor call
     elif f_val[0] == 'struct':
-        (ID, struct_id) = f
+        if f[0] == 'index':
+            # constructor name qualified with a module name
+            (INDEX, (ID, modname), (ID, struct_id)) = f
+        else: 
+            # inscope constructor call
+            modname = None
+            (ID, struct_id) = f
         (STRUCT,
          (MEMBER_NAMES, (LIST, member_names)),
          (STRUCT_MEMORY, (LIST, struct_memory))) = f_val
@@ -1487,6 +1553,7 @@ def apply_exp(node):
         # create our object
         obj_ref = ('object',
                    ('struct-id', ('id', struct_id)),
+                   ('member-names', ('list', member_names)),
                    ('object-memory', ('list', object_memory)))
         # if the struct has an __init__ function call it on the object
         # NOTE: constructor functions do not have return values.
@@ -1494,11 +1561,15 @@ def apply_exp(node):
         if '__init__' in member_names:
             slot_ix = member_names.index('__init__')
             init_fval = struct_memory[slot_ix]
-            # calling a member function - push struct scope
+            # calling a member function
+            if modname:
+                orig_config = set_module_env(modname)
             handle_call(obj_ref,
                         init_fval,
                         arg_val,
                         f_name)
+            if modname:
+                set_config(orig_config)
         # the struct does not have an __init__ function but
         # we have a constructor call with args, e.g. Foo(1,2)
         # try to apply a default constructor by copying the
@@ -1806,6 +1877,7 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
+    'module-def'    : module_def_stmt,
     # expressions - expressions do produce return values
     'list'          : list_exp,
     'load-stmt'     : load_stmt,

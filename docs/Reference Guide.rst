@@ -238,6 +238,20 @@ Syntax: ``LOOP DO? stmt_list END``
 The ``loop`` statement executes the statements in the loop body indefinitely
 unless a ``break`` statement is encountered.
 
+Module
+%%%%%%
+
+Syntax: ``MODULE module_name WITH stmt_list END``
+
+The ``module`` statement introduces a new name space which is accessible via
+the module name,
+::
+      module foo with
+         let x = 1.
+      end
+      assert(foo@x == 1).
+      assert(not isdefined "x"). -- x is not defined in the global scope
+
 Repeat-Until
 %%%%%%%%%%%%
 
@@ -688,6 +702,7 @@ are written in quotes.
     | GLOBAL id_list '.'?
     | ASSERT exp '.'?
     | STRUCTURE ID WITH struct_stmts END
+    | MODULE ID WITH stmt_list END
     | LET pattern '=' exp '.'?
     | LOOP DO? stmt_list END
     | FOR pattern IN exp DO stmt_list END

@@ -63,6 +63,7 @@ stmt_lookahead = {
     'LET',
     'LOAD',
     'LOOP',
+    'MODULE',
     'REPEAT',
     'RETURN',
     'STRUCTURE',
@@ -256,6 +257,17 @@ class Parser:
             return ('struct-def',
                     ('id', id_tok.value),
                     ('member-list', stmts))
+
+        elif tt == 'MODULE':
+            dbg_print("parsing MODULE")
+            self.lexer.match('MODULE')
+            id_tok = self.lexer.match('ID')
+            self.lexer.match('WITH')
+            stmts = self.stmt_list()
+            self.lexer.match('END')
+            return ('module-def',
+                    ('id', id_tok.value),
+                    ('stmt-list', stmts))
 
         elif tt == 'LET':
             dbg_print("parsing LET")

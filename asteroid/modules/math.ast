@@ -1,3 +1,4 @@
+module math with
 ------------------------------------------------------------------
 -- math.ast
 --
@@ -7,31 +8,13 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
-structure __MATH_MODULE__ with
 
 ------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------
-data pi.
-data e.
 
-function __init__ with none do
-
-let this @pi = escape -- init pi constant
-"
-from math import pi
-global __retval__
-__retval__ = ('real',pi)
-"
-
-let this @e = escape -- init e constant
-"
-from math import e
-global __retval__
-__retval__ = ('real',e)
-"
-
-end -- __init__
+let pi = escape "from math import pi;global __retval__;__retval__=('real',pi)"
+let e = escape "from math import e;global __retval__;__retval__=('real',e)"
 
 ------------------------------------------------------------------
 -- Power and logarithmic functions
@@ -461,6 +444,5 @@ __retval__ = ('real', math.radians(x_val[1]))
 "
 end
 
-end -- __MATH_MODULE__
+end -- math module
 
-let math = __MATH_MODULE__()

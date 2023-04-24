@@ -5,6 +5,9 @@
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
+-- Note: this is just a file with definitions that need to wind 
+-- up in the global scope of the interpreter.
+
 
 ------------------------------------------------------------------
 structure Error
@@ -48,6 +51,7 @@ if item_val[0] in ['list','tuple','string']:
 elif item_val[0] == 'object':
     (OBJECT,
         (STRUCT_ID, (ID, name)),
+        (MEMBER_NAMES, (LIST, member_names)),
         (OBJECT_MEMORY, (LIST, object_memory))) = item_val
     l = len(data_only(object_memory))
     __retval__ = ('integer', l)
@@ -362,7 +366,7 @@ with x do return escape
 global __retval__
 val = state.symbol_table.lookup_sym('x')
 if val[0] == 'object':
-  (OBJECT, (STRUCT_ID, (ID, x_type)), OBJECT_MEMORY) = val
+  (OBJECT, (STRUCT_ID, (ID, x_type)), MEMBER_LIST, OBJECT_MEMORY) = val
 elif val[0] in ['function-val','member-function-val']:
   # internally we store functions as function values
   # but to the user these look like functions as the 

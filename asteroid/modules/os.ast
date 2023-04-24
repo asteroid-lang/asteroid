@@ -1,3 +1,4 @@
+module os with
 ------------------------------------------------------------------
 -- os.ast
 --
@@ -9,14 +10,12 @@
 ------------------------------------------------------------------
 load system hash.
 
-structure __OS_MODULE__ with
-
 ------------------------------------------------------------------
 -- The list of command line arguments passed to an Asteroid script. 
 -- argv[0] is the name of the Asteroid script (it is operating 
 -- system dependent whether this is a full pathname or not).
 -- In interactive mode argv[0] will be the empty string.
-data argv.
+let argv = __getargv().
 
 ------------------------------------------------------------------
 -- A hash table where keys and values are strings that represent 
@@ -24,24 +23,14 @@ data argv.
 --    os @env @get "HOME"
 --  is the pathname of your home directory (on some platforms), 
 -- and is equivalent to getenv("HOME") in C.
-data env.
+let _l = __getenv(). -- list of key/value pairs
+let env = hash @hash ().
+env @insert _l.
 
 ------------------------------------------------------------------
 -- This string contains a platform identifier.
-data platform.
+let platform = __getplatform().
 
-------------------------------------------------------------------
-function __init__ 
-------------------------------------------------------------------
--- constructor for the __OS_MODULE__
-with none do
-   let this @argv = this @__getargv().
-   let this @platform = this @__getplatform().
-   -- construct the env hashtable
-   let l = this @__getenv(). -- list of key/value pairs
-   let this @env = hash @hash ().
-   this @env @insert l.
-end
 
 ------------------------------------------------------------------
 function __getargv 
@@ -398,7 +387,4 @@ __retval__ = ('integer', status)
 "
 end -- syscmd
 
-end -- __OS_MODULE__
-
-------------------------------------------------------------------
-let os = __OS_MODULE__().
+end -- os modules

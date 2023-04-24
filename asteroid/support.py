@@ -20,6 +20,11 @@ def gettemp():
     return new_name
 
 ###########################################################################################
+__dump_level = 4
+
+def set_AST_dump_level(n):
+    __dump_level = n
+
 def dump_AST(node):
     '''
     this function will print any AST that follows the
@@ -32,7 +37,8 @@ def dump_AST(node):
     print('')
 
 def _dump_AST(node, level=0):
-
+    if level > __dump_level:
+        return
     if isinstance(node, tuple):
         _indent(level)
         nchildren = len(node) - 1
@@ -248,13 +254,8 @@ def term2string(term):
     elif TYPE == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
+         (MEMBER_NAMES, (LIST, member_names)),
          (OBJECT_MEMORY, (LIST, object_memory))) = term
-
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-
-        (STRUCT,
-            (MEMBER_NAMES, (LIST, member_names)),
-            (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
 
         # if __str__ function exists for this object use it
         if '__str__' in member_names:

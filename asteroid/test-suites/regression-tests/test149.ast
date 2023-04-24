@@ -1,0 +1,13 @@
+module test with
+   load system io.
+   let x = "hello"
+   function hello with () do
+       io @println x.
+   end
+end
+
+test @hello ().
+
+let f = test@hello.
+f().
+
