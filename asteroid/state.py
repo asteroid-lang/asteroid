@@ -25,6 +25,7 @@ class State:
         # it.  an exception handler is responsible for clearing
         # this.
         self.error_trace = None
+        self.debugger = None
 
 state = State()
 

@@ -96,9 +96,17 @@ def interp(program,
         if tree_dump:
             dump_AST(state.AST)
         if debugger:
-            set_debugger(debugger)
+            state.debugger = debugger
+            (module,line) = state.lineinfo
+            state.lineinfo = (module,1)
+            debugger.start(state)
         if do_walk:
-            walk(state.AST)
+            try:
+                walk(state.AST)
+                if debugger: debugger.stop()
+            except Exception as e:
+                if debugger: debugger.error(e)
+                raise e
         if symtab_dump:
             state.symbol_table.dump()
 
@@ -129,9 +137,6 @@ def interp(program,
             sys.exit(1)
 
     except  KeyboardInterrupt as e:
-        if debugger:
-            raise e
-
         dump_trace()
         print("error: keyboard interrupt")
         # needed for REPL

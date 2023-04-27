@@ -12,7 +12,7 @@ import os.path
 from asteroid.interp import interp
 from asteroid.repl import repl
 from asteroid.version import VERSION
-from asteroid.adb import adb
+from asteroid.mad import MAD
 
 def display_help():
     print("** Asteroid Version {} **".format(VERSION))
@@ -20,7 +20,7 @@ def display_help():
     print("usage: asteroid [-<switch>] <input file>")
     print("")
     print("command line flags:")
-    print(" -a, --adb      run program through debugger")
+    print(" -d             run program through debugger")
     print(" -e             show Python exceptions")
     print(" -F             functional mode")
     print(" -h, --help     display help")
@@ -37,8 +37,7 @@ def main():
     # defaults for the flags - when the flag is set on the command line
     # it simply toggles the default value in this table.
     flags = {
-        '--adb' : False, # debugger flag
-        '-a' : False,    # Short debugger flag
+        '-d' : False,    # Short debugger flag
         '-e' : False,  # show full exceptions
         '-F' : False,  # functional mode
         '--help' : False,  # display help flag
@@ -85,7 +84,7 @@ def main():
         print("** Asteroid Version {} **".format(VERSION))
         sys.exit(0)
 
-    debug_flag = flags['--adb'] or flags['-a']
+    debug_flag = flags['-d']
 
     # determine if we are starting in interactive mode or not
     # Note: first non-switch argument has to be an Asteroid source file
@@ -110,22 +109,11 @@ def main():
         print("error: unknown file '{}'".format(input_file))
         sys.exit(1)
 
-    # run the debugger
     if debug_flag:
-        if input_ext == '':
-            print("error: please provide a file to debug")
-            sys.exit(1)
         # Create a new debugger
-        db = adb.ADB()
-        # Set the debugger's internal interpretation options
-        db.interp_options = {
-            'redundancy': flags['-r'],
-            'prologue': flags['-p'],
-            'functional_mode': flags['-F'],
-            'exceptions': flags['-e'],
-        }
-        db.run(input_file)
-        sys.exit(0)
+        db = MAD()
+    else:
+        db = None
 
     # execute the interpreter
     f = open(input_file, 'r')
@@ -143,7 +131,8 @@ def main():
            symtab_dump=flags['-s'],
            tree_dump=flags['-t'],
            do_walk=flags['-w'],
-           warnings=flags['-W']
+           warnings=flags['-W'],
+           debugger=db
            )'''
 
     if flags['-z']:

@@ -136,6 +136,7 @@ class Parser:
     #    | GLOBAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | STRUCTURE ID WITH struct_stmts END
+    #    | MODULE ID WITH stmt_list END
     #    | LET pattern '=' exp '.'?
     #    | LOOP DO? stmt_list END
     #    | FOR pattern IN exp DO stmt_list END

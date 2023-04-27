@@ -949,7 +949,6 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
     state.symbol_table.saved_configs.append(
         state.symbol_table.get_config()
     )
-
     state.symbol_table.set_config(closure)
     state.symbol_table.push_scope({})
 
@@ -1002,10 +1001,10 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
         # restore caller's env
         state.lineinfo = old_lineinfo
         pop_stackframe()
-        if debugger: debugger.set_lineinfo(state.lineinfo)
         raise r
 
     # execute the function
+    if state.debugger: state.debugger.enter_function(fname)
     global function_return_value
     try:
         function_return_value.append(None)
@@ -1031,8 +1030,8 @@ def handle_call(obj_ref, fval, actual_val_args, fname):
 
     # all done with function call -- clean up and exit
     # restore caller's env
+    if state.debugger: state.debugger.exit_function(fname)
     state.lineinfo = old_lineinfo
-    if debugger: debugger.set_lineinfo(state.lineinfo)
     pop_stackframe()
     return return_value
 
@@ -1081,7 +1080,7 @@ def stmt_list(node):
 
 #########################################################################
 def global_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (GLOBAL, (LIST, id_list)) = node
     assert_match(GLOBAL, 'global')
@@ -1099,7 +1098,7 @@ def global_stmt(node):
  
 #########################################################################
 def assert_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (ASSERT, exp) = node
     assert_match(ASSERT, 'assert')
@@ -1110,7 +1109,7 @@ def assert_stmt(node):
 
 #########################################################################
 def unify_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (UNIFY, pattern, exp) = node
     assert_match(UNIFY, 'unify')
@@ -1121,7 +1120,7 @@ def unify_stmt(node):
 
 #########################################################################
 def return_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (RETURN, e) = node
     assert_match(RETURN, 'return')
@@ -1132,8 +1131,7 @@ def return_stmt(node):
 
 #########################################################################
 def break_stmt(node):
-    if debugger: debugger.notify(state)
-
+    if state.debugger: state.debugger.step()
 
     (BREAK,) = node
     assert_match(BREAK, 'break')
@@ -1142,7 +1140,7 @@ def break_stmt(node):
 
 #########################################################################
 def throw_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (THROW, object) = node
     assert_match(THROW, 'throw')
@@ -1153,13 +1151,12 @@ def throw_stmt(node):
 
 #########################################################################
 def try_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (TRY,
      try_stmts,
      (CATCH_LIST, (LIST, catch_list))) = node
 
-    if debugger: debugger.has_stepped(state)
     try:
         walk(try_stmts)
 
@@ -1261,13 +1258,12 @@ def try_stmt(node):
 
 #########################################################################
 def loop_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (LOOP, body_stmts) = node
     assert_match(LOOP, 'loop')
 
     try:
-        if debugger: debugger.has_stepped(state)
         while True:
             walk(body_stmts)
     except Break:
@@ -1275,14 +1271,12 @@ def loop_stmt(node):
 
 #########################################################################
 def while_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (WHILE, (COND_EXP, cond), body_stmts) = node
     assert_match(WHILE, 'while')
 
     try:
-        if debugger: debugger.has_stepped(state)
-
         (cond_type, cond_val) = walk(cond)
         if cond_type != 'boolean':
             raise ValueError("found '{}' expected 'boolean' in while loop"
@@ -1298,13 +1292,12 @@ def while_stmt(node):
 
 #########################################################################
 def repeat_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (REPEAT, body_stmts, (COND_EXP, cond)) = node
     assert_match(REPEAT, 'repeat')
 
     try:
-        if debugger: debugger.has_stepped(state)
         while True:
             walk(body_stmts)
             (cond_type, cond_val) = walk(cond)
@@ -1319,8 +1312,7 @@ def repeat_stmt(node):
 
 #########################################################################
 def for_stmt(node):
-    if debugger: debugger.notify(state)
-
+    if state.debugger: state.debugger.step()
 
     (FOR, (IN_EXP, in_exp), stmt_list) = node
     assert_match(FOR, 'for')
@@ -1348,7 +1340,6 @@ def for_stmt(node):
     #             print y.
     #      end for
     try:
-        if debugger: debugger.has_stepped(state)
         for term in list_val:
             try:
                 unifiers = unify(term,pattern)
@@ -1363,7 +1354,7 @@ def for_stmt(node):
 
 #########################################################################
 def if_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (IF, (LIST, if_list)) = node
     assert_match(IF, 'if')
@@ -1389,7 +1380,7 @@ def if_stmt(node):
 
 #########################################################################
 def struct_def_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (STRUCT_DEF, (ID, struct_id), (MEMBER_LIST, (LIST, member_list))) = node
     assert_match(STRUCT_DEF, 'struct-def')
@@ -1430,12 +1421,16 @@ def struct_def_stmt(node):
 
 #########################################################################
 def module_def_stmt(node):
+
     (MODULE_DEF, (ID, modname), stmts) = node
     assert_match(MODULE_DEF, 'module-def')
 
+
     state.symbol_table.push_scope({})
+    if state.debugger: state.debugger.enter_module(modname)
     walk(stmts)
     closure = state.symbol_table.get_closure()
+    if state.debugger: state.debugger.exit_module(modname)
     state.symbol_table.pop_scope()
 
     module_type = ('module', ('id', modname), ('scope', closure))
@@ -1443,7 +1438,7 @@ def module_def_stmt(node):
 
 #########################################################################
 def load_stmt(node):
-    if debugger: debugger.notify(state)
+    if state.debugger: state.debugger.step()
 
     (LOAD_STMT, inlist) = node
     assert_match(LOAD_STMT, 'load-stmt')
@@ -1468,7 +1463,6 @@ def eval_exp(node):
     state.trace_stack.append((state.lineinfo[0],
                               state.lineinfo[1],
                               "eval"))
-
 
     # evaluate actual parameter
     exp_val_expand = walk(exp)
@@ -1510,7 +1504,6 @@ def apply_exp(node):
         (INDEX, ix, (ID, f_name)) = f
         if not isinstance(f_name, str):
             raise ValueError("function names have to be strings")
-        f_name = "member/module function " + f_name
     else:
         # just a regular function call
         (ID, f_name) = f
@@ -1790,11 +1783,6 @@ def process_lineinfo(node):
     (LINEINFO, lineinfo_val) = node
     assert_match(LINEINFO, 'lineinfo')
 
-    if debugger: debugger.set_lineinfo(lineinfo_val)
-
-    #lhh
-    #print("lineinfo: {}".format(lineinfo_val))
-
     state.lineinfo = lineinfo_val
 
 #########################################################################
@@ -1823,10 +1811,6 @@ def set_ret_val(node):
     val = walk(exp)
     function_return_value.pop()
     function_return_value.append(val)
-
-    # Debugger keeps track of the most recent
-    # return value
-    if debugger and val: debugger.retval = term2string(val)
 
     return
 
