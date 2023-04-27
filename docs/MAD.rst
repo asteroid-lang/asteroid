@@ -1,0 +1,141 @@
+..
+    /******************************************************************
+    This is the source file from which the action doc is generated.
+    We use cpp to insert live code snippets into the document.
+    In order to generate the action doc run the following command
+    on a Unix-like system:
+
+    cpp -w -P "MAD.txt" > "MAD.rst"
+
+    ******************************************************************/
+..
+   /* header for generated .rst files */
+
+..
+   *** DO NOT EDIT; MACHINE GENERATED ***
+=========================================
+Minimal Asteroid Debugger Reference Guide
+=========================================
+The Minimal Asteroid Debugger is a source code debugger for the Asteroid programming language.
+It supports the following:
+
+* Breakpoints
+* Single stepping at the source level
+* Stepping through function calls
+* Examining contents of variables in the current scope
+
+The commandline interface of the debugger is modeled after debuggers such as the GNU debugger gdb.
+
+Usage
+=====
+In order to invoke the debugger type,
+::
+    asteroid -d <FILENAME>
+
+This will start a debugging session of the file ``<FILENAME>``.
+Here is an example where ``<FILENAME>`` is ``list.ast``,
+::
+    $ asteroid -d list.ast
+    Minimal Asteroid Debugger -- Version 0.1
+    (c) University of Rhode Island
+    type 'help' for additional information
+    mad>
+
+Debugging sessions
+==================
+During a debugging session the user is able to step through a program and
+examine its state.  The following is debugging session of a program that prints
+out a sequence of integer values,
+::
+    load system io.
+
+    for i in 1 to 5 do
+        let x = i.
+        io @println x.
+    end
+
+We start the debugger as shown above. We then set a breakpoint at the first statement in the
+``for`` loop then ``continue``
+our computation until it hits the break point. We can then look at the contents of
+memory.  Finally we clear all breakpoints and let the computation finish.  Here we go,
+::
+    $ asteroid -d list.ast
+    Minimal Asteroid Debugger -- Version 0.1
+    (c) University of Rhode Island
+    type 'help' for additional information
+    mad> list
+    >  1 load system io.             <<<< current line
+       2
+       3 for i in 1 to 5 do
+       4   let x = i.
+       5   io @println x.
+    mad> set 4                       <<<< setting a breakpoint
+    mad> breakpoints
+    breakpoints:
+    list.ast:4
+    mad> continue                    <<<< continue execution
+    reached breakpoint (list.ast:4)
+       1 load system io.
+       2
+       3 for i in 1 to 5 do
+    >  4   let x = i.
+       5   io @println x.
+       6 end
+       7
+       8 [EOF]
+    mad> print i                     <<<< examining the value of i
+    i: 1
+    mad> continue
+    1
+    reached breakpoint (list.ast:4)
+       1 load system io.
+       2
+       3 for i in 1 to 5 do
+    >  4   let x = i.
+       5   io @println x.
+       6 end
+       7
+       8 [EOF]
+    mad> print i
+    i: 2
+    mad> clear                       <<<< delete breakpoints
+    mad> continue
+    2
+    3
+    4
+    5
+    stopping MAD
+    mad> print i
+    i: 5
+    mad> print x
+    x: 5
+    mad> quit
+    $
+
+Commands
+========
+Here is a table of the available commands in the the debugger,
+::
+    breakpoints .................... show all breakpoints
+    clear .......................... clear all breakpoints
+    continue ....................... continue execution to next breakpoint
+    help ........................... display help
+    list ........................... display source code
+    next ........................... step execution across a nested scope
+    print <name>|* ................. print contents of <name>, * lists all vars in scope
+    quit ........................... quit debugger
+    set [<func>|<line#> [<file>]] .. set a breakpoint
+    step ........................... step to next executable statement
+    where .......................... print current program line
+
+The or bar ``|`` means different options as arguments to the commands. Anything between
+square brackets is optional.  Anything appearing in angle brackets are actual values.
+For example, ``print <name>`` means we want to examine the value of an actual variable, e.g.
+::
+    print n
+
+where ``n`` is a variable name.
+
+Most commands are very much self-explanatory with the exception of perhaps ``next``.  The ``next``
+command works just like the ``step`` command except that it will skip stepping into nested scopes
+such as function calls or the execution of module statements.

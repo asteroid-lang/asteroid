@@ -3,6 +3,49 @@
 #
 # (c) University of Rhode Island
 ###########################################################################################
+# This is a very basic debugger for Asteroid and is designed around the callback API
+# from the interpreter,
+#     start           - called after the AST has been created and just before 
+#                       execution begins
+#     stop            - called after execution terminates just before the 
+#                       interpreter terminates
+#     error           - this is called when the interpreter encounters an error 
+#                       as part of the error handler of the interpreter
+#     enter_function  - this call signals that the interpreter is just about to 
+#                       execute a function, when the interpreter calls this function
+#                       the function stackframe and the function local variables have
+#                       been properly initialized
+#     exit_function   - this call signals that the interpreter just finished executing 
+#                       function, this call is issued just before the function stack frame
+#                       is popped off the stack
+#     enter_module    - a module is just about to be executed, the module scope has 
+#                       has been pushed on the stack
+#     exit_module     - the interpreter is just about to exit a module, module stack frame
+#                       is still on the stack.
+#     step            - this is called by the interpreter at more or less statementlevel 
+#                       granularity and represents a single computational step, step always
+#                       point to the next statement just about to be executed
+#
+# the debugger object maintains state accross the callbacks from the interpreter. in particular
+# it remembers whether or not it is in "continue" mode, that is, computation should proceed
+# uninterrupted  until breakpoint is encountered.  it also remembers whether or not a "next" 
+# command was used to step over nested scopes such as functions and modules. At each
+# "step" callback the debugger uses the following logic in order to decide whether or not
+# to hand back control to the interpreter:
+#      if breakpoint encountered:
+#         print "reached breakpoint"
+#         reset all mode variables
+#         return to interactive debugger session
+#      elif in continue_mode:
+#         return control to the interpreter
+#      elif completed execution of nested scope:
+#         reset scope mode variable
+#         return to interactive debugger session
+#      if executing nested scope via 'next' command:
+#         return control to the interpreter
+#      else:
+#         return to interactive debugger session
+###########################################################################################
 
 from os.path import exists, split, basename
 from asteroid.support import term2string
@@ -141,8 +184,11 @@ class MAD:
 
    ###########################################################################################
    def _print_line(self):
-      # print out current line within a window of surrounding lines
-      self._handle_list([])
+      (file,lineno) = self.interp_state.lineinfo
+      self._load_program_text(file)
+      pt = self.program_text[file]
+      pt_display = pt[lineno-1].strip()
+      print("{}:{}:{}".format(file,lineno,pt_display))
 
    ###########################################################################################
    def _load_program_text(self,fname):
@@ -177,7 +223,7 @@ class MAD:
          val = self.dispatch_table.get(cmd_list[0][0:2],lambda _:-1) (cmd_list[1:])
          if val == -1:
             print("error: unknown command {}".format(cmd_list[0]))
-            return False
+            return START_DEBUGGER
          else:
             return val
       else:
@@ -190,69 +236,55 @@ class MAD:
          print("{}:{}".format(file,bp))
       for (bp,file) in self.line_breakpoints:
          print("{}:{}".format(file,bp))
-      return False
+      return START_DEBUGGER
       
    def _handle_clear(self,_):
       # TODO: allow for specicific breakpoints to be cleared
       self.function_breakpoints = []
       self.line_breakpoints = []
-      return False
+      return START_DEBUGGER
       
    def _handle_continue(self,_):
       self.continue_mode = True
-      return True
+      return RETURN_TO_INTERP
 
    def _handle_help(self,_):
       print()
       print("Available commands:")
-      print("breakpoints\t\t- list all breakpoints")
+      print("breakpoints\t\t- show all breakpoints")
       print("clear\t\t\t- clear all breakpoints")
-      print("continue\t\t- continue execution to next break point")
+      print("continue\t\t- continue execution to next breakpoint")
       print("help\t\t\t- display help")
       print("list\t\t\t- display source code")
-      print("next\t\t\t- continue execution across a nested scope")
+      print("next\t\t\t- step execution across a nested scope")
       print("print <name>|*\t\t- print contents of <name>, * lists all vars in scope")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
       print("step\t\t\t- step to next executable statement")
       print("where\t\t\t- print current program line")
       print()
-      return False
+      return START_DEBUGGER
 
    def _handle_list(self, _):
       (file,lineno) = self.interp_state.lineinfo
-      # make sure our file is loaded into the cache
       self._load_program_text(file)
-      # Get the program text for the current file
       pt = self.program_text[file]
-      # Length around the current line to display if relative
+      # Length around the current line to display
       length = 4
-
       # Compute the start and end of listing
       start = (lineno - length) if lineno >= length else 0
       end = lineno + length if lineno < len(pt) - 2 else len(pt)
-      # Set the program text to the slice between start and end
-      pt = pt[start:end]
-
-      # Start of line is blank by default
+      pt_display = pt[start:end]
       start_of_line = "  "
       # GO through each line in the program text
-      for ix, l in enumerate(pt):
-
+      for ix, l in enumerate(pt_display):
          # if the offset line number is in breakpoints
          if (ix+1+start,file) in self.line_breakpoints:
-               # Set the special start of line
                start_of_line = "* "
-
          # mark the current line
          if lineno == ix+1+start:
-               # Set the special start of line
                start_of_line = "> "
-
-         # print the given line
          print(start_of_line, ix+1+start, l[:-1])
-
-         # Reset the start of line
          start_of_line = "  "
       return START_DEBUGGER
 
