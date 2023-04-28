@@ -207,7 +207,8 @@ class MAD:
 
    def _prompt_cmd(self, show_code=True):
       if show_code:
-         self._print_line()
+         #self._print_line()
+         self._handle_list([])
       # loop while interpreting commands
       while True:
          cmd = input("mad> ")
