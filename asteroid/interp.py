@@ -143,8 +143,11 @@ def interp(program,
         if not exceptions:
             sys.exit(1)
 
-    except SystemExit:
-        exit(0)
+    except SystemExit as e:
+        # we simply pass along the exception
+        # this is just here in case in the future we need to 
+        # perform special handling
+        raise e
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace
