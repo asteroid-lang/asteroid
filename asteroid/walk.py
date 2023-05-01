@@ -514,7 +514,9 @@ def read_at_ix(structure_val, ix):
         if ix[0] == 'id' and ix[1] in member_names:
             ix_val = ('integer', member_names.index(ix[1]))
         else:
-            ix_val = walk(ix)
+            raise ValueError("{} is not a member of type {}"
+                .format(term2string(ix),struct_id))
+            #ix_val = walk(ix)
 
     elif structure_val[0] == 'module':
         (MODULE, id, (CLOSURE, closure)) = structure_val
