@@ -39,8 +39,10 @@ end -- __init__
 ------------------------------------------------------------------
 function insert
 ------------------------------------------------------------------
-with (name,value) do escape
+with (name,value) do 
+return escape
 "
+global __retval__
 this_val = state.symbol_table.lookup_sym('this')
 name_val = state.symbol_table.lookup_sym('name')
 value_val = state.symbol_table.lookup_sym('value')
@@ -55,11 +57,14 @@ value_val = state.symbol_table.lookup_sym('value')
 # insert name-value pair
 (FOREIGN, dictionary) = memory[0]
 dictionary[name_val] = value_val
+
+__retval__ = this_val
 "
 with item_list:%list do
   for (k,v) in item_list do
     this @insert (k,v).
   end
+  return this
 end -- insert
 
 ------------------------------------------------------------------

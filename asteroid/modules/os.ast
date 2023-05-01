@@ -10,32 +10,7 @@ module os with
 ------------------------------------------------------------------
 load system hash.
 
-------------------------------------------------------------------
--- The list of command line arguments passed to an Asteroid script. 
--- argv[0] is the name of the Asteroid script (it is operating 
--- system dependent whether this is a full pathname or not).
--- In interactive mode argv[0] will be the empty string.
-let argv = __getargv().
-
-------------------------------------------------------------------
--- A hash table where keys and values are strings that represent 
--- the process environment. For example, 
---    os @env @get "HOME"
---  is the pathname of your home directory (on some platforms), 
--- and is equivalent to getenv("HOME") in C.
-let _l = __getenv(). -- list of key/value pairs
-let env = hash @hash ().
-env @insert _l.
-
-------------------------------------------------------------------
--- This string contains a platform identifier.
-let platform = __getplatform().
-
-
-------------------------------------------------------------------
-function __getargv 
-------------------------------------------------------------------
-with none do return escape
+function __getargv  with none do return escape
 "
 global __retval__
 import sys
@@ -64,10 +39,7 @@ __retval__ = ('list', out)
 "
 end -- __getargv
 
-------------------------------------------------------------------
-function __getenv
-------------------------------------------------------------------
-with none do return escape
+function __getenv with none do return escape
 "
 global __retval__
 from os import environ
@@ -79,16 +51,32 @@ __retval__ = ('list', outlist_val)
 "
 end -- __getplatform
 
-------------------------------------------------------------------
-function __getplatform
-------------------------------------------------------------------
-with none do return escape
+function __getplatform with none do return escape
 "
 global __retval__
 from sys import platform
 __retval__ = ('string', platform)
 "
 end -- __getplatform
+
+------------------------------------------------------------------
+-- The list of command line arguments passed to an Asteroid script. 
+-- argv[0] is the name of the Asteroid script (it is operating 
+-- system dependent whether this is a full pathname or not).
+-- In interactive mode argv[0] will be the empty string.
+let argv = __getargv().
+
+------------------------------------------------------------------
+-- A hash table where keys and values are strings that represent 
+-- the process environment. For example, 
+--    os @env @get "HOME"
+--  is the pathname of your home directory (on some platforms), 
+-- and is equivalent to getenv("HOME") in C.
+let env = hash @hash () @insert (__getenv ()).
+
+------------------------------------------------------------------
+-- This string contains a platform identifier.
+let platform = __getplatform().
 
 ------------------------------------------------------------------
 function basename
