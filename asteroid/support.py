@@ -5,6 +5,7 @@
 ###########################################################################################
 
 import re
+import sys
 
 from asteroid.state import state
 
@@ -20,7 +21,7 @@ def gettemp():
     return new_name
 
 ###########################################################################################
-__dump_level = 4
+__dump_level = 4 #sys.maxsize  # during debugging you can set this to limit tree dump size
 
 def set_AST_dump_level(n):
     __dump_level = n

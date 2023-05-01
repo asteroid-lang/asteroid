@@ -104,7 +104,7 @@ class Parser:
     #   stmt_list
     def prog(self):
         dbg_print("parsing PROG")
-        sl = self.stmt_list()
+        sl = ('stmt-list', self.stmt_list())
         if not self.lexer.EOF():
             raise SyntaxError("expected 'EOF' found {}." \
                               .format(token_lookup(self.lexer.peek().type)))

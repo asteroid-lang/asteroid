@@ -38,9 +38,9 @@ def load_prologue():
         state.modules.append(prologue_name)
         data = f.read()
         pparser = Parser(prologue_file)
-        (LIST, pstmts) = pparser.parse(data)
+        pstmts = pparser.parse(data)
 
-    state.AST = ('list', pstmts)
+    state.AST = pstmts
     walk(state.AST)
     state.AST = None
 
@@ -89,8 +89,8 @@ def interp(program,
 
         # build the AST
         parser = Parser(program_name, functional_mode)
-        (LIST, istmts) = parser.parse(program)
-        state.AST = ('list', istmts)
+        stmts = parser.parse(program)
+        state.AST = stmts
 
         # walk the AST
         if tree_dump:
