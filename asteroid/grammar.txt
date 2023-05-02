@@ -32,6 +32,7 @@
     | FOR pattern IN exp DO stmt_list END
     | WHILE exp DO stmt_list END
     | REPEAT DO? stmt_list UNTIL exp '.'?
+    | MATCH exp (WITH pattern DO stmt_list)* END
     | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
     | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
     | THROW exp '.'?

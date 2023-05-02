@@ -63,6 +63,7 @@ stmt_lookahead = {
     'LET',
     'LOAD',
     'LOOP',
+    'MATCH',
     'MODULE',
     'REPEAT',
     'RETURN',
@@ -143,6 +144,7 @@ class Parser:
     #    | WHILE exp DO stmt_list END
     #    | REPEAT (DO?) stmt_list UNTIL exp '.'?
     #    | BREAK
+    #    | MATCH exp (WITH pattern DO stmt_list)* END
     #    | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE (DO?) stmt_list)? END
     #    | RETURN exp? '.'?
     #    | TRY stmt_list (CATCH pattern DO stmt_list)+ END
@@ -342,6 +344,32 @@ class Parser:
             dbg_print("parsing BREAK")
             self.lexer.match('BREAK')
             return ('break',)
+
+        elif tt == 'MATCH':
+            if self.functional_mode and not self.is_system_module():
+                raise SyntaxError("match statement is not supported in functional mode")
+            # we implement the match statement as a cascade of if-clauses
+            if_list = []
+            dbg_print("parsing MATCH")
+            self.lexer.match('MATCH')
+            temp = ('id', gettemp())
+            exp = self.exp()
+            while self.lexer.peek().type == 'WITH':
+                dbg_print("parsing WITH")
+                old_lineinfo = state.lineinfo
+                self.lexer.match('WITH')
+                pattern = self.pattern()
+                self.lexer.match('DO')
+                stmts = self.stmt_list()
+                if_list.append(('lineinfo',old_lineinfo))
+                if_list.append(
+                    ('if-clause', 
+                      ('cond', ('is', temp, pattern)), 
+                      ('stmt-list', stmts)))
+            self.lexer.match('END')
+            return ('match',
+                     ('unify', temp, exp), 
+                     ('if', ('list', if_list)))
 
         elif tt == 'IF':
             if self.functional_mode and not self.is_system_module():

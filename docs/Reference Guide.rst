@@ -237,6 +237,26 @@ Syntax: ``LOOP DO? stmt_list END``
 The ``loop`` statement executes the statements in the loop body indefinitely
 unless a ``break`` statement is encountered.
 
+Match
+%%%%%
+
+Syntax: ``MATCH expression (WITH pattern DO stmt_list)* END``
+
+The ``match`` statement matches a value given by expression against a list of patterns
+in the ``with`` clauses.  If a pattern matches the associated statements will be executed,
+::
+      match (1,2)
+         with (x,y) if x > y do
+            let x = "GT".
+         with (x,y) if x < y do
+            let x = "LT".
+         with _ do
+            throw Error("not a valid tuple").
+      end
+      assert(x == "LT").
+
+
+
 Module
 %%%%%%
 
@@ -704,6 +724,7 @@ are written in quotes.
     | FOR pattern IN exp DO stmt_list END
     | WHILE exp DO stmt_list END
     | REPEAT DO? stmt_list UNTIL exp '.'?
+    | MATCH exp (WITH pattern DO stmt_list)* END
     | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
     | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
     | THROW exp '.'?

@@ -1350,6 +1350,16 @@ def for_stmt(node):
         pass
 
 #########################################################################
+def match_stmt(node):
+    if state.debugger: state.debugger.step()
+
+    (MATCH, val, if_clauses) = node
+    assert_match(MATCH, 'match')
+
+    walk(val)
+    walk(if_clauses)
+    
+#########################################################################
 def if_stmt(node):
     if state.debugger: state.debugger.step()
 
@@ -1854,6 +1864,7 @@ dispatch_dict = {
     'global'        : global_stmt,
     'return'        : return_stmt,
     'break'         : break_stmt,
+    'match'         : match_stmt,
     'if'            : if_stmt,
     'throw'         : throw_stmt,
     'try'           : try_stmt,
