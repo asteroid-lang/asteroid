@@ -185,9 +185,8 @@ As an example consider the following ``if`` statement that determines
 what kind of integer value the user supplied,
 ::
       load system io.
-      load system type.
 
-      let x = type @tointeger (io @input "Please enter an integer: ").
+      let x = tointeger (io @input "Please enter an integer: ").
 
       if x < 0 do
           io @println "Negative".
@@ -249,7 +248,7 @@ the module name,
       module foo with
          let x = 1.
       end
-      assert(foo@x == 1).
+      assert(foo @x == 1).
       assert(not isdefined "x"). -- x is not defined in the global scope
 
 Repeat-Until
@@ -312,7 +311,7 @@ can be copied into an object,
              let this @age = age.
           end
           function __str__ with none do
-            return this@name+" is "+this@age+" years old".
+            return this @name+" is "+ tostring this @age+" years old".
           end
       end
 
@@ -320,8 +319,7 @@ can be copied into an object,
       assert( betty @name == "Betty" ).
       assert( betty @age == 21 ).
 
-      load system type.
-      assert(type @tostring betty is "Betty is 21 years old").
+      assert(tostring betty is "Betty is 21 years old").
 
 Note that object identity is expressed using the ``this`` keyword.
 Here we also supplied an instantiation of the ``__str__`` function that allows
@@ -614,14 +612,12 @@ Example,
 ::
       let true = 1 is %integer.
 
-Named Patterns
-%%%%%%%%%%%%%%
+Conditional Patterns (1)
+%%%%%%%%%%%%%%%%%%%%%%%%
 
-Syntax: ``name_exp ':' pattern``
+Syntax: ``exp ':' pattern``
 
-Named patterns allow you to bind the term matched by the pattern to a variable.
-Here the name expression has to evaluate to either a variable,
-object member variable, or list location.
+These patterns allow you to express constraints on exp based on the pattern.
 
 Example,
 ::
@@ -630,17 +626,17 @@ Example,
 The variable ``x`` will be bound to the value of ``val`` if that value matches the
 type pattern ``%integer``.
 
-Named patterns are a syntactic short hand for the equivalent conditional pattern,
+These patterns are a syntactic short hand for the equivalent conditional pattern,
 ::
-      name_exp if name_exp is pattern
+      exp if exp is pattern
 
 That means the following two ``let`` statements are equivalent,
 ::
       let x:(q,p) = (1,2).
       let x if x is (q,p) = (1,2).
 
-Conditional Patterns
-%%%%%%%%%%%%%%%%%%%%
+Conditional Patterns (2)
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``pattern IF cond_exp``
 
@@ -654,12 +650,12 @@ Example,
 
 Here ``k`` only matches the value of ``val`` if that value is an even number.
 
-Pure Constraint Patterns
-%%%%%%%%%%%%%%%%%%%%%%%%
+Constraint Patterns
+%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``%[ pattern ]% (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
-A pure constraint pattern is a pattern that does not create any bindings
+A constraint pattern is a pattern that does not create any bindings
 in the current scope.  Any pattern can be turned into a pure constraint pattern
 by placing it between the ``%[`` and ``]%`` operators.
 
@@ -668,7 +664,7 @@ Example,
       let pos_int = pattern %[(x:%integer) if x > 0]%
       let i:*pos_int = val.
 
-The first line defines a pure constraint pattern for the positive integers.
+The first line defines a constraint pattern for the positive integers.
 Notice that the pattern internally uses the variable ``x`` in order to evaluate
 the conditional pattern but because it has been declared as a pure constraint
 pattern this value binding is not exported to the current scope during pattern matching.
