@@ -36,6 +36,7 @@ keywords = {
     'let'           : 'LET',
     'load'          : 'LOAD',
     'loop'          : 'LOOP',
+    'match'         : 'MATCH',
     'module'        : 'MODULE',
     'not'           : 'NOT',
     'or'            : 'OR',
