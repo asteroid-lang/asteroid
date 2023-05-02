@@ -743,9 +743,6 @@ Builtin Functions
 **tobase** (x:%integer,base:%integer)
       Represents the given integer x as a numeral string in different bases.
 
-**toboolean** x
-      Interpret x as a Boolean value.
-
 **tointeger** (x:%string,base:%integer) | x 
       Converts a given input to an integer. If a base value is specified then 
       the resulting integer is in the corresponding base.

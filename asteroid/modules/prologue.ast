@@ -220,7 +220,7 @@ end
 -- global __retval__
 --
 -- item_val = state.symbol_table.lookup_sym('item')
--- __retval__ = ('boolean', bool(item_val[1]))
+-- __retval__ = map2boolean(item_val)
 -- "
 -- end
 
