@@ -131,11 +131,6 @@ def unify(term, pattern, unifying = True ):
             "term of type '{}' not allowed in pattern matching"
             .format(term[0]))
 
-    elif term[0] == 'pattern' and pattern[0] not in ['id', 'index']:
-        # ignore pattern operator on the term if we are not trying to unify term with
-        # a variable or other kind of lval
-        return unify(term[1], pattern, unifying)
-
     elif pattern[0] in unify_not_allowed:
         raise PatternMatchFailed(
             "pattern of type '{}' not allowed in pattern matching"
@@ -161,7 +156,7 @@ def unify(term, pattern, unifying = True ):
                     .format(term[0]))
 
     elif pattern[0] == 'if-exp':
-        (IF_EXP, cond_exp, pexp, else_exp) = pattern
+        (IF_EXP, cond_exp, patexp, else_exp) = pattern
         if else_exp[0] != 'null':
             raise PatternMatchFailed(
                     "conditional patterns do not support 'else' clauses")
@@ -170,7 +165,7 @@ def unify(term, pattern, unifying = True ):
         # if clause and only expose all
         # unifiers if conditional was successful
         state.symbol_table.push_scope({})
-        declare_unifiers(unify(term, pexp, unifying))
+        declare_unifiers(unify(term, patexp, unifying))
         bool_val = walk(cond_exp)
         if bool_val[0] != 'boolean':
             raise ValueError("found '{}' expected 'boolean' in conditional pattern"
@@ -235,11 +230,11 @@ def unify(term, pattern, unifying = True ):
                     .format(typematch_kind, term[0]))
 
     elif pattern[0] == 'pattern':
-        # pattern operator on the pattern side can always be ignored
-        # --TODO double check - ttc
         if term[0] == 'pattern':
+            # treat term pattern as a value and continue to match against pattern
             return unify(term[1], pattern[1], unifying)
         else:
+            # treat the pattern value as a pattern and continue matching.
             return unify(term, pattern[1], unifying)
 
     elif pattern[0] == 'deref':  # ('deref', v, bl)
