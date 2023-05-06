@@ -18,8 +18,11 @@ Documentation on Asteroid can be found at
   ```
   (a,b,c):(%integer,%integer,%integer)
   ```
-  constrains the triple `(a,b,c)` to be a triple of integers.
-
+  constrains the triple `(a,b,c)` to be a triple of integers.  The above shorthand conditional pattern is equivalent to the conditional pattern,
+  ```
+  (a,b,c) if (a,b,c) is (%integer,%integer,%integer)
+  ```
+  
 ## New in Release 1.1.4
 
 * Allows pattern constraint operator to map certain variables that a pattern 
