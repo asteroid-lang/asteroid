@@ -6,7 +6,7 @@ Documentation on Asteroid can be found at
 
 ## New in Release 2.0.1
 
-* Supports modules as separate names spaces accessible via the module name.
+* Supports modules as separate names spaces accessible via the module name.  All system modules are no implemented using this construct.
 
 * Match statement similar to the match statement in Python.
 
