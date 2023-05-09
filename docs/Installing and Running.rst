@@ -9,7 +9,7 @@ and is installed using::
 
     $ pip install asteroid-lang
 
-The should work on Unix-like and Windows systems,
+This should work on Unix-like and Windows systems,
 though you may have to use `pip3` or some other variation.
 
   Don't forget to add the `bin` directory where `pip` installs programs
@@ -62,7 +62,7 @@ Asteroid program by typing::
 at the command prompt.  Asteroid also supports an interactive mode::
 
     $ asteroid
-    Asteroid Version 1.1.3
+    Asteroid Version x.y.z
     Type "asteroid -h" for help
     Press CTRL-D to exit
     ast> load system io.
