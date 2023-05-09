@@ -1068,12 +1068,10 @@ def declare_unifiers(unifiers):
 #########################################################################
 def stmt_list(node):
 
-    (STMT_LIST, (LIST, stmts)) = node
+    (STMT_LIST, stmts) = node
     assert_match(STMT_LIST, 'stmt-list')
-    assert_match(LIST, 'list')
     
-    for s in stmts:            
-        walk(s)
+    walk(stmts)
 
 #########################################################################
 def global_stmt(node):
