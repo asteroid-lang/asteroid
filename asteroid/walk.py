@@ -37,9 +37,6 @@ function_return_value = [None]
 def unify(term, pattern, unifying = True ):
     '''
     unify term and pattern recursively and return the unifier.
-    this unification allows for the same variable to appear
-    multiple times in the unifier.  the user of this
-    function must take appropriate actions if this happens.
 
     we assume that both the term and the pattern are made up of AST tuple
     nodes:
@@ -123,6 +120,33 @@ def unify(term, pattern, unifying = True ):
              term[0] in ['head-tail', 'raw-head-tail']):
         raise PatternMatchFailed(
             "head-tail operator not supported")
+
+    elif (not unifying) and pattern[0] == 'apply' and term[0] == 'apply':
+        fp = pattern[1]
+        ft = term[1]
+        if fp[0] != 'id' or ft[0] != 'id':
+            raise ValueError("pattern subsumption not supported")
+        # unpack the apply structures
+        (APPLY, (ID, t_id), t_arg) = term
+        (APPLY, (ID, p_id), p_arg) = pattern
+        # only constructors are allowed in patterns
+        type = state.symbol_table.lookup_sym(t_id,strict=False)
+        if not type or type[0] != 'struct':
+            raise ValueError(
+                    "illegal pattern: function or operator '{}' not supported"
+                    .format(t_id))
+        type = state.symbol_table.lookup_sym(p_id,strict=False)
+        if not type or type[0] != 'struct':
+            raise ValueError(
+                    "illegal pattern: function or operator '{}' not supported"
+                    .format(p_id))
+        # make sure apply id's match
+        if t_id != p_id:
+            raise PatternMatchFailed(
+                "term '{}' does not match pattern '{}'"
+                .format(t_id, p_id))
+        # unify the args
+        return unify(t_arg, p_arg, unifying)
 
     elif term[0] in (unify_not_allowed - {'function-val', 'foreign'}):
         # NOTE: functions/foreign are allowed in terms as long as they are matched
@@ -231,8 +255,10 @@ def unify(term, pattern, unifying = True ):
 
     elif pattern[0] == 'pattern':
         if term[0] == 'pattern':
-            # treat term pattern as a value and continue to match against pattern
-            return unify(term[1], pattern[1], unifying)
+            # term is a first-class pattern, ie, a pattern value
+            # we are not allowed to match on that.
+            raise PatternMatchFailed(
+                "cannot pattern-match patterns")
         else:
             # treat the pattern value as a pattern and continue matching.
             return unify(term, pattern[1], unifying)
@@ -340,33 +366,6 @@ def unify(term, pattern, unifying = True ):
         # only pattern match on object data members
         data_list = data_only(obj_memory)
         return unify(data_list, arg_list, unifying)
-
-    elif (not unifying) and pattern[0] == 'apply' and term[0] == 'apply':
-        fp = pattern[1]
-        ft = term[1]
-        if fp[0] != 'id' or ft[0] != 'id':
-            raise ValueError("pattern subsumption not supported")
-        # unpack the apply structures
-        (APPLY, (ID, t_id), t_arg) = term
-        (APPLY, (ID, p_id), p_arg) = pattern
-        # only constructors are allowed in patterns
-        type = state.symbol_table.lookup_sym(t_id,strict=False)
-        if not type or type[0] != 'struct':
-            raise ValueError(
-                    "illegal pattern: function or operator '{}' not supported"
-                    .format(t_id))
-        type = state.symbol_table.lookup_sym(p_id,strict=False)
-        if not type or type[0] != 'struct':
-            raise ValueError(
-                    "illegal pattern: function or operator '{}' not supported"
-                    .format(p_id))
-        # make sure apply id's match
-        if t_id != p_id:
-            raise PatternMatchFailed(
-                "term '{}' does not match pattern '{}'"
-                .format(t_id, p_id))
-        # unify the args
-        return unify(t_arg, p_arg, unifying)
 
     elif pattern[0] in ['head-tail', 'raw-head-tail']:
         (HEAD_TAIL, pattern_head, pattern_tail) = pattern

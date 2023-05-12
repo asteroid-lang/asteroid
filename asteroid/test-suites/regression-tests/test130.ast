@@ -1,8 +1,0 @@
--- patterns are just values: we can pattern match and index
-let z = pattern ((p,q),(r,t)).
-let pattern (x,_) = z.
-let y = z@0.
-
-assert((1,2) is %[*x]%).
-assert((1,2) is %[*y]%).
-
