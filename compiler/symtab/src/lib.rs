@@ -6,6 +6,7 @@
 #![allow(unused)]
 
 use std::collections::HashMap;
+use std::rc::Rc;
 use ast::*;                   //Asteroid AST representation
 /******************************************************************************/
 const SCOPES_HINT: usize = 10;
@@ -14,10 +15,10 @@ const GLOBAL_LVL: usize = 0;
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct Symtab {
-    pub scoped_symtab: Vec<HashMap<String, ast::ASTNode>>,//A Vector of hashmaps,
+    pub scoped_symtab: Vec<HashMap<String, Rc<AstroNode>>>,//A Vector of hashmaps,
                                 // each hashmap represents a namespace/scope.
                                 // Keys are strings which represent variable
-                                // names and values are ASTNodes.
+                                // names and values are AstroNodes.
     pub globals: Vec<Vec<String>>,// Vector of vectors of strings. Each internal
                                 // vector represents a global namespace/scope 
                                 // and its contents indicate all of the 
@@ -42,7 +43,7 @@ impl Symtab {
     }
     /**************************************************************************/
     // Function enter_sym enters a id-value pair into the symbol table
-    pub fn enter_sym( &mut self, id: &str, value: ASTNode ){
+    pub fn enter_sym( &mut self, id: &str, value: Rc<AstroNode> ){
 
         // Check if it already exists in the global table If it does, update 
         // the variable in the global scope; else enter into std scope
@@ -72,14 +73,14 @@ impl Symtab {
     // Function lookup_sym returns the value paired with the passed in id in
     // the symbol table. The strict parameter is used to evaluate if this 
     // operation should be able to fail or if it should panic.
-    pub fn lookup_sym( &self, id: &str, strict: bool) -> Option<&ASTNode> {
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<AstroNode> {
         let scope = self.find_sym(id);
         if let None = scope {
-            if let true = strict {
+            if strict {
                 panic!("'{}' is not defined.",id);
             }
         }
-        self.scoped_symtab[scope.unwrap()].get(id) 
+        (self.scoped_symtab[scope.unwrap()].get(id).unwrap()).clone() // RC clone clones the reference
     }
     /**************************************************************************/
     // Function push_scope is used to push a new scope level onto the symbol
@@ -105,7 +106,7 @@ impl Symtab {
     // Function update_sym updates a previously stored id-value entry with a 
     // new value to be paired with the id. It is an error to update a non-
     // existant key.
-    pub fn update_sym( &mut self, id: &str, value: ASTNode) {
+    pub fn update_sym( &mut self, id: &str, value: Rc<AstroNode>) {
         let scope = self.find_sym(id);
         match scope {
             None => panic!("'{}' is not defined.",id),
@@ -152,7 +153,7 @@ impl Symtab {
     /**************************************************************************/
     // Function set_config is used to update a symbol table with a new set of
     // stacks and current scope flag.
-    pub fn set_config(&mut self, local: Vec<HashMap<String, ast::ASTNode>> ,
+    pub fn set_config(&mut self, local: Vec<HashMap<String, Rc<AstroNode>>> ,
                                  global: Vec<Vec<String>>,
                                  curr: usize                               ) {
         self.scoped_symtab = local;
@@ -162,7 +163,7 @@ impl Symtab {
     /**************************************************************************/
     // Function get_config returns a copy of the symbol tables stacks and 
     // current scope flag.
-    pub fn get_config( &self)  -> (Vec<HashMap<String, ast::ASTNode>>,
+    pub fn get_config( &self)  -> (Vec<HashMap<String, Rc<AstroNode>>>,
                                    Vec<Vec<String>>,
                                    usize                               ) {
         (self.scoped_symtab.clone(),self.globals.clone(),self.curr_scope)
@@ -204,9 +205,9 @@ mod tests {
     fn test_enter() {
         let mut x = Symtab::new().unwrap();
 
-        let data =  ast::ASTNone::new().unwrap();
+        let data =  AstroNone::new().unwrap();
         let id = "sample";
-        x.enter_sym(id, ast::ASTNode::ASTNone(data));
+        x.enter_sym(id, AstroNode::AstroNone(data));
     }
     #[test]
     fn test_push_scope() {
@@ -254,13 +255,13 @@ mod tests {
     fn test_scoping() {
         let mut x = Symtab::new().unwrap();
 
-        let data =  ast::ASTNone::new().unwrap();
+        let data =  ASTNone::new().unwrap();
         let id = "1";
-        x.enter_sym(id, ast::ASTNode::ASTNone(data));
+        x.enter_sym(id, ASTNode::ASTNone(data));
 
-        let data =  ast::ASTNone::new().unwrap();
+        let data =  ASTNone::new().unwrap();
         let id = "2";
-        x.enter_sym(id, ast::ASTNode::ASTNone(data));
+        x.enter_sym(id, ASTNode::ASTNone(data));
 
         let y1 = x.find_sym("1").unwrap();
         let y2 = x.find_sym("2").unwrap();

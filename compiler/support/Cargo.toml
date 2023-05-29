@@ -6,6 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-state = { path = "C:/Users/Timothy/Desktop/avm/state" }
-symtab = { path = "C:/Users/Timothy/Desktop/avm/symtab" }
-ast = { path = "C:/Users/Timothy/Desktop/avm/ast" }
+state = { path = "C:/Users/Timothy/Desktop/avmb/state" }
+symtab = { path = "C:/Users/Timothy/Desktop/avmb/symtab" }
+ast = { path = "C:/Users/Timothy/Desktop/avmb/ast" }

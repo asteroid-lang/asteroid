@@ -5,8 +5,9 @@
 /******************************************************************************/ 
 #![allow(unused)]
 
-use symtab::*;  //Asteroid symbol table
-use ast::*;     //Asteroid AST representation
+use symtab::*;   //Asteroid symbol table
+use ast::*;      //Asteroid AST representation
+use std::rc::Rc; //Used for astronodes: may have multiple owners
 
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
@@ -15,7 +16,7 @@ const MODULES_HINT: usize = 8;
 pub struct State {
     pub symbol_table: symtab::Symtab,// Symbol table
     pub modules: Vec<String>,        // List of currently loaded modules
-    pub ast: ast::ASTNode,           // Abstrat syntax tree
+    pub ast: AstroNode,           // Abstrat syntax tree
     pub ignore_quote: bool,          // flags when to ignore quoted vars
     pub constraint_lvl: usize,       // indicated current constraint bracket
                                      // depth level.
@@ -35,7 +36,7 @@ impl State {
     pub fn new() -> Option<Self> {
         Some( State { symbol_table: symtab::Symtab::new().unwrap(),
                       modules: Vec::with_capacity(MODULES_HINT),
-                      ast: ast::ASTNode::ASTNone(ast::ASTNone::new().unwrap()),
+                      ast: AstroNode::AstroNone(ast::AstroNone::new().unwrap()),
                       ignore_quote: false,
                       constraint_lvl: 0,
                       cond_warning: false,
@@ -86,11 +87,11 @@ impl State {
         println!("Warning: {}: {}: {}",module,lineno,msg);
     }
     /**************************************************************************/
-    pub fn lookup_sym( &self, id: &str, strict: bool) -> Option<&ASTNode> {
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<AstroNode> {
         self.symbol_table.lookup_sym(id,strict)
     }
     /**************************************************************************/
-    pub fn enter_sym( &mut self, id: &str, value: ASTNode ){
+    pub fn enter_sym( &mut self, id: &str, value: Rc<AstroNode> ){
         self.symbol_table.enter_sym(id,value);
     }
     /**************************************************************************/

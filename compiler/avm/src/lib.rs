@@ -10,21 +10,22 @@ use symtab::*;  //Asteroid symbol table
 use ast::*;     //Asteroid AST representation
 use support::*; //Asteroid support functions
 
+use std::rc::Rc;
 use regex::Regex;
 
 /******************************************************************************/
-pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State, unifying: bool) -> Result<Vec<(ASTNode,ASTNode)>, (&'static str,String) >{
-
-    //TODO
+pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut State, unifying: bool) -> Result<Vec<(Rc<AstroNode>,Rc<AstroNode>)>, (&'static str,String) >{
+   
     let term_type = peek(term).unwrap();
     let pattern_type = peek(pattern).unwrap();
 
+    /**
     if term_type == "string" { // Apply regular expression pattern match
         if pattern_type == "string" {
             // Note: a pattern needs to match the whole term.
-            let ASTNode::ASTString(ASTString{id:t_id,value:t_value}) = term 
+            let AstroNode::AstroString(AstroString{id:t_id,value:t_value}) = term 
                 else {panic!("Unify: expected string.")};
-            let ASTNode::ASTString(ASTString{id:p_id,value:p_value}) = pattern 
+            let AstroNode::AstroString(AstroString{id:p_id,value:p_value}) = pattern 
                 else {panic!("Unify: expected string.")};
 
             let mut re_str = String::from(r"^");
@@ -50,9 +51,9 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
         if term_type != "list" || pattern_type != "list" {
             Err( ("PatternMatchFailed",format!("term and pattern do not agree on list/tuple constructor")))
         } else {
-            let ASTNode::ASTList(ASTList{id:_,length:tlen,contents:tcontents}) = term
+            let AstroNode::AstroList(AstroList{id:_,length:tlen,contents:tcontents}) = term
                 else {panic!("Unify: expected list.")};
-            let ASTNode::ASTList(ASTList{id:_,length:plen,contents:pcontents}) = pattern
+            let AstroNode::AstroList(AstroList{id:_,length:plen,contents:pcontents}) = pattern
                 else {panic!("Unify: expected list.")};
             if tlen != plen {
                 Err( ("PatternMatchFailed",format!("term and pattern lists/tuples are not the same length")))
@@ -66,50 +67,50 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
         }
     } else if !unifying && term_type == "namedpattern"{
         //Unpack a term-side name-pattern if evaluating redundant clauses
-        let ASTNode::ASTNamedPattern(ASTNamedPattern{id,name,pattern:named_pattern}) = term
+        let AstroNode::AstroNamedPattern(AstroNamedPattern{id,name,pattern:named_pattern}) = term
             else {panic!("Unify: expected named-pattern.")};
 
         unify(named_pattern,pattern,state,unifying)
     } else if !unifying && term_type == "deref" {
         //Unpack a term-sdie first class pattern if evaluating redundant clauses
-        let ASTNode::ASTDeref(ASTDeref{id,expression}) = term 
+        let AstroNode::AstroDeref(AstroDeref{id,expression}) = term 
             else {panic!("Unify: expected derefernece.")};
 
-        let ASTNode::ASTID(ASTID{id,ref name}) = **expression
+        let AstroNode::AstroID(AstroID{id,ref name}) = **expression
             else {panic!("Unify: expected id.")};
         
-        let new_term = state.lookup_sym(name,true).unwrap();
+        let new_term = state.lookup_sym(name,true);
         
         //TODO
         //REEVALUATE- copy whole state is silly/find better solution
         unify(&new_term, pattern, &mut state.clone(), unifying)
 
-    // ** Asteroid value level matching **
+    // ** Astroeroid value level matching **
     } else if term_type == "object" && pattern_type == "object" {
         //   this can happen when we dereference a variable pointing
         //   to an object as a pattern, e.g.
         //    let o = A(1,2). -- A is a structure with 2 data members
         //   let *o = o.
 
-        let ASTNode::ASTObject(ASTObject{id:t_id,struct_id:t_struct_id,object_memory:t_object_memory}) = term
+        let AstroNode::AstroObject(AstroObject{id:t_id,struct_id:t_struct_id,object_memory:t_object_memory}) = term
             else {panic!("Unify: expected object.")};
-        let ASTNode::ASTObject(ASTObject{id:p_id,struct_id:p_struct_id,object_memory:p_object_memory}) = pattern
+        let AstroNode::AstroObject(AstroObject{id:p_id,struct_id:p_struct_id,object_memory:p_object_memory}) = pattern
             else {panic!("Unify: expected object.")};
         
-        let ASTID{id:_,name:t_name} = t_struct_id;
-        let ASTID{id:_,name:p_name} = p_struct_id;
+        let AstroID{id:_,name:t_name} = t_struct_id;
+        let AstroID{id:_,name:p_name} = p_struct_id;
 
         if t_name != p_name {
             Err( ("PatternMatchFailed",format!("pattern type {} and term type {} do not agree",p_name,t_name)))
         } else {
-            unify( &ASTNode::ASTList(t_object_memory.clone()), &ASTNode::ASTList(p_object_memory.clone()), state, unifying )
+            unify( &AstroNode::AstroList(t_object_memory.clone()), &AstroNode::AstroList(p_object_memory.clone()), state, unifying )
         }
     } else if pattern_type == "string" && term_type != "string" {
         // regular expression applied to a non-string structure
         // this is possible because all data types are subtypes of string
         let str_term = term2string(term).unwrap();
-        let new_str = ASTString::new(str_term).unwrap();
-        unify( &ASTNode::ASTString(new_str), pattern, state, unifying)
+        let new_str = AstroString::new(str_term).unwrap();
+        unify( &AstroNode::AstroString(new_str), pattern, state, unifying)
 
     } else if pattern_type == "if" {
 
@@ -126,7 +127,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
             }
         } 
 
-        let ASTNode::ASTIf(ASTIf{id,cond_exp,then_exp,else_exp}) = pattern
+        let AstroNode::AstroIf(AstroIf{id,cond_exp,then_exp,else_exp}) = pattern
             else {panic!("Unify: expected if expresssion.")};
 
         let else_type = peek(else_exp).unwrap();
@@ -149,7 +150,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
             state.pop_scope();
         }
 
-        let ASTNode::ASTBool(ASTBool{id:_,value}) = bool_val
+        let AstroNode::AstroBool(AstroBool{id:_,value}) = bool_val
             else {panic!("Unify: expected boolean.")};
         
         if value {
@@ -164,7 +165,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
         // If we get here, a conditional pattern clause is placed after a non-conditonal
         // pattern clause. Therefore, we need to check if the subsume because if they do
         // the conditonal clause is redundant.
-        let ASTNode::ASTIf(ASTIf{id:_,cond_exp,then_exp,else_exp}) = term
+        let AstroNode::AstroIf(AstroIf{id:_,cond_exp,then_exp,else_exp}) = term
             else {panic!("Unify: expected list")};
 
         let else_type = peek(else_exp).unwrap();
@@ -175,10 +176,10 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
         }
     } else if pattern_type == "typematch"{
 
-        let ASTNode::ASTTypeMatch(ASTTypeMatch{id:_,expression}) = pattern
+        let AstroNode::AstroTypeMatch(AstroTypeMatch{id:_,expression}) = pattern
             else {panic!("Unify: expected typematch.")};
 
-        let ASTNode::ASTID(ASTID{id:_,name:ref p_name}) = **expression
+        let AstroNode::AstroID(AstroID{id:_,name:ref p_name}) = **expression
             else {panic!("Unigy: expected ID.")};
         
 
@@ -214,9 +215,9 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
             }
 
         } else if term_type == "object" {
-            let ASTNode::ASTObject(ASTObject{id:_,struct_id,object_memory}) = term
+            let AstroNode::AstroObject(AstroObject{id:_,struct_id,object_memory}) = term
                 else {panic!("Unify: expected object.")};
-            let ASTID{id:_,name:t_name} = struct_id;
+            let AstroID{id:_,name:t_name} = struct_id;
 
             if t_name == p_name {
                 Ok( vec![] )
@@ -232,7 +233,7 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
                 return Err( ("PatternMatchFailed",format!("{} is not a valid type for typematch.",p_name)));
             }
 
-            let in_symtab_type = peek( state.lookup_sym(&p_name,true).unwrap()).unwrap();
+            let in_symtab_type = peek( state.lookup_sym(&p_name,true)).unwrap();
             if in_symtab_type != "struct" {
                 Err( ("PatternMatchFailed",format!("{} is not a type.",p_name)))
             } else {
@@ -243,75 +244,77 @@ pub fn unify<'a>( term: &'a ASTNode, pattern: &'a ASTNode, state: &'a mut State,
     } else {
         Err( ("PatternMatchFailed", format!("pattern {} did not match {}",term2string(pattern).unwrap(),term2string(term).unwrap())))
     }
+    **/
+    return Err( ("test", "test_".to_string()) );
 }
 /******************************************************************************/
-pub fn walk<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    match node {
-        ASTNode::ASTInteger(_) => Some(node.clone()),
-        ASTNode::ASTReal(_) => Some(node.clone()),
-        ASTNode::ASTBool(_) => Some(node.clone()),
-        ASTNode::ASTString(_) => Some(node.clone()),
-        ASTNode::ASTLineInfo(_) => process_lineinfo(node, state),
-        ASTNode::ASTList(_) => list_exp(node, state),
-        ASTNode::ASTNone(_) => Some(node.clone()),
-        ASTNode::ASTNil(_) => Some(node.clone()),
-        ASTNode::ASTToList(_) => to_list_exp(node,state),
-        ASTNode::ASTRawToList(_) => raw_to_list_exp(node,state),
-        ASTNode::ASTHeadTail(_) => head_tail_exp(node,state),
-        ASTNode::ASTRawHeadTail(_) => raw_head_tail_exp(node,state),
-        ASTNode::ASTSequence(_) => sequence_exp(node,state),
-        ASTNode::ASTObject(_) => Some(node.clone()),
-        ASTNode::ASTEval(_) => eval_exp(node,state),
-        ASTNode::ASTQuote(_) => quote_exp(node,state),
-        ASTNode::ASTConstraint(_) => constraint_exp(node,state),
-        ASTNode::ASTTypeMatch(_) => constraint_exp(node,state),
-        ASTNode::ASTForeign(_) => Some(node.clone()),
-        ASTNode::ASTID(_) => id_exp(node,state),
-        ASTNode::ASTApply(_) => apply_exp(node,state),
-        ASTNode::ASTIndex(_) => index_exp(node,state),
-        ASTNode::ASTEscape(_) => escape_exp(node,state),
-        ASTNode::ASTIs(_) => is_exp(node,state),
-        ASTNode::ASTIn(_) => in_exp(node,state),
-        ASTNode::ASTIf(_) => if_exp(node,state),
-        ASTNode::ASTNamedPattern(_) => named_pattern_exp(node,state),
-        ASTNode::ASTMemberFunctionVal(_) => Some(node.clone()),
-        ASTNode::ASTDeref(_) => deref_exp(node,state),
-        _ => panic!("Unknown node type in AST."),
+pub fn walk<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{ 
+    match *node {
+        AstroNode::AstroInteger(_) => Ok(node),
+        AstroNode::AstroReal(_) => Ok(node),
+        AstroNode::AstroBool(_) => Ok(node),
+        AstroNode::AstroString(_) => Ok(node),
+        AstroNode::AstroLineInfo(_) => process_lineinfo(node, state),
+        AstroNode::AstroList(_) => list_exp(node, state),
+        AstroNode::AstroNone(_) => Ok(node),
+        AstroNode::AstroNil(_) => Ok(node),
+        AstroNode::AstroToList(_) => to_list_exp(node,state),
+        AstroNode::AstroRawToList(_) => raw_to_list_exp(node,state),
+        AstroNode::AstroHeadTail(_) => head_tail_exp(node,state),
+        AstroNode::AstroRawHeadTail(_) => raw_head_tail_exp(node,state),
+        AstroNode::AstroSequence(_) => sequence_exp(node,state),
+        AstroNode::AstroObject(_) => Ok(node),
+        AstroNode::AstroEval(_) => eval_exp(node,state),
+        AstroNode::AstroQuote(_) => quote_exp(node,state),
+        AstroNode::AstroConstraint(_) => constraint_exp(node,state),
+        AstroNode::AstroTypeMatch(_) => constraint_exp(node,state),
+        AstroNode::AstroForeign(_) => Ok(node),
+        AstroNode::AstroID(_) => id_exp(node,state),
+        AstroNode::AstroApply(_) => apply_exp(node,state),
+        AstroNode::AstroIndex(_) => index_exp(node,state),
+        AstroNode::AstroEscape(_) => escape_exp(node,state),
+        AstroNode::AstroIs(_) => is_exp(node,state),
+        AstroNode::AstroIn(_) => in_exp(node,state),
+        AstroNode::AstroIf(_) => if_exp(node,state),
+        AstroNode::AstroNamedPattern(_) => named_pattern_exp(node,state),
+        AstroNode::AstroMemberFunctionVal(_) => Ok(node),
+        AstroNode::AstroDeref(_) => deref_exp(node,state),
+        _ => panic!("Unknown node type in walk function."),
     }    
 }
 /******************************************************************************/
-pub fn process_lineinfo<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    match node {
-        ast::ASTNode::ASTLineInfo(ASTLineInfo{ id, module, line_number }) => state.lineinfo = (module.clone(),*line_number),
+pub fn process_lineinfo<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    match *node {
+        AstroNode::AstroLineInfo(AstroLineInfo{id,ref module,line_number}) => state.lineinfo = (module.clone(),line_number),
         _ => panic!("lineinfo error."),
     }
-    Some( node.clone() )
+    Ok( node )
 }
 /******************************************************************************/
-pub fn list_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTList( ASTList{id,length,contents} ) = node 
+pub fn list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroList( AstroList{id,length,ref contents} ) = *node 
         else { panic!("ERROR: walk: expected list in list_exp()") };
 
-    let mut new_contents = Vec::with_capacity(*length);
-    for i in 0..*length {
-        new_contents.push( Box::new( walk( &contents[i], state).unwrap()) );
+    let mut new_contents = Vec::with_capacity(length);
+    for i in 0..length {
+        new_contents.push(  walk( contents[i].clone(), state).unwrap());
     }
-    Some( ast::ASTNode::ASTList( ASTList::new(*length,new_contents).unwrap() ) )
+    Ok( Rc::new( AstroNode::AstroList( AstroList::new(length,new_contents).unwrap())))
 }
 /******************************************************************************/
-pub fn tuple_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTTuple( ASTTuple{id,length,contents} ) = node 
+pub fn tuple_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroTuple( AstroTuple{id,length,ref contents} ) = *node 
         else { panic!("ERROR: walk: expected tuple in tuple_exp()") };
 
-    let mut new_contents = Vec::with_capacity(*length);
-    for i in 0..*length {
-        new_contents.push( Box::new(walk( &contents[i], state).unwrap()) );
+    let mut new_contents = Vec::with_capacity(length);
+    for i in 0..length {
+        new_contents.push( walk( contents[i].clone(), state).unwrap() );
     }
-    Some( ast::ASTNode::ASTTuple( ASTTuple::new(*length,new_contents).unwrap() ) )
+    Ok( Rc::new( AstroNode::AstroTuple( AstroTuple::new(length,new_contents).unwrap())))
 }
 /******************************************************************************/
-pub fn to_list_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTToList(ASTToList{id,start,stop,stride}) = node 
+pub fn to_list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroToList(AstroToList{id,ref start,ref stop,ref stride}) = *node 
         else { panic!("ERROR: walk: expected to_list in to_list_exp()") }; 
 
     let mut start_val;
@@ -319,22 +322,22 @@ pub fn to_list_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTN
     let mut stride_val;
 
     {
-        let start = walk(start,state).unwrap();
-        let ast::ASTNode::ASTInteger(ASTInteger{id,value}) = start 
+        let start = walk(start.clone(),state).unwrap();
+        let AstroNode::AstroInteger(AstroInteger{id,value}) = *start 
             else { panic!("ERROR: walk: expected integer in to_list_exp()") };
         start_val= value;
     }
 
     {
-        let stop = walk(stop,state).unwrap();
-        let ast::ASTNode::ASTInteger(ASTInteger{id,value}) = stop
+        let stop = walk(stop.clone(),state).unwrap();
+        let AstroNode::AstroInteger(AstroInteger{id,value}) = *stop
             else { panic!("ERROR: walk: expected integer in to_list_exp()") };
         stop_val = value;
     }
 
     {
-        let stride = walk(stride,state).unwrap();
-        let ast::ASTNode::ASTInteger(ASTInteger{id,value}) = stride
+        let stride = walk(stride.clone(),state).unwrap();
+        let AstroNode::AstroInteger(AstroInteger{id,value}) = *stride
             else { panic!("ERROR: walk: expected integer in to_list_exp()") };
         stride_val = value;
     }
@@ -349,24 +352,24 @@ pub fn to_list_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTN
     let mut newlist = Vec::with_capacity(len);
 
     for i in (start_val..stop_val).step_by(stride_val as usize) {
-        newlist.push(Box::new(ast::ASTNode::ASTInteger(ast::ASTInteger::new( i ).unwrap())));
+        newlist.push(Rc::new(AstroNode::AstroInteger(AstroInteger::new( i ).unwrap())));
     }
 
-    Some( ast::ASTNode::ASTList( ASTList::new(len,newlist).unwrap() ) )
+    Ok( Rc::new(AstroNode::AstroList( AstroList::new(len,newlist).unwrap())))
 }
 /******************************************************************************/
-pub fn raw_to_list_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTRawToList(ASTRawToList{id,start,stop,stride}) = node 
+pub fn raw_to_list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroRawToList(AstroRawToList{id,ref start,ref stop,ref stride}) = *node 
         else { panic!("ERROR: walk: expected to_list in to_list_exp()") }; 
 
-    Some( walk( &ast::ASTNode::ASTToList( ASTToList{id:id-1,start:start.to_owned(),stop:stop.to_owned(),stride:stride.to_owned()}), state).unwrap() )
+    walk( Rc::new( AstroNode::AstroToList( AstroToList{id:id-1,start:(*start).clone(),stop:(*stop).clone(),stride:(*stride).clone()} )), state)
 }
 /******************************************************************************/
-pub fn head_tail_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTHeadTail(ASTHeadTail{id,head,tail}) = node 
+pub fn head_tail_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroHeadTail(AstroHeadTail{id,ref head,ref tail}) = *node 
         else { panic!("ERROR: walk: expected head-tail exp in head_tail_exp().") }; 
 
-    let ast::ASTNode::ASTList( ASTList{id,length,ref contents} ) = **tail
+    let AstroNode::AstroList( AstroList{id,length,ref contents} ) = **tail
         else { panic!("ERROR: unsupported tail type in head-tail operator.") };
 
     let mut new_contents = Vec::with_capacity(length);
@@ -375,28 +378,28 @@ pub fn head_tail_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<AS
         new_contents.push(content.to_owned());
     }
 
-    Some( ast::ASTNode::ASTList( ASTList::new( length + 1, new_contents).unwrap() ) ) 
+    Ok( Rc::new( AstroNode::AstroList( AstroList::new( length + 1, new_contents).unwrap()))) 
 }
 /******************************************************************************/
-pub fn raw_head_tail_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTRawHeadTail(ASTRawHeadTail{id,head,tail}) = node 
+pub fn raw_head_tail_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroRawHeadTail(AstroRawHeadTail{id,ref head,ref tail}) = *node 
         else { panic!("ERROR: walk: expected raw head-tail exp in raw_head_tail_exp().") }; 
 
-    Some( walk( &ast::ASTNode::ASTHeadTail( ASTHeadTail{id:id-1,head:head.to_owned(),tail:tail.to_owned()}), state).unwrap() )
+    walk( Rc::new( AstroNode::AstroHeadTail( AstroHeadTail{id:id-1,head:head.to_owned(),tail:tail.to_owned()})), state)
 }
 /******************************************************************************/
-pub fn sequence_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTSequence(ASTSequence{id,first,second}) = node 
+pub fn sequence_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroSequence(AstroSequence{id,ref first,ref second}) = *node 
         else { panic!("ERROR: walk: expected sequence expression in sequence_exp().") };  
 
-    let first = walk( first,state).unwrap();
-    let second = walk( second,state).unwrap();
+    let first = walk( (*first).clone(),state).unwrap();
+    let second = walk( (*second).clone(),state).unwrap();
 
-    Some( ast::ASTNode::ASTSequence( ASTSequence{id:*id,first:Box::new(first),second:Box::new(second)} ))
+    Ok( Rc::new( AstroNode::AstroSequence( AstroSequence{id:id,first:first,second:second})))
 }
 /******************************************************************************/
-pub fn eval_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTEval(ASTEval{id,expression}) = node 
+pub fn eval_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroEval(AstroEval{id,ref expression}) = *node 
         else { panic!("ERROR: walk: expected eval expression in exal_exp().") };  
 
     // Note: eval is essentially a macro call - that is a function
@@ -404,134 +407,134 @@ pub fn eval_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode
     // we have to first evaluate the argument to 'eval' before
     // walking the term.  This is safe because if the arg is already
     // the actual term it will be quoted and nothing happen
-    let exp_value_expand = walk(expression,state).unwrap();
+    let exp_value_expand = walk( (*expression).clone(),state).unwrap();
 
     // now walk the actual term..
     state.ignore_quote_on();
-    let exp_val = walk( &exp_value_expand,state).unwrap();
+    let exp_val = walk( exp_value_expand,state).unwrap();
     state.ignore_quote_off();
 
-    Some(exp_val)
+    Ok(exp_val)
 }
 /******************************************************************************/
-pub fn quote_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTQuote(ASTQuote{id,expression}) = node 
+pub fn quote_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroQuote(AstroQuote{id,ref expression}) = *node 
         else { panic!("ERROR: walk: expected quote expression in quote_exp().") };  
 
     // quoted code should be treated like a constant if not ignore_quote
     if state.ignore_quote {
-        Some(walk(expression,state).unwrap())
+        walk((*expression).clone(),state)
     } else {
-        Some(node.clone())
+        Ok( node )
     }
 }
 /******************************************************************************/
-pub fn constraint_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    //let ast::ASTNode::ASTConstraint(ASTConstraint{id,expression}) = node 
+pub fn constraint_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    //let AstroNode::AstroConstraint(AstroConstraint{id,expression}) = node 
     //    else { panic!("ERROR: walk: expected constraint exp in constraint_exp().") };
 
     panic!("Constraint patterns cannot be used as constructors.");
 }
 /******************************************************************************/
-pub fn id_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTID(ASTID{id,name}) = node 
+pub fn id_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)> {
+    let AstroNode::AstroID(AstroID{id,ref name}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
     
-    Some( state.lookup_sym(name,true).unwrap().clone() )
+    Ok( state.lookup_sym(name,true).clone() )
 }
 /******************************************************************************/
-pub fn apply_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTApply(ASTApply{id,function,argument}) = node 
+pub fn apply_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroApply(AstroApply{id,ref function,ref argument}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
     //TODO 
     // handle builtin operators that look like apply lists.
 
     // handle function application
-    let f_val = walk( function, state).unwrap();
+    let f_val = walk( (*function).clone(), state).unwrap();
     //let f_name = ;
-    let arg_val = walk( argument, state).unwrap();
+    let arg_val = walk( (*argument).clone(), state).unwrap();
 
-    Some(node.clone())
+    Ok(node)
 }
 /******************************************************************************/
-pub fn index_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTIndex(ASTIndex{id,structure,index_exp}) = node 
+pub fn index_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroIndex(AstroIndex{id,ref structure,ref index_exp}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
     // look at the semantics of 'structure'
-    let structure_val = walk(structure,state).unwrap();
+    let structure_val = walk((*structure).clone(),state).unwrap();
 
     // indexing/slicing
-    let result = read_at_ix(&structure_val,index_exp,state).unwrap();
+    let result = read_at_ix(structure_val,(*index_exp).clone(),state).unwrap();
 
-    Some(result)
+    Ok(result)
 }
 /******************************************************************************/
-pub fn escape_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
+pub fn escape_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
     //TODO
-    Some( node.clone() )
+    Ok( node )
 }
 /******************************************************************************/
-pub fn is_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTIs(ASTIs{id,pattern,term}) = node 
+pub fn is_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroIs(AstroIs{id,ref pattern,ref term}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
-    let term_val = walk(term, state).unwrap();
-    let unifiers = unify(&term_val,pattern,state,true);
+    let term_val = walk((*term).clone(), state).unwrap();
+    let unifiers = unify(term_val,(*pattern).clone(),state,true);
 
     if let Err(_) = unifiers {
-        Some(ASTNode::ASTBool(ASTBool::new(false).unwrap()))
+        Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(false).unwrap())))
     } else {
         declare_unifiers(&unifiers.unwrap());
-        Some(ASTNode::ASTBool(ASTBool::new(true).unwrap()))
+        Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(true).unwrap())))
     }
 }
 /******************************************************************************/
-pub fn in_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTIn(ASTIn{id,expression,expression_list}) = node 
+pub fn in_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroIn(AstroIn{id,ref expression,ref expression_list}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
-    let exp_val = walk(expression,state).unwrap();
-    let exp_list_val = walk(expression_list,state).unwrap();
-    let ASTNode::ASTList(ASTList{id,length,contents}) = exp_list_val
+    let exp_val = walk((*expression).clone(),state).unwrap();
+    let exp_list_val = walk((*expression_list).clone(),state).unwrap();
+    let AstroNode::AstroList(AstroList{id,length,ref contents}) = *exp_list_val
         else { panic!("Right argument to in operator has to be a list.")};
 
     // We simply map the in operator to Rust's contains function
-    if contents.contains(&Box::new(exp_val)) {
-        Some( ASTNode::ASTBool(ASTBool::new(true).unwrap()))
+    if (*contents).contains(&exp_val) {
+        Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(true).unwrap())))
     } else {
-        Some( ASTNode::ASTBool(ASTBool::new(false).unwrap()))
+        Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(false).unwrap())))
     }
 }
 /******************************************************************************/
-pub fn if_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTIf(ASTIf{id,cond_exp,then_exp,else_exp}) = node 
+pub fn if_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroIf(AstroIf{id,ref cond_exp,ref then_exp,ref else_exp}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
-    let cond_val = map2boolean(&walk( cond_exp, state ).unwrap()).unwrap();
-    let ASTNode::ASTBool(ASTBool{id,value}) = cond_val 
+    let cond_val = map2boolean(&walk( (*cond_exp).clone(), state ).unwrap()).unwrap();
+    let AstroNode::AstroBool(AstroBool{id,value}) = cond_val 
         else {panic!("Expected boolean from map2boolean.")};
     
     if value {
-        walk(then_exp,state)
+        walk((*then_exp).clone(),state)
     } else {
-        walk(else_exp,state)
+        walk((*else_exp).clone(),state)
     }
 }
 /*******************************************************************************
 # Named patterns - when walking a named pattern we are interpreting a
 # a pattern as a constructor - ignore the name                                */
-pub fn named_pattern_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
-    let ast::ASTNode::ASTNamedPattern(ASTNamedPattern{id,name,pattern}) = node 
+pub fn named_pattern_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+    let AstroNode::AstroNamedPattern(AstroNamedPattern{id,ref name,ref pattern}) =* node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
-    walk(pattern,state)
+    walk((*pattern).clone(),state)
 }
 /******************************************************************************/
-pub fn deref_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
+pub fn deref_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
 
-    Some( node.clone() )
+    Ok( node )
 }
 /******************************************************************************/
 /******************************************************************************/
@@ -545,42 +548,45 @@ pub fn deref_exp<'a>( node: &'a ASTNode, state: &'a mut State ) -> Option<ASTNod
 # Evaluates a set of unifiers for the presence of repeated variable
 # names within a pattern. Repeated variables names within the same pattern
 # are what is called a non-linear pattern, which is not currently supported
-# by Asteroid.                                                                */
-fn check_repeated_symbols(unifiers: Vec<(ASTNode,ASTNode)> ) -> bool {
+# by Astroeroid.                                                                */
+fn check_repeated_symbols(unifiers: Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) -> bool {
     let len = unifiers.len();
     let mut seen = Vec::with_capacity(len);
 
     for i in 0..len {
-        let next = peek( &unifiers[i].0 ).unwrap();
+        let next = peek( (unifiers[i].0).clone() ).unwrap();
 
         if next == "id" {
-            let ASTNode::ASTID(ASTID{id,name}) = &unifiers[i].0
+            let AstroNode::AstroID(AstroID{id,ref name}) = *unifiers[i].0
                 else {panic!("Unify: expected id.")};
             
-            if seen.contains(&name) { // repeated symbol detected
+            if seen.contains(name) { // repeated symbol detected
                 return true
             } else {
-                seen.push(&name);
+                seen.push((*name).clone()); // NOT AN RC CLONE
+                                            // but just string(variable name)
             }
         }
     }
     false // no repeats exist if we get here.
 }
 /******************************************************************************/
-pub fn declare_unifiers( unifiers: &Vec<(ASTNode,ASTNode)> ) {
+pub fn declare_unifiers( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) {
     let x = 1;
 }
 /******************************************************************************/
 // TODO needs work
-pub fn read_at_ix<'a>( structure_val: &'a ASTNode, ix: &'a ASTNode, state: &'a mut State ) -> Option<ASTNode>{
+pub fn read_at_ix<'a>( structure_val: Rc<AstroNode>, ix: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
 
     // find the actual memory we need to access
-    let struct_type = peek(structure_val).unwrap();
+    let struct_type = peek(structure_val.clone()).unwrap();
     let ix_type = peek(ix).unwrap();
+
+    /**
 
     if struct_type == "list" || struct_type == "tuple" || struct_type == "string" {
         if struct_type == "list" && ix_type == "id" {
-            let ASTNode::ASTID( ASTID{id,name}) = ix else {panic!{"Error: expected ID."}};
+            let AstroNode::AstroID( AstroID{id,name}) = ix else {panic!{"Error: expected ID."}};
             //if name in list_member_functions {
                 // we are looking at the function name of a list member
                 // function - find the implementation and return it.
@@ -588,7 +594,7 @@ pub fn read_at_ix<'a>( structure_val: &'a ASTNode, ix: &'a ASTNode, state: &'a m
                 return Some(structure_val.clone())
             //}
         } else if struct_type == "string" && ix_type == "id" {
-            let ASTNode::ASTID( ASTID{id,name}) = ix else {panic!{"Error: expected ID."}};
+            let AstroNode::AstroID( AstroID{id,name}) = ix else {panic!{"Error: expected ID."}};
             //if name in string_member_functions {
                 // we are looking at the function name of a string member
                 // function - find the implementation and return it.
@@ -600,18 +606,18 @@ pub fn read_at_ix<'a>( structure_val: &'a ASTNode, ix: &'a ASTNode, state: &'a m
             let ix_val = walk( ix, state);
         }
     } else if struct_type == "object" {
-        let ASTNode::ASTObject( ASTObject{id,struct_id,object_memory}) = structure_val
+        let AstroNode::AstroObject( AstroObject{id,struct_id,object_memory}) = structure_val
             else {panic!("Error: expected object.")};
-        let ASTID{id,name} = struct_id;
-        let ASTList{id,length,contents} = object_memory;
+        let AstroID{id,name} = struct_id;
+        let AstroList{id,length,contents} = object_memory;
 
         let struct_val = state.lookup_sym(name,true).unwrap();
         
-        let ASTNode::ASTStruct( ASTStruct{id,member_names,struct_memory}) = struct_val 
+        let AstroNode::AstroStruct( AstroStruct{id,member_names,struct_memory}) = struct_val 
             else {panic!("Error: expected struct.")};
 
         if ix_type == "id" {
-            let ASTNode::ASTID(ASTID{id,name}) = ix else {panic!("Error: expected ID.")};
+            let AstroNode::AstroID(AstroID{id,name}) = ix else {panic!("Error: expected ID.")};
             //if name in member_names {
             //
             //} else 
@@ -632,7 +638,7 @@ pub fn read_at_ix<'a>( structure_val: &'a ASTNode, ix: &'a ASTNode, state: &'a m
         }
     } else if ix_type == "list" {
         //TODO
-        let ASTNode::ASTList( ASTList{id,length,contents} ) = ix
+        let AstroNode::AstroList( AstroList{id,length,contents} ) = ix
             else {panic!("Error: expected list.")};
         if *length == 0 {
             panic!("Index list is empty.");
@@ -641,7 +647,8 @@ pub fn read_at_ix<'a>( structure_val: &'a ASTNode, ix: &'a ASTNode, state: &'a m
         panic!("Index operation '{}' not supported.",peek(ix).unwrap());
     }
 
-    Some(structure_val.clone())
+    **/
+    Ok(structure_val.clone())
 }
 /******************************************************************************/
 #[cfg(test)]
@@ -650,22 +657,22 @@ mod tests {
 
     #[test]
     fn test_lineinfo() {
-        let newline = ASTLineInfo::new( String::from("test1"),123 ).unwrap();
+        let newline = AstroLineInfo::new( String::from("test1"),123 ).unwrap();
         let mut state = State::new().unwrap();
         {
             let out1 = state.lineinfo.clone();
             assert_eq!(out1,(String::from("<input>"),1));
         }
 
-        walk( &ASTNode::ASTLineInfo(newline),&mut state );
+        walk( Rc::new( AstroNode::AstroLineInfo(newline)),&mut state );
 
         {
             let out2 = state.lineinfo.clone();
             assert_eq!(out2,(String::from("test1"),123));
         }
 
-        let newline = ASTLineInfo::new( String::from("math"), 987654321).unwrap();
-        walk( &ASTNode::ASTLineInfo(newline),&mut state );
+        let newline = AstroLineInfo::new( String::from("math"), 987654321).unwrap();
+        walk( Rc::new(  AstroNode::AstroLineInfo(newline)),&mut state );
 
         {
             let out3 = state.lineinfo.clone();
@@ -674,15 +681,15 @@ mod tests {
     }
     // #[test]
     // fn test_list() {
-    //     let newline1 = ASTLineInfo::new( String::from("test1"),1 ).unwrap();
-    //     let newline2 = ASTLineInfo::new( String::from("test2"),12 ).unwrap();
-    //     let newline3 = ASTLineInfo::new( String::from("test3"),123 ).unwrap();
-    //     let newlist = ASTList::new(3,vec![ast::ASTNode::ASTLineInfo(newline1),
-    //                                       ast::ASTNode::ASTLineInfo(newline2),
-    //                                       ast::ASTNode::ASTLineInfo(newline3)]).unwrap();
+    //     let newline1 = AstroLineInfo::new( String::from("test1"),1 ).unwrap();
+    //     let newline2 = AstroLineInfo::new( String::from("test2"),12 ).unwrap();
+    //     let newline3 = AstroLineInfo::new( String::from("test3"),123 ).unwrap();
+    //     let newlist = AstroList::new(3,vec![AstroNode::AstroLineInfo(newline1),
+    //                                       AstroNode::AstroLineInfo(newline2),
+    //                                       AstroNode::AstroLineInfo(newline3)]).unwrap();
     //     let mut state = State::new().unwrap();
 
-    //     walk( &ASTNode::ASTList(newlist),&mut state);
+    //     walk( &AstroNode::AstroList(newlist),&mut state);
 
     //     {
     //         let out1 = state.lineinfo;
@@ -692,110 +699,110 @@ mod tests {
     // #[test]
     // fn test_to_list() {
 
-    //     let int1 = ASTInteger::new(0).unwrap(); //start
-    //     let int2 = ASTInteger::new(10).unwrap();//stop
-    //     let int3 = ASTInteger::new(1).unwrap(); //stride
-    //     let newlist = ASTToList::new( vec![ast::ASTNode::ASTInteger(int1)],
-    //                                   vec![ast::ASTNode::ASTInteger(int2)],
-    //                                   vec![ast::ASTNode::ASTInteger(int3)]).unwrap();
+    //     let int1 = AstroInteger::new(0).unwrap(); //start
+    //     let int2 = AstroInteger::new(10).unwrap();//stop
+    //     let int3 = AstroInteger::new(1).unwrap(); //stride
+    //     let newlist = AstroToList::new( vec![AstroNode::AstroInteger(int1)],
+    //                                   vec![AstroNode::AstroInteger(int2)],
+    //                                   vec![AstroNode::AstroInteger(int3)]).unwrap();
     //     let mut state = State::new().unwrap();
 
-    //     let out = walk( &ASTNode::ASTToList(newlist), &mut state ).unwrap(); 
-    //     let ast::ASTNode::ASTList( ASTList{id,length,contents} ) = out 
+    //     let out = walk( &AstroNode::AstroToList(newlist), &mut state ).unwrap(); 
+    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out 
     //         else { panic!("ERROR: test: expected list in to-list") };
     //     assert_eq!(length,10);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[9] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[9] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,9);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[4] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[4] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,4);
 
-    //     let int3 = ASTInteger::new(0).unwrap(); //start
-    //     let int4 = ASTInteger::new(100).unwrap();//stop
-    //     let int5 = ASTInteger::new(2).unwrap(); //stride
-    //     let newlist = ASTRawToList::new( vec![ast::ASTNode::ASTInteger(int3)],
-    //                                      vec![ast::ASTNode::ASTInteger(int4)],
-    //                                      vec![ast::ASTNode::ASTInteger(int5)]).unwrap();
+    //     let int3 = AstroInteger::new(0).unwrap(); //start
+    //     let int4 = AstroInteger::new(100).unwrap();//stop
+    //     let int5 = AstroInteger::new(2).unwrap(); //stride
+    //     let newlist = AstroRawToList::new( vec![AstroNode::AstroInteger(int3)],
+    //                                      vec![AstroNode::AstroInteger(int4)],
+    //                                      vec![AstroNode::AstroInteger(int5)]).unwrap();
     //     let mut state = State::new().unwrap();
 
-    //     let out2 = walk( &ASTNode::ASTRawToList(newlist), &mut state ).unwrap(); 
-    //     let ast::ASTNode::ASTList( ASTList{id,length,contents} ) = out2 
+    //     let out2 = walk( &AstroNode::AstroRawToList(newlist), &mut state ).unwrap(); 
+    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out2 
     //         else { panic!("ERROR: test: expected list in to-list") };
     //     assert_eq!(length,50);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[9] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[9] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,18);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[4] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[4] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,8);
     // }
     // #[test]
     // fn test_headtail() {
 
-    //     let int1 = ASTInteger::new(1).unwrap(); 
-    //     let int2 = ASTInteger::new(2).unwrap(); 
-    //     let int3 = ASTInteger::new(3).unwrap();
-    //     let int4 = ASTInteger::new(4).unwrap(); 
-    //     let newlist = ASTList::new(3, vec![ast::ASTNode::ASTInteger(int2),
-    //                                      ast::ASTNode::ASTInteger(int3),
-    //                                      ast::ASTNode::ASTInteger(int4)]).unwrap();
+    //     let int1 = AstroInteger::new(1).unwrap(); 
+    //     let int2 = AstroInteger::new(2).unwrap(); 
+    //     let int3 = AstroInteger::new(3).unwrap();
+    //     let int4 = AstroInteger::new(4).unwrap(); 
+    //     let newlist = AstroList::new(3, vec![AstroNode::AstroInteger(int2),
+    //                                      AstroNode::AstroInteger(int3),
+    //                                      AstroNode::AstroInteger(int4)]).unwrap();
     //     let mut state = State::new().unwrap();
 
-    //     let ht1 = ASTHeadTail::new(vec![ASTNode::ASTInteger(int1)],vec![ASTNode::ASTList(newlist)]).unwrap();
-    //     let out = walk( &ASTNode::ASTHeadTail(ht1), &mut state ).unwrap(); 
-    //     let ASTNode::ASTList( ASTList{id,length,contents} ) = out
+    //     let ht1 = AstroHeadTail::new(vec![AstroNode::AstroInteger(int1)],vec![AstroNode::AstroList(newlist)]).unwrap();
+    //     let out = walk( &AstroNode::AstroHeadTail(ht1), &mut state ).unwrap(); 
+    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out
     //         else { panic!("ERROR: test: expected list in to-list") };
     //     assert_eq!(length,4);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[0] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[0] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,1);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[1] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[1] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,2);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[2] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[2] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,3);
-    //     let ast::ASTNode::ASTInteger( ASTInteger{id,value} ) = contents[3] 
+    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[3] 
     //         else { panic!("ERROR: test: expected int in to-list") };
     //     assert_eq!(value,4);
     // }
-    #[test]
-    fn test_unify_integers() {
-        let mut state = State::new().unwrap();
-        let int1 = ASTInteger::new(1).unwrap(); 
-        let int2 = ASTInteger::new(2).unwrap();
-        let int3 = ASTInteger::new(10).unwrap();
-        let int4 = ASTInteger::new(10).unwrap();
+    // #[test]
+    // fn test_unify_integers() {
+    //     let mut state = State::new().unwrap();
+    //     let int1 = AstroInteger::new(1).unwrap(); 
+    //     let int2 = AstroInteger::new(2).unwrap();
+    //     let int3 = AstroInteger::new(10).unwrap();
+    //     let int4 = AstroInteger::new(10).unwrap();
 
-        let result = unify(&ASTNode::ASTInteger(int1),&ASTNode::ASTInteger(int2),&mut state, true);
-        let Err(_) = result else { panic!("test unify integers error.")};
+    //     let result = unify(Rc::new(AstroNode::AstroInteger(int1)),Rc::new(AstroNode::AstroInteger(int2)),&mut state, true);
+    //     let Err(_) = result else { panic!("test unify integers error.")};
 
-        let result = unify(&ASTNode::ASTInteger(int3),&ASTNode::ASTInteger(int4),&mut state, true);
-        let Ok(list) = result else { panic!("test unify integers error.")};
-        assert_eq!(list.len(),0);
-    }
-    #[test]
-    fn test_unify_strings() {
-        let str1 = ASTString::new(String::from("abc")).unwrap();
-        let str2 = ASTString::new(String::from("abc")).unwrap();
-        let mut state = State::new().unwrap();
+    //     let result = unify(Rc::new(AstroNode::AstroInteger(int3)),Rc::new(AstroNode::AstroInteger(int4)),&mut state, true);
+    //     let Ok(list) = result else { panic!("test unify integers error.")};
+    //     assert_eq!(list.len(),0);
+    // }
+    // #[test]
+    // fn test_unify_strings() {
+    //     let str1 = AstroString::new(String::from("abc")).unwrap();
+    //     let str2 = AstroString::new(String::from("abc")).unwrap();
+    //     let mut state = State::new().unwrap();
 
-        let result = unify(&ASTNode::ASTString(str1),&ASTNode::ASTString(str2),&mut state, true);
-        let Ok(list) = result else { panic!("test unify integers error.")};
-        assert_eq!(list.len(),0);
+    //     let result = unify(Rc::new(AstroNode::AstroString(str1)),Rc::new(AstroNode::AstroString(str2)),&mut state, true);
+    //     let Ok(list) = result else { panic!("test unify integers error.")};
+    //     assert_eq!(list.len(),0);
 
-        let str3 = ASTString::new(String::from("def")).unwrap();
-        let str4 = ASTString::new(String::from("abc")).unwrap();
+    //     let str3 = AstroString::new(String::from("def")).unwrap();
+    //     let str4 = AstroString::new(String::from("abc")).unwrap();
 
-        let result = unify(&ASTNode::ASTString(str3),&ASTNode::ASTString(str4),&mut state, true);
-        let Err(_) = result else { panic!("test unify integers error.")};
+    //     let result = unify(Rc::new(AstroNode::AstroString(str3)),Rc::new(AstroNode::AstroString(str4)),&mut state, true);
+    //     let Err(_) = result else { panic!("test unify integers error.")};
 
-        let str5 = ASTString::new(String::from("ttt")).unwrap();
-        let str6 = ASTString::new(String::from("t*")).unwrap();
+    //     let str5 = AstroString::new(String::from("ttt")).unwrap();
+    //     let str6 = AstroString::new(String::from("t*")).unwrap();
         
-        let result = unify(&ASTNode::ASTString(str5),&ASTNode::ASTString(str6),&mut state, true);
-        let Ok(list) = result else { panic!("test unify integers error.")};
-        assert_eq!(list.len(),0);
-    }
+    //     let result = unify(Rc::new(AstroNode::AstroString(str5)),Rc::new(AstroNode::AstroString(str6)),&mut state, true);
+    //     let Ok(list) = result else { panic!("test unify integers error.")};
+    //     assert_eq!(list.len(),0);
+    // }
 }

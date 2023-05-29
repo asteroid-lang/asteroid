@@ -6,4 +6,4 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ast = { path = "C:/Users/Timothy/Desktop/avm/ast" }
+ast = { path = "C:/Users/Timothy/Desktop/avmb/ast" }
