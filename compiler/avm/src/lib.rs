@@ -5,248 +5,56 @@
 /******************************************************************************/
 #![allow(unused)]
 
-use state::*;   //Asteroid state representation
-use symtab::*;  //Asteroid symbol table
-use ast::*;     //Asteroid AST representation
-use support::*; //Asteroid support functions
+use state::*;     //Asteroid state representation
+use symtab::*;    //Asteroid symbol table
+use ast::*;       //Asteroid AST representation
+use support::*;   //Asteroid support functions
 
-use std::rc::Rc;
-use regex::Regex;
+use std::rc::Rc;  //Multiple ownership(astronodes)
+use regex::Regex; //Regular expressions
 
 /******************************************************************************/
 pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut State, unifying: bool) -> Result<Vec<(Rc<AstroNode>,Rc<AstroNode>)>, (&'static str,String) >{
    
-    let term_type = peek(term).unwrap();
-    let pattern_type = peek(pattern).unwrap();
+    let term_type = peek( Rc::clone(&term) ).unwrap();
+    let pattern_type = peek( Rc::clone(&pattern) ).unwrap();
 
-    /**
+
     if term_type == "string" { // Apply regular expression pattern match
         if pattern_type == "string" {
             // Note: a pattern needs to match the whole term.
-            let AstroNode::AstroString(AstroString{id:t_id,value:t_value}) = term 
+            let AstroNode::AstroString(AstroString{id:t_id,value:ref t_value}) = *term 
                 else {panic!("Unify: expected string.")};
-            let AstroNode::AstroString(AstroString{id:p_id,value:p_value}) = pattern 
+            let AstroNode::AstroString(AstroString{id:p_id,value:ref p_value}) = *pattern 
                 else {panic!("Unify: expected string.")};
 
             let mut re_str = String::from(r"^");
-            re_str.push_str(p_value);
+            re_str.push_str(&p_value);
             re_str.push_str("$");
             let re = Regex::new(&re_str).unwrap();
-            if re.is_match(t_value) {
+
+            if re.is_match(&t_value) {
                 Ok( vec![] ) // Return an empty unifier
             } else {
-                Err( ("PatternMatchFailed", format!("regular expression {} did not match {}",term2string(pattern).unwrap(),term2string(term).unwrap())))
+                Err( ("PatternMatchFailed", format!("regular expression {} did not match {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
             }
         } else {
-            Err( ("PatternMatchFailed", format!("regular expression {} did not match {}",term2string(pattern).unwrap(),term2string(term).unwrap())))
+            Err( ("PatternMatchFailed", format!("regular expression {} did not match {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
         }
+    } else if term_type == "integer" || term_type == "bool" || term_type == "real"  {
 
-    } else if ["integer","real","boolean"].contains(&term_type) {
-        if term == pattern {
+        if term_type == pattern_type && term == pattern {
             Ok( vec![] ) // Return an empty unifier
         } else {
-            Err( ("PatternMatchFailed",format!("{} is not the same as {}",term2string(pattern).unwrap(),term2string(term).unwrap())))
-        }
-    } else if term_type == "list" || pattern_type == "list" {
-        if term_type != "list" || pattern_type != "list" {
-            Err( ("PatternMatchFailed",format!("term and pattern do not agree on list/tuple constructor")))
-        } else {
-            let AstroNode::AstroList(AstroList{id:_,length:tlen,contents:tcontents}) = term
-                else {panic!("Unify: expected list.")};
-            let AstroNode::AstroList(AstroList{id:_,length:plen,contents:pcontents}) = pattern
-                else {panic!("Unify: expected list.")};
-            if tlen != plen {
-                Err( ("PatternMatchFailed",format!("term and pattern lists/tuples are not the same length")))
-            } else {
-                let mut unifiers = Vec::with_capacity(*tlen);
-                for i in 0..*tlen {
-                    unifiers.extend( unify( &tcontents[i], &pcontents[i], state, unifying ).unwrap());
-                }
-                Ok( unifiers )
-            }
-        }
-    } else if !unifying && term_type == "namedpattern"{
-        //Unpack a term-side name-pattern if evaluating redundant clauses
-        let AstroNode::AstroNamedPattern(AstroNamedPattern{id,name,pattern:named_pattern}) = term
-            else {panic!("Unify: expected named-pattern.")};
-
-        unify(named_pattern,pattern,state,unifying)
-    } else if !unifying && term_type == "deref" {
-        //Unpack a term-sdie first class pattern if evaluating redundant clauses
-        let AstroNode::AstroDeref(AstroDeref{id,expression}) = term 
-            else {panic!("Unify: expected derefernece.")};
-
-        let AstroNode::AstroID(AstroID{id,ref name}) = **expression
-            else {panic!("Unify: expected id.")};
-        
-        let new_term = state.lookup_sym(name,true);
-        
-        //TODO
-        //REEVALUATE- copy whole state is silly/find better solution
-        unify(&new_term, pattern, &mut state.clone(), unifying)
-
-    // ** Astroeroid value level matching **
-    } else if term_type == "object" && pattern_type == "object" {
-        //   this can happen when we dereference a variable pointing
-        //   to an object as a pattern, e.g.
-        //    let o = A(1,2). -- A is a structure with 2 data members
-        //   let *o = o.
-
-        let AstroNode::AstroObject(AstroObject{id:t_id,struct_id:t_struct_id,object_memory:t_object_memory}) = term
-            else {panic!("Unify: expected object.")};
-        let AstroNode::AstroObject(AstroObject{id:p_id,struct_id:p_struct_id,object_memory:p_object_memory}) = pattern
-            else {panic!("Unify: expected object.")};
-        
-        let AstroID{id:_,name:t_name} = t_struct_id;
-        let AstroID{id:_,name:p_name} = p_struct_id;
-
-        if t_name != p_name {
-            Err( ("PatternMatchFailed",format!("pattern type {} and term type {} do not agree",p_name,t_name)))
-        } else {
-            unify( &AstroNode::AstroList(t_object_memory.clone()), &AstroNode::AstroList(p_object_memory.clone()), state, unifying )
-        }
-    } else if pattern_type == "string" && term_type != "string" {
-        // regular expression applied to a non-string structure
-        // this is possible because all data types are subtypes of string
-        let str_term = term2string(term).unwrap();
-        let new_str = AstroString::new(str_term).unwrap();
-        unify( &AstroNode::AstroString(new_str), pattern, state, unifying)
-
-    } else if pattern_type == "if" {
-
-        // If we are not evaluating redundant claues
-        if !unifying {
-            // If we are evaluating subsumption between two different conditional patterns
-            // we want to 'punt' and print a warning message.
-            if term_type == "if" {
-                if !state.cond_warning {
-                    state.warning("Redundant pattern detection is not supported for conditional pattern expressions.");
-                    state.cond_warning = true;
-                }
-                return Err( ("PatternMatchFailed",format!("Subsumption relatioship broken, pattern will not be rendered redundant."))) // User should never see
-            }
-        } 
-
-        let AstroNode::AstroIf(AstroIf{id,cond_exp,then_exp,else_exp}) = pattern
-            else {panic!("Unify: expected if expresssion.")};
-
-        let else_type = peek(else_exp).unwrap();
-        if else_type != "none" {
-            return Err( ("ValueError",String::from("Conditional patterns do not support else clauses.")) )
-        } 
-
-        let  unifiers = unify(term,then_exp,state,unifying).unwrap();
-        
-        if state.constraint_lvl > 0 {
-            state.push_scope();
+            Err( ("PatternMatchFailed", format!("{} is not the same as {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
         }
 
-        // evaluate the conditional expression in the
-        // context of the unifiers.
-        declare_unifiers(&unifiers);
-        let bool_val = map2boolean(&walk(cond_exp,state).unwrap()).unwrap();
-
-        if state.constraint_lvl > 0 {
-            state.pop_scope();
-        }
-
-        let AstroNode::AstroBool(AstroBool{id:_,value}) = bool_val
-            else {panic!("Unify: expected boolean.")};
-        
-        if value {
-            Ok( unifiers )
-        } else {
-            Err( ("PatternMatchFailed",String::from("Condtional pattern match failed.")))
-        }
-    
-    } else if term_type == "if" {
-        // We will only get here when evaluating subsumption
-
-        // If we get here, a conditional pattern clause is placed after a non-conditonal
-        // pattern clause. Therefore, we need to check if the subsume because if they do
-        // the conditonal clause is redundant.
-        let AstroNode::AstroIf(AstroIf{id:_,cond_exp,then_exp,else_exp}) = term
-            else {panic!("Unify: expected list")};
-
-        let else_type = peek(else_exp).unwrap();
-        if else_type != "none" {
-            return Err( ("ValueError",String::from("Conditional patterns do not support else clauses.")) )
-        } else {
-            unify( then_exp, pattern, state, false )
-        }
-    } else if pattern_type == "typematch"{
-
-        let AstroNode::AstroTypeMatch(AstroTypeMatch{id:_,expression}) = pattern
-            else {panic!("Unify: expected typematch.")};
-
-        let AstroNode::AstroID(AstroID{id:_,name:ref p_name}) = **expression
-            else {panic!("Unigy: expected ID.")};
-        
-
-        if ["string","real","integer","list","typle","bool","boolean","none"].contains(&p_name.as_str()) {
-            if !unifying {
-                // handle lists/head-tails subsuming each other
-                if ["list","headtail"].contains(&term_type){
-                    if p_name == "list" {
-                        return Ok( vec![] );
-                    }
-                }
-            }
-
-            if p_name == term_type {
-                Ok( vec![] )
-            } else {
-                Err(("PatternMatchFailed",format!("expected typematch {} got a term of type {}",p_name,term_type)))
-            }
-
-        } else if p_name == "function" {
-            //matching function and member function values
-            if ["function","memberfunctionval"].contains(&term_type) {
-                Ok( vec![] )
-            } else {
-                Err( ("PatternMatchFailed",format!("expected typematch {} got a term of type {}",p_name,term_type)))
-            }
-
-        } else if p_name == "pattern" {
-            if term_type == "quote" {
-                Ok( vec![] )
-            } else {
-                Err( ("PatternMatchFailed",format!("expected typematch {} got a term of type {}",p_name,term_type)))
-            }
-
-        } else if term_type == "object" {
-            let AstroNode::AstroObject(AstroObject{id:_,struct_id,object_memory}) = term
-                else {panic!("Unify: expected object.")};
-            let AstroID{id:_,name:t_name} = struct_id;
-
-            if t_name == p_name {
-                Ok( vec![] )
-            } else {
-                Err( ("PatternMatchFailed",format!("expected typematch {} got a term of type {}",p_name,term_type)))
-            }
-
-        } else {
-            // Check if the typematch is in the symbol table
-            let in_symtab = state.find_sym(&p_name);
-
-            if let None = in_symtab {
-                return Err( ("PatternMatchFailed",format!("{} is not a valid type for typematch.",p_name)));
-            }
-
-            let in_symtab_type = peek( state.lookup_sym(&p_name,true)).unwrap();
-            if in_symtab_type != "struct" {
-                Err( ("PatternMatchFailed",format!("{} is not a type.",p_name)))
-            } else {
-                Err( ("PatternMatchFailed",format!("expected typematch {} got an object of type {}",p_name,term_type)))
-            }
-        }
-        
-    } else {
-        Err( ("PatternMatchFailed", format!("pattern {} did not match {}",term2string(pattern).unwrap(),term2string(term).unwrap())))
+    } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
+        Ok(vec![])
     }
-    **/
-    return Err( ("test", "test_".to_string()) );
 }
+
+
 /******************************************************************************/
 pub fn walk<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{ 
     match *node {
@@ -654,9 +462,68 @@ pub fn read_at_ix<'a>( structure_val: Rc<AstroNode>, ix: Rc<AstroNode>, state: &
 #[cfg(test)]
 mod tests {
     use super::*;
-
     #[test]
-    fn test_lineinfo() {
+    fn test_unify_regex() {
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new(String::from("hello")).unwrap()) );
+        let s2 = Rc::new( AstroNode::AstroString( AstroString::new(String::from("hello")).unwrap()) );
+        let s3 = Rc::new( AstroNode::AstroString( AstroString::new(String::from("nothello")).unwrap()) );
+
+        let mut state = State::new().unwrap();
+        let u = true;
+        
+        let out = unify(s1.clone(),s2,&mut state,u).unwrap();
+        assert_eq!(out.len(),0); //SHOULD PASS
+
+        let out = unify(s1,s3,&mut state,u);
+        match out {
+            Err(x) => (), //SHOULD BE ERR
+            _ => panic!("Regex text failed"),
+        }
+    }
+    #[test]
+    fn test_unify_primitives() {
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+
+        let b1 = Rc::new( AstroNode::AstroBool( AstroBool::new(true).unwrap()));
+        let b2 = Rc::new( AstroNode::AstroBool( AstroBool::new(false).unwrap()));
+        let b3 = Rc::new( AstroNode::AstroBool( AstroBool::new(true).unwrap()));
+
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.1).unwrap()));
+        let r2 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.2).unwrap()));
+        let r3 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.1).unwrap()));
+
+        let mut state = State::new().unwrap();
+        let u_mode = true;
+
+        let out1 = unify(i1.clone(),i3,&mut state,u_mode).unwrap();
+        let out2 = unify(b1.clone(),b3,&mut state,u_mode).unwrap();
+        let out3 = unify(r1.clone(),r3,&mut state,u_mode).unwrap();
+
+        assert_eq!(out1.len(),0); //SHOULD PASS
+        assert_eq!(out2.len(),0); //SHOULD PASS
+        assert_eq!(out3.len(),0); //SHOULD PASS
+
+        let out1 = unify(i1.clone(),i2,&mut state,u_mode);
+        let out2 = unify(b1.clone(),b2,&mut state,u_mode);
+        let out3 = unify(r1.clone(),r2,&mut state,u_mode);
+
+        match out1 {
+            Err(x) => (), //SHOULD BE ERR
+            _ => panic!("Primitive unify test failed"),
+        }
+        match out2 {
+            Err(x) => (), //SHOULD BE ERR
+            _ => panic!("rimitive unify test failed"),
+        }
+        match out3 {
+            Err(x) => (), //SHOULD BE ERR
+            _ => panic!("rimitive unify test failed"),
+        }
+    }
+    #[test]
+    fn test_walk_lineinfo() {
         let newline = AstroLineInfo::new( String::from("test1"),123 ).unwrap();
         let mut state = State::new().unwrap();
         {
@@ -679,130 +546,5 @@ mod tests {
             assert_eq!(out3,(String::from("math"), 987654321));
         }
     }
-    // #[test]
-    // fn test_list() {
-    //     let newline1 = AstroLineInfo::new( String::from("test1"),1 ).unwrap();
-    //     let newline2 = AstroLineInfo::new( String::from("test2"),12 ).unwrap();
-    //     let newline3 = AstroLineInfo::new( String::from("test3"),123 ).unwrap();
-    //     let newlist = AstroList::new(3,vec![AstroNode::AstroLineInfo(newline1),
-    //                                       AstroNode::AstroLineInfo(newline2),
-    //                                       AstroNode::AstroLineInfo(newline3)]).unwrap();
-    //     let mut state = State::new().unwrap();
-
-    //     walk( &AstroNode::AstroList(newlist),&mut state);
-
-    //     {
-    //         let out1 = state.lineinfo;
-    //         assert_eq!(out1,(String::from("test3"),123));
-    //     }
-    // }
-    // #[test]
-    // fn test_to_list() {
-
-    //     let int1 = AstroInteger::new(0).unwrap(); //start
-    //     let int2 = AstroInteger::new(10).unwrap();//stop
-    //     let int3 = AstroInteger::new(1).unwrap(); //stride
-    //     let newlist = AstroToList::new( vec![AstroNode::AstroInteger(int1)],
-    //                                   vec![AstroNode::AstroInteger(int2)],
-    //                                   vec![AstroNode::AstroInteger(int3)]).unwrap();
-    //     let mut state = State::new().unwrap();
-
-    //     let out = walk( &AstroNode::AstroToList(newlist), &mut state ).unwrap(); 
-    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out 
-    //         else { panic!("ERROR: test: expected list in to-list") };
-    //     assert_eq!(length,10);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[9] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,9);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[4] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,4);
-
-    //     let int3 = AstroInteger::new(0).unwrap(); //start
-    //     let int4 = AstroInteger::new(100).unwrap();//stop
-    //     let int5 = AstroInteger::new(2).unwrap(); //stride
-    //     let newlist = AstroRawToList::new( vec![AstroNode::AstroInteger(int3)],
-    //                                      vec![AstroNode::AstroInteger(int4)],
-    //                                      vec![AstroNode::AstroInteger(int5)]).unwrap();
-    //     let mut state = State::new().unwrap();
-
-    //     let out2 = walk( &AstroNode::AstroRawToList(newlist), &mut state ).unwrap(); 
-    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out2 
-    //         else { panic!("ERROR: test: expected list in to-list") };
-    //     assert_eq!(length,50);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[9] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,18);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[4] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,8);
-    // }
-    // #[test]
-    // fn test_headtail() {
-
-    //     let int1 = AstroInteger::new(1).unwrap(); 
-    //     let int2 = AstroInteger::new(2).unwrap(); 
-    //     let int3 = AstroInteger::new(3).unwrap();
-    //     let int4 = AstroInteger::new(4).unwrap(); 
-    //     let newlist = AstroList::new(3, vec![AstroNode::AstroInteger(int2),
-    //                                      AstroNode::AstroInteger(int3),
-    //                                      AstroNode::AstroInteger(int4)]).unwrap();
-    //     let mut state = State::new().unwrap();
-
-    //     let ht1 = AstroHeadTail::new(vec![AstroNode::AstroInteger(int1)],vec![AstroNode::AstroList(newlist)]).unwrap();
-    //     let out = walk( &AstroNode::AstroHeadTail(ht1), &mut state ).unwrap(); 
-    //     let AstroNode::AstroList( AstroList{id,length,contents} ) = out
-    //         else { panic!("ERROR: test: expected list in to-list") };
-    //     assert_eq!(length,4);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[0] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,1);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[1] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,2);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[2] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,3);
-    //     let AstroNode::AstroInteger( AstroInteger{id,value} ) = contents[3] 
-    //         else { panic!("ERROR: test: expected int in to-list") };
-    //     assert_eq!(value,4);
-    // }
-    // #[test]
-    // fn test_unify_integers() {
-    //     let mut state = State::new().unwrap();
-    //     let int1 = AstroInteger::new(1).unwrap(); 
-    //     let int2 = AstroInteger::new(2).unwrap();
-    //     let int3 = AstroInteger::new(10).unwrap();
-    //     let int4 = AstroInteger::new(10).unwrap();
-
-    //     let result = unify(Rc::new(AstroNode::AstroInteger(int1)),Rc::new(AstroNode::AstroInteger(int2)),&mut state, true);
-    //     let Err(_) = result else { panic!("test unify integers error.")};
-
-    //     let result = unify(Rc::new(AstroNode::AstroInteger(int3)),Rc::new(AstroNode::AstroInteger(int4)),&mut state, true);
-    //     let Ok(list) = result else { panic!("test unify integers error.")};
-    //     assert_eq!(list.len(),0);
-    // }
-    // #[test]
-    // fn test_unify_strings() {
-    //     let str1 = AstroString::new(String::from("abc")).unwrap();
-    //     let str2 = AstroString::new(String::from("abc")).unwrap();
-    //     let mut state = State::new().unwrap();
-
-    //     let result = unify(Rc::new(AstroNode::AstroString(str1)),Rc::new(AstroNode::AstroString(str2)),&mut state, true);
-    //     let Ok(list) = result else { panic!("test unify integers error.")};
-    //     assert_eq!(list.len(),0);
-
-    //     let str3 = AstroString::new(String::from("def")).unwrap();
-    //     let str4 = AstroString::new(String::from("abc")).unwrap();
-
-    //     let result = unify(Rc::new(AstroNode::AstroString(str3)),Rc::new(AstroNode::AstroString(str4)),&mut state, true);
-    //     let Err(_) = result else { panic!("test unify integers error.")};
-
-    //     let str5 = AstroString::new(String::from("ttt")).unwrap();
-    //     let str6 = AstroString::new(String::from("t*")).unwrap();
-        
-    //     let result = unify(Rc::new(AstroNode::AstroString(str5)),Rc::new(AstroNode::AstroString(str6)),&mut state, true);
-    //     let Ok(list) = result else { panic!("test unify integers error.")};
-    //     assert_eq!(list.len(),0);
-    // }
+    
 }
