@@ -49,6 +49,53 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
             Err( ("PatternMatchFailed", format!("{} is not the same as {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
         }
 
+    } else if term_type == "list" || pattern_type == "list" {
+
+        if term_type != "list" || pattern_type != "list" {
+            Err( ("PatternMatchFailed", format!("term and pattern do not agree on list/tuple constructor")))
+        } else {
+
+            let AstroNode::AstroList(AstroList{id:_,length:t_length,contents:ref t_contents}) = *term
+                else {panic!("Unify: expected list.")};
+            let AstroNode::AstroList(AstroList{id:_,length:p_length,contents:ref p_contents}) = *pattern
+                else {panic!("Unify: expected list.")};
+
+            if t_length != p_length {
+                Err( ("PatternMatchFailed", format!("term and pattern lists/tuples are not the same length")))
+            } else {
+                let mut unifiers = vec![];
+                for i in 0..t_length {
+                    let x = unify( Rc::clone( &t_contents[i]), Rc::clone( &p_contents[i]), state, unifying );
+                    match x {
+                        Ok(mut success) => unifiers.append( &mut success ),
+                        Err(_) => return x,
+                    }
+                }
+                check_repeated_symbols( &unifiers );
+                Ok( unifiers )
+            }
+        }
+
+    } else if !unifying && term_type == "namedpattern" {
+
+        // Unpack a term-side name-pattern if evaluating redundant clauses
+        let AstroNode::AstroNamedPattern( AstroNamedPattern{id:_,name:_,pattern:ref t_pattern}) = *term
+            else {panic!("Unify: expected named pattern.")};
+
+        unify( Rc::clone( t_pattern), pattern, state, unifying )
+
+    } else if !unifying && term_type == "deref" {
+
+        let AstroNode::AstroDeref(AstroDeref{id:_,expression:ref t_expression}) = *term
+            else {panic!("Unify: expected derefence expression.")};
+
+        let AstroNode::AstroID(AstroID{id:_,name:ref t_name}) = **t_expression
+            else {panic!("Unify: expected derefence expression.")};
+
+        let term = state.lookup_sym( &t_name, true );
+
+        unify( term, pattern, state, unifying )
+
     } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
         Ok(vec![])
     }
@@ -357,7 +404,7 @@ pub fn deref_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<A
 # names within a pattern. Repeated variables names within the same pattern
 # are what is called a non-linear pattern, which is not currently supported
 # by Astroeroid.                                                                */
-fn check_repeated_symbols(unifiers: Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) -> bool {
+fn check_repeated_symbols(unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) -> bool {
     let len = unifiers.len();
     let mut seen = Vec::with_capacity(len);
 
@@ -521,6 +568,34 @@ mod tests {
             Err(x) => (), //SHOULD BE ERR
             _ => panic!("rimitive unify test failed"),
         }
+    }
+    #[test]
+    fn test_unify_lists() {
+        let mut state = State::new().unwrap();
+        let u_mode = true;
+
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(3).unwrap()));
+
+        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i1.clone(),i2.clone(),i3.clone()]).unwrap()));
+        let l2 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i2.clone(),i3.clone()]).unwrap()));
+        let l3 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i3.clone(),i2.clone(),i1.clone()]).unwrap()));
+        let l4 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i1.clone(),i2.clone(),i3.clone()]).unwrap()));
+
+        let out1 = unify( Rc::clone(&l1),Rc::clone(&l4),&mut state,u_mode ).unwrap(); //Should pass unwrapping
+        let out2 = unify( Rc::clone(&l1),Rc::clone(&l2),&mut state,u_mode );
+        let out3 = unify( Rc::clone(&l1),Rc::clone(&l3),&mut state,u_mode );
+
+        match out2 {
+            Ok(_) => panic!("test failed."),
+            Err(_) => (),
+        }
+        match out3 {
+            Ok(_) => panic!("test failed."),
+            Err(_) => (),
+        }
+
     }
     #[test]
     fn test_walk_lineinfo() {
