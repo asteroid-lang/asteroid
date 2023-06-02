@@ -95,6 +95,82 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         let term = state.lookup_sym( &t_name, true );
 
         unify( term, pattern, state, unifying )
+    
+    /* ** Asteroid value level matching ** */
+    } else if term_type == "object" && pattern_type == "object" {
+        // this can happen when we dereference a variable pointing
+        // to an object as a pattern, e.g.
+        //    let o = A(1,2). -- A is a structure with 2 data members
+        //    let *o = o.
+        let AstroNode::AstroObject(AstroObject{id:_,struct_id:ref t_id,object_memory:ref t_data}) = *term
+            else {panic!("Unify: expected object.")};
+        let AstroNode::AstroObject(AstroObject{id:_,struct_id:ref p_id,object_memory:ref p_data}) = *pattern
+            else {panic!("Unify: expected object.")};
+
+        let AstroID{id:_,name:t_name} = t_id;
+        let AstroID{id:_,name:p_name} = p_id;
+
+        if t_name != p_name {
+            Err( ("PatternMatchFailed", format!("pattern type {} and term type {} do not agree.",t_name,p_name)))
+        } else {
+            // TODO fix cloning
+            unify(Rc::new( AstroNode::AstroList(t_data.clone())),Rc::new( AstroNode::AstroList(p_data.clone())),state,unifying)
+        }
+
+    } else if pattern_type == "string" && term_type != "string" {
+
+        let new_str = term2string(&term).unwrap();
+        let new_term = AstroString{id:3,value:new_str};
+
+        unify( Rc::new(AstroNode::AstroString(new_term)),pattern,state,unifying )
+
+    } else if pattern_type == "if" {
+
+        // If we are evaluating subsumtion
+        if !unifying {
+            //If we are evaluating subsumption between two different conditional patterns
+            // we want to 'punt' and print a warning message.
+            if !state.cond_warning {
+                eprintln!("Redundant pattern detection is not supported for conditional pattern expressions.");
+                state.cond_warning = true;
+                Ok(vec![])
+            } else {
+                // Otherwise if the term is not another cmatch the clauses are correctly ordered.
+                Err( ("PatternMatchFailed", format!("Subsumption relatioship broken, pattern will not be rendered redundant.")))
+            } 
+        } else {
+
+            let AstroNode::AstroIf(AstroIf{id:_, cond_exp:ref p_cond, then_exp:ref p_then, else_exp:ref p_else}) = *pattern
+                else {panic!("Unify: expected if expression.")};
+
+            if let AstroNode::AstroNone(AstroNone{id:_}) = **p_else {
+
+                let unifiers = unify(term,Rc::clone(p_then),state,unifying).unwrap();
+                if state.constraint_lvl > 0 {
+                    state.push_scope();
+                }
+
+                // evaluate the conditional expression in the
+                // context of the unifiers.
+                declare_unifiers( &unifiers );
+                let bool_val = map2boolean( &walk(Rc::clone(p_cond),state).unwrap() ).unwrap();
+
+                if state.constraint_lvl > 0 {
+                    state.pop_scope();
+                }
+
+                let AstroNode::AstroBool(AstroBool{id:_,value:b_value}) = bool_val
+                    else {panic!("Unify: expected boolean.")};
+
+                if b_value {
+                    Ok( unifiers )
+                } else {
+                    Err(("PatternMatchFailed","Conditional pattern match failed.".to_string()))
+                }   
+            } else {
+                Err(("ValueError","Conditional patterns do not support else clauses.".to_string()))
+            }
+        }
 
     } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
         Ok(vec![])

@@ -74,7 +74,7 @@ impl AstroLineInfo {
 // Abstract Syntax Tree representation for a none type node
 #[derive( Clone,PartialEq)]
 pub struct AstroNone {
-    id: u8,
+    pub id: u8,
 }
 impl AstroNone {
     pub fn new() -> Option<Self>{
@@ -85,7 +85,7 @@ impl AstroNone {
 // Abstract Syntax Tree representation for a nil type node
 #[derive( Clone,PartialEq)]
 pub struct AstroNil {
-    id: u8,
+    pub id: u8,
 }
 impl AstroNil {
     pub fn new() -> Option<Self>{
