@@ -32,24 +32,6 @@ represents ``end``.
 Statements
 ^^^^^^^^^^
 
-Assert
-%%%%%%
-
-Syntax: ``ASSERT exp '.'?``
-
-If the expression of the assert statement evaluates to a
-value equivalent to the Boolean value
-``false`` an exception is thrown otherwise the statement is ignored.
-
-For example, the statement,
-::
-      assert (1+1 == 3).
-
-will generate a runtime error but the statement,
-::
-      assert (1+1 == 2).
-
-will be ignored once the expression has been evaluated.
 
 
 Break
@@ -228,6 +210,32 @@ on literals is convenient for statements like these,
 
 This ``let`` statement is only successful for values of ``p`` which are pairs where the first component of the pair is the value ``1``.
 
+Load
+%%%%
+
+Syntax: ``LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?``
+
+The ``load`` statement allows you to load Asteroid modules either by filename or by module name.
+The ``system`` flag tells the interpreter only to search in the system modules for the desired
+module.  Probably the most often loaded module is the system IO module,
+::
+      load system io.
+      io @println "Hello World!".
+
+The ``as`` modifier allows you to rename a module in the current context in order to avoid name clashes.
+Consider for example that you had loaded your own IO module but also would like to load the
+system IO module.  In order to avoid a name clash you can use the ``as`` modifier to rename one
+of the modules,
+::
+      load io. -- load my IO module
+      load system io as systemio. -- load the system IO module and rename it to systemio
+      io @output "Foobar".
+      systemio @println "Hello World!".
+
+When loading a module with a filename the basename of the filename becomes the module name. Consider,
+::
+      load "mymodules/m.ast". -- load the m module
+      m @f().  -- call function f in the module
 
 Loop
 %%%%
@@ -255,21 +263,6 @@ in the ``with`` clauses.  If a pattern matches the associated statements will be
       end
       assert(x == "LT").
 
-
-
-Module
-%%%%%%
-
-Syntax: ``MODULE module_name WITH stmt_list END``
-
-The ``module`` statement introduces a new name space which is accessible via
-the module name,
-::
-      module foo with
-         let x = 1.
-      end
-      assert(foo @x == 1).
-      assert(not isdefined "x"). -- x is not defined in the global scope
 
 Repeat-Until
 %%%%%%%%%%%%
@@ -505,26 +498,6 @@ Example,
 ::
       let true = 1 in [1,2,3].
 
-The Eval Function
-%%%%%%%%%%%%%%%%%
-
-The ``eval`` function allows you to evaluate Asteroid expressions.  If the expression
-is a string then the contents of the string is treated like Asteroid code and is
-interpreted accordingly in the current interpreter environment.  If that code produces a value then the ``eval`` function
-will return that value, e.g.,
-::
-      let a = eval "1+1".
-      assert(a == 2).
-
-If the expression to be evaluated is a simple, structural pattern then the pattern is
-evaluated as a constructor where variables are instantiated from the current environment.
-For example,
-::
-      let p = pattern (x,y)
-      let x = 1.
-      let y = 2.
-      let o = eval p.
-      assert(o is (1,2)).
 
 List Comprehensions
 %%%%%%%%%%%%%%%%%%%
@@ -714,11 +687,9 @@ are written in quotes.
 
   stmt
     : '.' // NOOP
-    | LOAD SYSTEM? (STRING | ID) '.'?
+    | LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?
     | GLOBAL id_list '.'?
-    | ASSERT exp '.'?
     | STRUCTURE ID WITH struct_stmts END
-    | MODULE ID WITH stmt_list END
     | LET pattern '=' exp '.'?
     | LOOP DO? stmt_list END
     | FOR pattern IN exp DO stmt_list END
@@ -815,8 +786,6 @@ are written in quotes.
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
-    | ESCAPE STRING
-    | EVAL primary
     | '(' tuple_stuff ')'
     | '[' list_stuff ']'
     | function_const
@@ -861,6 +830,20 @@ single integer value.
 Builtin Functions
 -----------------
 
+**assert** x
+      Throws an exception if x evaluates to false; otherwise it returns a none value.
+
+**eval** x:%string
+      Evaluate x as a piece of Asteroid code and return the computed value.  The following is a
+      simple example,
+      ::
+            let a = eval "1+1".
+            assert(a == 2).
+
+**escape** x:%string
+      Evaluate x as a piece of Python code and return the computed value.  For more details please
+      see the section on embedding Python code in this reference guide.
+
 **getid** x
       Returns a unique id of any Asteroid object as an integer.
 
@@ -874,6 +857,7 @@ Builtin Functions
 **isdefined** x:%string
       Returns true if a variable or type name is defined in the
       current environment otherwise it returns false. The variable or type name must be given as a string.
+
 **islist** x
       Returns true if x is a list otherwise it will return false.
 
@@ -1749,7 +1733,7 @@ The program prints out,
 Embedding Python into an Asteroid Program
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Using Asteroid's ``escape`` expression allows us to embed arbitray Python
+Using Asteroid's ``escape`` function allows us to embed arbitray Python
 code into an Asteroid program,
 ::
       -- Printing hello once from each environment
@@ -1768,7 +1752,7 @@ Please note that the format of the Python code in the escaped string should foll
 same guidelines as the Python code embedded in strings handed to the Python `exec
 function <https://docs.python.org/3/library/functions.html#exec>`_.
 
-Not only does the ``escape`` expression give you access to the Python environment but
+Not only does the ``escape`` function give you access to the Python environment but
 it also gives you access to the current Asteroid interpreter state including its
 symbol table.  That means we can access any variable defined in the Asteroid
 environment from Python,
@@ -1791,7 +1775,7 @@ is the actual value stored.  In this case our program prints out,
 
 That is the type of the value is a string and the value is the actual string ``Hello World!``.
 
-Since ``escape`` represents an expression we can also return values from the
+Since ``escape`` is a function we can also return values from the
 Python code using a special ``__retval__`` variable.  The only trick is that
 we have to remember that values in Asteroid are pairs consisting of type information
 and values.  Here is a very simple program that exercises that part of the Python API,

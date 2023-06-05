@@ -651,6 +651,12 @@ def set_config(config):
     state.symbol_table.set_config(config)
 
 #########################################################################
+# implementations for builtin operators and functions. these operators 
+# and functions do not need/are not allowed to have a function 
+# local scope.  therefore they are implemented here as builtins as 
+# part of the interpreter proper.  for other builtins that do 
+# not have this restriction see the prologue.
+
 def handle_builtins(node):
     (APPLY, (ID, opname), args) = node
     assert_match(APPLY, 'apply')
@@ -911,6 +917,8 @@ def handle_builtins(node):
                     "unsupported type '{}' in unary plus"
                     .format(arg_val[0]))
         elif opname == 'assert':
+            if arg_val[0] != 'boolean':
+                raise ValueError('the assert operator expected a Boolean value')
             if not arg_val[1]:
                 raise ValueError('assert failed')
             else:
@@ -1858,7 +1866,7 @@ dispatch_dict = {
     'real'          : lambda node : node,
     'boolean'       : lambda node : node,
     'object'        : lambda node : node,
-    'pattern'         : lambda node : node,
+    'pattern'       : lambda node : node,
     # constraint patterns
     'constraint'    : constraint_exp,
     'typematch'     : constraint_exp,
