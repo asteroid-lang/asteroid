@@ -172,6 +172,82 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
             }
         }
 
+    } else if term_type == "if" {
+        // We will only get here when evaluating subsumption
+
+        // If we get here, a conditional pattern clause is placed after a non-conditonal
+        // pattern clause. Therefore, we need to check if the subsume because if they do
+        // the conditonal clause is redundant.
+        let AstroNode::AstroIf(AstroIf{id:_, cond_exp:ref p_cond, then_exp:ref p_then, else_exp:ref p_else}) = *term
+            else {panic!("Unify: expected if expression.")};
+
+        if let AstroNode::AstroNone(AstroNone{id:_}) = **p_else {
+            unify( Rc::clone( p_then ),pattern,state,unifying  )
+        } else {
+            Err(("ValueError","Conditional patterns do not support else clauses.".to_string()))
+        }
+
+    } else if pattern_type == "typematch" {
+        let AstroNode::AstroTypeMatch(AstroTypeMatch{id:_,expression:ref p_exp}) = *pattern
+            else {panic!("Unify: expected typematch.")};
+        //let look_next = 0u32; // Indicates what index we will look into next
+
+        let p_type = peek( Rc::clone(p_exp) ).unwrap();
+
+        if ["string","real","integer","list","tuple","boolean","none"].contains( &p_type ) {
+            if !unifying {
+                if ["list","head-tail"].contains( &term_type ) {
+                    if p_type == "list" {
+                        return Ok( vec![] )
+                    }
+                }
+            } 
+            if p_type == term_type {
+                return Ok( vec![] )
+            } else {
+                Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
+            }
+        } else if p_type == "function" {
+            //  matching function and member function values
+            if ["function-val","member-function-val"].contains( &term_type ){
+                Ok( vec![] )
+            } else {
+                Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
+            }
+        } else if p_type == "pattern" {
+            if term_type == "quote" {
+                Ok( vec![] )
+            } else {
+                Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
+            }
+        } else if p_type == "object" {
+            let AstroNode::AstroObject(AstroObject{id:_,struct_id:ref t_id,object_memory:ref t_mem}) = *term
+                else {panic!("Unify: expected object.")};
+            let AstroID{id:_,name:t_type} = t_id;
+
+            if p_type == t_type {
+                Ok( vec![] )
+            } else {
+                Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
+            }
+        } else {
+            // Check if the typematch is in the symbol table
+            let in_symtab = state.find_sym(p_type);
+            match in_symtab {
+                None => return Err(("PatternMatchFailed",format!("{} is not a valid type for typematch",p_type))),
+                Some(_) => (),
+            };
+
+            // If it is in the symbol table but not a struct, it cannot be typematched
+            // because it is not a type
+            if peek( state.lookup_sym( p_type,true ) ).unwrap() != "struct" {
+                Err(("PatternMatchFailed",format!("{} is not a type",p_type)))
+            } else { 
+                //Otherwhise, the typematch has failed
+                Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
+            }
+        }
+
     } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
         Ok(vec![])
     }
