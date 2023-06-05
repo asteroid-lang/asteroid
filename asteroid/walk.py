@@ -882,7 +882,7 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '>'".format(val_a[0])) 
         else:
-            raise ValueError("unknown builtin binary operation '{}'".format(opname))
+            raise ValueError("unknown builtin binary operator '{}'".format(opname))
 
     # deal with unary operators
     elif opname in unary_operators:
@@ -910,8 +910,30 @@ def handle_builtins(node):
                 raise ValueError(
                     "unsupported type '{}' in unary plus"
                     .format(arg_val[0]))
+        elif opname == 'assert':
+            if not arg_val[1]:
+                raise ValueError('assert failed')
+            else:
+                return ('none', None)
+        elif opname == 'escape':
+            global __retval__
+            __retval__ = ('none', None)
+            if arg_val[0] != 'string':
+                raise ValueError('expected a string as argument to the escape operator')
+            exec(arg_val[1])
+            return __retval__
+        elif opname == 'eval':
+            if arg_val[0] == 'string':
+                import frontend
+                parser = frontend.Parser(filename="<eval>")
+                eval_ast = parser.parse(arg_val[1])
+                walk(eval_ast)
+                return function_return_value[-1]
+            else:
+                raise ValueError('expected a string as argument to the eval operator')
+
         else:
-            raise ValueError("unknown builtin unary operation '{}'".format(opname))
+            raise ValueError("unknown builtin unary operator '{}'".format(opname))
 
     # deal with nullary operators
     elif opname in nullary_operators:
@@ -921,7 +943,7 @@ def handle_builtins(node):
         if opname == 'in_main_module':
             return ('boolean', state.mainmodule == state.lineinfo[0])
         else:
-            raise ValueError("unknown builtin function '{}'".format(opname))
+            raise ValueError("unknown builtin nullary operator '{}'".format(opname))
         
 
 #########################################################################
@@ -1103,17 +1125,6 @@ def global_stmt(node):
         state.symbol_table.enter_global(id_val)
         global_str += "{}, ".format(id_val)
  
-#########################################################################
-def assert_stmt(node):
-    if state.debugger: state.debugger.step()
-
-    (ASSERT, exp) = node
-    assert_match(ASSERT, 'assert')
-
-    exp_val = walk(exp)
-    # mapping asteroid assert into python assert
-    assert exp_val[1], 'assert failed'
-
 #########################################################################
 def unify_stmt(node):
     if state.debugger: state.debugger.step()
@@ -1465,41 +1476,6 @@ def load_stmt(node):
     return
 
 #########################################################################
-def eval_exp(node):
-
-    (EVAL, exp) = node
-    assert_match(EVAL, 'eval')
- 
-    # Note: eval is essentially a macro call - that is a function
-    # call without pushing a symbol table record.  That means
-    # we have to first evaluate the argument to 'eval' before
-    # walking the term.  This is safe because if the arg is already
-    # the actual term it will be quoted and nothing happens if it is
-    # a variable it will be expanded to the actual term.
-
-    state.trace_stack.append((state.lineinfo[0],
-                              state.lineinfo[1],
-                              "eval"))
-
-    # evaluate actual parameter
-    exp_val_expand = walk(exp)
-
-    # now walk the actual term
-    if exp_val_expand[0] == 'string':
-        import frontend
-        parser = frontend.Parser(filename="<eval>")
-        eval_ast = parser.parse(exp_val_expand[1])
-        walk(eval_ast)
-        exp_val = function_return_value[-1]
-    else:
-        state.ignore_pattern += 1
-        exp_val = walk(exp_val_expand)
-        state.ignore_pattern -= 1
-
-    state.trace_stack.pop()
-    return exp_val
-
-#########################################################################
 def apply_exp(node):
     (APPLY, f, arg) = node
     assert_match(APPLY, 'apply')
@@ -1652,19 +1628,6 @@ def tuple_exp(node):
         outtuple.append(walk(e))
 
     return ('tuple', outtuple)
-
-#########################################################################
-def escape_exp(node):
-
-    (ESCAPE, s) = node
-    assert_match(ESCAPE, 'escape')
-
-    global __retval__
-    __retval__ = ('none', None)
-
-    exec(s)
-
-    return __retval__
 
 #########################################################################
 def is_exp(node):
@@ -1866,7 +1829,6 @@ dispatch_dict = {
     'set-ret-val'   : set_ret_val,
     'clear-ret-val' : clear_ret_val,
     'noop'          : lambda node : None,
-    'assert'        : assert_stmt,
     'unify'         : unify_stmt,
     'while'         : while_stmt,
     'loop'          : loop_stmt,
@@ -1896,9 +1858,7 @@ dispatch_dict = {
     'real'          : lambda node : node,
     'boolean'       : lambda node : node,
     'object'        : lambda node : node,
-    'eval'          : eval_exp,
-    # pattern code should be treated like a constant if not ignore_pattern
-    'pattern'         : lambda node : walk(node[1]) if state.ignore_pattern else node,
+    'pattern'         : lambda node : node,
     # constraint patterns
     'constraint'    : constraint_exp,
     'typematch'     : constraint_exp,
@@ -1908,7 +1868,6 @@ dispatch_dict = {
     'id'            : lambda node : state.symbol_table.lookup_sym(node[1]),
     'apply'         : apply_exp,
     'index'         : index_exp,
-    'escape'        : escape_exp,
     'is'            : is_exp,
     'in'            : in_exp,
     'if-exp'        : if_exp,

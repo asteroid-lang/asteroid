@@ -33,6 +33,9 @@ unary_operators = {
     '__uminus__',
     '__uplus__',
     '__not__',
+    'assert',
+    'escape',
+    'eval',
     }
 
 nullary_operators = {

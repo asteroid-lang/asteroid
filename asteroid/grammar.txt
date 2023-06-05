@@ -24,7 +24,6 @@
     : '.' // NOOP
     | LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?
     | GLOBAL id_list '.'?
-    | ASSERT exp '.'?
     | STRUCTURE ID WITH struct_stmts END
     | LET pattern '=' exp '.'?
     | LOOP DO? stmt_list END
@@ -131,8 +130,6 @@
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
-    | ESCAPE STRING
-    | EVAL primary
     | '(' tuple_stuff ')' /* tuple/parenthesized expr */
     | '[' list_stuff ']'  /* list or list access */
     | function_const

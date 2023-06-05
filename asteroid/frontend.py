@@ -240,13 +240,6 @@ class Parser:
             self.lexer.match_optional('DOT')
             return ('global', id_list)
 
-        elif tt == 'ASSERT':
-            dbg_print("parsing ASSERT")
-            self.lexer.match('ASSERT')
-            exp = self.exp()
-            self.lexer.match_optional('DOT')
-            return ('assert', exp)
-
         elif tt == 'FUNCTION':
             return self.function_def()
 
@@ -544,7 +537,7 @@ class Parser:
 
     ###########################################################################################
     # body_defs
-    #   : WITH pattern DO stmt_list (ORWITH pattern DO stmt_list)*
+    #   : WITH pattern DO stmt_list (WITH pattern DO stmt_list)*
     def body_defs(self):
         dbg_print("parsing BODY_DEFS")
 
@@ -835,8 +828,6 @@ class Parser:
     #    | NOT call_or_index
     #    | MINUS call_or_index
     #    | PLUS call_or_index
-    #    | ESCAPE STRING
-    #    | EVAL exp
     #    | '(' tuple_stuff ')' /* tuple/parenthesized expr */
     #    | '[' list_stuff ']'  /* list or list access */
     #    | function_const
@@ -905,16 +896,6 @@ class Parser:
                 return (v[0], + v[1])
             else:
                 return ('apply', ('id', '__uplus__'), v)
-
-        elif tt == 'ESCAPE':
-            self.lexer.match('ESCAPE')
-            str_tok = self.lexer.match('STRING')
-            return ('escape', str_tok.value)
-
-        elif tt == 'EVAL':
-            self.lexer.match('EVAL')
-            exp = self.primary()
-            return ('eval', exp)
 
         elif tt == 'LPAREN':
             # Parenthesized expressions have the following meaning:
