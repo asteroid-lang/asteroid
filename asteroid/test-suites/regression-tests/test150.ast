@@ -1,5 +1,0 @@
-module test with
-   let p = pattern %[(x:%integer) if x > 0]%.
-end
-
-let k:*test@p = 1.

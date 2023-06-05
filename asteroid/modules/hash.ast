@@ -1,4 +1,3 @@
-module hash with 
 ------------------------------------------------------------------
 -- hash.ast
 --
@@ -141,5 +140,4 @@ function hash with none do
    return Hash().
 end
 
-end -- hash module
 

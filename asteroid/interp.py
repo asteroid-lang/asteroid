@@ -26,16 +26,13 @@ def load_prologue():
 
     if os.path.isfile(module_path):
         prologue_file = module_path
-    
     elif os.path.isfile(working_path):
         prologue_file = working_path
-    
     else:
         raise ValueError("Asteroid prologue '{}' not found"
                         .format(prologue_file_base))
     
     with open(prologue_file) as f:
-        state.modules.append(prologue_name)
         data = f.read()
         pparser = Parser(prologue_file)
         pstmts = pparser.parse(data)
@@ -91,6 +88,7 @@ def interp(program,
         parser = Parser(program_name, functional_mode)
         stmts = parser.parse(program)
         state.AST = stmts
+        state.mainmodule = state.lineinfo[0]
 
         # walk the AST
         if tree_dump:
