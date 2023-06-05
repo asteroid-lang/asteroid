@@ -37,7 +37,6 @@ keywords = {
     'load'          : 'LOAD',
     'loop'          : 'LOOP',
     'match'         : 'MATCH',
-    'module'        : 'MODULE',
     'not'           : 'NOT',
     'or'            : 'OR',
     'orwith'        : 'ORWITH',

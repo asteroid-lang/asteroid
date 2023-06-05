@@ -1,4 +1,3 @@
-module sort with
 ------------------------------------------------------------------
 -- sort.ast
 --
@@ -36,4 +35,3 @@ function sort
         return sort(p,less) + [pivot] + sort(p,more).
 end
 
-end -- sort

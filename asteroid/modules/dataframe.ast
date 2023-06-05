@@ -1,4 +1,3 @@
-module dataframe with
 ------------------------------------------------------------------
 -- Defines the Asteroid DataFrames structure.
 --
@@ -171,5 +170,4 @@ function dataframe with none do
   return DataFrame().
 end
 
-end -- dataframe module
 

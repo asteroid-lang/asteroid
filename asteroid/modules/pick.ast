@@ -1,4 +1,3 @@
-module pick with
 ------------------------------------------------------------------
 -- pick.ast
 --
@@ -47,4 +46,3 @@ with l:%list do
    return Pick(l).
 end
 
-end -- Pick module

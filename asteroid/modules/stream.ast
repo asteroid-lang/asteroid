@@ -1,4 +1,3 @@
-module stream with
 ------------------------------------------------------------------
 -- stream.ast
 --
@@ -101,4 +100,3 @@ with l:%list do
    return Stream(l).
 end
 
-end -- stream module

@@ -1,4 +1,3 @@
-module os with
 ------------------------------------------------------------------
 -- os.ast
 --
@@ -375,4 +374,3 @@ __retval__ = ('integer', status)
 "
 end -- syscmd
 
-end -- os modules

@@ -6,7 +6,9 @@ Documentation on Asteroid can be found at
 
 ## New in Release 2.0.1
 
-* Supports modules as separate names spaces accessible via the module name.  All system modules are no implemented using this construct.
+* Files loaded with the 'load' statement are now considered modules and work similarly to Python modules.
+
+* the 'in_main_module' operator returns true if control is in the module originally loaded by the interpreter.
 
 * Match statement similar to the match statement in Python.
 

@@ -1,4 +1,3 @@
-module set with
 ------------------------------------------------------------------
 -- set.ast
 --
@@ -69,4 +68,3 @@ __retval__ = ('list', list(set(a_val[1]) ^ set(b_val[1])))
 "
 end
 
-end -- set

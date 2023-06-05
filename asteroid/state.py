@@ -11,8 +11,8 @@ class State:
         self.initialize()
 
     def initialize(self,module="<input>"):
+        self.mainmodule = None
         self.symbol_table = SymTab()
-        self.modules = [] # loaded modules
         self.AST = None
         self.ignore_pattern = 0 # used to evaluate pattern expressions
         self.eval_redundancy = True

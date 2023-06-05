@@ -133,11 +133,10 @@ class Parser:
     #
     # stmt
     #    : '.' // NOOP
-    #    | LOAD SYSTEM? (STRING | ID) '.'?
+    #    | LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?
     #    | GLOBAL id_list '.'?
     #    | ASSERT exp '.'?
     #    | STRUCTURE ID WITH struct_stmts END
-    #    | MODULE ID WITH stmt_list END
     #    | LET pattern '=' exp '.'?
     #    | LOOP DO? stmt_list END
     #    | FOR pattern IN exp DO stmt_list END
@@ -167,22 +166,24 @@ class Parser:
             # allow module names without quotes
             if self.lexer.peek().type in ['STRING', 'ID']:
                 str_tok = self.lexer.match(self.lexer.peek().type)
+                name_tok = None
             elif self.lexer.peek().type == 'EOF':
                 raise ExpectationError(expected="valid module name", found='EOF' )
             else:
                 raise SyntaxError("invalid module name '{}'"
                                   .format(self.lexer.peek().value))
+            # look for the 'as' modifier
+            if self.lexer.peek().type == 'AS':
+                self.lexer.match('AS')
+                name_tok = self.lexer.match('ID')
             self.lexer.match_optional('DOT')
 
             raw_pp = PurePath(str_tok.value)
-            module_name = raw_pp.stem
-
-            # if module is on the list of modules then we have loaded
-            # it already -- ignore -- continue parsing the program file
-            if module_name in state.modules:
-                # lhh
-                # print("Ignoring module {}".format(module_name))
-                return self.stmt_list()
+            base_name = raw_pp.stem
+            if name_tok:
+                module_name = name_tok.value
+            else:
+                module_name = base_name
 
             # search for module file:
             # 0. raw module name - could be an absolute path
@@ -194,12 +195,12 @@ class Parser:
             if not sys_flag:
                 search_list.append(str_tok.value)
                 search_list.append(str_tok.value + asteroid_file_suffix)
-                search_list.append(os.path.join(os.getcwd(), module_name))
-                search_list.append(os.path.join(os.getcwd(), module_name + asteroid_file_suffix))
-                search_list.append(os.path.join(os.getcwd(), 'modules', module_name))
-                search_list.append(os.path.join(os.getcwd(), 'modules', module_name + asteroid_file_suffix))
-            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name))
-            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', module_name + asteroid_file_suffix))
+                search_list.append(os.path.join(os.getcwd(), base_name))
+                search_list.append(os.path.join(os.getcwd(), base_name + asteroid_file_suffix))
+                search_list.append(os.path.join(os.getcwd(), 'modules', base_name))
+                search_list.append(os.path.join(os.getcwd(), 'modules', base_name + asteroid_file_suffix))
+            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', base_name))
+            search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', base_name + asteroid_file_suffix))
 
             file_found = False
 
@@ -222,16 +223,15 @@ class Parser:
 
             old_lineinfo = state.lineinfo
             with open(ast_module_file) as f:
-                #state.modules.append(module_name)
-                state.modules.append(ast_module_file)
                 data = f.read()
-
                 # Give the absolute path to the parser
                 fparser = Parser(str(ast_module_path))
                 fstmts = fparser.parse(data)
             
             state.lineinfo = old_lineinfo
-            return ('load-stmt', fstmts)
+            return ('load-stmt', 
+                    ('module-def',
+                     ('id', module_name), fstmts))
 
         elif tt == 'GLOBAL':
             dbg_print("parsing GLOBAL")
@@ -260,17 +260,6 @@ class Parser:
             return ('struct-def',
                     ('id', id_tok.value),
                     ('member-list', stmts))
-
-        elif tt == 'MODULE':
-            dbg_print("parsing MODULE")
-            self.lexer.match('MODULE')
-            id_tok = self.lexer.match('ID')
-            self.lexer.match('WITH')
-            stmts = self.stmt_list()
-            self.lexer.match('END')
-            return ('module-def',
-                    ('id', id_tok.value),
-                    ('stmt-list', stmts))
 
         elif tt == 'LET':
             dbg_print("parsing LET")
@@ -715,7 +704,7 @@ class Parser:
 
     ###########################################################################################
     # NOTE: Builtin operators are mapped to 'apply' so that they don't have to be
-    #       special cased during pattern matching.  See operator_symbols above.
+    #       special cased during pattern matching.  See builtin in globals.
     ###########################################################################################
     # logic/relational/arithmetic operators with their precedence
     # logic_exp0

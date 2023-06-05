@@ -1,4 +1,3 @@
-module math with
 ------------------------------------------------------------------
 -- math.ast
 --
@@ -444,5 +443,4 @@ __retval__ = ('real', math.radians(x_val[1]))
 "
 end
 
-end -- math module
 

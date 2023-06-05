@@ -11,7 +11,7 @@ from asteroid.support import term2string #Used by redundantPatternFound exceptio
 asteroid_file_suffix = ".ast"
 
 ###########################################################################################
-# symbols for builtin operators.
+# symbols for builtin operators and functions.
 # NOTE: if you add new builtins make sure to keep this table in sync.
 
 binary_operators = {
@@ -27,7 +27,7 @@ binary_operators = {
     '__lt__',
     '__ge__',
     '__gt__',
-    }
+}
 
 unary_operators = {
     '__uminus__',
@@ -35,7 +35,11 @@ unary_operators = {
     '__not__',
     }
 
-operator_symbols = binary_operators | unary_operators
+nullary_operators = {
+    'in_main_module',
+}
+
+builtins = binary_operators | unary_operators | nullary_operators
 
 #########################################################################
 # Use the exception mechanism to return values from function calls

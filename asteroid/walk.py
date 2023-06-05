@@ -656,6 +656,7 @@ def handle_builtins(node):
     assert_match(APPLY, 'apply')
     assert_match(ID, 'id')
 
+    # deal with binary operators
     if opname in binary_operators:
         (TUPLE, bin_args)= args
         val_a = walk(bin_args[0])
@@ -883,6 +884,7 @@ def handle_builtins(node):
         else:
             raise ValueError("unknown builtin binary operation '{}'".format(opname))
 
+    # deal with unary operators
     elif opname in unary_operators:
         arg_val = walk(args)             
         if opname == '__not__':
@@ -910,6 +912,17 @@ def handle_builtins(node):
                     .format(arg_val[0]))
         else:
             raise ValueError("unknown builtin unary operation '{}'".format(opname))
+
+    # deal with nullary operators
+    elif opname in nullary_operators:
+        (type, _) = walk(args)
+        if type != 'none':
+            raise ValueError("{} is a nullary operator".format(opname))
+        if opname == 'in_main_module':
+            return ('boolean', state.mainmodule == state.lineinfo[0])
+        else:
+            raise ValueError("unknown builtin function '{}'".format(opname))
+        
 
 #########################################################################
 def pop_stackframe(error_trace=False): 
@@ -1492,7 +1505,7 @@ def apply_exp(node):
     assert_match(APPLY, 'apply')
 
     # handle builtin operators that look like apply lists.
-    if f[0] == 'id' and f[1] in operator_symbols:
+    if f[0] == 'id' and f[1] in builtins:
         return handle_builtins(node)
 
     # handle function application
@@ -1847,6 +1860,7 @@ def walk(node):
 # a dictionary to associate tree nodes with node functions
 dispatch_dict = {
     # statements - statements do not produce return values
+    'load-stmt'     : load_stmt,
     'stmt-list'     : stmt_list,
     'lineinfo'      : process_lineinfo,
     'set-ret-val'   : set_ret_val,
@@ -1866,10 +1880,9 @@ dispatch_dict = {
     'throw'         : throw_stmt,
     'try'           : try_stmt,
     'struct-def'    : struct_def_stmt,
-    'module-def'    : module_def_stmt,
+    'module-def'    : module_def_stmt,  # this is part of the load statement
     # expressions - expressions do produce return values
     'list'          : list_exp,
-    'load-stmt'     : load_stmt,
     'tuple'         : tuple_exp,
     'to-list'       : to_list_exp,
     'head-tail'     : head_tail_exp,
