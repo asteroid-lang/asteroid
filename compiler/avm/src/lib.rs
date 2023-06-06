@@ -247,6 +247,45 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
                 Err(("PatternMatchFailed",format!("Expected typematch: {}, got a term of type {}",p_type,term_type)))
             }
         }
+    } else if pattern_type == "namedpattern" {
+
+        let AstroNode::AstroNamedPattern(AstroNamedPattern{id:_,name:ref p_name,pattern:ref p_pattern}) = *pattern
+            else {panic!("Unify: expected named pattern.")};
+
+        // name_exp can be an id or an index expression.
+        let mut unifiers = unify( Rc::clone(&term), Rc::clone(p_pattern),state,unifying ).unwrap();
+        unifiers.push( (Rc::new(AstroNode::AstroID(p_name.clone())), Rc::clone(&term)) );
+        Ok( unifiers )
+
+    } else if pattern_type == "none" {
+        if term_type == "none" {
+            Err(("PatternMatchFailed",format!("expected 'none' got '{}'",term_type)))
+        } else {
+            Ok( vec![] )
+        }
+    // NOTE: functions/foreign are allowed in terms as long as they are matched
+    // by a variable in the pattern - anything else will fail
+    } else if ["tolist","rawtolist","wherelist","rawwherelist","if","escape","is","in"].contains( &term_type ) {
+        Err(("PatternMatchFailed",format!("term of type '{}' not allowed in pattern matching",term_type)))
+
+    } else if ["tolist","rawtolist","wherelist","rawwherelist","if","escape","is","in","foreign","function"].contains( &pattern_type ) {
+        Err(("PatternMatchFailed",format!("term of type '{}' not allowed in pattern matching",pattern_type)))
+
+    } else if pattern_type == "quote" {
+
+        // quotes on the pattern side can always be ignored
+        let AstroNode::AstroQuote(AstroQuote{id:_,expression:ref p_exp}) = *pattern
+                else {panic!("Unify: expected quote.")};
+
+        if term_type == "quote" {
+            let AstroNode::AstroQuote(AstroQuote{id:_,expression:ref t_exp}) = *term
+                else {panic!("Unify: expected quote.")};
+
+            unify(Rc::clone(&t_exp),Rc::clone(&p_exp),state,unifying)
+        } else {
+            unify(Rc::clone(&term),Rc::clone(&p_exp),state,unifying)
+        }
+    
 
     } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
         Ok(vec![])
