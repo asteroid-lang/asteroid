@@ -948,7 +948,7 @@ def handle_builtins(node):
         (type, _) = walk(args)
         if type != 'none':
             raise ValueError("{} is a nullary operator".format(opname))
-        if opname == 'in_main_module':
+        if opname == 'toplevel':
             return ('boolean', state.mainmodule == state.lineinfo[0])
         else:
             raise ValueError("unknown builtin nullary operator '{}'".format(opname))

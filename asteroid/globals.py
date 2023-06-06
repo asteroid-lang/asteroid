@@ -42,7 +42,7 @@ unary_operators = {
     }
 
 nullary_operators = {
-    'in_main_module',
+    'toplevel',
 }
 
 builtins = binary_operators | unary_operators | nullary_operators

@@ -19,7 +19,7 @@ class State:
         self.lineinfo = (module, 1) # tuple: module, lineno
         # stack of 3-tuples for stack trace of function
         # calls: (module,lineno,function name)
-        self.trace_stack = [(module,1,"<main module>")]
+        self.trace_stack = [(module,1,"<toplevel>")]
         # if an exception occurs then error_trace will point to
         # it.  an exception handler is responsible for clearing
         # this.

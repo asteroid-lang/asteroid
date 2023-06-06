@@ -889,6 +889,10 @@ Builtin Functions
       Converts a given input to an integer. If a base value is specified then
       the resulting integer is in the corresponding base.
 
+**toplevel** ()
+      Returns true if flow of control is in the "toplevel" module, that is, the module with which the
+      the interpreter was called; otherwise it will return false.
+
 **toreal** x
       Returns the input as a real number.
 

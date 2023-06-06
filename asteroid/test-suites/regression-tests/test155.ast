@@ -1,0 +1,8 @@
+load system io.
+
+if toplevel() do
+        io @println "Hello, World!".
+else do
+        throw Error "toplevel operator did not work".
+end
+
