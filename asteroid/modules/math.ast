@@ -13,6 +13,7 @@
 ------------------------------------------------------------------
 
 let pi = escape "from math import pi;global __retval__;__retval__=('real',pi)"
+let tau = escape "from math import tau;global __retval__;__retval__=('real',tau)"
 let e = escape "from math import e;global __retval__;__retval__=('real',e)"
 
 ------------------------------------------------------------------
@@ -443,4 +444,44 @@ __retval__ = ('real', math.radians(x_val[1]))
 "
 end
 
+------------------------------------------------------------------
+-- Combinatoric functions
+------------------------------------------------------------------
 
+------------------------------------------------------------------
+function comb
+------------------------------------------------------------------
+-- comb(n, k): Return the number of ways to choose k items from n 
+-- items without repetition and without order. Evaluates to 
+-- n! / (k! * (n - k)!) when k <= n and evaluates to zero when 
+-- k > n.
+with (n:%integer,k:%integer) do return escape
+"
+global __retval__
+from math import comb
+
+val_n = state.symbol_table.lookup_sym('n')
+val_k = state.symbol_table.lookup_sym('k')
+
+__retval__ = ('integer',comb(val_n,val_k))
+"
+end
+
+------------------------------------------------------------------
+function perm
+------------------------------------------------------------------
+-- perm(n, k): Return the number of ways to choose k items from n 
+-- items without repetition and with order. Evaluates to 
+-- n! / (n - k)! when k <= n and evaluates to zero when 
+-- k > n.
+with (n:%integer,k:%integer) do return escape
+"
+global __retval__
+from math import perm
+
+val_n = state.symbol_table.lookup_sym('n')
+val_k = state.symbol_table.lookup_sym('k')
+
+__retval__ = ('integer',perm(val_n,val_k))
+"
+end
