@@ -1,0 +1,7 @@
+   -- define a first-class pattern
+   let p = pattern (x:%integer) if x>0.
+
+   -- check the type of the value stored in p
+   assert (gettype(p) == "pattern").
+
+

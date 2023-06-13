@@ -32,7 +32,7 @@ paradigm with first-class patterns.  Here are just two examples:
 **Example:** All statements that look like assignments are actually pattern-match statements.  For example if we state,
 ::
     let [x,2,y] = [1,2,3].
-that means the subject term ``[1,2,3]`` is matched to the pattern ``[x,2,y]`` and ``x`` and ``y`` are bound to the values 1 and 3, respectively.  By the way, there is nothing wrong with the following statement,
+that means the list ``[1,2,3]`` is matched to the pattern ``[x,2,y]`` and ``x`` and ``y`` are bound to the values 1 and 3, respectively.  By the way, there is nothing wrong with the following statement,
 ::
     let [1,2,3] = [1,2,3].
 which is just another pattern match without any variable instantiations.
@@ -69,7 +69,8 @@ with programming in Asteroid.
 The Basics
 ----------
 
-As with most programming languages we are familiar with, Asteroid has variables (alpha-numeric symbols starting with an alpha character) and constants.  Constants are available for all the primitive data types,
+As with most programming languages we are familiar with, Asteroid has variables (alpha-numeric symbols
+starting with an alpha character) and constants.  Constants are available for all four primitive data types,
 
 * ``integer``, e.g. ``1024``
 * ``real``, e.g. ``1.75``
@@ -81,7 +82,13 @@ Asteroid also supports the built-in data types:
 * ``list``
 * ``tuple``
 
-These are structured data types in that they can contain entities that belong to other data types. Both of these data types have constructors which are possibly empty sequences of comma separated values enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``. For tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it from parenthesized expressions, e.g. ``(3,)`` the 1-tuple versus ``(3)`` the parenthesized expression.
+These are structured data types in that they can contain entities that belong to other data types.
+Both of these data types have constructors which are sequences of comma separated values
+enclosed by square brackets for lists, e.g. ``[1,2,3]``, and enclosed by parentheses for tuples, e.g. ``(x,y)``.
+Lists are mutable structures in that we can add or delete elements.  On the other hand, tuples are immutable objects;
+once created you cannot change them.
+Furthermore, for tuples we have the caveat that the 1-tuple is represented by a value followed by a comma to distinguish it
+from parenthesized expressions, e.g. ``(3,)`` the 1-tuple versus ``(3)`` the parenthesized expression.
 Here are some examples,
 ::
     let l = [1,2,3].  -- this is a list
@@ -89,8 +96,6 @@ Here are some examples,
 As we said above, in order to distinguish it from a parenthesized value the single element in a 1-tuple has to be followed by a comma, like so,
 ::
     let one_tuple = (1,).  -- this is a 1-tuple
-Lists are mutable objects whereas tuples are immutable.
-
 We can cast lists and tuples to strings for easy printing,
 ::
     load system io.
@@ -117,6 +122,13 @@ also have the types ``function`` and ``pattern``,
 
    -- show that 'inc' is of type 'function'
    assert (gettype(inc) == "function").
+Here is a small program demonstrating the ``pattern`` data type,
+::
+   -- define a first-class pattern
+   let p = pattern (x:%integer) if x>0.
+
+   -- check the type of the value stored in p
+   assert (gettype(p) == "pattern").
 Data types in Asteroid do not form type hierarchies as in C/C++ and Java, for example.
 Therefore, in mixed type arithmetic statements we have to explicitly convert data types as in,
 ::
