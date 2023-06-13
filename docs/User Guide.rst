@@ -146,20 +146,14 @@ Lists
 In Asteroid the ``list`` is a fundamental, built-in data structure.  A trait it shares with programming languages such as Lisp, Python, ML, and Prolog.  Below is a list reversal example program.  Notice that lists are zero-indexed and
 elements of a list are accessed via the ``@`` operator,
 ::
-    load system io.
-
     let a = [1,2,3].          -- construct list a
     let b = [a@2, a@1, a@0].  -- reverse list a
-    io @println b.
-The output is: ``[3,2,1]``.
-
+    assert (b == [3,2,1]).
 We can achieve the same effect by giving a list of index values (a slice) to the ``@`` operator,
 ::
-    load system io.
-
     let a = [1,2,3].     -- construct list a
     let b = a@[2,1,0].   -- reverse list a using slice [2,1,0]
-    io @println b.
+    assert (b == [3,2,1]).
 In Asteroid lists are considered objects with member functions that can manipulate list
 objects. We could rewrite the above example as,
 ::
@@ -218,7 +212,7 @@ where the output is,
 Tuples
 ^^^^^^
 
-As we saw earlier, the tuple is another fundamental, built-in data structure that can be found in Asteroid.
+The tuple is another fundamental, built-in data structure that can be found in Asteroid.
 Below is an example of a tuple declaration and access.
 ::
     let a = (1,2,3).    -- construct tuple a
@@ -232,7 +226,7 @@ Lists and tuples may be nested,
              ("g","h","i")].
     -- Access an element in the nested structure.
     assert (b@0@1 == "b").
-As we have mentioned earlier, unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following program demonstrates this,
+Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following program demonstrates this,
 ::
     load system io.
 

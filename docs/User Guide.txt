@@ -132,8 +132,6 @@ elements of a list are accessed via the ``@`` operator,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-009.ast"
 
-The output is: ``[3,2,1]``.
-
 We can achieve the same effect by giving a list of index values (a slice) to the ``@`` operator,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-009a.ast"
@@ -180,7 +178,7 @@ where the output is,
 Tuples
 ^^^^^^
 
-As we saw earlier, the tuple is another fundamental, built-in data structure that can be found in Asteroid.
+The tuple is another fundamental, built-in data structure that can be found in Asteroid.
 Below is an example of a tuple declaration and access.
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-014.ast"
@@ -189,7 +187,7 @@ Lists and tuples may be nested,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-015.ast"
 
-As we have mentioned earlier, unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following program demonstrates this,
+Unlike lists, tuples are immutable. This means that their contents cannot be changed once they have been declared.  The following program demonstrates this,
 ::
 #include "../asteroid/test-suites/ug-programs/prgm-016.ast"
 
