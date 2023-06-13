@@ -141,8 +141,8 @@ function exit
 -- Signaling an intention to exit the interpreter.
 -- When an argument value other than none is provided
 -- it is considered a status value. If it is 
--- an integer, zero is considered “successful termination” and any 
--- nonzero value is considered “abnormal termination” by shells and 
+-- an integer, zero is considered "successful termination" and any 
+-- nonzero value is considered "abnormal termination" by shells and 
 -- the like. Most systems require it to be in the range 0 to 127, and 
 -- produce undefined results otherwise. Some systems have a 
 -- convention for assigning specific meanings to specific exit codes, 
