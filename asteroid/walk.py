@@ -320,9 +320,12 @@ def unify(term, pattern, unifying = True ):
                 .format(pid,tid))
         unifiers = []
         # we only pattern match on data members
-        data_members = data_only(tl)
-        for i in range(len(pl)):
-            unifiers += unify(data_members[i], pl[i])
+        tl_data_members = data_only(tl)
+        pl_data_members = data_only(pl)
+        if len(tl_data_members) != len(pl_data_members):
+            raise ValueError("internal error: not the same number of data members for objects")
+        for i in range(len(pl_data_members)):
+            unifiers += unify(tl_data_members[i], pl_data_members[i])
         return unifiers
 
     elif pattern[0] == 'apply' and term[0] == 'object':
