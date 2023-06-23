@@ -1,0 +1,50 @@
+load system io.
+load system math_patterns.
+load system math.
+
+-- Expirmental math-patterns library test
+
+let failures = 0.
+let EXPECTED = pattern with Exception( "PatternMatchFailed" , _ ).
+
+--                                      **********************
+--                                      **** prime        ****
+--                                      **********************
+let x:*math_patterns@PRIME = 2.
+let x:*math_patterns@PRIME = 3.
+let x:*math_patterns@PRIME = 5.
+let x:*math_patterns@PRIME = 11.
+let x:*math_patterns@PRIME = 13.
+let x:*math_patterns@PRIME = 17.
+let x:*math_patterns@PRIME = 97.
+let x:*math_patterns@PRIME = 83.
+let x:*math_patterns@PRIME = 15485863.
+
+try
+    let x:*math_patterns@PRIME = 10.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*math_patterns@PRIME = 1024.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*math_patterns@PRIME = 999.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*math_patterns@PRIME = 63.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+
+assert(failures == 0).
+io@println "PASS".

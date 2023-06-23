@@ -1,0 +1,42 @@
+------------------------------------------------------------------
+-- math_pattern.ast
+--
+-- this module provides mathematical patterns
+-- 
+--
+-- (c) University of Rhode Island
+------------------------------------------------------------------
+load system math.
+
+------------------------------------------------------------------
+-- Helper functions
+------------------------------------------------------------------
+function is_prime
+  with (n:%integer) do
+    if n <= 1 do
+      return false.
+    end
+
+    if (n == 2) or (n == 3) do
+      return true.
+    end
+
+    if (math@mod(n,2) == 0) or (math@mod(n,3) == 0) do
+      return false.
+    end
+
+    for i in 5 to math@isqrt(n) step 6 do
+      if (math@mod(n,i) == 0) or (math@mod(n,i+2) == 0) do
+        return false.
+      end
+    end
+
+    return true.
+  with _ do
+    .
+end
+
+------------------------------------------------------------------
+-- Classic number sets
+------------------------------------------------------------------
+let PRIME = pattern with (n:%integer) if math_patterns@is_prime(n).
