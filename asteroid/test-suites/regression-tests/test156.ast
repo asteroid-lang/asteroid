@@ -1,0 +1,11 @@
+structure A with
+  data a.
+  function __init__ with _ do 
+    let this@a = 2.
+  end
+end
+
+-- testing objects as patterns
+let o = A(1).
+let *o = A(1).
+
