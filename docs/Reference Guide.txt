@@ -1093,28 +1093,28 @@ math **@log10** x
       Returns the base 10 logarithm of x.
 
 math **@pow** (b, p:%integer)
-      Return b raised to the power p.  The return type depends on the type
+      Returns b raised to the power p.  The return type depends on the type
       of the base.
 
 math **@sqrt** x 
-      Return the square root of x as a real.
+      Returns the square root of x as a real.
 
 Number-theoretic and representation functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 math **@abs** x
-      Return that absolute value of x.  The return type depends on the type of x.
+      Returns that absolute value of x.  The return type depends on the type of x.
 
 math **@ceil** x:%real
       Returns the ceiling of x: the smallest integer greater than or equal to x.
 
-math **@comb** (n:%integer, k:%integer)
-	Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
+math **@comb** (n:%integer,k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
 
-math **@copysign** (x, y)
-	Returns a real with the absolute value of x and the sign of y.
+math **@copysign** (x,y)
+      Returns a real with the absolute value of x and the sign of y.
 
-math **@dist** (x, y)
+math **@dist** (x,y)
       Return the Euclidean distance as a float between two points x and y, each given as a tuple or list of coordinates.
 
 math **@factorial** (n:%integer)
@@ -1150,7 +1150,7 @@ math **@prod** x:%list | x:%tuple
       Calculate and return the product of all the elements of a list or tuple x.
 
 math **@remainder** (x,y)
-      Return the IEEE 754-style remainder of x with respect to y.
+      Returns the IEEE 754-style remainder of x with respect to y.
 
 math **@round** x:%real
       Returns x rounded to the nearest integer. If two integers are equally
@@ -1160,7 +1160,7 @@ math **@sum** x:%list | x:%tuple
       Calculate and return the sum of all the elements of a list or tuple x.
 
 math **@trunc** x:%real
-      Return x with its fractional component set to 0.
+      Returns x with its fractional component set to 0.
 
 Trigonometric functions
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -1180,8 +1180,8 @@ math **@atan2** (x,y)
 math **@cos** x
       Returns the cosine of x radians.
 
-math **@hypot** (x, y)
-      Return the Euclidean norm as a real of x and y. This is equivelent to sqrt(x^2 + y^2).
+math **@hypot** (x,y)
+      Returns the Euclidean norm as a real of x and y. This is equivalent to sqrt(x^2 + y^2).
 
 math **@sin** x
       Returns the sine of x radians.
@@ -1229,10 +1229,10 @@ math **@erfc** x
       Returns the complement of the error function at x. The is defined as 1 - erf(x)
 
 math **@gamma** x
-      Return the Gamma function at x.
+      Returns the Gamma function at x.
 
 math **@lgamma** x
-      Return the natural logarithm of the absolute value of the Gamma function at x.
+      Returns the natural logarithm of the absolute value of the Gamma function at x.
 
 os
 ^^
