@@ -1,16 +1,21 @@
-/**************************************************************************************
- Grammar for Asteroid written in EBNF/PEG format.
- (c) University of Rhode Island
 
- Notes:
- - We generate documentation directly from this grammar file.  In order to
-   be properly formatted in the target documentation please respect the
-   indentation given below.
- - Use C++ style comments for any comments that you DO want to be displayed
-   in the target documentation.
- - C style comments for any comments that you DO NOT want to be displayed
-   in the target documentation -- like the one you are reading right now...
- **************************************************************************************/
+#define NOTE(x)  
+
+  NOTE("
+  **************************************************************************************
+  Grammar for Asteroid written in EBNF/PEG format.
+  (c) University of Rhode Island
+
+  Notes:
+  - We generate documentation directly from this grammar file.  In order to
+    be properly formatted in the target documentation please respect the
+    indentation given below.
+  - Use C++ style comments for any comments that you DO want to be displayed
+    in the target documentation.
+  - Use the NOTE macro for any comments that you DO NOT want to be displayed
+    in the target documentation -- like the one you are reading right now...
+  **************************************************************************************
+  ")
   ////////////////////////////////////////////////////////////////////////////////////////
   // statements
 
@@ -61,28 +66,27 @@
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
-  /*
-   NOTE: There is no syntactic difference between a pattern
-   and an expression. We introduce the 'pattern' nonterminal
-   to highlight the SEMANTIC difference between patterns and
-   expressions.
-  */
+  NOTE("
+  There is no syntactic difference between a pattern and an expression. We introduce
+  the 'pattern' nonterminal to highlight the SEMANTIC difference between patterns and
+  expressions.
+  ")
   exp
     : pattern
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%' binding_list?    /* constraint-only pattern match */
+    | '%[' exp ']%' binding_list?    NOTE(" constraint-only pattern match  ")
     | head_tail
 
   head_tail
     : conditional ('|' exp)?
 
-  /*
-   conditional patterns are now supported via 'pattern if cond'
-   no else part. Since this overlaps with conditional expressions
-   we check for correct usage semantically.
-  */
+  NOTE("
+  conditional patterns are now supported via 'pattern if cond'
+  no else part. Since this overlaps with conditional expressions
+  we check for correct usage semantically.
+  ")
   conditional
     : compound (IF exp (ELSE exp)?)?
 
@@ -90,8 +94,8 @@
     : logic_exp0
         (
            (IS pattern) |
-           (IN exp) |               /* exp has to be a list */
-           (TO exp (STEP exp)?) |   /* list comprehension */
+           (IN exp) |               NOTE(" exp has to be a list ")
+           (TO exp (STEP exp)?) |   NOTE(" list comprehension ")
         )?
 
   logic_exp0
@@ -113,7 +117,7 @@
     : call_or_index (('*' | '/') call_or_index)*
 
   call_or_index
-    : primary (primary | '@' primary)* (':' pattern)?  /* named pattern when ': pattern' exists */
+    : primary (primary | '@' primary)* (':' pattern)?  NOTE(" conditional pattern when ': pattern' exists ")
 
   ////////////////////////////////////////////////////////////////////////////////////////
   // primary expressions/patterns
@@ -126,16 +130,16 @@
     | FALSE
     | NONE
     | ID
-    | '*' call_or_index  binding_list? /* pattern dereferencing */
+    | '*' call_or_index  binding_list? NOTE(" pattern dereferencing ")
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
-    | '(' tuple_stuff ')' /* tuple/parenthesized expr */
-    | '[' list_stuff ']'  /* list or list access */
+    | '(' tuple_stuff ')' NOTE(" tuple/parenthesized expr ")
+    | '[' list_stuff ']'  NOTE(" list or list access ")
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
-/* Note: binding lists are only supported for constraint patterns */
+NOTE(" Note: binding lists are only supported for constraint patterns ")
 
   binding_list
     : BIND binding_list_suffix

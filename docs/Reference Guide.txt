@@ -673,7 +673,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-#include "/tmp/grammar.tmp"
+#include "../asteroid/grammar.txt"
 
 Notes on Function Argument Notation
 -----------------------------------
