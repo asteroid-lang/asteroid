@@ -1056,6 +1056,9 @@ Constants
 math **@pi**
       The mathematical constant π = 3.141592…, to available precision.
 
+math **@tau**
+      The mathematical constant τ = 6.283185…, to available precision.
+
 math **@e**
       The mathematical constant e = 2.718281…, to available precision.
 
@@ -1066,10 +1069,28 @@ Power and logarithmic functions
 math **@exp** x:%integer
       Returns e raised to the power x, where e = 2.718281… is the base of the natural logarithm.
 
+math **@expm1** x
+      Returns e raised to the power x minus 1. This function maintains a higher level of precision then the standard operation.
+
+math **@isqrt** x:%real
+      Returns the floor of the square root of x as a integer.
+
+math **@ldexp** (x,i)
+      Returns x * (2^i).
+
 math **@log** x | (x, base:%integer)
       If only argument x is the input, return the natural logarithm of x (to base e).
       If two arguments, (x, base:%integer), are given as input, return the logarithm 
       of x to the given base, calculated as log(x)/log(base).
+
+math **@log1p** x
+      Returns the natural logarithm of 1 + x.
+
+math **@log2** x
+      Returns the base 2 logarithm of x.
+
+math **@log10** x
+      Returns the base 10 logarithm of x.
 
 math **@pow** (b, p:%integer)
       Return b raised to the power p.  The return type depends on the type
@@ -1077,7 +1098,6 @@ math **@pow** (b, p:%integer)
 
 math **@sqrt** x 
       Return the square root of x as a real.
-
 
 Number-theoretic and representation functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1088,12 +1108,26 @@ math **@abs** x
 math **@ceil** x:%real
       Returns the ceiling of x: the smallest integer greater than or equal to x.
 
+math **@comb** (n:%integer, k:%integer)
+	Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
+
+math **@copysign** (x, y)
+	Returns a real with the absolute value of x and the sign of y.
+
+math **@dist** (x, y)
+      Return the Euclidean distance as a float between two points x and y, each given as a tuple or list of coordinates.
+
+math **@factorial** (n:%integer)
+      Returns the factorial of the integer n.
+
 math **@floor** x:%real
       Returns the floor of x: the largest integer less than or equal to x.
 
-math **@round** x:%real
-      Returns x rounded to the nearest integer. If two integers are equally
-      close, x is rounded to the nearest even integer.
+math **@fmod** (v,d)
+      Implements the modulus operation as defined by the platform C library. This is equal to v - n*d for some integer n such that the result has the same sign as v and magnitude less than abs(d).
+
+math **@fsum** x:%list | x:%tuple
+      Calculate the sum of all the elements of a list or tuple. This function carries a higher floating point precison level than the standard sum() function by tracking multiple intermediate partial sums.
 
 math **@gcd** (a:%integer, b:%integer)
       Returns the greatest common denominator that both integers share.
@@ -1103,9 +1137,30 @@ math **@isclose** (a:%real, b:%real) | (a:%real, b:%real, t:%real)
       Default tolerance is 1e-09.  An alternative tolerance can be specified with 
       the t argument.
 
+math **@lcm** (a:%integer,b:%integer)
+      Returns the least common multiple of the integers a and b.
+
 math **@mod** (v,d)
       Implements the modulus operation. Returns the remainder of the quotient v/d.
 
+math **@perm** (n:%integer, k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and with order. This is equal to n! / (n - k)!.
+
+math **@prod** x:%list | x:%tuple
+      Calculate and return the product of all the elements of a list or tuple x.
+
+math **@remainder** (x,y)
+      Return the IEEE 754-style remainder of x with respect to y.
+
+math **@round** x:%real
+      Returns x rounded to the nearest integer. If two integers are equally
+      close, x is rounded to the nearest even integer.
+
+math **@sum** x:%list | x:%tuple
+      Calculate and return the sum of all the elements of a list or tuple x.
+
+math **@trunc** x:%real
+      Return x with its fractional component set to 0.
 
 Trigonometric functions
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -1119,8 +1174,14 @@ math **@asin** x
 math **@atan** x
       Returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
 
+math **@atan2** (x,y)
+      Returns the arc tangent of y / x in radians. The result is between -pi and pi.
+
 math **@cos** x
       Returns the cosine of x radians.
+
+math **@hypot** (x, y)
+      Return the Euclidean norm as a real of x and y. This is equivelent to sqrt(x^2 + y^2).
 
 math **@sin** x
       Returns the sine of x radians.
@@ -1158,6 +1219,20 @@ math **@degrees** x
 math **@radians** x
       Converts angle x from degrees to radians.
 
+Special functions
+%%%%%%%%%%%%%%%%%
+
+math **@erf** x
+      Returns the error function (also called the Gauss error function) at x.
+
+math **@erfc** x
+      Returns the complement of the error function at x. The is defined as 1 - erf(x)
+
+math **@gamma** x
+      Return the Gamma function at x.
+
+math **@lgamma** x
+      Return the natural logarithm of the absolute value of the Gamma function at x.
 
 os
 ^^

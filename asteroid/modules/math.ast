@@ -421,7 +421,7 @@ end
 ------------------------------------------------------------------
 function trunc
 ------------------------------------------------------------------
--- Return n factorial as an integer.
+-- Return n with its fractional component set to 0.
 with n:%real do return escape
 "
 global __retval__
