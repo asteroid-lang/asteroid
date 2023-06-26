@@ -35,7 +35,7 @@ function is_prime
   with _ do
     return false.
 end
-
+------------------------------------------------------------------
 function is_fibonacci
   with (n:%integer) do
     -- if 5*n^2 +- 4 is a perfect square then it is a fib number
@@ -48,13 +48,64 @@ function is_fibonacci
   with _ do
     return false.
 end
-
+------------------------------------------------------------------
 function all_ints
   with [(x:%integer)|[]] do
     return true.
   with [(x:%integer)|tail] do
     return all_ints tail.
   with [x|tail] do
+    return false.
+  with (t:%tuple) do
+    for elem in t do
+      if elem is %integer do
+        . -- PASS
+      else
+        return false.
+      end
+      return true.
+    end
+  with _ do
+    return false.
+end
+------------------------------------------------------------------
+function all_reals
+  with [(x:%real)|[]] do
+    return true.
+  with [(x:%real)|tail] do
+    return all_ints tail.
+  with [x|tail] do
+    return false.
+  with (t:%tuple) do
+    for elem in t do
+      if elem is %real do
+        . -- PASS
+      else
+        return false.
+      end
+      return true.
+    end
+  with _ do
+    return false.
+end
+------------------------------------------------------------------
+function all_strings
+  with [(x:%string)|[]] do
+    return true.
+  with [(x:%string)|tail] do
+    return all_ints tail.
+  with [x|tail] do
+    return false.
+  with (t:%tuple) do
+    for elem in t do
+      if elem is %string do
+        . -- PASS
+      else
+        return false.
+      end
+      return true.
+    end
+  with _ do
     return false.
 end
 
@@ -83,4 +134,9 @@ let EVEN = pattern with %[ (n:%integer) if math@mod(n,2) == 0 ]%.
 ------------------------------------------------------------------
 -- Containers
 ------------------------------------------------------------------
-let INT_LIST = pattern with (l:%list) if patterns@all_ints(l).
+let INT_LIST = pattern with %[ (l:%list) if patterns@all_ints(l) ]%.
+let REAL_LIST = pattern with %[ (l:%list) if patterns@all_reals(l) ]%.
+let STRING_LIST = pattern with %[ (l:%list) if patterns@all_strings(l) ]%.
+let INT_TUPLE = pattern with %[ (t:%tuple) if patterns@all_ints(t) ]%.
+let REAL_TUPLE = pattern with %[ (t:%tuple) if patterns@all_reals(t) ]%.
+let STRING_TUPLE = pattern with %[ (t:%tuple) if patterns@all_string(t) ]%.
