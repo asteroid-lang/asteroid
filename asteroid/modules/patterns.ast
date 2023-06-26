@@ -1,0 +1,86 @@
+------------------------------------------------------------------
+-- pattern.ast
+--
+-- this module provides patterns 
+-- 
+--
+-- (c) University of Rhode Island
+------------------------------------------------------------------
+load system math.
+
+------------------------------------------------------------------
+-- Helper functions
+------------------------------------------------------------------
+function is_prime
+  with (n:%integer) do
+    if n <= 1 do
+      return false.
+    end
+
+    if (n == 2) or (n == 3) do
+      return true.
+    end
+
+    if (math@mod(n,2) == 0) or (math@mod(n,3) == 0) do
+      return false.
+    end
+
+    for i in 5 to math@isqrt(n) step 6 do
+      if (math@mod(n,i) == 0) or (math@mod(n,i+2) == 0) do
+        return false.
+      end
+    end
+
+    return true.
+  with _ do
+    return false.
+end
+
+function is_fibonacci
+  with (n:%integer) do
+    -- if 5*n^2 +- 4 is a perfect square then it is a fib number
+    if math@remainder(math@sqrt( 5 * math@pow(n,2) + 4 ),1) == 0.0 
+      or math@remainder(math@sqrt( 5 * math@pow(n,2) - 4 ),1) == 0.0 do
+
+      return true.
+    end.
+    return false.
+  with _ do
+    return false.
+end
+
+function all_ints
+  with [(x:%integer)|[]] do
+    return true.
+  with [(x:%integer)|tail] do
+    return all_ints tail.
+  with [x|tail] do
+    return false.
+end
+
+------------------------------------------------------------------
+-- Classic number sets
+------------------------------------------------------------------
+let PRIME = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
+let DIGIT = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.
+let FIBONACCI = pattern with %[ (n:%integer) if patterns@is_fibonacci(n) ]%.
+let POS_INT = pattern with %[ (n:%integer) if n > 0 ]%.
+let NEG_INT = pattern with %[ (n:%integer) if n < 0 ]%.
+let POS_REAL = pattern with %[ (n:%real) if n > 0.0 ]%.
+let NEG_REAL = pattern with %[ (n:%real) if n < 0.0 ]%.
+let POSITIVE = pattern with %[ n if (n is *patterns@POS_INT) or (n is *patterns@POS_REAL) ]%.
+let NEGATIVE = pattern with %[ n if (n is *patterns@NEG_INT) or (n is *patterns@NEG_REAL) ]%.
+let WHOLE_INT = pattern with %[ (n:%integer) if n >= 0 ]%.
+let WHOLE_REAL = pattern with %[ (n:%real) if (n >= 0.0) and (math@remainder(n,1) == 0.0) ]%.
+let WHOLE = pattern with %[ n if (n is *patterns@WHOLE_INT) or (n is *patterns@WHOLE_REAL) ]%.
+let NAT_INT = pattern with %[ (n:%integer) if n >= 1 ]%.
+let NAT_REAL = pattern with %[ (n:%real) if (n >= 1.0) and (math@remainder(n,1) == 0.0) ]%.
+let NATURAL = pattern with %[ n if (n is *patterns@NAT_REAL) or (n is *patterns@NAT_INT) ]%.
+let ZERO = pattern with %[ n if ((n is %real) and (toreal(n) == 0.0))
+                           or ((n is %integer) and (tointeger(n) == 0)) ]%.
+let ODD = pattern with %[ (n:%integer) if math@mod(n,2) == 1 ]%.
+let EVEN = pattern with %[ (n:%integer) if math@mod(n,2) == 0 ]%.
+------------------------------------------------------------------
+-- Containers
+------------------------------------------------------------------
+let INT_LIST = pattern with (l:%list) if patterns@all_ints(l).
