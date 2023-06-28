@@ -1,0 +1,9 @@
+   load system patterns.
+
+   let evens = [].
+   for num in 1 to 10 do
+      if num is *patterns@even do
+         let evens = evens@append(num).
+      end
+   end
+   assert(evens is [2,4,6,8,10]).

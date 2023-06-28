@@ -1,7 +1,7 @@
 ------------------------------------------------------------------
--- pattern.ast
+-- patterns.ast
 --
--- this module provides patterns 
+-- this module implements common patterns 
 -- 
 --
 -- (c) University of Rhode Island
@@ -11,6 +11,7 @@ load system math.
 ------------------------------------------------------------------
 -- Helper functions
 ------------------------------------------------------------------
+-- returns a boolean indicating if the passed in integer is prime.
 function is_prime
   with (n:%integer) do
     if n <= 1 do
@@ -36,107 +37,103 @@ function is_prime
     return false.
 end
 ------------------------------------------------------------------
-function is_fibonacci
-  with (n:%integer) do
-    -- if 5*n^2 +- 4 is a perfect square then it is a fib number
-    if math@remainder(math@sqrt( 5 * math@pow(n,2) + 4 ),1) == 0.0 
-      or math@remainder(math@sqrt( 5 * math@pow(n,2) - 4 ),1) == 0.0 do
+function is_alphabetic
+  with (s:%string) do return escape
+"
+global __retval__
 
-      return true.
-    end.
-    return false.
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isalpha(val_s[1]))
+"
   with _ do
     return false.
-end
+  end
 ------------------------------------------------------------------
-function all_ints
-  with [(x:%integer)|[]] do
-    return true.
-  with [(x:%integer)|tail] do
-    return all_ints tail.
-  with [x|tail] do
-    return false.
-  with (t:%tuple) do
-    for elem in t do
-      if elem is %integer do
-        . -- PASS
-      else
-        return false.
-      end
-      return true.
-    end
+function is_numeric
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isnumeric(val_s[1]))
+"
   with _ do
     return false.
-end
+  end
 ------------------------------------------------------------------
-function all_reals
-  with [(x:%real)|[]] do
-    return true.
-  with [(x:%real)|tail] do
-    return all_ints tail.
-  with [x|tail] do
-    return false.
-  with (t:%tuple) do
-    for elem in t do
-      if elem is %real do
-        . -- PASS
-      else
-        return false.
-      end
-      return true.
-    end
+function is_uppercase
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isupper(val_s[1]))
+"
   with _ do
     return false.
-end
+  end
 ------------------------------------------------------------------
-function all_strings
-  with [(x:%string)|[]] do
-    return true.
-  with [(x:%string)|tail] do
-    return all_ints tail.
-  with [x|tail] do
-    return false.
-  with (t:%tuple) do
-    for elem in t do
-      if elem is %string do
-        . -- PASS
-      else
-        return false.
-      end
-      return true.
-    end
+function is_lowercase
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.islower(val_s[1]))
+"
   with _ do
     return false.
-end
+  end
+------------------------------------------------------------------
+function is_alphanumeric
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isalnum(val_s[1]))
+"
+  with _ do
+    return false.
+  end
 
 ------------------------------------------------------------------
--- Classic number sets
+-- Common number sets
 ------------------------------------------------------------------
-let PRIME = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
-let DIGIT = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.
-let FIBONACCI = pattern with %[ (n:%integer) if patterns@is_fibonacci(n) ]%.
-let POS_INT = pattern with %[ (n:%integer) if n > 0 ]%.
-let NEG_INT = pattern with %[ (n:%integer) if n < 0 ]%.
-let POS_REAL = pattern with %[ (n:%real) if n > 0.0 ]%.
-let NEG_REAL = pattern with %[ (n:%real) if n < 0.0 ]%.
-let POSITIVE = pattern with %[ n if (n is *patterns@POS_INT) or (n is *patterns@POS_REAL) ]%.
-let NEGATIVE = pattern with %[ n if (n is *patterns@NEG_INT) or (n is *patterns@NEG_REAL) ]%.
-let WHOLE_INT = pattern with %[ (n:%integer) if n >= 0 ]%.
-let WHOLE_REAL = pattern with %[ (n:%real) if (n >= 0.0) and (math@remainder(n,1) == 0.0) ]%.
-let WHOLE = pattern with %[ n if (n is *patterns@WHOLE_INT) or (n is *patterns@WHOLE_REAL) ]%.
-let NAT_INT = pattern with %[ (n:%integer) if n >= 1 ]%.
-let NAT_REAL = pattern with %[ (n:%real) if (n >= 1.0) and (math@remainder(n,1) == 0.0) ]%.
-let NATURAL = pattern with %[ n if (n is *patterns@NAT_REAL) or (n is *patterns@NAT_INT) ]%.
-let ZERO = pattern with %[ n if ((n is %real) and (toreal(n) == 0.0))
+let prime = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
+let digit = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.
+let pos_int = pattern with %[ (n:%integer) if n > 0 ]%.
+let neg_int = pattern with %[ (n:%integer) if n < 0 ]%.
+let pos_real = pattern with %[ (n:%real) if n > 0.0 ]%.
+let neg_real = pattern with %[ (n:%real) if n < 0.0 ]%.
+let positive = pattern with %[ n if (n is *patterns@pos_int) or (n is *patterns@pos_real) ]%.
+let negative = pattern with %[ n if (n is *patterns@neg_int) or (n is *patterns@neg_real) ]%.
+let nat = pattern with %[ (n:%integer) if n >= 0 ]%.
+let zero = pattern with %[ n if ((n is %real) and (math@isclose(toreal(n), 0.0)))
                            or ((n is %integer) and (tointeger(n) == 0)) ]%.
-let ODD = pattern with %[ (n:%integer) if math@mod(n,2) == 1 ]%.
-let EVEN = pattern with %[ (n:%integer) if math@mod(n,2) == 0 ]%.
+let odd = pattern with %[ (n:%integer) if math@mod(n,2) == 1 ]%.
+let even = pattern with %[ (n:%integer) if math@mod(n,2) == 0 ]%.
 ------------------------------------------------------------------
 -- Containers
 ------------------------------------------------------------------
-let INT_LIST = pattern with %[ (l:%list) if patterns@all_ints(l) ]%.
-let REAL_LIST = pattern with %[ (l:%list) if patterns@all_reals(l) ]%.
-let STRING_LIST = pattern with %[ (l:%list) if patterns@all_strings(l) ]%.
-let INT_TUPLE = pattern with %[ (t:%tuple) if patterns@all_ints(t) ]%.
-let REAL_TUPLE = pattern with %[ (t:%tuple) if patterns@all_reals(t) ]%.
-let STRING_TUPLE = pattern with %[ (t:%tuple) if patterns@all_string(t) ]%.
+let int_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %integer) and acc, true)]%.
+let real_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %real) and acc, true)]%.
+let str_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %string) and acc, true)]%.
+let bool_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %boolean) and acc, true)]%.
+let func_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %function) and acc, true)]%.
+let list_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %list) and acc, true)]%.
+let tuple_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %tuple) and acc, true)]%.
+------------------------------------------------------------------
+-- Strings
+------------------------------------------------------------------
+let char = pattern with (s:%string) if (s@length() == 1).
+let alphabetic = pattern with (s:%string) if patterns@is_alphabetic(s).
+let numeric = pattern with (s:%string) if patterns@is_numeric(s).
+let alphanumeric = pattern with (s:%string) if patterns@is_alphanumeric(s).
+let uppercase = pattern with (s:%string) if patterns@is_uppercase(s).
+let lowercase = pattern with (s:%string) if patterns@is_lowercase(s).

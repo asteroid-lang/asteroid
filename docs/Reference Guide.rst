@@ -1205,12 +1205,11 @@ Constants
 math **@pi**
       The mathematical constant π = 3.141592…, to available precision.
 
-math **@tau**
-      The mathematical constant τ = 6.283185…, to available precision.
-
 math **@e**
       The mathematical constant e = 2.718281…, to available precision.
 
+math **@tau**
+      The mathematical constant τ = 6.283185…, to available precision.
 
 Power and logarithmic functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1242,28 +1241,28 @@ math **@log10** x
       Returns the base 10 logarithm of x.
 
 math **@pow** (b, p:%integer)
-      Return b raised to the power p.  The return type depends on the type
+      Returns b raised to the power p.  The return type depends on the type
       of the base.
 
 math **@sqrt** x
-      Return the square root of x as a real.
+      Returns the square root of x as a real.
 
 Number-theoretic and representation functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 math **@abs** x
-      Return that absolute value of x.  The return type depends on the type of x.
+      Returns that absolute value of x.  The return type depends on the type of x.
 
 math **@ceil** x:%real
       Returns the ceiling of x: the smallest integer greater than or equal to x.
 
-math **@comb** (n:%integer, k:%integer)
-	Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
+math **@comb** (n:%integer,k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
 
-math **@copysign** (x, y)
-	Returns a real with the absolute value of x and the sign of y.
+math **@copysign** (x,y)
+      Returns a real with the absolute value of x and the sign of y.
 
-math **@dist** (x, y)
+math **@dist** (x,y)
       Return the Euclidean distance as a float between two points x and y, each given as a tuple or list of coordinates.
 
 math **@factorial** (n:%integer)
@@ -1299,7 +1298,7 @@ math **@prod** x:%list | x:%tuple
       Calculate and return the product of all the elements of a list or tuple x.
 
 math **@remainder** (x,y)
-      Return the IEEE 754-style remainder of x with respect to y.
+      Returns the IEEE 754-style remainder of x with respect to y.
 
 math **@round** x:%real
       Returns x rounded to the nearest integer. If two integers are equally
@@ -1309,7 +1308,7 @@ math **@sum** x:%list | x:%tuple
       Calculate and return the sum of all the elements of a list or tuple x.
 
 math **@trunc** x:%real
-      Return x with its fractional component set to 0.
+      Returns x with its fractional component set to 0.
 
 Trigonometric functions
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -1329,8 +1328,8 @@ math **@atan2** (x,y)
 math **@cos** x
       Returns the cosine of x radians.
 
-math **@hypot** (x, y)
-      Return the Euclidean norm as a real of x and y. This is equivelent to sqrt(x^2 + y^2).
+math **@hypot** (x,y)
+      Returns the Euclidean norm as a real of x and y. This is equivalent to sqrt(x^2 + y^2).
 
 math **@sin** x
       Returns the sine of x radians.
@@ -1378,10 +1377,10 @@ math **@erfc** x
       Returns the complement of the error function at x. The is defined as 1 - erf(x)
 
 math **@gamma** x
-      Return the Gamma function at x.
+      Returns the Gamma function at x.
 
 math **@lgamma** x
-      Return the natural logarithm of the absolute value of the Gamma function at x.
+      Returns the natural logarithm of the absolute value of the Gamma function at x.
 
 os
 ^^
@@ -1522,6 +1521,105 @@ os **@syscmd** cmd:%string
       The C standard does not specify the meaning of the return value of
       the C function, so the return value of this function is
       system-dependent.
+
+
+
+
+patterns
+^^^^^^^^
+
+The patterns module implements common patterns.
+An example:
+::
+   load system patterns.
+
+   let evens = [].
+   for num in 1 to 10 do
+      if num is *patterns@even do
+         let evens = evens@append(num).
+      end
+   end
+   assert(evens is [2,4,6,8,10]).
+Common number sets
+%%%%%%%%%%%%%%%%%%
+
+patterns **@digit** %integer
+      Matches single digit integers.
+
+patterns **@even** %integer
+      Matches integers which are even numbers.
+
+patterns **@nat** %integer
+      Matches integers which are natural numbers.
+
+patterns **@negative** %integer | %real
+      Matches negative reals and integers.
+
+patterns **@neg_int** %integer
+      Matches negative integers.
+
+patterns **@neg_int** %integer
+      Matches negative integers.
+
+patterns **@odd** %integer
+      Matches integers which are odd numbers.
+
+patterns **@positive** %integer | %real
+      Matches positive reals and integers.
+
+patterns **@pos_int** %integer
+      Matches positive integers.
+
+patterns **@pos_real** %real
+      Matches postive reals.
+
+patterns **@prime** %integer
+      Matches prime numbers.
+
+patterns **@zero** %integer | %real
+      Matches the value 0, either as an integer or a real.
+
+Containers
+%%%%%%%%%%
+
+patterns **@bool_list** %list
+      Matches lists which only contain booleans.
+
+patterns **@func_list** %list
+      Matches lists which only contain functions.
+
+patterns **@int_list** %list
+      Matches lists which only contain integers.
+
+patterns **@list_list** %list
+      Matches lists which only contain lists.
+
+patterns **@real_list** %list
+      Matches lists which only contain reals.
+
+patterns **@str_list** %list
+      Matches lists which only contain strings.
+
+patterns **@tuple_list** %list
+      Matches lists which only contain tuples.
+
+Strings
+%%%%%%%
+
+patterns **@alphabetic** %string
+      Matches stringd which only contain alphabetic characters.
+
+patterns **@alphanumeric** %string
+      Matches stringd which only contain alphanumeric characters.
+
+patterns **@lowercase** %string
+      Matches stringd which only contain lowercase alphabetic characters.
+
+patterns **@numeric** %string
+      Matches stringd which only contain numeric characters.
+
+patterns **@uppercase** %string
+      Matches stringd which only contain uppercase alphabetic characters.
 
 
 
