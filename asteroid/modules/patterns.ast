@@ -131,9 +131,9 @@ let tuple_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is 
 ------------------------------------------------------------------
 -- Strings
 ------------------------------------------------------------------
-let char = pattern with (s:%string) if (s@length() == 1).
-let alphabetic = pattern with (s:%string) if patterns@is_alphabetic(s).
-let numeric = pattern with (s:%string) if patterns@is_numeric(s).
-let alphanumeric = pattern with (s:%string) if patterns@is_alphanumeric(s).
-let uppercase = pattern with (s:%string) if patterns@is_uppercase(s).
-let lowercase = pattern with (s:%string) if patterns@is_lowercase(s).
+let char = pattern with %[ (s:%string) if (s@length() == 1) ]%.
+let alphabetic = pattern with %[ (s:%string) if patterns@is_alphabetic(s) ]%.
+let numeric = pattern with %[ (s:%string) if patterns@is_numeric(s) ]%.
+let alphanumeric = pattern with %[ (s:%string) if patterns@is_alphanumeric(s) ]%.
+let uppercase = pattern with %[ (s:%string) if patterns@is_uppercase(s) ]%.
+let lowercase = pattern with %[ (s:%string) if patterns@is_lowercase(s) ]%.
