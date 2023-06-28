@@ -1387,82 +1387,82 @@ An example:
 Common number sets
 %%%%%%%%%%%%%%%%%%
 
-patterns **@digit** %integer
+patterns **@digit** : %integer
       Matches single digit integers.
 
-patterns **@even** %integer
+patterns **@even** : %integer
       Matches integers which are even numbers.
 
-patterns **@nat** %integer
+patterns **@nat** : %integer
       Matches integers which are natural numbers.
 
-patterns **@negative** %integer | %real
+patterns **@negative** : %integer | %real
       Matches negative reals and integers.
 
-patterns **@neg_int** %integer
+patterns **@neg_int** : %integer
       Matches negative integers.
 
-patterns **@neg_int** %integer
+patterns **@neg_int** : %integer
       Matches negative integers.
 
-patterns **@odd** %integer
+patterns **@odd** : %integer
       Matches integers which are odd numbers.
 
-patterns **@positive** %integer | %real
+patterns **@positive** : %integer | %real
       Matches positive reals and integers.
 
-patterns **@pos_int** %integer
+patterns **@pos_int** : %integer
       Matches positive integers.
 
-patterns **@pos_real** %real
+patterns **@pos_real** : %real
       Matches postive reals.
 
-patterns **@prime** %integer
+patterns **@prime** : %integer
       Matches prime numbers.
 
-patterns **@zero** %integer | %real
+patterns **@zero** : %integer | %real
       Matches the value 0, either as an integer or a real.
 
 Containers
 %%%%%%%%%%
 
-patterns **@bool_list** %list
+patterns **@bool_list** : %list
       Matches lists which only contain booleans.
 
-patterns **@func_list** %list
+patterns **@func_list** : %list
       Matches lists which only contain functions.
 
-patterns **@int_list** %list
+patterns **@int_list** : %list
       Matches lists which only contain integers.
 
-patterns **@list_list** %list
+patterns **@list_list** : %list
       Matches lists which only contain lists.
 
-patterns **@real_list** %list
+patterns **@real_list** : %list
       Matches lists which only contain reals.
 
-patterns **@str_list** %list
+patterns **@str_list** : %list
       Matches lists which only contain strings.
 
-patterns **@tuple_list** %list
+patterns **@tuple_list** : %list
       Matches lists which only contain tuples.
 
 Strings
 %%%%%%%
 
-patterns **@alphabetic** %string
+patterns **@alphabetic** : %string
       Matches strings which only contain alphabetic characters.
 
-patterns **@alphanumeric** %string
+patterns **@alphanumeric** : %string
       Matches strings which only contain alphanumeric characters.
 
-patterns **@lowercase** %string
+patterns **@lowercase** : %string
       Matches strings which only contain lowercase alphabetic characters.
 
-patterns **@numeric** %string
+patterns **@numeric** : %string
       Matches strings which only contain numeric characters.
 
-patterns **@uppercase** %string
+patterns **@uppercase** : %string
       Matches strings which only contain uppercase alphabetic characters.
 
 
