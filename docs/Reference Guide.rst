@@ -1607,19 +1607,19 @@ Strings
 %%%%%%%
 
 patterns **@alphabetic** %string
-      Matches stringd which only contain alphabetic characters.
+      Matches strings which only contain alphabetic characters.
 
 patterns **@alphanumeric** %string
-      Matches stringd which only contain alphanumeric characters.
+      Matches strings which only contain alphanumeric characters.
 
 patterns **@lowercase** %string
-      Matches stringd which only contain lowercase alphabetic characters.
+      Matches strings which only contain lowercase alphabetic characters.
 
 patterns **@numeric** %string
-      Matches stringd which only contain numeric characters.
+      Matches strings which only contain numeric characters.
 
 patterns **@uppercase** %string
-      Matches stringd which only contain uppercase alphabetic characters.
+      Matches strings which only contain uppercase alphabetic characters.
 
 
 
