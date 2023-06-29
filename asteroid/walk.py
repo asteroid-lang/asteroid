@@ -164,6 +164,9 @@ def unify(term, pattern, unifying = True ):
         if pattern[1] == '_': # anonymous variable - ignore unifier
             return []
         else:
+            id_val = state.symbol_table.lookup_sym(pattern[1],strict=False)
+            if id_val and id_val[0] == 'pattern':
+                warning("you are overwriting a pattern stored in '{}'".format(pattern[1]))
             unifier = (pattern, term)
             return [unifier]
 

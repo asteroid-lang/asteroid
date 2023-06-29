@@ -673,7 +673,7 @@ where ``<syntactic unit>*`` means zero or more occurrences of the syntactic unit
 ``<syntactic unit>?`` means that the syntactic unit is optional.  Simple terminals
 are written in quotes.
 ::
-#include "/tmp/grammar.tmp"
+#include "../asteroid/grammar.txt"
 
 Notes on Function Argument Notation
 -----------------------------------
@@ -1059,6 +1059,8 @@ math **@pi**
 math **@e**
       The mathematical constant e = 2.718281…, to available precision.
 
+math **@tau**
+      The mathematical constant τ = 6.283185…, to available precision.
 
 Power and logarithmic functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1066,34 +1068,65 @@ Power and logarithmic functions
 math **@exp** x:%integer
       Returns e raised to the power x, where e = 2.718281… is the base of the natural logarithm.
 
+math **@expm1** x
+      Returns e raised to the power x minus 1. This function maintains a higher level of precision then the standard operation.
+
+math **@isqrt** x:%real
+      Returns the floor of the square root of x as a integer.
+
+math **@ldexp** (x,i)
+      Returns x * (2^i).
+
 math **@log** x | (x, base:%integer)
       If only argument x is the input, return the natural logarithm of x (to base e).
       If two arguments, (x, base:%integer), are given as input, return the logarithm 
       of x to the given base, calculated as log(x)/log(base).
 
+math **@log1p** x
+      Returns the natural logarithm of 1 + x.
+
+math **@log2** x
+      Returns the base 2 logarithm of x.
+
+math **@log10** x
+      Returns the base 10 logarithm of x.
+
 math **@pow** (b, p:%integer)
-      Return b raised to the power p.  The return type depends on the type
+      Returns b raised to the power p.  The return type depends on the type
       of the base.
 
 math **@sqrt** x 
-      Return the square root of x as a real.
-
+      Returns the square root of x as a real.
 
 Number-theoretic and representation functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 math **@abs** x
-      Return that absolute value of x.  The return type depends on the type of x.
+      Returns that absolute value of x.  The return type depends on the type of x.
 
 math **@ceil** x:%real
       Returns the ceiling of x: the smallest integer greater than or equal to x.
 
+math **@comb** (n:%integer,k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
+
+math **@copysign** (x,y)
+      Returns a real with the absolute value of x and the sign of y.
+
+math **@dist** (x,y)
+      Return the Euclidean distance as a float between two points x and y, each given as a tuple or list of coordinates.
+
+math **@factorial** (n:%integer)
+      Returns the factorial of the integer n.
+
 math **@floor** x:%real
       Returns the floor of x: the largest integer less than or equal to x.
 
-math **@round** x:%real
-      Returns x rounded to the nearest integer. If two integers are equally
-      close, x is rounded to the nearest even integer.
+math **@fmod** (v,d)
+      Implements the modulus operation as defined by the platform C library. This is equal to v - n*d for some integer n such that the result has the same sign as v and magnitude less than abs(d).
+
+math **@fsum** x:%list | x:%tuple
+      Calculate the sum of all the elements of a list or tuple. This function carries a higher floating point precison level than the standard sum() function by tracking multiple intermediate partial sums.
 
 math **@gcd** (a:%integer, b:%integer)
       Returns the greatest common denominator that both integers share.
@@ -1103,9 +1136,30 @@ math **@isclose** (a:%real, b:%real) | (a:%real, b:%real, t:%real)
       Default tolerance is 1e-09.  An alternative tolerance can be specified with 
       the t argument.
 
+math **@lcm** (a:%integer,b:%integer)
+      Returns the least common multiple of the integers a and b.
+
 math **@mod** (v,d)
       Implements the modulus operation. Returns the remainder of the quotient v/d.
 
+math **@perm** (n:%integer, k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and with order. This is equal to n! / (n - k)!.
+
+math **@prod** x:%list | x:%tuple
+      Calculate and return the product of all the elements of a list or tuple x.
+
+math **@remainder** (x,y)
+      Returns the IEEE 754-style remainder of x with respect to y.
+
+math **@round** x:%real
+      Returns x rounded to the nearest integer. If two integers are equally
+      close, x is rounded to the nearest even integer.
+
+math **@sum** x:%list | x:%tuple
+      Calculate and return the sum of all the elements of a list or tuple x.
+
+math **@trunc** x:%real
+      Returns x with its fractional component set to 0.
 
 Trigonometric functions
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -1119,8 +1173,14 @@ math **@asin** x
 math **@atan** x
       Returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
 
+math **@atan2** (x,y)
+      Returns the arc tangent of y / x in radians. The result is between -pi and pi.
+
 math **@cos** x
       Returns the cosine of x radians.
+
+math **@hypot** (x,y)
+      Returns the Euclidean norm as a real of x and y. This is equivalent to sqrt(x^2 + y^2).
 
 math **@sin** x
       Returns the sine of x radians.
@@ -1158,6 +1218,20 @@ math **@degrees** x
 math **@radians** x
       Converts angle x from degrees to radians.
 
+Special functions
+%%%%%%%%%%%%%%%%%
+
+math **@erf** x
+      Returns the error function (also called the Gauss error function) at x.
+
+math **@erfc** x
+      Returns the complement of the error function at x. The is defined as 1 - erf(x)
+
+math **@gamma** x
+      Returns the Gamma function at x.
+
+math **@lgamma** x
+      Returns the natural logarithm of the absolute value of the Gamma function at x.
 
 os
 ^^
@@ -1210,8 +1284,8 @@ os **@exit** () | v:%integer | msg:%string
       Signaling an intention to exit the interpreter.
       When an argument value other than none is provided
       it is considered a status value. If it is 
-      an integer, zero is considered “successful termination” and any 
-      nonzero value is considered “abnormal termination” by shells and 
+      an integer, zero is considered "successful termination" and any 
+      nonzero value is considered "abnormal termination" by shells and 
       the like. Most systems require it to be in the range 0–127, and 
       produce undefined results otherwise. Some systems have a 
       convention for assigning specific meanings to specific exit codes, 
@@ -1298,6 +1372,98 @@ os **@syscmd** cmd:%string
       The C standard does not specify the meaning of the return value of 
       the C function, so the return value of this function is 
       system-dependent.
+
+
+
+
+patterns
+^^^^^^^^
+
+The patterns module implements common patterns.
+An example:
+::
+#include "../asteroid/test-suites/ref-programs/patterns.ast"
+
+Common number sets
+%%%%%%%%%%%%%%%%%%
+
+patterns **@digit** \: %integer
+      Matches single digit integers.
+
+patterns **@even** \: %integer
+      Matches integers which are even numbers.
+
+patterns **@nat** \: %integer
+      Matches integers which are natural numbers.
+
+patterns **@negative** \: %integer | %real
+      Matches negative reals and integers.
+
+patterns **@neg_int** \: %integer
+      Matches negative integers.
+
+patterns **@neg_int** \: %integer
+      Matches negative integers.
+
+patterns **@odd** \: %integer
+      Matches integers which are odd numbers.
+
+patterns **@positive** \: %integer | %real
+      Matches positive reals and integers.
+
+patterns **@pos_int** \: %integer
+      Matches positive integers.
+
+patterns **@pos_real** \: %real
+      Matches postive reals.
+
+patterns **@prime** \: %integer
+      Matches prime numbers.
+
+patterns **@zero** \: %integer | %real
+      Matches the value 0, either as an integer or a real.
+
+Containers
+%%%%%%%%%%
+
+patterns **@bool_list** \: %list
+      Matches lists which only contain booleans.
+
+patterns **@func_list** \: %list
+      Matches lists which only contain functions.
+
+patterns **@int_list** \: %list
+      Matches lists which only contain integers.
+
+patterns **@list_list** \: %list
+      Matches lists which only contain lists.
+
+patterns **@real_list** \: %list
+      Matches lists which only contain reals.
+
+patterns **@str_list** \: %list
+      Matches lists which only contain strings.
+
+patterns **@tuple_list** \: %list
+      Matches lists which only contain tuples.
+
+Strings
+%%%%%%%
+
+patterns **@alphabetic** \: %string
+      Matches strings which only contain alphabetic characters.
+
+patterns **@alphanumeric** \: %string
+      Matches strings which only contain alphanumeric characters.
+
+patterns **@lowercase** \: %string
+      Matches strings which only contain lowercase alphabetic characters.
+
+patterns **@numeric** \: %string
+      Matches strings which only contain numeric characters.
+
+patterns **@uppercase** \: %string
+      Matches strings which only contain uppercase alphabetic characters.
 
 
 

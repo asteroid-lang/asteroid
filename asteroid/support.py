@@ -189,6 +189,19 @@ def data_ix_list(memory):
     return ix_list
 
 ###########################################################################################
+def to_python_list(asteroid_list):
+    '''
+    convert a list from Asteroid list or tuple AST format into a standard Python list.
+    ex. ('list',[('integer',1),('integer',2)])   =>   [1,2]
+    '''
+    output = []
+    
+    for (_type,val) in asteroid_list[1]:
+        output.append(val)
+        
+    return output
+
+###########################################################################################
 # term2string is an unparsing function mapping AST snippets representing **values** into 
 # a Python string
 #
