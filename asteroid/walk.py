@@ -1122,6 +1122,17 @@ def stmt_list(node):
     walk(stmts)
 
 #########################################################################
+def exp_stmt(node):
+    if state.debugger: state.debugger.step()
+
+    (EXP_STMT, exp) = node
+    assert_match(EXP_STMT,'exp-stmt')
+
+    walk(exp)
+    # statements don't return values
+    return
+
+#########################################################################
 def global_stmt(node):
     if state.debugger: state.debugger.step()
 
@@ -1842,6 +1853,7 @@ dispatch_dict = {
     'lineinfo'      : process_lineinfo,
     'set-ret-val'   : set_ret_val,
     'clear-ret-val' : clear_ret_val,
+    'exp-stmt'      : exp_stmt,
     'noop'          : lambda node : None,
     'unify'         : unify_stmt,
     'while'         : while_stmt,

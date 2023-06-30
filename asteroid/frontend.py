@@ -444,7 +444,7 @@ class Parser:
         elif tt in exp_lookahead:
             v = self.exp()
             self.lexer.match_optional('DOT')
-            return ('set-ret-val', v)
+            return ('exp-stmt', ('set-ret-val', v))
 
         else:
             raise SyntaxError("syntax error at '{}'"
