@@ -43,20 +43,20 @@ that recursively computes the factorial of a positive integer and uses first-cla
 in order to ensure that the domain of the function is not violated,
 ::
     -- define first-class patterns
-    let POS_INT = pattern (x:%integer) if x > 0.
-    let NEG_INT = pattern (x:%integer) if x < 0.
+    let pos_int = pattern (x:%integer) if x > 0.
+    let neg_int = pattern (x:%integer) if x < 0.
 
     -- define our factorial function
     function fact
         with 0 do
             return 1
-        with n:*POS_INT do            -- use first pattern
+        with n:*pos_int do            -- use first pattern
             return n * fact (n-1).
-        with n:*NEG_INT do            -- use second pattern
+        with n:*neg_int do            -- use second pattern
             throw Error("undefined for "+n).
         end
 As you can see, the program first creates patterns and stores them in the variables
-``POS_INT`` and ``NEG_INT`` and it uses those patterns later in the code by
+``pos_int`` and ``neg_int`` and it uses those patterns later in the code by
 dereferencing those variables with the ``*`` operator.  First-class patterns have
 profound implications for software development in that pattern definition and usage
 points are now separate and patterns can be reused in different contexts.
@@ -333,6 +333,7 @@ where we pattern match the pattern 1 on the left side to the value 1 on the righ
 
 Simple patterns are expressions that consist purely of constructors and variables. Constructors themselves consist of constants, list and tuple constructors, as well as user defined structures.
 The advantage of pattern matching is that it provides direct access to substructures of a particular value.
+This is often called "destructuring" of a value.
 Consider that we want to access the constituent values of the pair ``(1,2)``.  In a non-pattern-matching approach we would have to access each of these constituent values one-by-one,
 ::
     let p = (1,2).
@@ -347,7 +348,7 @@ the variables ``x`` and ``y`` where we expect our values to be,
     let (x,y) = p.
     assert (x==1 and y==2).
 
-Matching the pattern against the value ``(1,2)`` stored in ``p`` first matches the pair structure against the pair value and the matches the variables to the appropriate substructures.  Once the variables have been matched to value the ``let`` statement declares the variables in the current scope and they become available for computation.
+Matching the pattern against the value ``(1,2)`` stored in ``p`` first matches the pair structure against the pair value and then matches the variables to the appropriate substructures.  Once the variables have been matched to value the ``let`` statement declares the variables in the current scope and they become available for computation.
 
 The following is an example involving structures and objects,
 ::
@@ -361,34 +362,40 @@ The following is an example involving structures and objects,
     let Person(n,a,p) = joe.              -- pattern match object
 
     assert (n=="Joe" and a==32 and p=="Cook").
-We first construct an object ``joe`` with the first ``let`` statement and the use pattern matching to desctructure it with the second ``let`` statement binding its substructures to the variables ``n``, ``a``, and ``p``.
+We first construct an object ``joe`` with the first ``let`` statement and then use pattern matching to desctructure it with the second ``let`` statement binding its substructures to the variables ``n``, ``a``, and ``p``.
 
 Asteroid supports special patterns called type patterns that match any value
 of a given type.  For instance, the ``%integer`` pattern matches any integer value.  Here is a simple example,
 ::
     let %integer = 1.
-This let statement succeeds because ``1`` is an integer value can be pattern-matched against
-the type pattern ``%integer``.
-
-Asteroid also
-supports something called a named pattern were a (sub)pattern can be given a name
-and that name will be instantiated with a term during pattern matching.  For example,
+This ``let`` statement succeeds because ``1`` is an integer value that can be pattern-matched against
+the type pattern ``%integer``.  Type pattern exist for all builtin data types, ``%real`` and ``%list``.
+If you introduce a user defined type via a structure, then Asteroid will create a type pattern for all objects
+of that data type.  Here is a simple example,
 ::
-    load system io.
+    structure Foo with
+        data a.
+        data b.
+    end
 
-    let t:(x,y) = (1,2).  -- using a named pattern on lhs
-    io @println t.
-Here, the construct ``t:(x,y)`` is called a named pattern and the variable ``t`` will be unified with the term ``(1,2)``, or more generally, the variable will be unified with term
-that matches the pattern on the right of the colon.  The program will print,
+    let %Foo = Foo(1,2).
+Notice the type pattern for the user defined type ``Foo`` in the ``let`` statement.
+
+Asteroid also supports conditional patterns.  Here is an example where we to make sure that the
+variable ``t`` on the left matches a pair of integer values,
 ::
-    (1,2)
+    let t if t is (%integer,%integer) = (1,2).
 
-Named patterns are a shorthand notation for conditional patterns; in this case,
+Of course, this ``let`` statement is going to be successful because the value on the right is indeed a
+pair of integers.  This kind of conditional pattern appears so often in Asteroid code that
+Asteroid has a shorthand notation for this,
 ::
-    let t if t is (x,y) = (1,2).
+    let t:(%integer,%integer) = (1,2).
 
-We can combine type patterns and named patterns to give us something that looks
-like a variable declaration in other languages. In Asteroid, though, it is still just all
+Again, here the ``let`` statement is only successful if ``t`` matches a pair of integers.
+
+Shorthand conditional patterns often look
+like a variable declarations in other languages. In Asteroid, though, it is still just all
 about pattern matching.  Consider,
 ::
     load system io.
@@ -396,10 +403,9 @@ about pattern matching.  Consider,
 
     let x:%real = math @pi.
     io @println x.
-The left side of the ``let`` statement is a named type pattern that matches any real value, and
-if that match is successful then the value is bound to the variable ``x``.  Note
-that even though this looks like a declaration, it is in fact a pattern matching
-operation.  The program will print the value ``3.141592653589793``.
+The left side of the ``let`` statement is a conditional pattern that matches any real value, and
+if that match is successful then the value is bound to the variable ``x``.
+The program will print the value ``3.141592653589793``.
 
 Beware of the fact that even though the ``let`` statement above looks like a
 declaration of a real variable it is not; it is a pattern match statement enforcing that the
@@ -452,7 +458,7 @@ The output is,
     the third bird is a chicken
 
 In the loop we first create a list of pairs using the ``zip`` function, over which we then
-iterate pattern matching on each of the pairs on the list with the pattern ``(ix,bird)``.
+iterate while pattern matching on each of the pairs on the list with the pattern ``(ix,bird)``.
 
 The following is a short program that demonstrates an ``if`` statement,
 ::
@@ -508,8 +514,8 @@ In Asteroid functions are multi-dispatch, that is,
 a single function can have multiple bodies each attached to a different pattern
 matching the actual argument.
 The following is the quick sort implemented in
-Asteroid where each ``with`` clause introduces a new function body with its
-corresponding pattern,
+Asteroid where each ``with`` clause introduces a new pattern with its
+corresponding function body,
 ::
     load system io.
 
@@ -543,7 +549,7 @@ The output is as expected,
 Notice that we use the multi-dispatch mechanism to deal with the base cases in the first two ``with`` clauses.
 In the third ``with`` clause we use the pattern ``[pivot|rest]`` to match the input list.
 Here the variable ``pivot`` matches the first element of the list, and the variable ``rest`` matches the remaining list. This remaining list is the original list with its first element removed.
-The function body then implements the pretty much standard recursive definition of the
+The function body then implements the pretty much standard definition of the
 quick sort.  Just keep in mind that function calls are expressed via juxtaposition
 of function name and actual argument; no parentheses necessary.
 
@@ -568,6 +574,10 @@ Pattern Matching in Expressions: The Is Predicate
 
 We can also have pattern matching
 in expressions using the ``is`` predicate.
+The
+left operand of the ``is`` predicate is a term and
+the right operand is a pattern.
+If the pattern match succeeds the predicate will return ``true`` otherwise it will return ``false``.
 Consider the following example,
 ::
     load system io.
@@ -593,9 +603,7 @@ be used.  That means we can use the predicate also on the right side of ``let`` 
 
     let true = (1,2) is (1,2).
 
-This is kind of strange looking but it succeeds.  Here the
-left operand of the ``is`` predicate is a term and
-the right operand is a pattern.  Obviously this pattern match will succeed because the
+This is kind of strange looking but it succeeds.    Obviously this pattern match will succeed because the
 term and the pattern look identical.  The return value of the ``is`` predicate is then
 pattern matched against the ``true`` pattern on the left of the ``=`` symbol.
 
@@ -872,21 +880,21 @@ Here is the program listing for the example in Asteroid,
    for (Dog(name,tricks) if tostring tricks is ".*fetch.*") in dogs do
       io @println (name+" knows how to fetch").
    end
-After declaring the structure we instantiate the dogs with their
-respective trick repertoires and put them on a list.  The last couple of lines
-of the program consist of a ``for`` loop over a list of our dogs.
+After declaring the structure, we instantiate the dogs with their
+respective trick repertoires and we then put them on a list.  The last couple of lines
+of the program consist of a ``for`` loop over the list of our dogs.
 The ``for`` loop is interesting
 because here we use structural, conditional, and regular expression pattern
 matching in order to only select the dogs that know how to do ``fetch`` from
 the list of dogs.  The pattern is,
 ::
-    Dog(name,tricks) if type @tostring tricks is ".*fetch.*"
+    Dog(name,tricks) if tostring tricks is ".*fetch.*"
 
 The structural part of the pattern is ``Dog(name,tricks)`` which simply matches
 any dog instance on the list.  However, that match is only successful if
 the conditional part of the pattern holds,
 ::
-    if type @tostring tricks is ".*fetch.*"
+    if tostring tricks is ".*fetch.*"
 
 This condition only succeeds if the ``tricks`` list viewed as a string matches
 the regular expression ``".*fetch.*"``. That is, if the list contains the word ``fetch``.
@@ -945,17 +953,17 @@ difficult to read.
 
 We can express the same function with a first-class pattern,
 ::
-    let TP = pattern q if (q is %boolean) or
+    let tp = pattern q if (q is %boolean) or
                           (q is %integer) or
                           (q is %string).
 
-    function foo with (x:*TP,y) do
+    function foo with (x:*tp,y) do
         io @println (x,y).
     end
 
 It is clear now that the main input structure to the function is a pair and the
 conditional type restriction pattern has been relegated to a subpattern stored in the variable
-``TP``.
+``tp``.
 
 Pattern Reuse
 ^^^^^^^^^^^^^
@@ -986,94 +994,94 @@ In order to write these two functions we had to repeat the almost identical patt
 four times.  First-class patterns allow us to write the same two functions in a
 much more elegant way,
 ::
-    let POS_INT = pattern (x:%integer) if x > 0.
-    let NEG_INT = pattern (x:%integer) if x < 0.
+    let pos_int = pattern (x:%integer) if x > 0.
+    let neg_int = pattern (x:%integer) if x < 0.
 
     function fact
         with 0 do
             return 1
-        with n:*POS_INT do
+        with n:*pos_int do
             return n * fact (n-1).
-        with *NEG_INT do
+        with *neg_int do
             throw Error("fact undefined for negative values").
     end
 
     function sign
         with 0 do
             return 1
-        with *POS_INT do
+        with *pos_int do
             return 1.
-        with *NEG_INT do
+        with *neg_int do
             return -1.
     end
-The relevant patterns are now stored in the variables ``POS_INT`` and ``NEG_INT``
+The relevant patterns are now stored in the variables ``pos_int`` and ``neg_int``
 which are then used in the function definitions.
 
-Constraint Patterns
-^^^^^^^^^^^^^^^^^^^
+Patterns as Constraints
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Sometimes we want to use patterns as constraints on other patterns.  Consider
-the following (somewhat artificial) example,
+the following example,
 ::
 
-   let x: (v if (v is %integer) and v > 0) = some_value.
+   let x: v if (v is %integer) and (v > 0) = some_value.
 
-Here we want to use the pattern ``v if (v is %integer) and v > 0`` purely as a constraint
+Here we want to use the pattern ``v if (v is %integer) and (v > 0)`` purely as a constraint
 on the pattern ``x`` in the sense that we want a match on ``x`` only to succeed
-if ``some_value`` is a positive integer.  The problem is that this constraint pattern
+if the variable ``some_value`` holds a positive integer.  The problem is that this pattern
 introduces a spurious binding of the variable ``v`` into the current environment
-which might be undesirable due to variable name clashes.  Constraint patterns
-address this.  We can rewrite the above statement as follows,
+which might be undesirable due to variable name clashes.
+We can rewrite the above statement using the pattern scope operator ``%[...]%`` as follows,
 ::
 
-   let x: %[v if (v is %integer) and v > 0]% = some_value.
+   let x: %[v if (v is %integer) and (v > 0) ]% = some_value.
 
-By placing the pattern ``v if (v is %integer) and v > 0`` within the ``%[...]%``
-operators the pattern still functions as before but does not bind the variable ``v``
+By placing the pattern ``v if (v is %integer) and (v > 0)`` within the ``%[...]%``
+scope operator the pattern still functions as before but does not bind the variable ``v``
 into the current environment.
 
-The most common use of constraint patterns is the prevention of non-linear patterns
+The most common use of patterns as constraints is the prevention of non-linear patterns
 in functions.  Consider the following program,
 ::
    load system io.
 
-   let POS_INT = pattern %[v if (v is %integer) and v > 0]%.
+   let pos_int = pattern %[v if (v is %integer) and (v > 0)]%.
 
-   function add with (a:*POS_INT,b:*POS_INT) do
+   function add with (a:*pos_int,b:*pos_int) do
       return a+b.
    end
 
    io @println (add(1,2)).
-Without the ``%[...]%`` operators around the pattern ``v if (v is %integer) and v > 0``
+Without the ``%[...]%`` scope operator the pattern ``v if (v is %integer) and (v > 0)``
 the argument list pattern for the function
-``(a:*POS_INT,b:*POS_INT)`` would instantiate two instances of the variable ``v``
+``(a:*pos_int,b:*pos_int)`` would instantiate two instances of the variable ``v``
 leading to a non-linear pattern which is not supported by Asteroid.
-With the ``%[...]%`` operators in place we prevent
-the pattern ``v if (v is %integer) and v > 0`` from instantiating the variable ``v`` thus preventing a non-linearity
+With the ``%[...]%`` scope operator in place we prevent
+the pattern ``v if (v is %integer) and (v > 0)`` from instantiating the variable ``v`` thus preventing a non-linearity
 to occur in the argument list pattern.
 
-Sometimes we need to use constraint patterns instead of straightforward patterns
+Sometimes we need to use patterns as constraints instead of straightforward patterns
 in order to avoid non-linearities but
 we also want controlled access to the variables these constraint patterns declare.
 We achieve this by using the ``bind`` keyword at the pattern-match site.
 Consider the following program,
 ::
    -- declare a pattern that matches scalar values
-   let Scalar = pattern %[p if (p is %integer) or (p is %real)]%.
+   let scalar = pattern %[p if (p is %integer) or (p is %real)]%.
 
    -- declare a pattern that matches pairs of scalars
-   let Pair = pattern %[(x:*Scalar,y:*Scalar)]%.
+   let pair = pattern %[(x:*scalar,y:*scalar)]%.
 
    -- compute the dot product of two pairs of scalars
    function dot2d
-      with (*Pair bind [x as a1, y as a2], *Pair bind [x as b1, y as b2]) do
+      with (*pair bind [x as a1, y as a2], *pair bind [x as b1, y as b2]) do
          a1*b1 + a2*b2
    end
 
    assert(dot2d((1,0),(0,1)) == 0).
-In the function definition of ``dot2d`` we see that the ``Pair`` pattern is used
+In the function definition of ``dot2d`` we see that the ``pair`` pattern is used
 twice to make sure that the function is called with a pair of pairs as its argument.
-However, in order to compute the dot product of those two pairs we need access
+However, to compute the dot product of those two pairs we need access
 to the values each pair matched.  We use the ``bind`` keyword together with an
 appropriate binding term list to extract the matched values.  For the first
 pair we map ``x`` and ``y`` to ``a1`` and ``a2`` and for the second
@@ -1100,12 +1108,13 @@ The output is
 
     a + b = 3
 
-We can use the ``tostring`` function defined in the ``type`` module to provide some
+We can use the builtin ``tostring`` function to provide some
 additional formatting. The idea is that the ``tostring`` function takes a value to be turned into a string together with an optional ``stringformat`` formatting specifier object,
 ::
 
-    type @tostring(value[,type @stringformat(width spec[,precision spec])])
+    tostring(value[,stringformat(width spec[,precision spec])])
 
+Here the structures appearing in square brackets are optional.
 The width specifier tells the ``tostring`` function how many characters to reserve for the string conversion of the value.  If the value requires more characters than given in the width specifier then the width specifier is ignored.  If the width specifier is larger than than the number of characters required for the value then the value will be right justified.  For real values there is an optional precision specifier.
 
 Here is a program that exercises some of the string formatting options,
@@ -1155,8 +1164,8 @@ The output is,
     Hello Leo!
 
 
-We can use the type casting functions such as ``tointeger`` or ``toreal`` defined in the
-``type`` module to convert the string returned from ``input`` into a numeric value,
+We can use the builtin type casting functions such as ``tointeger`` or ``toreal``
+to convert the string returned from ``input`` into a numeric value,
 ::
     load system io.
 
@@ -1174,7 +1183,6 @@ The output is,
     3
 
 
-Finally, the function ``read`` reads from ``stdin`` and returns the input as a string.  The function ``write`` writes a string to ``stdout``.
 
 The Module System
 -----------------
@@ -1209,7 +1217,7 @@ Say that you wanted to load the ``math`` module so you could execute a certain t
     io @println("The sine of pi / 2 is " + tostring x + ".").
 Both the function ``sin`` and the constant value ``pi`` are defined in the ``math`` module.
 In addition, the ``io`` module is where all input/output functions in Asteroid (such as ``println``) come from.
-If you want the complete list of modules, make sure to check out the reference guide `here <https://asteroid-lang.readthedocs.io/en/latest/Reference%20Guide.html>`_.
+If you want the complete list of modules, make sure to check out the reference guide.
 
 
 More on Exceptions
@@ -1377,8 +1385,9 @@ written in Asteroid,
     io @println (collide(Asteroid(101), Spaceship(300))).
     io @println (collide(Asteroid(10), Spaceship(10))).
     io @println (collide(Spaceship(101), Spaceship(10))).
-Each ``with`` clause in the function ``collide_with`` introduces a new function body with its
-corresponding pattern.
+Each ``with`` clause in the function ``collide_with`` introduces a new pattern with its
+corresponding function body.
+Each pattern represents a different data type.  In this case different kinds of pairs.
 The function bodies in this case are simple ``return`` statements
 but they could be arbitrary computations.  The output of the program is,
 ::

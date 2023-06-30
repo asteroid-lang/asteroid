@@ -1,0 +1,6 @@
+    structure Foo with
+        data a.
+        data b.
+    end
+
+    let %Foo = Foo(1,2).
