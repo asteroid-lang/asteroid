@@ -7,7 +7,7 @@
              let this@age = age.
           end
           function __str__ with none do
-            return this @name+" is "+ tostring this@age +" years old".
+            return this @name+" is "+ tostring(this@age) +" years old".
           end
       end
 

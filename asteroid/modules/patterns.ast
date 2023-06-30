@@ -101,9 +101,14 @@ __retval__ = ('boolean',str.isalnum(val_s[1]))
   with _ do
     return false.
   end
-
+------------------------------------------------------------------
+function _mod2 with a do math@mod(a,2) end
+------------------------------------------------------------------
+function _isclose with a do math@isclose(toreal(a), 0.0) end
 ------------------------------------------------------------------
 -- Common number sets
+-- Note: patterns are evaluated in the user context therefore we 
+-- cannot have module access in patterns, except the patterns module
 ------------------------------------------------------------------
 let prime = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
 let digit = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.
@@ -114,10 +119,10 @@ let neg_real = pattern with %[ (n:%real) if n < 0.0 ]%.
 let positive = pattern with %[ n if (n is *patterns@pos_int) or (n is *patterns@pos_real) ]%.
 let negative = pattern with %[ n if (n is *patterns@neg_int) or (n is *patterns@neg_real) ]%.
 let nat = pattern with %[ (n:%integer) if n >= 0 ]%.
-let zero = pattern with %[ n if ((n is %real) and (math@isclose(toreal(n), 0.0)))
+let zero = pattern with %[ n if ((n is %real) and patterns@_isclose(n))
                            or ((n is %integer) and (tointeger(n) == 0)) ]%.
-let odd = pattern with %[ (n:%integer) if math@mod(n,2) == 1 ]%.
-let even = pattern with %[ (n:%integer) if math@mod(n,2) == 0 ]%.
+let odd = pattern with %[ (n:%integer) if patterns@_mod2(n) == 1 ]%.
+let even = pattern with %[ (n:%integer) if patterns@_mod2(n) == 0 ]%.
 ------------------------------------------------------------------
 -- Containers
 ------------------------------------------------------------------

@@ -1,0 +1,8 @@
+-- test module for test ref-programs/prgm-007.ast
+
+load system io.
+
+function output with a do
+   io @println a.
+end
+
