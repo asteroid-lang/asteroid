@@ -1,0 +1,5 @@
+
+      function inc with i do
+         i+1.
+      end
+

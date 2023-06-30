@@ -1,0 +1,5 @@
+
+      load io. -- load my IO module
+      load system io as systemio. -- load the system IO module and rename it to systemio
+      io @output "Foobar".
+      systemio @println "Hello World!".

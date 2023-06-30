@@ -1,0 +1,9 @@
+
+      load system io.
+
+      let l = ["bmw", "volkswagen", "mercedes"].
+
+      repeat
+         let [element|l] = l.
+         io @println element.
+      until l is [].

@@ -1,0 +1,18 @@
+      -- define a structure of type Person
+      structure Person with
+          data name.
+          data age.
+          function __init__ with (name:%string,age:%integer) do -- constructor
+             let this@name = name.
+             let this@age = age.
+          end
+          function __str__ with none do
+            return this @name+" is "+ tostring this@age +" years old".
+          end
+      end
+
+      let betty = Person("Betty",21).  -- call constructor
+      assert( betty@name == "Betty" ).
+      assert( betty@age == 21 ).
+
+      assert(tostring betty is "Betty is 21 years old").
