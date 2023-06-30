@@ -1,8 +1,8 @@
    load system io.
 
-   let POS_INT = pattern %[v if (v is %integer) and v > 0]%.
+   let pos_int = pattern %[v if (v is %integer) and (v > 0)]%.
 
-   function add with (a:*POS_INT,b:*POS_INT) do
+   function add with (a:*pos_int,b:*pos_int) do
       return a+b.
    end
 
