@@ -90,9 +90,9 @@ class MAD:
    # debugger API from interpreter
    def start(self, state):
       self.interp_state = state
-      print("Minimal Asteroid Debugger -- Version {}".format(MAD_VERSION))
+      print("Minimal Asteroid Debugger {}".format(MAD_VERSION))
       print("(c) University of Rhode Island")
-      print("type 'help' for additional information")
+      print("type \"help\" for additional information")
       self._prompt_cmd(show_code=False)
 
    def stop(self):
