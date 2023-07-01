@@ -1,0 +1,11 @@
+
+      let x = 0.
+
+      function foo with none do
+         global x.
+         let x = 1.
+      end
+
+      assert(x==0).
+      foo().
+      assert(x==1).

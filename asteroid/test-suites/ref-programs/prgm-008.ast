@@ -1,0 +1,10 @@
+
+      match (1,2)
+         with (x,y) if x > y do
+            let x = "GT".
+         with (x,y) if x < y do
+            let x = "LT".
+         with _ do
+            throw Error("not a valid tuple").
+      end
+      assert(x == "LT").

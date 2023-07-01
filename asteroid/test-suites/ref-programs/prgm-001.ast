@@ -1,0 +1,11 @@
+
+      let i = 0.
+
+      loop
+         let i = i+1.
+         if i==10 do
+            break.
+         end
+      end
+
+      assert (i==10).

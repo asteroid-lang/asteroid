@@ -1,6 +1,6 @@
 
 -- Palindrome list filter
-load io.
+load system io.
 
 function filter 
     with (x:%string) if x @explode() == x @explode() @reverse() do

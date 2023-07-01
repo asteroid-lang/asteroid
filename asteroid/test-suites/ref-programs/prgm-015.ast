@@ -1,0 +1,11 @@
+   load system io.
+
+   if (1,2) is (x,y) do
+      io @println "success".
+      assert(isdefined "x").
+      assert(isdefined "y").
+   else
+      io @println "not matched".
+      assert(not isdefined "x").
+      assert(not isdefined "y").
+   end

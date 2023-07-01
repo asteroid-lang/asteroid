@@ -1,0 +1,7 @@
+      load system io.
+
+      try
+          let x = 1/0.
+      catch Exception("ArithmeticError", s) do
+          io @println s.
+      end

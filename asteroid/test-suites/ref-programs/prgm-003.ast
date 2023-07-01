@@ -1,0 +1,10 @@
+
+      let tuple_list = [
+              (0,"duck"),
+              (1,"chicken"),
+              (2,"turkey")
+              ].
+
+      for (1,bird) in tuple_list do
+         assert(bird is "chicken").
+      end

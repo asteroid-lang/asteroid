@@ -1,12 +1,12 @@
 ..
       /******************************************************************
       This is the source file from which the reference guide is
-      generated.  We use cpp to insert live code snippets into the
+      generated.  We use pcpp to insert live code snippets into the
       document. In order to generate the reference guide run the
-      following command on a Unix-like system in the directory of
+      following command in the directory of
       this doc:
 
-      bash generate_docs
+      python generate_docs.py
 
       ******************************************************************/
 ..
@@ -55,7 +55,6 @@ As an example we break out of the indefinite loop below when ``i`` is equal to 1
       end
 
       assert (i==10).
-
 Expressions at the Statement Level
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -66,11 +65,9 @@ evaluated in a function body is considered the return value of the function.
 
 An example,
 ::
-      function inc
-         with i do
-            i+1.
-         end
-
+      function inc with i do
+         i+1.
+      end
 Notice that because the expression ``i+1`` is the last statement evaluated in the
 function body its value becomes the return value of the function.
 
@@ -95,8 +92,6 @@ the pattern matches the tuple ``(1,"chicken")``,
       for (1,bird) in tuple_list do
          assert(bird is "chicken").
       end
-
-
 Function-Definition
 %%%%%%%%%%%%%%%%%%%
 
@@ -118,7 +113,6 @@ The following is a definition of the ``sign`` function,
          with x if x < 0 do
             return -1.
       end
-
 Here the first function body returns ``1`` if the actual argument is greater or equal to zero.
 The second function body return ``-1`` if the actual argument is less than zero.
 
@@ -135,16 +129,14 @@ Consider the following code snippet,
 ::
       let x = 0.
 
-      function foo
-         with none do
-            global x.
-            let x = 1.
+      function foo with none do
+         global x.
+         let x = 1.
       end
 
       assert(x==0).
       foo().
       assert(x==1).
-
 The ``global`` statement within the function ``foo`` indicates that the ``let`` statement
 on the following line should assign a value to the global variable ``x``.
 
@@ -179,8 +171,6 @@ what kind of integer value the user supplied,
       else do
           io @println "Positive".
       end
-
-
 Let
 %%%
 
@@ -196,7 +186,7 @@ Here, the variable ``x`` will match the value stored in ``val``.  However, becau
 can write something like this,
 ::
   load system math.
-  let x:%[(k:%integer) if math @mod(k,2)==0]% = val.
+  let x: %[ (k:%integer) if math @mod (k,2) == 0 ]% = val.
 
 where ``x`` will only match the value of ``val`` if that value is an even integer value.  The fact that the left side of the ``=`` is a pattern allows
 us to write things like this,
@@ -227,15 +217,11 @@ Consider for example that you had loaded your own IO module but also would like 
 system IO module.  In order to avoid a name clash you can use the ``as`` modifier to rename one
 of the modules,
 ::
-      load io. -- load my IO module
+      load "ref-programs/io.ast". -- load my IO module
       load system io as systemio. -- load the system IO module and rename it to systemio
       io @output "Foobar".
       systemio @println "Hello World!".
-
-When loading a module with a filename the basename of the filename becomes the module name. Consider,
-::
-      load "mymodules/m.ast". -- load the m module
-      m @f().  -- call function f in the module
+When loading a module with a filename the basename of the filename becomes the module name.
 
 Loop
 %%%%
@@ -262,8 +248,6 @@ in the ``with`` clauses.  If a pattern matches the associated statements will be
             throw Error("not a valid tuple").
       end
       assert(x == "LT").
-
-
 Repeat-Until
 %%%%%%%%%%%%
 
@@ -283,8 +267,6 @@ of a list,
          let [element|l] = l.
          io @println element.
       until l is [].
-
-
 Return
 %%%%%%
 
@@ -309,9 +291,8 @@ are accessed using the access operator ``@``. Here is a simple example,
       end
 
       let obj = A(1,2).       -- call default constructor
-      assert( obj @a == 1 ).  -- access first data member
-      assert( obj @b == 2 ).  -- access second data member
-
+      assert( obj@a == 1 ).  -- access first data member
+      assert( obj@b == 2 ).  -- access second data member
 We can use custom constructors to enforce that only certain types of values
 can be copied into an object,
 ::
@@ -320,20 +301,19 @@ can be copied into an object,
           data name.
           data age.
           function __init__ with (name:%string,age:%integer) do -- constructor
-             let this @name = name.
-             let this @age = age.
+             let this@name = name.
+             let this@age = age.
           end
           function __str__ with none do
-            return this @name+" is "+ tostring this @age+" years old".
+            return this @name+" is "+ tostring(this@age) +" years old".
           end
       end
 
       let betty = Person("Betty",21).  -- call constructor
-      assert( betty @name == "Betty" ).
-      assert( betty @age == 21 ).
+      assert( betty@name == "Betty" ).
+      assert( betty@age == 21 ).
 
       assert(tostring betty is "Betty is 21 years old").
-
 Note that object identity is expressed using the ``this`` keyword.
 Here we also supplied an instantiation of the ``__str__`` function that allows
 us to customize the stringification of the object.  See the last line
@@ -366,7 +346,6 @@ by the associated handler,
       catch Exception("ArithmeticError", s) do
           io @println s.
       end
-
 For more details on exceptions please see the User Guide.
 
 Throw
@@ -393,14 +372,10 @@ Here is an example that prints out a sequence of integer values in reverse order
 
       let i = 10.
 
-      while i do
+      while i >= 0 do
          io @println i.
          let i = i-1.
       end
-
-The loop terminates once ``i`` becomes zero which is the equivalent to a Boolean
-value ``false``.
-
 Expressions
 ^^^^^^^^^^^
 
@@ -422,7 +397,7 @@ Asteroid provides the uniform substructure access operator ``@`` for all structu
 which includes lists, tuples, and objects. For example, accessing the first
 element of a list is accomplished by the expression,
 ::
-      [1,2,3] @0
+      [1,2,3]@0
 
 Similarly, given an object constructed from structure ``A``, member values
 are accessed by name via the ``@`` operator,
@@ -433,9 +408,7 @@ are accessed by name via the ``@`` operator,
       end
 
       let obj = A(1,2).
-      assert( obj @a == 1 ).  -- access member a
-
-
+      assert( obj@a == 1 ).  -- access member a
 Head-Tail Operator
 %%%%%%%%%%%%%%%%%%
 
@@ -475,16 +448,17 @@ apply such as instantiating appropriate variable bindings in the current scope.
 
 Example,
 ::
-      if v is (x,y) do
-         io @println "success".
-         assert(isdefined "x").
-         assert(isdefined "y").
-      else
-         io @println "not matched".
-         assert(not isdefined "x").
-         assert(not isdefined "y").
-      end
+   load system io.
 
+   if (1,2) is (x,y) do
+      io @println "success".
+      assert(isdefined "x").
+      assert(isdefined "y").
+   else
+      io @println "not matched".
+      assert(not isdefined "x").
+      assert(not isdefined "y").
+   end
 The In Predicate
 %%%%%%%%%%%%%%%%%%%%
 
@@ -578,19 +552,19 @@ Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``
 such that ``x`` is bound to the value ``2``.
 
 The optional ``bind`` term together with an appropriate list of variable names
-allows the user to selectively project variable bindings from a constraint pattern
+allows the user to selectively project variable bindings from patterns that have been
+constructed using the ``%[...]%`` scope operator.
 into the current scope.  The ``as`` keyword allows you to rename those bindings.
 Consider the following program,
 ::
       let Pair = pattern %[(x,y)]%.
 
-      -- bindings of the variables x and y are now visible as a and y respetively
       let *Pair bind [x as a, y] = (1,2).
       assert( a == 1).
       assert(y == 2).
 
-At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope
-of the constraint pattern into our current scope.
+At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the scope
+of the  pattern into our current scope.
 
 Type Patterns
 %%%%%%%%%%%%%
@@ -639,17 +613,17 @@ evaluates to true.
 Example,
 ::
       load system math.
-      let k if (math @mod(k,2) == 0) = val.
+      let k if (math@mod(k,2) == 0) = val.
 
 Here ``k`` only matches the value of ``val`` if that value is an even number.
 
-Constraint Patterns
+Patterns with Scope
 %%%%%%%%%%%%%%%%%%%
 
 Syntax: ``%[ pattern ]% (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
-A constraint pattern is a pattern that does not create any bindings
-in the current scope.  Any pattern can be turned into a pure constraint pattern
+A pattern with scope is a pattern that does not create any bindings
+in the current scope.  Any pattern can be turned into a scoped pattern
 by placing it between the ``%[`` and ``]%`` operators.
 
 Example,
@@ -657,13 +631,13 @@ Example,
       let pos_int = pattern %[(x:%integer) if x > 0]%
       let i:*pos_int = val.
 
-The first line defines a constraint pattern for the positive integers.
+The first line defines a scoped pattern for the positive integers.
 Notice that the pattern internally uses the variable ``x`` in order to evaluate
 the conditional pattern but because it has been declared as a pure constraint
 pattern this value binding is not exported to the current scope during pattern matching.
 On the second line we constrain the pattern ``i`` to only the positive integer values using
-the pure constraint pattern stored in ``p``.  This pattern match will only succeed if ``val``
-evaluates to a postive integer.
+the scoped pattern stored in ``p``.  This pattern match will only succeed if ``val``
+is a postive integer.
 
 Asteroid Grammar
 ^^^^^^^^^^^^^^^^
@@ -1540,6 +1514,10 @@ An example:
       end
    end
    assert(evens is [2,4,6,8,10]).
+If a pattern only applies to a certain datatype then a constraint expression of the form ``:%<datatype>`` appears
+right after the pattern in the documentation.  If the pattern applies to multiple datatypes then the
+different datatypes are separated by or-bars, e.g. ``:%<datatype1>|%<datatype2>``.
+
 Common number sets
 %%%%%%%%%%%%%%%%%%
 
@@ -1634,7 +1612,7 @@ An example:
    load system io.
    load system pick.
 
-   let po = pick @pick([1 to 10]).
+   let po = pick @pick [1 to 10].
    let objects = po @pickitems 3.
    io @println objects.
 pick **@pick** l:%list
