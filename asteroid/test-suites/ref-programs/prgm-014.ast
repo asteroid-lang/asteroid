@@ -1,0 +1,7 @@
+      structure A with
+         data a.
+         data b.
+      end
+
+      let obj = A(1,2).
+      assert( obj@a == 1 ).  -- access member a

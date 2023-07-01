@@ -217,14 +217,11 @@ Consider for example that you had loaded your own IO module but also would like 
 system IO module.  In order to avoid a name clash you can use the ``as`` modifier to rename one
 of the modules,
 ::
-      load io. -- load my IO module
+      load "ref-programs/io.ast". -- load my IO module
       load system io as systemio. -- load the system IO module and rename it to systemio
       io @output "Foobar".
       systemio @println "Hello World!".
-When loading a module with a filename the basename of the filename becomes the module name. Consider,
-::
-      load "mymodules/m.ast". -- load the m module
-      m @f().  -- call function f in the module
+When loading a module with a filename the basename of the filename becomes the module name.
 
 Loop
 %%%%
@@ -308,7 +305,7 @@ can be copied into an object,
              let this@age = age.
           end
           function __str__ with none do
-            return this @name+" is "+ tostring this@age +" years old".
+            return this @name+" is "+ tostring(this@age) +" years old".
           end
       end
 
@@ -412,8 +409,6 @@ are accessed by name via the ``@`` operator,
 
       let obj = A(1,2).
       assert( obj@a == 1 ).  -- access member a
-
-
 Head-Tail Operator
 %%%%%%%%%%%%%%%%%%
 
@@ -453,16 +448,17 @@ apply such as instantiating appropriate variable bindings in the current scope.
 
 Example,
 ::
-      if v is (x,y) do
-         io @println "success".
-         assert(isdefined "x").
-         assert(isdefined "y").
-      else
-         io @println "not matched".
-         assert(not isdefined "x").
-         assert(not isdefined "y").
-      end
+   load system io.
 
+   if (1,2) is (x,y) do
+      io @println "success".
+      assert(isdefined "x").
+      assert(isdefined "y").
+   else
+      io @println "not matched".
+      assert(not isdefined "x").
+      assert(not isdefined "y").
+   end
 The In Predicate
 %%%%%%%%%%%%%%%%%%%%
 
@@ -617,7 +613,7 @@ evaluates to true.
 Example,
 ::
       load system math.
-      let k if (math @mod(k,2) == 0) = val.
+      let k if (math@mod(k,2) == 0) = val.
 
 Here ``k`` only matches the value of ``val`` if that value is an even number.
 

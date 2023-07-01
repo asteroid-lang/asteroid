@@ -85,10 +85,10 @@ end
 --                                      **********************
 --                                      **** ldexp        ****
 --                                      **********************
-assert( math@ldexp(7,7) == 896.0 ).
-assert( math@ldexp(-4,12) == -16384.0 ).
-assert( math@ldexp(11,-3) == 11.0/8.0 ).
-assert( math@ldexp(9,8) == 2304.0 ).
+assert( math@isclose( math@ldexp(7,7) , 896.0 )).
+assert( math@isclose( math@ldexp(-4,12) , -16384.0 )).
+assert( math@isclose( math@ldexp(11,-3) , 11.0/8.0 )).
+assert( math@isclose( math@ldexp(9,8) , 2304.0 )).
 
 try
     mathldexp("hello",7).
@@ -110,7 +110,7 @@ assert( math@prod( [1,2,3,4,5] ) == 120 ).
 assert( math@prod( (1,2,3,4,5) ) == 120 ).
 assert( math@prod( [-2,-2,-2,-2] ) == 16 ).
 assert( math@prod( [-2,-2,-2,-2,-2] ) == -32 ).
-assert( math@prod( (12.3,100.01,14.56,9.5) ) == 170150.61336 ).
+assert( math@isclose( math@prod(12.3,100.01,14.56,9.5) , 170150.61336) ).
 assert( math@prod( [1,2,3,4,5] ) == math@prod( (5,4,3,2,1) ) ).
 
 try
@@ -133,7 +133,7 @@ assert( math@sum( [1,2,3,4,5] ) == 15 ).
 assert( math@sum( (1,2,3,4,5) ) == 15 ).
 assert( math@sum( [-2,-2,-2,-2] ) == -8 ).
 assert( math@sum( [-2,-2,-2,-2,-2] ) == -10 ).
-assert( math@sum( (12.3,100.01,14.56,9.5) ) == 136.37 ).
+assert( math@isclose(  math@sum( (12.3,100.01,14.56,9.5) ) , 136.37) ).
 assert( math@sum( [1,2,3,4,5] ) == math@sum( (5,4,3,2,1) ) ).
 
 try
@@ -151,8 +151,8 @@ end
 --                                      **********************
 --                                      **** fsum         ****
 --                                      **********************
-assert( math@fsum( [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] ) == 1.0 ).
-assert( math@fsum( (1.0/5.0,1.0/5.0,1.0/5.0,1.0/5.0,1.0/5.0) ) == 1.0 ).
+assert( math@isclose( math@fsum( [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] ) , 1.0 )).
+assert( math@isclose( math@fsum( (1.0/5.0,1.0/5.0,1.0/5.0,1.0/5.0,1.0/5.0) ) , 1.0 )).
 
 try
     math@fsum( ["h","e","l","l","o"] ).
@@ -190,14 +190,14 @@ end
 --                                      **********************
 --                                      **** copysign     ****
 --                                      **********************
-assert( math@copysign(1.1,2.2) == 1.1 ).
-assert( math@copysign(1,2) == 1 ).
-assert( math@copysign(1.1,-2.2) == -1.1 ).
-assert( math@copysign(1,-2) == -1 ).
-assert( math@copysign(-1.1,2.2) == 1.1 ).
-assert( math@copysign(-1,2) == 1 ).
-assert( math@copysign(-1.1,-2.2) == -1.1 ).
-assert( math@copysign(-1,-2) == -1 ).
+assert( math@isclose( math@copysign(1.1,2.2) , 1.1 )).
+assert( math@isclose( math@copysign(1,2) , 1 )).
+assert( math@isclose( math@copysign(1.1,-2.2), -1.1 )).
+assert( math@isclose( math@copysign(1,-2) , -1 )).
+assert( math@isclose( math@copysign(-1.1,2.2) , 1.1 )).
+assert( math@isclose( math@copysign(-1,2) , 1 )).
+assert( math@isclose(  math@copysign(-1.1,-2.2) , -1.1 )).
+assert( math@isclose( math@copysign(-1,-2) , -1 )).
 
 try
     math@copysign( "a",-12 ).
@@ -278,10 +278,10 @@ end
 --                                      **********************
 --                                      **** atan2        ****
 --                                      **********************
-assert( math@atan2(12,10) == 0.8760580505981934 ).
-assert( math@atan2(0.5,1.666) == 0.29156692663601214 ).
-assert( math@atan2(-0.9,4.001) == -0.22126091552495672 ).
-assert( math@atan2(-1,-1) == -2.35619449019234484 ).
+assert( math@isclose( math@atan2(12,10) , 0.8760580505981934) ).
+assert( math@isclose( math@atan2(0.5,1.666) , 0.29156692663601214) ).
+assert( math@isclose( math@atan2(-0.9,4.001) , -0.22126091552495672) ).
+assert( math@isclose( math@atan2(-1,-1) , -2.35619449019234484) ).
 
 try
     math@atan2( 5.5,"hello" ).
@@ -299,11 +299,11 @@ end
 --                                      **********************
 --                                      **** remainder    ****
 --                                      **********************
-assert( math@remainder(12,10) == 2.0 ).
-assert( math@remainder(2,2) == 0.0 ).
-assert( math@remainder(2,4) == 2.0 ).
-assert( math@remainder(2,0.5) == 0.0 ).
-assert( math@remainder(0.5,0.11) == -0.05 ).
+assert( math@isclose( math@remainder(12,10) , 2.0 )).
+assert( math@isclose( math@remainder(2,2) , 0.0 )).
+assert( math@isclose( math@remainder(2,4) , 2.0 )).
+assert( math@isclose( math@remainder(2,0.5) , 0.0 )).
+assert( math@isclose( math@remainder(0.5,0.11) , -0.05 )).
 
 try
     math@remainder( 5.5,"hello" ).
@@ -321,11 +321,11 @@ end
 --                                      **********************
 --                                      **** expm1        ****
 --                                      **********************
-assert( math@expm1(0) == 0.0 ).
-assert( math@expm1(1) == 1.718281828459045 ).
-assert( math@expm1(2) == 6.38905609893065 ).
-assert( math@expm1(2.1) == 7.16616991256765 ).
-assert( math@expm1(-1.1) == -0.6671289163019205 ).
+assert( math@isclose( math@expm1(0) , 0.0 )).
+assert( math@isclose( math@expm1(1) , 1.718281828459045 )).
+assert( math@isclose( math@expm1(2) , 6.38905609893065 )).
+assert( math@isclose( math@expm1(2.1) , 7.16616991256765 )).
+assert( math@isclose( math@expm1(-1.1) , -0.6671289163019205 )).
 
 try
     math@expm1( "hello" ).
@@ -343,10 +343,10 @@ end
 --                                      **********************
 --                                      **** log2         ****
 --                                      **********************
-assert( math@log2(4) == 2.0 ).
-assert( math@log2(16) == 4.0 ).
-assert( math@log2(1024.0) == 10.0 ).
-assert( math@log2(2.1) == 1.070389327891398 ).
+assert( math@isclose( math@log2(4) , 2.0 )).
+assert( math@isclose( math@log2(16) , 4.0 )).
+assert( math@isclose( math@log2(1024.0) , 10.0 )).
+assert( math@isclose( math@log2(2.1) , 1.070389327891398 )).
 
 try
     math@log2( "hello" ).
@@ -364,10 +364,10 @@ end
 --                                      **********************
 --                                      **** log10        ****
 --                                      **********************
-assert( math@log10(10) == 1.0 ).
-assert( math@log10(100) == 2.0 ).
-assert( math@log10(1000.0) == 3.0 ).
-assert( math@log10(200.1) == 2.3012470886362113 ).
+assert( math@isclose( math@log10(10) , 1.0 )).
+assert( math@isclose( math@log10(100) , 2.0 )).
+assert( math@isclose( math@log10(1000.0) , 3.0 )).
+assert( math@isclose( math@log10(200.1) , 2.3012470886362113 )).
 
 try
     math@log10( "hello" ).
@@ -385,10 +385,10 @@ end
 --                                      **********************
 --                                      **** dist         ****
 --                                      **********************
-assert( math@dist( (1,1) , (1,2) ) == 1.0 ).
-assert( math@dist( (1,1) , (2,1) ) == 1.0 ).
-assert( math@dist((2,3,4,5,6),(6,7,3,4,5)) == 5.916079783099616 ).
-assert( math@dist((1,1),(100,175)) == 200.19240744843447 ).
+assert( math@isclose( math@dist( (1,1) , (1,2) ) , 1.0 )).
+assert( math@isclose( math@dist( (1,1) , (2,1) ) , 1.0 )).
+assert( math@isclose( math@dist((2,3,4,5,6),(6,7,3,4,5)) , 5.916079783099616 )).
+assert( math@isclose( math@dist((1,1),(100,175)) , 200.19240744843447 )).
 
 try
     math@dist( "hello","world" ).
@@ -406,11 +406,11 @@ end
 --                                      **********************
 --                                      **** hypot        ****
 --                                      **********************
-assert( math@hypot( 3 , 4 ) == 5.0 ).
-assert( math@hypot( 1 , 1 ) == math@sqrt(2) ).
-assert( math@hypot( 5 , 5 ) == math@sqrt(50) ).
-assert( math@hypot( 8 , 15 ) == 17.0 ).
-assert( math@hypot( 13 , 17 ) == math@sqrt( math@pow(13,2) + math@pow(17,2)) ).
+assert( math@isclose( math@hypot( 3 , 4 ) , 5.0) ).
+assert( math@isclose( math@hypot( 1 , 1 ) , math@sqrt(2) )).
+assert( math@isclose( math@hypot( 5 , 5 ) , math@sqrt(50) )).
+assert( math@isclose(math@hypot( 8 , 15 ) , 17.0 )).
+assert( math@isclose( math@hypot( 13 , 17 ) , math@sqrt( math@pow(13,2) + math@pow(17,2)) )).
 
 try
     math@hypot( "hello","world" ).
@@ -428,10 +428,10 @@ end
 --                                      **********************
 --                                      **** error        ****
 --                                      **********************
-assert( math@erf( 1.1 ) == 0.8802050695740817 ).
-assert( math@erf( -1.1 ) == -0.8802050695740817 ).
-assert( math@erf( 10 ) == 1.0 ).
-assert( math@erf( 0.13333 ) == 0.1495600366981686 ).
+assert( math@isclose( math@erf( 1.1 ) , 0.8802050695740817 )).
+assert( math@isclose( math@erf( -1.1 ) , -0.8802050695740817 )).
+assert( math@isclose( math@erf( 10 ) , 1.0 )).
+assert( math@isclose( math@erf( 0.13333 ) , 0.1495600366981686 )).
 
 try
     math@erf( "hello" ).
@@ -450,9 +450,9 @@ end
 --                                      **** errorc       ****
 --                                      **********************
 assert( math@isclose( math@erfc( 1.1 ) , 0.11979493042591827 )).
-assert( math@erfc( -1.1 ) == 1.8802050695740817 ).
-assert( math@erfc( 10 ) == 2.088487583762545e-45 ).
-assert( math@erfc( 0.13333 ) == 0.8504399633018314 ).
+assert( math@isclose( math@erfc( -1.1 ) , 1.8802050695740817 )).
+assert( math@isclose( math@erfc( 10 ) , 2.088487583762545e-45 )).
+assert( math@isclose( math@erfc( 0.13333 ) , 0.8504399633018314 )).
 
 try
     math@erfc( "hello" ).
@@ -470,10 +470,10 @@ end
 --                                      **********************
 --                                      **** gamma        ****
 --                                      **********************
-assert( math@gamma( 1.1 ) == 0.951350769866873 ).
-assert( math@gamma( -1.1 ) == 9.714806382902898 ).
-assert( math@gamma( 10 ) == 362880.0 ).
-assert( math@gamma( 0.13333 ) == 7.0407639878879245 ).
+assert( math@isclose( math@gamma( 1.1 ) , 0.951350769866873 )).
+assert( math@isclose( math@gamma( -1.1 ) , 9.714806382902898 )).
+assert( math@isclose( math@gamma( 10 ) , 362880.0 )).
+assert( math@isclose( math@gamma( 0.13333 ) , 7.0407639878879245 )).
 
 try
     math@gamma( "hello" ).
@@ -491,10 +491,10 @@ end
 --                                      **********************
 --                                      **** lgamma       ****
 --                                      **********************
-assert( math@lgamma( 1.1 ) == -0.04987244125984036 ).
-assert( math@lgamma( -1.1 ) == 2.273651152924464 ).
-assert( math@lgamma( 10 ) == 12.801827480081467 ).
-assert( math@lgamma( 0.13333 ) == 1.9517166852887797 ).
+assert( math@isclose( math@lgamma( 1.1 ) , -0.04987244125984036 )).
+assert( math@isclose( math@lgamma( -1.1 ) , 2.273651152924464 )).
+assert( math@isclose( math@lgamma( 10 ) , 12.801827480081467 )).
+assert( math@isclose( math@lgamma( 0.13333 ) , 1.9517166852887797 )).
 
 try
     math@lgamma( "hello" ).

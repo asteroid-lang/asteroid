@@ -102,13 +102,12 @@ __retval__ = ('boolean',str.isalnum(val_s[1]))
     return false.
   end
 ------------------------------------------------------------------
-function _mod2 with a do math@mod(a,2) end
-------------------------------------------------------------------
-function _isclose with a do math@isclose(toreal(a), 0.0) end
-------------------------------------------------------------------
--- Common number sets
 -- Note: patterns are evaluated in the user context therefore we 
 -- cannot have module access in patterns, except the patterns module
+function _mod2 with n do math@mod(n,2) end
+function _isclose with n do math@isclose(toreal(n), 0.0) end
+------------------------------------------------------------------
+-- Common number sets
 ------------------------------------------------------------------
 let prime = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
 let digit = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.

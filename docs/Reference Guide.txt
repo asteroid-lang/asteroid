@@ -178,10 +178,7 @@ of the modules,
 ::
 #include "../asteroid/test-suites/ref-programs/prgm-007.ast"
 
-When loading a module with a filename the basename of the filename becomes the module name. Consider,
-::
-      load "mymodules/m.ast". -- load the m module
-      m @f().  -- call function f in the module
+When loading a module with a filename the basename of the filename becomes the module name. 
 
 Loop
 %%%%
@@ -318,13 +315,7 @@ element of a list is accomplished by the expression,
 Similarly, given an object constructed from structure ``A``, member values
 are accessed by name via the ``@`` operator,
 ::
-      structure A with
-         data a.
-         data b.
-      end
-
-      let obj = A(1,2).
-      assert( obj@a == 1 ).  -- access member a
+#include "../asteroid/test-suites/ref-programs/prgm-014.ast"
 
 
 Head-Tail Operator
@@ -366,15 +357,7 @@ apply such as instantiating appropriate variable bindings in the current scope.
 
 Example,
 ::
-      if v is (x,y) do
-         io @println "success".
-         assert(isdefined "x").
-         assert(isdefined "y").
-      else
-         io @println "not matched".
-         assert(not isdefined "x").
-         assert(not isdefined "y").
-      end
+#include "../asteroid/test-suites/ref-programs/prgm-015.ast"
 
 The In Predicate
 %%%%%%%%%%%%%%%%%%%%
@@ -530,7 +513,7 @@ evaluates to true.
 Example,
 ::
       load system math.
-      let k if (math @mod(k,2) == 0) = val.
+      let k if (math@mod(k,2) == 0) = val.
 
 Here ``k`` only matches the value of ``val`` if that value is an even number.
 
