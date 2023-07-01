@@ -46,7 +46,7 @@ primary_lookahead = {
 
 exp_lookahead = {
     'PATTERN',
-    'LCONSTRAINT',} | primary_lookahead
+    'LSCOPE',} | primary_lookahead
 
 exp_lookahead_no_ops = exp_lookahead - ops
 
@@ -417,7 +417,7 @@ class Parser:
             pattern = self.pattern()
             self.lexer.match('DO')
             stmts = self.stmt_list()
-            catch_list.append(('catch', ('pattern', pattern), ('stmt-list', stmts)))
+            catch_list.append(('catch', ('catch-pattern', pattern), ('stmt-list', stmts)))
 
             while self.lexer.peek().type == 'CATCH':
                 dbg_print("parsing CATCH")
@@ -425,7 +425,7 @@ class Parser:
                 pattern = self.pattern()
                 self.lexer.match('DO')
                 stmts = self.stmt_list()
-                catch_list.append(('catch',('pattern', pattern), ('stmt-list', stmts)))
+                catch_list.append(('catch',('catch-pattern', pattern), ('stmt-list', stmts)))
 
             self.lexer.match('END')
             #self.lexer.match_optional('TRY')
@@ -550,11 +550,10 @@ class Parser:
         self.lexer.match('DO')
         sl = self.stmt_list()
         body_list.append( ('lineinfo', cur_lineinfo) )
-        body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
+        body_list.append(('body', ('body-pattern', p), ('stmt-list', sl)))
 
         while self.lexer.peek().type in ['ORWITH','WITH']:
             cur_lineinfo = state.lineinfo
-
             if self.lexer.peek().type == 'ORWITH':
                 warning("'orwith' has been deprecated, please replace with 'with'")
             self.lexer.match(self.lexer.peek().type)
@@ -562,7 +561,7 @@ class Parser:
             self.lexer.match('DO')
             sl = self.stmt_list()
             body_list.append( ('lineinfo', cur_lineinfo) )
-            body_list.append(('body', ('pattern', p), ('stmt-list', sl)))
+            body_list.append(('body', ('body-pattern', p), ('stmt-list', sl)))
 
         return ('body-list', ('list', body_list))
 
@@ -587,15 +586,15 @@ class Parser:
             self.lexer.match_optional('WITH')
             v = self.exp()
             return ('pattern', v)
-        elif self.lexer.peek().type == 'LCONSTRAINT': #constraint-only pattern match
-            self.lexer.match('LCONSTRAINT')
+        elif self.lexer.peek().type == 'LSCOPE': # scoped pattern
+            self.lexer.match('LSCOPE')
             v = self.exp()
-            self.lexer.match('RCONSTRAINT')
+            self.lexer.match('RSCOPE')
             if self.lexer.peek().type == 'BIND':
                 bl = self.binding_list()            
-                return ('constraint', v, bl)
+                return ('scope', v, bl)
             else:
-                return ('constraint', v, ('nil',))
+                return ('scope', v, ('nil',))
         else:
             v = self.head_tail()
             return v

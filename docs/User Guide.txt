@@ -761,6 +761,43 @@ when trying to resolve non-linearities otherwise the binding term list can just 
 of the variable names appearing in the pattern that you want to bind into the current
 scope.
 
+Notes on First-Class Patterns
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+It is important to remember that first-class patterns act like macros or dynamically scoped functions 
+when they are used.  That is, anything that is referenced from within the pattern needs to be defined 
+in the environment where the pattern is actually used!  That is especially true for patterns defined in different modules.
+
+Consider the following code,
+::
+    function foo with none do
+        load system math.  -- math only available in the function local scope
+        return pattern %[(x:%integer) if math@mod(x,2) == 0]%.
+    end
+
+    let even_pattern = foo().  
+    let n:*even_pattern = 2.  -- Error: module 'math' not defined
+
+This code will fail with the error,
+::
+    error: 'math' is not defined
+
+Here, we construct a first-class pattern in the local scope of the function ``foo`` and return it to the caller.  
+Since patterns are 
+only evaluated at their usage points the ``math`` module in the function has no effect.  Furthermore,
+when finally applying the pattern in the last ``let`` statement the code will fail since the ``math`` module
+is not defined in that scope.
+
+To remedy the situation we have to move the loading of the ``math`` module into the scope where the
+pattern is used,
+::
+    function foo with none do
+        return pattern %[(x:%integer) if math@mod(x,2) == 0]%.
+    end
+
+    load system math.  -- now 'math' is available in the scope of the pattern usage
+    let even_pattern = foo().  
+    let n:*even_pattern = 2. 
+
 
 Basic Asteroid I/O
 ------------------
