@@ -8,7 +8,7 @@ Documentation on Asteroid can be found at
 
 * Files loaded with the 'load' statement are now considered modules and work similarly to Python modules.
 
-* the 'in_main_module' operator returns true if control is in the module originally loaded by the interpreter.
+* the 'toplevel' operator returns true if control is in the module originally loaded by the interpreter.
 
 * Match statement similar to the match statement in Python.
 

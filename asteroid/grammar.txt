@@ -76,7 +76,7 @@
 
   pattern
     : PATTERN WITH? exp
-    | '%[' exp ']%' binding_list?    NOTE(" constraint-only pattern match  ")
+    | '%[' exp ']%' binding_list?    NOTE(" scoped pattern  ")
     | head_tail
 
   head_tail
@@ -139,7 +139,7 @@
     | function_const
     | TYPEMATCH           // TYPEMATCH == '%'<typename>
 
-NOTE(" Note: binding lists are only supported for constraint patterns ")
+NOTE(" Note: binding lists are only supported for scoped patterns ")
 
   binding_list
     : BIND binding_list_suffix

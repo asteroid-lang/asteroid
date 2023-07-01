@@ -271,18 +271,18 @@ def unify(term, pattern, unifying = True ):
         # that produces a pattern.
         p = walk(pattern[1])
         if pattern[2][0] != 'nil': # we have a binding term list
-            if p[1][0] != 'constraint':
+            if p[1][0] != 'scope':
                 raise ValueError(
                     "binding term lists only supported for constraint patterns")
             else: 
                 # construct a new constraint pattern with the binding term list in place
                 p = ('pattern',
-                        ('constraint',
+                        ('scope',
                             p[1][1],
                             pattern[2]))
         return unify(term,p,unifying)
 
-    elif pattern[0] == 'constraint':
+    elif pattern[0] == 'scope':
         p = pattern[1]
         bl = pattern[2] # binding term list
         # constraint patterns are evaluated in their own scope
@@ -1791,21 +1791,10 @@ def process_lineinfo(node):
     state.lineinfo = lineinfo_val
 
 #########################################################################
-def deref_exp(node):
-
-    # deref operators are only meaningful during pattern matching
-    # it is an error to have the deref operator appear in an expression
-    raise ValueError("dereferencing patterns is not valid in expressions.")
-
-#########################################################################
-def constraint_exp(node):
-
-    # Constraint-only pattern matches should not exist where only an
-    # expression is expected. If we get here, we have come across this
-    # situation.
-    # A constraint-only pattern match AST cannot be walked and therefore
-    # we raise an error.
-    raise ValueError("a constraint pattern cannot be used as an expression.")
+def illegal_exp(_):
+    # we got here because we tried to use a non-trivial pattern as 
+    # constructors.
+    raise ValueError("not a valid expression")
 
 #########################################################################
 def set_ret_val(node):
@@ -1885,9 +1874,8 @@ dispatch_dict = {
     'boolean'       : lambda node : node,
     'object'        : lambda node : node,
     'pattern'       : lambda node : node,
-    # constraint patterns
-    'constraint'    : constraint_exp,
-    'typematch'     : constraint_exp,
+    'scope'         : illegal_exp,
+    'typematch'     : illegal_exp,
     # type tag used in conjunction with escaped code in order to store
     # foreign objects in Asteroid data structures
     'foreign'       : lambda node : node,
@@ -1898,7 +1886,7 @@ dispatch_dict = {
     'in'            : in_exp,
     'if-exp'        : if_exp,
     'member-function-val' : lambda node : node,
-    'deref'         : deref_exp,
+    'deref'         : illegal_exp,
 }
 
 ##############################################################################################
@@ -1946,7 +1934,7 @@ def check_redundancy( body_list, f_name ):
         #get the pattern with the higher level of precedence
         (BODY_H,(PTRN,ptrn_h),stmts_h) = bodies[i + 1]
         assert_match(BODY_H,'body')
-        assert_match(PTRN,'pattern')
+        assert_match(PTRN,'body-pattern')
 
         for j in range(i + 2, len(bodies), 2):
             lineinfo = bodies[ j ]
@@ -1955,7 +1943,7 @@ def check_redundancy( body_list, f_name ):
             #get the pattern with the lower level of precedence
             (BODY_L,(PTRN,ptrn_l),stmts_l) = bodies[j + 1]
             assert_match(BODY_L,'body')
-            assert_match(PTRN,'pattern')
+            assert_match(PTRN,'body-pattern')
 
             #Here we get line numbers in case we throw an error
             # we have to do a little 'tree walking' to get to the
