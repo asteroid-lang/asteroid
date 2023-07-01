@@ -15,11 +15,11 @@ from asteroid.version import VERSION
 from asteroid.mad import MAD
 
 def display_help():
-    print("** Asteroid Version {} **".format(VERSION))
+    print("Asteroid {}".format(VERSION))
     print("(c) University of Rhode Island")
-    print("usage: asteroid [-<switch>] <input file>")
+    print("usage: asteroid [<switch>] <input file>")
     print("")
-    print("command line flags:")
+    print("command line switches:")
     print(" -d             run program through debugger")
     print(" -e             show Python exceptions")
     print(" -F             functional mode")
@@ -34,7 +34,7 @@ def display_help():
     print(" -z             generate pstats")
 
 def main():
-    # defaults for the flags - when the flag is set on the command line
+    # defaults for the switches or flags - when the flag is set on the command line
     # it simply toggles the default value in this table.
     flags = {
         '-d' : False,    # Short debugger flag
@@ -81,7 +81,7 @@ def main():
         sys.exit(0)
 
     if flags['--version'] or flags['-v']:
-        print("** Asteroid Version {} **".format(VERSION))
+        print("Asteroid {}".format(VERSION))
         sys.exit(0)
 
     debug_flag = flags['-d']

@@ -33,7 +33,7 @@ def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
         pass
 
 def print_repl_menu():
-    print("Asteroid Version", VERSION)
+    print("Asteroid", VERSION)
     print("(c) University of Rhode Island")
     print("Type \"help\" for additional information")
 
