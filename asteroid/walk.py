@@ -670,11 +670,11 @@ def handle_builtins(node):
 
     # deal with binary operators
     if opname in binary_operators:
-        (TUPLE, bin_args)= args
-        val_a = walk(bin_args[0])
-        val_b = walk(bin_args[1])
+        (TUPLE, [a,b])= args
 
         if opname == '__plus__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'list', 'string']:
                 if val_b[0] in ['integer', 'real', 'list', 'string']:
                     if val_a[0]==val_b[0]:
@@ -694,6 +694,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '+'".format(val_a[0]))
         elif opname == '__minus__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real']:
                 if val_b[0] in ['integer', 'real']:
                     if val_a[0]==val_b[0]:
@@ -713,6 +715,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '-'".format(val_a[0]))
         elif opname == '__times__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real']:
                 if val_b[0] in ['integer', 'real']:
                     if val_a[0]==val_b[0]:
@@ -732,6 +736,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '*'".format(val_a[0]))
         elif opname == '__divide__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real']:
                 if val_b[0] in ['integer', 'real']:
                     if val_a[0]==val_b[0]:
@@ -754,20 +760,42 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '/'".format(val_a[0]))
         elif opname == '__or__':
-            if val_a[0] == 'boolean' and val_b[0] == 'boolean':
+            # short circuit evaluation
+            val_a = walk(a)
+            if val_a[0] == 'boolean':
+                if val_a[1] == True:
+                    return ('boolean', True)
+            else:
+                raise ValueError(
+                    "found '{} expected 'boolean and boolean'"
+                    .format(val_a[0]))
+            val_b = walk(b)
+            if val_b[0] == 'boolean':
                 return ('boolean', val_a[1] or val_b[1])
             else:
                 raise ValueError(
-                    "found '{} or {}' expected 'boolean or boolean'"
+                    "found '{} and {}' expected 'boolean and boolean'"
                     .format(val_a[0],val_b[0]))
         elif opname == '__and__':
-            if val_a[0] == 'boolean' and val_b[0] == 'boolean':
+            # short circuit evaluation
+            val_a = walk(a)
+            if val_a[0] == 'boolean':
+                if val_a[1] == False:
+                    return ('boolean', False)
+            else:
+                raise ValueError(
+                    "found '{} expected 'boolean and boolean'"
+                    .format(val_a[0]))
+            val_b = walk(b)
+            if val_b[0] == 'boolean':
                 return ('boolean', val_a[1] and val_b[1])
             else:
                 raise ValueError(
                     "found '{} and {}' expected 'boolean and boolean'"
                     .format(val_a[0],val_b[0]))
         elif opname == '__eq__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
                 if val_b[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
                     if val_a[0]==val_b[0]:
@@ -789,6 +817,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '=='".format(val_a[0]))
         elif opname  == '__ne__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
                 if val_b[0] in ['integer', 'real', 'list', 'tuple', 'boolean', 'string', 'none']:
                     if val_a[0]==val_b[0]:
@@ -810,6 +840,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '=/='".format(val_a[0]))
         elif opname == '__le__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'string']:
                 if val_b[0] in ['integer', 'real', 'string']:
                     if val_a[0]==val_b[0]:
@@ -831,6 +863,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '<='".format(val_a[0]))
         elif opname == '__lt__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'string']:
                 if val_b[0] in ['integer', 'real', 'string']:
                     if val_a[0]==val_b[0]:
@@ -852,6 +886,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '<'".format(val_a[0]))
         elif opname == '__ge__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'string']:
                 if val_b[0] in ['integer', 'real', 'string']:
                     if val_a[0]==val_b[0]:
@@ -873,6 +909,8 @@ def handle_builtins(node):
             else:
                 raise ValueError("unsupported type '{}' in '>='".format(val_a[0])) 
         elif opname == '__gt__':
+            val_a = walk(a)
+            val_b = walk(b)
             if val_a[0] in ['integer', 'real', 'string']:
                 if val_b[0] in ['integer', 'real', 'string']:
                     if val_a[0]==val_b[0]:
