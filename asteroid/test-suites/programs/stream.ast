@@ -15,4 +15,4 @@ while not s @eof() do
 end
 s @rewind().
 
-io @println(s @__string__()).
+io @println s.

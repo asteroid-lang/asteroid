@@ -4,13 +4,12 @@
 -- how regular expression can be used during pattern matching.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load system type.
 load system stream.
 
 structure Token with
   data type.
   data value.
-  end
+end
 
 function get_number
   with input_stream do
@@ -18,8 +17,8 @@ function get_number
     while input_stream @peek() is "[0-9]" do
       let number = number + input_stream @get().
     end
-    return type @tointeger(number).
-  end
+    return tointeger(number).
+end
 
 function tokenize
   with input:%string do
@@ -64,8 +63,10 @@ function tokenize
     return output_stream.
   end
 
--- test harness for tokenizer
--- load system io.
--- let output_stream = tokenize("(101+1)*2").
--- let output_stream = tokenize("101").
--- println (output_stream @__string__()).
+if toplevel() do
+  -- test harness for tokenizer
+  load system io.
+  let output_stream = tokenize("(101+1)*2").
+  let output_stream = tokenize("101").
+  io @ println (tostring output_stream).
+end

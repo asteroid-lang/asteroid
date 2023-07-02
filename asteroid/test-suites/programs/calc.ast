@@ -7,7 +7,8 @@
 -- Lutz Hamel, (c) University of Rhode Island
 
 load system io.
-load "lexer".
+load "programs/tokenizer.ast"
+load "programs/lexer.ast".
 
 -------------------------------------------------------------------------
 -- A recursive descent parser implementing the following grammar:
@@ -17,34 +18,34 @@ load "lexer".
 -- The parser implements arithmetic on integer values
 
 function expression
-  with lexer:%Lexer do
-    let val = mulexp(lexer).
+  with lex do
+    let val = mulexp(lex).
     loop do
-      let token = lexer @peek().
-      if not token do
+      let token = lex @peek().
+      if isnone token do
         break.
       elif token @type == "add" do
-        lexer @token_match("add").
-        let val = val + mulexp(lexer).
+        lex @token_match("add").
+        let val = val + mulexp(lex).
       elif token @type == "sub" do
-        lexer @token_match("sub").
-        let val = val - mulexp(lexer)
+        lex @token_match("sub").
+        let val = val - mulexp(lex)
       else do
         break.
       end
     end
     return val.
-  end
+end
 
 function mulexp
-  with lexer:%Lexer do
+  with lexer do
     let val = rootexp(lexer).
-    if not lexer @peek() do
+    if isnone (lexer @peek()) do
       return val.
     end
     loop do
       let token = lexer @peek().
-      if not token do
+      if isnone token do
         break.
       elif token @type == "mul" do
         lexer @token_match("mul").
@@ -57,15 +58,11 @@ function mulexp
       end
     end
     return val.
-  end
+end
 
 function rootexp
-  with lexer:%Lexer do
-    try
-      let Token(type,val) = lexer @peek().
-    catch _ do
-      return none.
-    end
+  with lexer do
+    let tokenizer @Token(type,val) = lexer @peek().
     if type == "number" do
       lexer @token_match("number").
       return val.
@@ -80,21 +77,23 @@ function rootexp
     else do
       throw Error("syntax error at token "+val).
     end
-  end
+end
 
 -------------------------------------------------------------------------
 -- driver part of the script
+if toplevel () do
+  -- tokenize input
+  let input = io @read().
+  let lexer = lexer @Lexer input.
+  #println lexer.
 
--- tokenize input
-let input = io @read().
-let lexer = Lexer(tokenize(input)).
-#println lexer.
+  -- parse and interpret input
+  let val = expression(lexer).
+    io @println val.
+  if not (lexer @eof()) do
+    throw Error("tokens still in input stream")
+  end
 
--- parse and interpret input
-let val = expression(lexer).
-if not (lexer @eof()) do
-  throw Error("tokens still in input stream")
+  -- print out the final value of the parsed and interpreted expression
+  io @println val.
 end
-
--- print out the final value of the parsed and interpreted expression
-io @println val.

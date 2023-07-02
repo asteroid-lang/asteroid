@@ -7,7 +7,7 @@ load system dataframe.
 
 -- team participants
 let df = dataframe @dataframe().
-df @read_csv("names.csv",true).
+df @read_csv("programs/names.csv",true).
 let names = df @col(0).
 
 -- shuffle names
@@ -26,7 +26,7 @@ until names is [].
 
 -- print teams
 for (i,team) in util @zip(1 to len(teams),teams) do
-  let team_str = "team " + i + (":  " if i < 10 else ": ").
+  let team_str = "team " + tostring i + (":  " if i < 10 else ": ").
   repeat do
     let [name|team] = team.
     let team_str = team_str + name + ("" if team is [] else ", ").

@@ -16,8 +16,8 @@ end
 
 let number_list = [34,50,25,100,65].
 let result = largest (number_list,lambda with (x,y) do x > y).
-io @println("The largest number is "+result).
+io @println("The largest number is " + tostring result).
 
 let char_list = ["y","m","a","q"].
 let result = largest (char_list,lambda with (x,y) do util @ascii x > util @ascii y).
-io @println("The largest charactor is "+result).
+io @println("The largest charactor is " + tostring result).

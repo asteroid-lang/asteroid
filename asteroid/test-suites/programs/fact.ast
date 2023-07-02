@@ -4,7 +4,6 @@
 -- with type classes and conditional matching
 
 load system io.
-load system type.
 
 let POS_INT = pattern %[(x:%integer) if x > 0]%.
 let NEG_INT = pattern %[(x:%integer) if x < 0]%.
@@ -19,8 +18,8 @@ function fact
     end
 
 try
-  let i = type @tointeger(io @input "Enter an integer value: ").
-  io @println ("The factorial of "+i+" is: " + fact (i)).
+  let i = tointeger(io @input "Enter an integer value: ").
+  io @println ("The factorial of "+ tostring i +" is: " + tostring (fact i)).
 catch e do
   io @println e.
 end

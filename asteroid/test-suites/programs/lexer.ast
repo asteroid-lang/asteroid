@@ -2,25 +2,29 @@
 -- tokenize function.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load "tokenizer".
+load "programs/tokenizer.ast".
 
 structure Lexer with
   data token_stream.
 
+  function __init__ with input:%string do
+    let this@token_stream = tokenizer @tokenize input.
+  end
+
   function get
     with none do
       return this @token_stream @get().
-    end
+  end
 
   function peek
     with none do
       return this @token_stream @peek().
-    end
+  end
 
   function eof
     with none do
       return this @token_stream @eof().
-    end
+  end
 
   function token_match
     with token_type do
@@ -30,6 +34,12 @@ structure Lexer with
       else do
         throw Error("expected token "+token_type+" got "+token @type).
       end
-    end
+  end
 
 end -- structure
+
+if toplevel() do
+  load system io.
+  let lex = Lexer("1+1").
+  io @println (lex @token_stream).
+end

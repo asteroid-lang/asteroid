@@ -1,5 +1,4 @@
 load system io.
-load system type.
 
 structure Dog with
   data name.
@@ -14,7 +13,7 @@ let buddy = Dog ("Buddy",["sit stay","roll over"]).
 -- that knows how to fetch, we use regular expression 
 -- matching on the trick list
 let fetcher = pattern %[(Dog(name,tricks) 
-                          if type @tostring tricks is ".*fetch.*")]%.
+                          if tostring tricks is ".*fetch.*")]%.
 
 -- one way to do this
 for (Dog(name,tricks) if Dog(name,tricks) is *fetcher) in [fido,buddy] do

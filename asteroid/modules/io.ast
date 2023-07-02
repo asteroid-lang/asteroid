@@ -186,9 +186,8 @@ function read
 ------------------------------------------------------------------
 with(file:%__FILE__) do
     return file @read().
-
 with none do
-    return this @__STDIN__ @ read().
+    return __STDIN__ @ read().
 end
 
 ------------------------------------------------------------------

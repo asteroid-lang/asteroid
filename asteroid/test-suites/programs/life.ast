@@ -136,7 +136,7 @@ function life
         for gen in 0 to (maxgen-1) do
             compute_new_state(map1, map2).
             util @cls().
-            io @println("map @ generation " + gen).
+            io @println("map @ generation " + tostring gen).
             show_map(map2).
             -- implement double buffering
             let (map1,map2) = (map2,map1). -- swap the maps
