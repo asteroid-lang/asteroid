@@ -4,7 +4,7 @@
 # general testsuite driver
 ################################
 
-# the following is a list of directories of test cases the script will run
+# the following is a list of directories of test cases
 
 dirs = [
 	    'action-tests',
@@ -15,9 +15,11 @@ dirs = [
         'ug-programs',
        ]
 
+# the exclusion list allows you to eliminate certain tests from the 
+# current run
+# TODO: make names test suite sensitive
 #exclusion_list = ['test015.ast']
 exclusion_list = []
-
 if exclusion_list:
     print("Exclusion list: {}".format(exclusion_list))
 
@@ -51,15 +53,20 @@ os.chdir(file_path)
 # so that we can easily find our Asteroid modules
 (parent_dir,_) = os.path.split(file_path)
 sys.path.append(parent_dir)
-
 from interp import interp
 
+n_tests = 0
 for d in dirs:
-    tests = os.listdir(d)
-    tests = list(set(tests) - set(exclusion_list))
-    tests.sort()
+    # assemble the test list
+    test_list = os.listdir(d)
+    test_list = list(set(test_list) - set(exclusion_list))
+    test_list.sort()
+    n_tests += len(test_list)
+    # set the ASTEROIDPATH environment variable
+    old_val = os.getenv('ASTEROIDPATH')
+    os.environ['ASTEROIDPATH'] = d
 
-    for testname in tests:
+    for testname in test_list:
         # check that we are actually looking at test case
         if testname[-3:] == "ast":
             # if a <testname>-io.txt file exists map stdin to it
@@ -75,4 +82,9 @@ for d in dirs:
                    exceptions=verbose_failure,
                    redundancy=redundancy)
             f.close()
-
+    if old_val:
+        os.environ['ASTEROIDPATH'] = old_val
+    else:
+        del os.environ['ASTEROIDPATH']
+        
+print("Number of test cases:",n_tests)

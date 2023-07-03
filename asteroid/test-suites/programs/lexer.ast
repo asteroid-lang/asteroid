@@ -2,7 +2,7 @@
 -- tokenize function.
 -- Lutz Hamel, (c) University of Rhode Island
 
-load "programs/tokenizer.ast".
+load tokenizer.
 
 structure Lexer with
   data token_stream.

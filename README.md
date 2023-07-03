@@ -6,11 +6,15 @@ Documentation on Asteroid can be found at
 
 ## New in Release 2.0.1
 
+* We now support the ASTEROIDPATH environment variable which is expected to have a colon seperated list of directories to search for user defined modules.
+
+* The logical operators 'and' and 'or' are now evaluated in short-circuit fashion.
+
 * Files loaded with the 'load' statement are now considered modules and work similarly to Python modules.
 
-* the 'toplevel' operator returns true if control is in the module originally loaded by the interpreter.
+* Added the 'toplevel' function which returns true if control is in the module originally loaded by the interpreter.
 
-* Match statement similar to the match statement in Python.
+* Added the match statement similar to the match statement in Python.
 
 * No longer supports type hierarchies for the primitive types.  The functions in the 'type' module are now considered builtins. The 'type' module itself has been eliminated.
 

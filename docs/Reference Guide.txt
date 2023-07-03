@@ -178,7 +178,9 @@ of the modules,
 ::
 #include "../asteroid/test-suites/ref-programs/prgm-007.ast"
 
-When loading a module with a filename the basename of the filename becomes the module name. 
+When loading a module with an explicit filename the basename of the filename becomes the module name. 
+The ``ASTEROIDPATH`` environment variable allows you to specify additional directories the ``load`` command 
+will search for modules.  The contents of ``ASTEROIDPATH`` is a colon separated list of directories.
 
 Loop
 %%%%

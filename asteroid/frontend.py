@@ -199,6 +199,13 @@ class Parser:
                 search_list.append(os.path.join(os.getcwd(), base_name + asteroid_file_suffix))
                 search_list.append(os.path.join(os.getcwd(), 'modules', base_name))
                 search_list.append(os.path.join(os.getcwd(), 'modules', base_name + asteroid_file_suffix))
+                # check the ASTEROIDPATH variable
+                env_val = os.getenv('ASTEROIDPATH')
+                if env_val:
+                    path_list = env_val.split(':')
+                    for p in path_list:
+                        search_list.append(p+'/'+base_name+asteroid_file_suffix)
+
             search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', base_name))
             search_list.append(os.path.join(os.path.split(os.path.abspath(__file__))[0], 'modules', base_name + asteroid_file_suffix))
 

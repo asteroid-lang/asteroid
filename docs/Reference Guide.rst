@@ -217,11 +217,13 @@ Consider for example that you had loaded your own IO module but also would like 
 system IO module.  In order to avoid a name clash you can use the ``as`` modifier to rename one
 of the modules,
 ::
-      load "ref-programs/io.ast". -- load my IO module
+      load io. -- load my IO module
       load system io as systemio. -- load the system IO module and rename it to systemio
       io @output "Foobar".
       systemio @println "Hello World!".
-When loading a module with a filename the basename of the filename becomes the module name.
+When loading a module with an explicit filename the basename of the filename becomes the module name.
+The ``ASTEROIDPATH`` environment variable allows you to specify additional directories the ``load`` command
+will search for modules.  The contents of ``ASTEROIDPATH`` is a colon separated list of directories.
 
 Loop
 %%%%

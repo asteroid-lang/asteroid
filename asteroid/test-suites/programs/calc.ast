@@ -7,8 +7,8 @@
 -- Lutz Hamel, (c) University of Rhode Island
 
 load system io.
-load "programs/tokenizer.ast"
-load "programs/lexer.ast".
+load tokenizer.
+load lexer.
 
 -------------------------------------------------------------------------
 -- A recursive descent parser implementing the following grammar:
