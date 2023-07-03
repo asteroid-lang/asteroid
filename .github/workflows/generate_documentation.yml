@@ -2,7 +2,11 @@ name: Documentation Generation
 on:
     pull_request:
         branches:
-            - '!master'
+           - 'dev-**'
+
+    push:
+        branches:
+            - 'dev-**'
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:
@@ -22,7 +26,7 @@ jobs:
           pip install pcpp
           cd docs
           # This is to keep github actions happy
-          bash generate_docs
+          python generate_docs.py
           cd ..
 
       - name: Commit files
