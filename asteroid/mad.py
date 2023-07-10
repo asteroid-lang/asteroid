@@ -50,9 +50,10 @@
 from os.path import exists, split, basename
 from asteroid.support import term2string
 from asteroid.version import MAD_VERSION
+import copy 
 
-START_DEBUGGER = False
-RETURN_TO_INTERP = True
+START_DEBUGGER = False   # interactive debugging session
+RETURN_TO_INTERP = True  # return control to interpreter
 
 class MAD:
 
@@ -66,20 +67,28 @@ class MAD:
       self.continue_mode = False
       # scope counter is used as a scope stack in the implementation of the over cmd
       self.scope_counter = -1
+      # the frame we are looking at
+      # Note: continue, next, and step reset this to 0
+      self.frame_ix = 0
       # command dispatch table, only uses the first two letters of each command
       # in order to interpret the commands
       self.dispatch_table = {
-                  'br'     : self._handle_breakpoints,
-                  'cl'     : self._handle_clear,
-                  'co'     : self._handle_continue,
-                  'he'     : self._handle_help,
-                  'li'     : self._handle_list,
-                  'ne'     : self._handle_next,
-                  'pr'     : self._handle_print,
-                  'qu'     : self._handle_quit,
-                  'se'     : self._handle_set,
-                  'st'     : self._handle_step,
-                  'wh'     : self._handle_where,
+                  'bre'     : self._handle_breakpoints,
+                  'cle'     : self._handle_clear,
+                  'con'     : self._handle_continue,
+                  'dow'     : self._handle_down,
+                  'fra'     : self._handle_frame,
+                  'hel'     : self._handle_help,
+                  'lis'     : self._handle_list,
+                  'nex'     : self._handle_next,
+                  'pri'     : self._handle_print,
+                  'qui'     : self._handle_quit,
+                  'set'     : self._handle_set,
+                  'sta'     : self._handle_stack,
+                  'ste'     : self._handle_step,
+                  'tra'     : self._handle_stack,
+                  'up '     : self._handle_up,
+                  'whe'     : self._handle_where,
                }
       # the following tables of tuples (func/line#,file) that describes break points at 
       #function entry points or lines
@@ -107,7 +116,7 @@ class MAD:
       # deal with function break points
       (file,_) = self.interp_state.lineinfo
       if self.function_breakpoints.count((fname,basename(file))):
-         print("reached breakpoint ({}:{})".format(file,fname))
+         print("reached breakpoint ({} @{})".format(file,fname))
          self.continue_mode = False
          self.scope_counter = -1
       elif self._check_enter_scope(fname) == RETURN_TO_INTERP:
@@ -220,8 +229,11 @@ class MAD:
    def _interpret_cmd(self, cmd):
       # use the dispatch table in order to interpret commands
       cmd_list = cmd.split()
+      # special case our 2-char command
+      if cmd_list[0] == 'up': 
+         cmd_list[0] = 'up '
       if len(cmd_list) > 0:
-         val = self.dispatch_table.get(cmd_list[0][0:2],lambda _:-1) (cmd_list[1:])
+         val = self.dispatch_table.get(cmd_list[0][0:3],lambda _:-1) (cmd_list[1:])
          if val == -1:
             print("error: unknown command {}".format(cmd_list[0]))
             return START_DEBUGGER
@@ -234,7 +246,7 @@ class MAD:
    def _handle_breakpoints(self,_):
       print("breakpoints:")
       for (bp,file) in self.function_breakpoints:
-         print("{}:{}".format(file,bp))
+         print("{} @{}".format(file,bp))
       for (bp,file) in self.line_breakpoints:
          print("{}:{}".format(file,bp))
       return START_DEBUGGER
@@ -247,7 +259,16 @@ class MAD:
       
    def _handle_continue(self,_):
       self.continue_mode = True
+      self.frame_ix = 0
       return RETURN_TO_INTERP
+
+   def _handle_down(self, args):
+      if self.frame_ix == 0:
+         print("error: no such frame")
+      else:
+         self.frame_ix -= 1
+         self._handle_frame(args)
+      return START_DEBUGGER
 
    def _handle_help(self,_):
       print()
@@ -255,13 +276,18 @@ class MAD:
       print("breakpoints\t\t- show all breakpoints")
       print("clear\t\t\t- clear all breakpoints")
       print("continue\t\t- continue execution to next breakpoint")
+      print("down\t\t\t- move down one stack frame")
+      print("frame\t\t\t- display current stack frame number")
       print("help\t\t\t- display help")
       print("list\t\t\t- display source code")
       print("next\t\t\t- step execution across a nested scope")
       print("print <name>|*\t\t- print contents of <name>, * lists all vars in scope")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
+      print("stack\t\t\t- display runtime stack")
       print("step\t\t\t- step to next executable statement")
+      print("trace\t\t\t- display runtime stack")
+      print("up\t\t\t- move up one stack frame")
       print("where\t\t\t- print current program line")
       print()
       return START_DEBUGGER
@@ -296,17 +322,18 @@ class MAD:
       # one exception: breakpoints.  If a breakpoint is hit
       # the scope counter is reset to -1.
       self.scope_counter = 1
+      self.frame_ix = 0
       return RETURN_TO_INTERP
 
    def _handle_print(self,args):
       if len(args) > 1:
-         print("error: too many arguments to print command")
+         print("error: too many arguments")
          return False
       elif len(args) == 0:
-         print("error: no argument to print command")
+         print("error: no argument given")
          return False
       if args[0] == '*':
-         var_list = self.interp_state.symbol_table.get_curr_scope(option="items")
+         var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
          for (name,val) in var_list:
             print("{}: {}".format(name,term2string(val)))
       else:
@@ -343,8 +370,30 @@ class MAD:
          print("error: too many arguments to set")
          return START_DEBUGGER
 
+   def _handle_frame(self,_):
+      print("you are looking at frame #{}".format(self.frame_ix))
+      return START_DEBUGGER
+
    def _handle_step(self,_):
+      self.frame_ix = 0
       return RETURN_TO_INTERP
+
+   def _handle_stack(self,_):
+      trace = copy.copy(self.interp_state.trace_stack)
+      trace.reverse()
+      print("Runtime stack (most recent call first):")
+      for i in range(0,len(trace)):
+         (module,lineno,fname) = trace[i]
+         print("frame #{}: {} @{}".format(i,module,fname))
+      return START_DEBUGGER
+
+   def _handle_up(self, args):
+      if self.frame_ix+1 == len(self.interp_state.trace_stack):
+         print("error: no such frame")
+      else:
+         self.frame_ix += 1
+         self._handle_frame(args)
+      return START_DEBUGGER
 
    def _handle_where(self,_):
       self._print_line()

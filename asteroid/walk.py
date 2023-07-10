@@ -199,7 +199,7 @@ def unify(term, pattern, unifying = True ):
                              .format(bool_val[0]))
         # copy unifiers out of the temporary scope of the
         # if expression.
-        unifiers = state.symbol_table.get_curr_scope("unifiers")
+        unifiers = state.symbol_table.get_curr_scope(option="unifiers")
         state.symbol_table.pop_scope()
         if bool_val[1]:
             return unifiers
