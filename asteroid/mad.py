@@ -382,7 +382,7 @@ class MAD:
       trace = copy.copy(self.interp_state.trace_stack)
       trace.reverse()
       print("Runtime stack (most recent call first):")
-      for i in range(0,len(trace)):
+      for i in range(self.frame_ix,len(trace)):
          (module,lineno,fname) = trace[i]
          print("frame #{}: {} @{}".format(i,module,fname))
       return START_DEBUGGER
