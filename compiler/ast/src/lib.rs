@@ -275,10 +275,10 @@ impl AstroID {
 pub struct AstroObject {
     pub id: u8,
     pub struct_id: AstroID,
-    pub object_memory: AstroList,
+    pub object_memory: Rc<AstroNode>,
 }
 impl AstroObject {
-    pub fn new(name: AstroID, mem: AstroList) -> Option<Self> {
+    pub fn new(name: AstroID, mem: Rc<AstroNode>) -> Option<Self> {
         Some( AstroObject { id: 22, struct_id: name, object_memory: mem} )
     }
 }

@@ -232,11 +232,15 @@ pub fn term2string_object<'a>(node: &'a AstroNode) -> Option<String> {
     let mut out = String::new();
     out += &struct_id.name;
     out += "( ";
-    for i in 0..object_memory.length {
+
+    let AstroNode::AstroList(AstroList{id:_,length:len,ref contents}) = **object_memory
+        else {panic!("term2string: expected list.")};
+
+    for i in 0..len {
         if i != 0 {
             out += " , "
         }
-        out += &term2string(&object_memory.contents[i]).unwrap();
+        out += &term2string(&contents[i]).unwrap();
     }
     out += " )";
     Some(out)

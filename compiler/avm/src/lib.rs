@@ -114,7 +114,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
             Err( ("PatternMatchFailed", format!("pattern type {} and term type {} do not agree.",t_name,p_name)))
         } else {
             // TODO fix cloning
-            unify(Rc::new( AstroNode::AstroList(t_data.clone())),Rc::new( AstroNode::AstroList(p_data.clone())),state,unifying)
+            unify( t_data.clone() ,p_data.clone(),state,unifying)
         }
 
     } else if pattern_type == "string" && term_type != "string" {
@@ -285,10 +285,127 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         } else {
             unify(Rc::clone(&term),Rc::clone(&p_exp),state,unifying)
         }
-    
+    } else if term_type == "quote" && !(["id","index"].contains( &pattern_type))  {
+        // ignore quote on the term if we are not trying to unify term with
+        // a variable or other kind of lval
+        let AstroNode::AstroQuote(AstroQuote{id:_,expression:ref t_exp}) = *term
+            else {panic!("Unify: expected quote.")};
 
-    } else { /********** PLACEHOLDER UNITL UNIFY IS FINISHED ***/
+        unify( Rc::clone(&t_exp), pattern, state, unifying )
+
+    } else if term_type == "object" && pattern_type == "apply" {
+        let AstroNode::AstroObject(AstroObject{id:_,struct_id:ref t_name,object_memory:ref t_mem}) = *term
+            else {panic!("Unify: expected object.")};
+        let AstroNode::AstroApply(AstroApply{id:_,function:ref p_func,argument:ref p_arg}) = *pattern
+            else {panic!("Unify: expected apply.")};
+        let AstroNode::AstroID(AstroID{id:_,name:ref p_id}) = **p_func
+            else {panic!("Unify: expected string.")};
+        let AstroID{id:_,name:t_id} = t_name;
+
+        
+        if p_id != t_id {
+            Err(("PatternMatchFailed",format!("expected type '{}' got type '{}'",p_id,t_id)))
+        } else if let AstroNode::AstroTuple(AstroTuple{id:_,length:len,contents:ref content}) = **p_arg {
+            unify( Rc::clone(t_mem), Rc::clone(p_arg), state, unifying )
+        } else {
+            unify( Rc::clone(t_mem), Rc::new(AstroNode::AstroList(AstroList::new(1,vec![Rc::clone(p_arg)]).unwrap())) , state, unifying )
+        }
+        
+    } else if pattern_type == "index" {
+        // list element lval access
+        Ok( vec![(Rc::clone(&pattern),Rc::clone(&term))] )
+    
+    } else if term_type == "id" && unifying {
+        // variable in term not allowed when unifying
+        let AstroNode::AstroID(AstroID{id:_,name:ref t_name}) = *term
+            else {panic!("Unify: expected id.")};
+
+        Err(  ("PatternMatchFailed",format!("variable '{}' in term not allowed.",t_name)))
+
+    } else if pattern_type == "id" {
+        let AstroNode::AstroID(AstroID{id:_,name:ref p_name}) = *pattern
+            else {panic!("Unify: expected id.")};
+
+        if p_name == "_" {
+            Ok( vec![] )
+        } else {
+            Ok( vec![(Rc::clone(&pattern),Rc::clone(&term))] )
+        }
+
+    } else if ["head-tail","raw-head-tail"].contains(&pattern_type) {
+
         Ok(vec![])
+
+    } else if pattern_type == "deref" {
+        // can be an AST representing any computation
+        // that produces a pattern.
+        let p = walk(pattern,state).unwrap();
+
+        unify(term,p,state,unifying)
+
+    // builtin operators look like apply lists with operator names
+    } else if pattern_type == "apply" {
+        if term_type != "apply" {
+            Err( ("PatternMatchFailed","term and pattern disagree on \'apply\' node".to_string()) )
+        } else {
+
+            // unpack the apply structures
+            let AstroNode::AstroApply(AstroApply{id:_,function:ref p_func,argument:ref p_arg}) = *pattern
+                else {panic!("Unify: expected apply.")};
+            let AstroNode::AstroApply(AstroApply{id:_,function:ref t_func,argument:ref t_arg}) = *term
+                else {panic!("Unify: expected apply.")};
+
+            let AstroNode::AstroID(AstroID{id:_,name:ref p_id}) = **p_func
+                else {panic!("Unify: expected id.")};
+            let AstroNode::AstroID(AstroID{id:_,name:ref t_id}) = **t_func
+                else {panic!("Unify: expected id.")};
+
+            // make sure apply id's match
+            if p_id != t_id {
+                Err( ("PatternMatchFailed",format!("term '{}' does not match pattern '{}'",t_id,p_id) ))
+            } else {
+                // unify the args
+                unify(Rc::clone(t_arg), Rc::clone(p_arg), state, unifying)
+            }
+        }
+    } else if pattern_type == "constraint" {
+        state.inc_constraint_lvl();
+        unify(term,pattern,state,unifying);
+        state.dec_constraint_lvl();
+        Ok(vec![])
+    
+    } else if peek(Rc::clone(&term)).unwrap() != peek(Rc::clone(&pattern)).unwrap() {
+        Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
+
+    } else { 
+        let mut unifier: Vec<(Rc<AstroNode>,Rc<AstroNode>)> = vec![];
+        let mut len: usize;
+        let mut content: Vec<Rc<AstroNode>>;
+
+        if let AstroNode::AstroTuple(AstroTuple{id:_,length:t_len,contents:ref t_content}) = *term {
+            if let AstroNode::AstroTuple(AstroTuple{id:_,length:p_len,contents:ref p_content}) = *pattern {
+
+                for i in 0..t_len {
+                    unifier.append( &mut unify( Rc::clone(&t_content[i]),Rc::clone(&p_content[i]),state,unifying).unwrap() );
+                }
+                Ok( unifier )
+            } else {
+                Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
+            }
+        } else if let AstroNode::AstroList(AstroList{id:_,length:t_len,contents:ref t_content}) = *term {
+            if let AstroNode::AstroList(AstroList{id:_,length:p_len,contents:ref p_content}) = *pattern { 
+
+
+                for i in 0..t_len {
+                    unifier.append( &mut unify( Rc::clone(&t_content[i]),Rc::clone(&p_content[i]),state,unifying).unwrap() );
+                }
+                Ok( unifier )
+            } else {
+                Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
+            }
+        } else {
+            Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
+        }
     }
 }
 
