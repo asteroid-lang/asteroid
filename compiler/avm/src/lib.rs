@@ -2,6 +2,7 @@
 /* Asteroid                                                                   */ 
 /* Abstract Virtual Machine                                                   */
 /*                                                                            */
+/* (c) University of Rhode Island                                             */
 /******************************************************************************/
 #![allow(unused)]
 
@@ -20,7 +21,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
     let pattern_type = peek( Rc::clone(&pattern) ).unwrap();
 
 
-    if term_type == "string" { // Apply regular expression pattern match
+    if term_type == "string" && pattern_type != "id"{ // Apply regular expression pattern match
         if pattern_type == "string" {
             // Note: a pattern needs to match the whole term.
             let AstroNode::AstroString(AstroString{id:t_id,value:ref t_value}) = *term 
@@ -41,7 +42,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         } else {
             Err( ("PatternMatchFailed", format!("regular expression {} did not match {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
         }
-    } else if term_type == "integer" || term_type == "bool" || term_type == "real"  {
+    } else if (term_type == "integer" || term_type == "bool" || term_type == "real") && (pattern_type == "integer" || pattern_type == "bool" || pattern_type == "real")  {
 
         if term_type == pattern_type && term == pattern {
             Ok( vec![] ) // Return an empty unifier
@@ -60,11 +61,12 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
             let AstroNode::AstroList(AstroList{id:_,length:p_length,contents:ref p_contents}) = *pattern
                 else {panic!("Unify: expected list.")};
 
+
             if t_length != p_length {
                 Err( ("PatternMatchFailed", format!("term and pattern lists/tuples are not the same length")))
             } else {
                 let mut unifiers = vec![];
-                for i in 0..t_length {
+                for i in 0..(t_length-1) {
                     let x = unify( Rc::clone( &t_contents[i]), Rc::clone( &p_contents[i]), state, unifying );
                     match x {
                         Ok(mut success) => unifiers.append( &mut success ),
@@ -152,7 +154,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
 
                 // evaluate the conditional expression in the
                 // context of the unifiers.
-                declare_unifiers( &unifiers );
+                declare_unifiers( &unifiers, state );
                 let bool_val = map2boolean( &walk(Rc::clone(p_cond),state).unwrap() ).unwrap();
 
                 if state.constraint_lvl > 0 {
@@ -323,6 +325,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         Err(  ("PatternMatchFailed",format!("variable '{}' in term not allowed.",t_name)))
 
     } else if pattern_type == "id" {
+        
         let AstroNode::AstroID(AstroID{id:_,name:ref p_name}) = *pattern
             else {panic!("Unify: expected id.")};
 
@@ -378,6 +381,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
 
     } else { 
+        println!("Hello");
         let mut unifier: Vec<(Rc<AstroNode>,Rc<AstroNode>)> = vec![];
         let mut len: usize;
         let mut content: Vec<Rc<AstroNode>>;
@@ -649,7 +653,7 @@ pub fn is_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<Astr
     if let Err(_) = unifiers {
         Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(false).unwrap())))
     } else {
-        declare_unifiers(&unifiers.unwrap());
+        declare_unifiers(&unifiers.unwrap(),state);
         Ok( Rc::new( AstroNode::AstroBool(AstroBool::new(true).unwrap())))
     }
 }
@@ -734,8 +738,31 @@ fn check_repeated_symbols(unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) -> boo
     false // no repeats exist if we get here.
 }
 /******************************************************************************/
-pub fn declare_unifiers( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)> ) {
-    let x = 1;
+pub fn declare_unifiers<'a>( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)>, state: &'a mut State ) -> Result<(), (&'static str,String) >{
+    // walk the unifiers and bind name-value pairs into the symtab
+
+    for (lhs,value) in unifiers {
+        if let AstroNode::AstroID(AstroID{id:_,ref name}) = **lhs {
+            if name == "this" {
+                return Err(("ValueError","'this' is a reserved keyword.".to_string()));
+            } else {
+                state.enter_sym(&name,Rc::clone(value));
+            }
+        } else if let AstroNode::AstroIndex(AstroIndex{id:_,ref structure,ref index_exp}) = **lhs {
+            // Note: structures have to be declared before index access
+            // can be successful!!  They have to be declared so that there
+            // is memory associated with the structure.
+
+            // look at the semantics of 'structure'
+            let structure_val = walk(Rc::clone(structure),state);
+            // indexing/slicing
+            // update the memory of the object.
+            // store_at_ix(structure_val,index_exp);
+        } else {
+            return Err(("ValueError",format!("unknown unifier type '{}'",peek(Rc::clone(lhs)).unwrap())));
+        }
+    }
+    Ok(())
 }
 /******************************************************************************/
 // TODO needs work
@@ -929,5 +956,131 @@ mod tests {
             assert_eq!(out3,(String::from("math"), 987654321));
         }
     }
-    
+    #[test]
+    fn test_unify_var_to_int() {
+        // Hand compiled
+        // let x = 123.
+
+        let mut state = State::new().unwrap();
+        let var = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let int = Rc::new(AstroNode::AstroInteger(AstroInteger::new(123).unwrap()));
+
+        let out = declare_unifiers( &unify(int,var,&mut state,true).unwrap(), &mut state );
+
+        let check = state.lookup_sym("x",true);
+        match *check {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:123}) => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_var_to_real() {
+        // Hand compiled
+        // let x = 1.23.
+
+        let mut state = State::new().unwrap();
+        let var = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val = Rc::new(AstroNode::AstroReal(AstroReal::new(1.23).unwrap()));
+
+        let out = declare_unifiers( &unify(val,var,&mut state,true).unwrap(), &mut state );
+
+        let check = state.lookup_sym("x",true);
+        match *check {
+            AstroNode::AstroReal(AstroReal{id:_,value:val}) if val == 1.23 => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_var_to_string() {
+        // Hand compiled
+        // let x = "hello123".
+
+        let mut state = State::new().unwrap();
+        let var = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val = Rc::new(AstroNode::AstroString(AstroString::new("hello123".to_string()).unwrap()));
+
+        let out = declare_unifiers( &unify(val,var,&mut state,true).unwrap(), &mut state );
+
+        let check = state.lookup_sym("x",true);
+        match *check {
+            AstroNode::AstroString(AstroString{id:_,value:ref val}) if val == "hello123" => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_var_to_bool() {
+        // Hand compiled
+        // let x = false.
+
+        let mut state = State::new().unwrap();
+        let var = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val = Rc::new(AstroNode::AstroBool(AstroBool::new(false).unwrap()));
+
+        let out = declare_unifiers( &unify(val,var,&mut state,true).unwrap(), &mut state );
+
+        let check = state.lookup_sym("x",true);
+        match *check {
+            AstroNode::AstroBool(AstroBool{id:_,value:val}) if val == false =>(),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_var_to_int_thrice() {
+        // let x = 2.
+        // let y = 4.
+        // let z = 8.
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
+        let val2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(4).unwrap()));
+        let var3 = Rc::new(AstroNode::AstroID(AstroID::new("z".to_string()).unwrap()));
+        let val3 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(8).unwrap()));
+
+        declare_unifiers( &unify(val1,var1,&mut state,true).unwrap(), &mut state );
+        declare_unifiers( &unify(val2,var2,&mut state,true).unwrap(), &mut state );
+        declare_unifiers( &unify(val3,var3,&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        let check2 = state.lookup_sym("y",true);
+        let check3 = state.lookup_sym("z",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:2}) => (),
+            _ => panic!("test failed"),
+        };
+        match *check2 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:4}) => (),
+            _ => panic!("test failed"),
+        };
+        match *check3 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:8}) => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_varlist_to_intlist() {
+        // let [x,y] = [3,4].
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(3).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
+        let val2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(4).unwrap())); 
+        let varlist = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![Rc::clone(&var1),Rc::clone(&var2)]).unwrap()));
+        let vallist = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![Rc::clone(&val1),Rc::clone(&val2)]).unwrap()));
+
+        declare_unifiers( &unify(vallist,varlist,&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:3}) => (),
+            _ => panic!("test failed"),
+        };
+        let check2 = state.lookup_sym("y",true);
+        match *check2 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:4}) => (),
+            _ => panic!("test failed"),
+        };
+    }
 }
