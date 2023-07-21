@@ -11,7 +11,7 @@ from asteroid.globals import *
 from asteroid.support import *
 from asteroid.frontend import Parser
 from asteroid.state import state, dump_trace
-from asteroid.walk import walk_program, debug_walk
+from asteroid.walk import walk
 
 # the prologue file is expected to be in the 'modules' folder
 prologue_name = 'prologue.ast'
@@ -26,22 +26,19 @@ def load_prologue():
 
     if os.path.isfile(module_path):
         prologue_file = module_path
-    
     elif os.path.isfile(working_path):
         prologue_file = working_path
-    
     else:
         raise ValueError("Asteroid prologue '{}' not found"
                         .format(prologue_file_base))
     
     with open(prologue_file) as f:
-        state.modules.append(prologue_name)
         data = f.read()
         pparser = Parser(prologue_file)
-        (LIST, pstmts) = pparser.parse(data)
+        pstmts = pparser.parse(data)
 
-    state.AST = ('list', pstmts)
-    walk_program(state.AST)
+    state.AST = pstmts
+    walk(state.AST)
     state.AST = None
 
 def interp(program,
@@ -54,6 +51,7 @@ def interp(program,
            prologue=True,
            debugger=None,
            functional_mode=False,
+           warnings=True,
            initialize_state = True
            ):
     '''
@@ -71,6 +69,7 @@ def interp(program,
       * prologue: a flag indicating whether the Asteroid prologue file should be loaded
       * functional_mode: if set then the Asteroid interpreter behaves like an interpreter
                          functional programming language.
+      * warnings: if set will display warnings
       * initialize_state: if set then the interpreter will (re)initialize its state.  
     '''
     try:
@@ -81,22 +80,31 @@ def interp(program,
         if prologue:
             load_prologue()
 
-        # initialize "check for useless clauses" flag
+        # initialize state flags
         state.eval_redundancy = redundancy
+        state.warning = warnings
 
         # build the AST
         parser = Parser(program_name, functional_mode)
-        (LIST, istmts) = parser.parse(program)
-        state.AST = ('list', istmts)
+        stmts = parser.parse(program)
+        state.AST = stmts
+        state.mainmodule = state.lineinfo[0]
 
         # walk the AST
         if tree_dump:
             dump_AST(state.AST)
+        if debugger:
+            state.debugger = debugger
+            (module,line) = state.lineinfo
+            state.lineinfo = (module,1)
+            debugger.start(state)
         if do_walk:
-            if debugger:
-                debug_walk(state.AST, debugger)
-            else:
-                walk_program(state.AST)
+            try:
+                walk(state.AST)
+                if debugger: debugger.stop()
+            except Exception as e:
+                if debugger: debugger.error(e)
+                raise e
         if symtab_dump:
             state.symbol_table.dump()
 
@@ -127,17 +135,17 @@ def interp(program,
             sys.exit(1)
 
     except  KeyboardInterrupt as e:
-        if debugger:
-            raise e
-
         dump_trace()
         print("error: keyboard interrupt")
         # needed for REPL
         if not exceptions:
             sys.exit(1)
 
-    except SystemExit:
-        exit(0)
+    except SystemExit as e:
+        # we simply pass along the exception
+        # this is just here in case in the future we need to 
+        # perform special handling
+        raise e
 
     except Exception as e:
         if exceptions: # rethrow the exception so that you can see the full backtrace

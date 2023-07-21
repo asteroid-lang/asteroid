@@ -7,16 +7,12 @@
 ------------------------------------------------------------------
 
 load system util.
-load system type.
-
-------------------------------------------------------------------
-structure __VECTOR_MODULE__ with
 
 ------------------------------------------------------------------
 function add
 ------------------------------------------------------------------
 with (a,b) do
-  return this @op(lambda with (x,y) do return x+y,a,b).
+  return op(lambda with (x,y) do x+y,a,b).
 end
 
 ------------------------------------------------------------------
@@ -24,14 +20,14 @@ function dot
 -- computes the dot product of two lists
 ------------------------------------------------------------------
 with (a:%list,b:%list) do
-  return this @mult(a,b) @reduce(lambda with (x,y) do return x+y).
+  return mult(a,b) @reduce(lambda with (x,y) do x+y).
 end
 
 ------------------------------------------------------------------
 function mult
 ------------------------------------------------------------------
 with (a,b) do
-  return this @op(lambda with (x,y) do return x*y,a,b).
+  return op(lambda with (x,y) do x*y,a,b).
 end
 
 ------------------------------------------------------------------
@@ -41,18 +37,18 @@ function op
 -- Note: it also implements vector/scalar arithmetic
 with (f:%function,a:%list,b:%list) do
   if a @length() =/= b @length() do
-      throw Error("vops only defined on lists of the same length").
+      throw Error("vector operations only defined on lists of the same length").
   end
   let v = util @zip(a,b).
   return v @map(f).
-with (f:%function,a:%list,b if type @isscalar(b)) do
+with (f:%function,a:%list,b if isscalar b) do
   -- promote b to a vector
-  let bv = [1 to a @length()] @map(lambda with _ do return b).
+  let bv = [1 to a @length()] @map(lambda with _ do b).
   let v = util @zip(a,bv).
   return v @map(f).
-with (f:%function,a if type @isscalar(a),b:%list) do
+with (f:%function,a if isscalar a,b:%list) do
   -- promote a to a vector
-  let av = [1 to b @length()] @map(lambda with _ do return a).
+  let av = [1 to b @length()] @map(lambda with _ do a).
   let v = util @zip(av,b).
   return v @map(f).
 end
@@ -61,10 +57,7 @@ end
 function sub
 ------------------------------------------------------------------
 with (a,b) do
-  return this @op(lambda with (x,y) do return x-y,a,b).
+  return op(lambda with (x,y) do x-y,a,b).
 end
 
 
-end -- __VECTOR_MODULE__
-
-let vector = __VECTOR_MODULE__().

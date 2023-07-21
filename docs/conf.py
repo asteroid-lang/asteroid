@@ -18,11 +18,14 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Asteroid'
-copyright = '2022- University of Rhode Island'
+copyright = '2021- University of Rhode Island'
 author = 'Lutz Hamel, Tim Colaneri, Oliver McLaughlin, Ariel Finkel, Theodore Henson, Calvin Higgins, Christian Tropeano'
 
 # The full version, including alpha/beta/rc tags
-release = '1.1.4'
+# when generating docs make sure that PYTHONPATH points
+# to the root directory of the github repo
+from asteroid.version import VERSION
+release = VERSION
 
 
 # -- General configuration ---------------------------------------------------

@@ -4,7 +4,7 @@
   function isprime with x do
       if x >= 2 do
           for y in range(2,x) do
-              if not math @mod(x,y) do
+              if math @mod(x,y) == 0 do
                   return false.
               end
           end
@@ -30,7 +30,7 @@
   while n > 1 do
       let factor = primes_list @ix.
       let ix = ix+1.
-      if not math @mod(n,factor) do
+      if math @mod(n,factor) == 0 do
           let ix = 0.
           let n = n/factor.
           let factors = factors+[factor].

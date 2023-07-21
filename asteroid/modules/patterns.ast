@@ -1,0 +1,143 @@
+------------------------------------------------------------------
+-- patterns.ast
+--
+-- this module implements common patterns 
+-- 
+--
+-- (c) University of Rhode Island
+------------------------------------------------------------------
+load system math.
+
+------------------------------------------------------------------
+-- Helper functions
+------------------------------------------------------------------
+-- returns a boolean indicating if the passed in integer is prime.
+function is_prime
+  with (n:%integer) do
+    if n <= 1 do
+      return false.
+    end
+
+    if (n == 2) or (n == 3) do
+      return true.
+    end
+
+    if (math@mod(n,2) == 0) or (math@mod(n,3) == 0) do
+      return false.
+    end
+
+    for i in 5 to math@isqrt(n) step 6 do
+      if (math@mod(n,i) == 0) or (math@mod(n,i+2) == 0) do
+        return false.
+      end
+    end
+
+    return true.
+  with _ do
+    return false.
+end
+------------------------------------------------------------------
+function is_alphabetic
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isalpha(val_s[1]))
+"
+  with _ do
+    return false.
+  end
+------------------------------------------------------------------
+function is_numeric
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isnumeric(val_s[1]))
+"
+  with _ do
+    return false.
+  end
+------------------------------------------------------------------
+function is_uppercase
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isupper(val_s[1]))
+"
+  with _ do
+    return false.
+  end
+------------------------------------------------------------------
+function is_lowercase
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.islower(val_s[1]))
+"
+  with _ do
+    return false.
+  end
+------------------------------------------------------------------
+function is_alphanumeric
+  with (s:%string) do return escape
+"
+global __retval__
+
+val_s = state.symbol_table.lookup_sym('s')
+
+__retval__ = ('boolean',str.isalnum(val_s[1]))
+"
+  with _ do
+    return false.
+  end
+------------------------------------------------------------------
+-- Note: patterns are evaluated in the user context therefore we 
+-- cannot have module access in patterns, except the patterns module
+function _mod2 with n:%integer do math@mod(n,2) end
+function _isclose with n:%real do math@isclose(n, 0.0) end
+------------------------------------------------------------------
+-- Common number sets
+------------------------------------------------------------------
+let prime = pattern with %[ (n:%integer) if patterns@is_prime(n) ]%.
+let digit = pattern with %[ (n:%integer) if n >=0 and n <= 9 ]%.
+let pos_int = pattern with %[ (n:%integer) if n > 0 ]%.
+let neg_int = pattern with %[ (n:%integer) if n < 0 ]%.
+let pos_real = pattern with %[ (n:%real) if n > 0.0 ]%.
+let neg_real = pattern with %[ (n:%real) if n < 0.0 ]%.
+let positive = pattern with %[ n if (n is *patterns@pos_int) or (n is *patterns@pos_real) ]%.
+let negative = pattern with %[ n if (n is *patterns@neg_int) or (n is *patterns@neg_real) ]%.
+let nat = pattern with %[ (n:%integer) if n >= 0 ]%.
+let zero = pattern with %[ n if ((n is %real) and patterns@_isclose(n))
+                           or ((n is %integer) and (n == 0)) ]%.
+let odd = pattern with %[ (n:%integer) if patterns@_mod2(n) == 1 ]%.
+let even = pattern with %[ (n:%integer) if patterns@_mod2(n) == 0 ]%.
+------------------------------------------------------------------
+-- Containers
+------------------------------------------------------------------
+let int_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %integer) and acc, true)]%.
+let real_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %real) and acc, true)]%.
+let str_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %string) and acc, true)]%.
+let bool_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %boolean) and acc, true)]%.
+let func_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %function) and acc, true)]%.
+let list_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %list) and acc, true)]%.
+let tuple_list = pattern %[(l:%list) if l @reduce (lambda with (acc,i) do (i is %tuple) and acc, true)]%.
+------------------------------------------------------------------
+-- Strings
+------------------------------------------------------------------
+let char = pattern with %[ (s:%string) if (s@length() == 1) ]%.
+let alphabetic = pattern with %[ (s:%string) if patterns@is_alphabetic(s) ]%.
+let numeric = pattern with %[ (s:%string) if patterns@is_numeric(s) ]%.
+let alphanumeric = pattern with %[ (s:%string) if patterns@is_alphanumeric(s) ]%.
+let uppercase = pattern with %[ (s:%string) if patterns@is_uppercase(s) ]%.
+let lowercase = pattern with %[ (s:%string) if patterns@is_lowercase(s) ]%.

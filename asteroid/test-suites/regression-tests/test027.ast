@@ -3,7 +3,7 @@ load system io.
 
 structure A with
     data a.
-    function hello with none do return "hello: "+ this @a end.
+    function hello with none do  "hello: "+ tostring (this@a) end.
     end
     
 structure B with

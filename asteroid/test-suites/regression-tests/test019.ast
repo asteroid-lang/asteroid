@@ -2,7 +2,7 @@
 -- Factorial
 
 load system io.
-load "util".
+load system util.
 
 function fact 
     with 0 do
@@ -13,6 +13,6 @@ function fact
         throw Error("factorial is not defined for "+n).
     end 
 
-io @println ("The factorial of 3 is: " + fact (3)).
+io @println ("The factorial of 3 is: " + tostring (fact (3))).
 assert (fact(3) == 6).
 

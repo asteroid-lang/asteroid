@@ -15,6 +15,6 @@ let people = [
     ].
     
 let Person(name,age,sex) = people @1.
-let output_str = name + " is " + age + " years old and is " + ("male" if sex is "M" else "female") + ".".
+let output_str = name + " is " + tostring age + " years old and is " + ("male" if sex is "M" else "female") + ".".
 io @println output_str.
 assert(output_str is "Sophie is 46 years old and is female.")

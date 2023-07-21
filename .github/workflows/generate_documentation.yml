@@ -1,12 +1,16 @@
+# this script throws an error when trying to commit the generated documentation
+# right now set to 'none' branch that will not match anything in this repo
 name: Documentation Generation
 on:
     pull_request:
         branches:
-           - 'dev-**'
+           #- 'dev-**'
+           - 'none'
 
     push:
         branches:
-            - 'dev-**'
+            #- 'dev-**'
+            - 'none'
 env:
     PYTHONPATH: ${{ github.workspace }}
 jobs:

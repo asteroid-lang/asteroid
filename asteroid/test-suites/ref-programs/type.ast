@@ -1,5 +1,4 @@
-   load system type.
 
    let i = 1.
-   assert(type @gettype(i) == "integer").
+   assert(gettype(i) == "integer").
    

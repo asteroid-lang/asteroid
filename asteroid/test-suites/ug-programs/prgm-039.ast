@@ -1,20 +1,20 @@
-    let POS_INT = pattern (x:%integer) if x > 0.
-    let NEG_INT = pattern (x:%integer) if x < 0.
+    let pos_int = pattern (x:%integer) if x > 0.
+    let neg_int = pattern (x:%integer) if x < 0.
 
     function fact
         with 0 do
             return 1
-        with n:*POS_INT do
+        with n:*pos_int do
             return n * fact (n-1).
-        with *NEG_INT do
+        with *neg_int do
             throw Error("fact undefined for negative values").
     end
 
     function sign
         with 0 do
             return 1
-        with *POS_INT do
+        with *pos_int do
             return 1.
-        with *NEG_INT do
+        with *neg_int do
             return -1.
     end

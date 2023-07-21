@@ -2,6 +2,6 @@
 
   let (a,b) = (10,20).
   let (b,a) = (a,b).
-  io @println ("a = "+a,"b = "+b).
+  io @println ("a = "+ tostring a,"b = "+ tostring b).
 
   assert ((a,b) is (20,10)).

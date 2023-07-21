@@ -1,0 +1,25 @@
+-- Factorial
+-- An implementation of factorial with properly
+-- constrained inputs using pattern matching
+-- with type classes and conditional matching
+
+load system io.
+
+let POS_INT = pattern %[(x:%integer) if x > 0]%.
+let NEG_INT = pattern %[(x:%integer) if x < 0]%.
+
+function fact
+    with 0 do
+        return 1
+    with n:*POS_INT do
+        return n * fact (n-1).
+    with n:*NEG_INT do
+        throw Error("undefined for "+n).
+    end
+
+try
+  let i = tointeger(io @input "Enter an integer value: ").
+  io @println ("The factorial of "+ tostring i +" is: " + tostring (fact i)).
+catch e do
+  io @println e.
+end

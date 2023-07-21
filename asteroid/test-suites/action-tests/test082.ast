@@ -1,7 +1,6 @@
   load system io.
   load system vector.
   load system util.
-  load system type.
 
   let triangle = [[1]].
   let ix = 0.
@@ -16,5 +15,5 @@
   end
 
   for r in triangle do
-      io @println (r @map(lambda with v do return type @tostring v) @join(" ")).
+      io @println (r @map(lambda with v do tostring v) @join(" ")).
   end

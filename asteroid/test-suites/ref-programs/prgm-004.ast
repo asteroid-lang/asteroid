@@ -1,0 +1,7 @@
+
+      function sign
+         with x if x >= 0 do
+            return 1.
+         with x if x < 0 do
+            return -1.
+      end

@@ -1,12 +1,12 @@
 ..
       /******************************************************************
       This is the source file from which the reference guide is
-      generated.  We use cpp to insert live code snippets into the
+      generated.  We use pcpp to insert live code snippets into the
       document. In order to generate the reference guide run the
-      following command on a Unix-like system in the directory of
+      following command in the directory of
       this doc:
 
-      bash generate_docs
+      python generate_docs.py
 
       ******************************************************************/
 ..
@@ -32,24 +32,6 @@ represents ``end``.
 Statements
 ^^^^^^^^^^
 
-Assert
-%%%%%%
-
-Syntax: ``ASSERT exp '.'?``
-
-If the expression of the assert statement evaluates to a
-value equivalent to the Boolean value
-``false`` an exception is thrown otherwise the statement is ignored.
-
-For example, the statement,
-::
-      assert (1+1 == 3).
-
-will generate a runtime error but the statement,
-::
-      assert (1+1 == 2).
-
-will be ignored once the expression has been evaluated.
 
 
 Break
@@ -73,7 +55,6 @@ As an example we break out of the indefinite loop below when ``i`` is equal to 1
       end
 
       assert (i==10).
-
 Expressions at the Statement Level
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -84,11 +65,9 @@ evaluated in a function body is considered the return value of the function.
 
 An example,
 ::
-      function inc
-         with i do
-            i+1.
-         end
-
+      function inc with i do
+         i+1.
+      end
 Notice that because the expression ``i+1`` is the last statement evaluated in the
 function body its value becomes the return value of the function.
 
@@ -113,8 +92,6 @@ the pattern matches the tuple ``(1,"chicken")``,
       for (1,bird) in tuple_list do
          assert(bird is "chicken").
       end
-
-
 Function-Definition
 %%%%%%%%%%%%%%%%%%%
 
@@ -136,7 +113,6 @@ The following is a definition of the ``sign`` function,
          with x if x < 0 do
             return -1.
       end
-
 Here the first function body returns ``1`` if the actual argument is greater or equal to zero.
 The second function body return ``-1`` if the actual argument is less than zero.
 
@@ -153,16 +129,14 @@ Consider the following code snippet,
 ::
       let x = 0.
 
-      function foo
-         with none do
-            global x.
-            let x = 1.
+      function foo with none do
+         global x.
+         let x = 1.
       end
 
       assert(x==0).
       foo().
       assert(x==1).
-
 The ``global`` statement within the function ``foo`` indicates that the ``let`` statement
 on the following line should assign a value to the global variable ``x``.
 
@@ -185,9 +159,8 @@ As an example consider the following ``if`` statement that determines
 what kind of integer value the user supplied,
 ::
       load system io.
-      load system type.
 
-      let x = type @tointeger (io @input "Please enter an integer: ").
+      let x = tointeger (io @input "Please enter an integer: ").
 
       if x < 0 do
           io @println "Negative".
@@ -198,8 +171,6 @@ what kind of integer value the user supplied,
       else do
           io @println "Positive".
       end
-
-
 Let
 %%%
 
@@ -215,7 +186,7 @@ Here, the variable ``x`` will match the value stored in ``val``.  However, becau
 can write something like this,
 ::
   load system math.
-  let x:%[(k:%integer) if math @mod(k,2)==0]% = val.
+  let x: %[ (k:%integer) if math @mod (k,2) == 0 ]% = val.
 
 where ``x`` will only match the value of ``val`` if that value is an even integer value.  The fact that the left side of the ``=`` is a pattern allows
 us to write things like this,
@@ -229,6 +200,30 @@ on literals is convenient for statements like these,
 
 This ``let`` statement is only successful for values of ``p`` which are pairs where the first component of the pair is the value ``1``.
 
+Load
+%%%%
+
+Syntax: ``LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?``
+
+The ``load`` statement allows you to load Asteroid modules either by filename or by module name.
+The ``system`` flag tells the interpreter only to search in the system modules for the desired
+module.  Probably the most often loaded module is the system IO module,
+::
+      load system io.
+      io @println "Hello World!".
+
+The ``as`` modifier allows you to rename a module in the current context in order to avoid name clashes.
+Consider for example that you had loaded your own IO module but also would like to load the
+system IO module.  In order to avoid a name clash you can use the ``as`` modifier to rename one
+of the modules,
+::
+      load io. -- load my IO module
+      load system io as systemio. -- load the system IO module and rename it to systemio
+      io @output "Foobar".
+      systemio @println "Hello World!".
+When loading a module with an explicit filename the basename of the filename becomes the module name.
+The ``ASTEROIDPATH`` environment variable allows you to specify additional directories the ``load`` command
+will search for modules.  The contents of ``ASTEROIDPATH`` is a colon separated list of directories.
 
 Loop
 %%%%
@@ -238,6 +233,23 @@ Syntax: ``LOOP DO? stmt_list END``
 The ``loop`` statement executes the statements in the loop body indefinitely
 unless a ``break`` statement is encountered.
 
+Match
+%%%%%
+
+Syntax: ``MATCH expression (WITH pattern DO stmt_list)* END``
+
+The ``match`` statement matches a value given by expression against a list of patterns
+in the ``with`` clauses.  If a pattern matches the associated statements will be executed,
+::
+      match (1,2)
+         with (x,y) if x > y do
+            let x = "GT".
+         with (x,y) if x < y do
+            let x = "LT".
+         with _ do
+            throw Error("not a valid tuple").
+      end
+      assert(x == "LT").
 Repeat-Until
 %%%%%%%%%%%%
 
@@ -257,8 +269,6 @@ of a list,
          let [element|l] = l.
          io @println element.
       until l is [].
-
-
 Return
 %%%%%%
 
@@ -283,9 +293,8 @@ are accessed using the access operator ``@``. Here is a simple example,
       end
 
       let obj = A(1,2).       -- call default constructor
-      assert( obj @a == 1 ).  -- access first data member
-      assert( obj @b == 2 ).  -- access second data member
-
+      assert( obj@a == 1 ).  -- access first data member
+      assert( obj@b == 2 ).  -- access second data member
 We can use custom constructors to enforce that only certain types of values
 can be copied into an object,
 ::
@@ -294,21 +303,19 @@ can be copied into an object,
           data name.
           data age.
           function __init__ with (name:%string,age:%integer) do -- constructor
-             let this @name = name.
-             let this @age = age.
+             let this@name = name.
+             let this@age = age.
           end
           function __str__ with none do
-            return this@name+" is "+this@age+" years old".
+            return this @name+" is "+ tostring(this@age) +" years old".
           end
       end
 
       let betty = Person("Betty",21).  -- call constructor
-      assert( betty @name == "Betty" ).
-      assert( betty @age == 21 ).
+      assert( betty@name == "Betty" ).
+      assert( betty@age == 21 ).
 
-      load system type.
-      assert(type @tostring betty is "Betty is 21 years old").
-
+      assert(tostring betty is "Betty is 21 years old").
 Note that object identity is expressed using the ``this`` keyword.
 Here we also supplied an instantiation of the ``__str__`` function that allows
 us to customize the stringification of the object.  See the last line
@@ -341,7 +348,6 @@ by the associated handler,
       catch Exception("ArithmeticError", s) do
           io @println s.
       end
-
 For more details on exceptions please see the User Guide.
 
 Throw
@@ -368,14 +374,10 @@ Here is an example that prints out a sequence of integer values in reverse order
 
       let i = 10.
 
-      while i do
+      while i >= 0 do
          io @println i.
          let i = i-1.
       end
-
-The loop terminates once ``i`` becomes zero which is the equivalent to a Boolean
-value ``false``.
-
 Expressions
 ^^^^^^^^^^^
 
@@ -397,7 +399,7 @@ Asteroid provides the uniform substructure access operator ``@`` for all structu
 which includes lists, tuples, and objects. For example, accessing the first
 element of a list is accomplished by the expression,
 ::
-      [1,2,3] @0
+      [1,2,3]@0
 
 Similarly, given an object constructed from structure ``A``, member values
 are accessed by name via the ``@`` operator,
@@ -408,9 +410,7 @@ are accessed by name via the ``@`` operator,
       end
 
       let obj = A(1,2).
-      assert( obj @a == 1 ).  -- access member a
-
-
+      assert( obj@a == 1 ).  -- access member a
 Head-Tail Operator
 %%%%%%%%%%%%%%%%%%
 
@@ -450,16 +450,17 @@ apply such as instantiating appropriate variable bindings in the current scope.
 
 Example,
 ::
-      if v is (x,y) do
-         io @println "success".
-         assert(isdefined "x").
-         assert(isdefined "y").
-      else
-         io @println "not matched".
-         assert(not isdefined "x").
-         assert(not isdefined "y").
-      end
+   load system io.
 
+   if (1,2) is (x,y) do
+      io @println "success".
+      assert(isdefined "x").
+      assert(isdefined "y").
+   else
+      io @println "not matched".
+      assert(not isdefined "x").
+      assert(not isdefined "y").
+   end
 The In Predicate
 %%%%%%%%%%%%%%%%%%%%
 
@@ -473,26 +474,6 @@ Example,
 ::
       let true = 1 in [1,2,3].
 
-The Eval Function
-%%%%%%%%%%%%%%%%%
-
-The ``eval`` function allows you to evaluate Asteroid expressions.  If the expression
-is a string then the contents of the string is treated like Asteroid code and is
-interpreted accordingly in the current interpreter environment.  If that code produces a value then the ``eval`` function
-will return that value, e.g.,
-::
-      let a = eval "1+1".
-      assert(a == 2).
-
-If the expression to be evaluated is a simple, structural pattern then the pattern is
-evaluated as a constructor where variables are instantiated from the current environment.
-For example,
-::
-      let p = pattern (x,y)
-      let x = 1.
-      let y = 2.
-      let o = eval p.
-      assert(o is (1,2)).
 
 List Comprehensions
 %%%%%%%%%%%%%%%%%%%
@@ -573,19 +554,19 @@ Here the pair ``(1,2)`` is matched against the pattern stored in the variable ``
 such that ``x`` is bound to the value ``2``.
 
 The optional ``bind`` term together with an appropriate list of variable names
-allows the user to selectively project variable bindings from a constraint pattern
+allows the user to selectively project variable bindings from patterns that have been
+constructed using the ``%[...]%`` scope operator.
 into the current scope.  The ``as`` keyword allows you to rename those bindings.
 Consider the following program,
 ::
       let Pair = pattern %[(x,y)]%.
 
-      -- bindings of the variables x and y are now visible as a and y respetively
       let *Pair bind [x as a, y] = (1,2).
       assert( a == 1).
       assert(y == 2).
 
-At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the hidden scope
-of the constraint pattern into our current scope.
+At the second  ``let`` statement we bind the ``x`` as ``a`` and ``y`` from the scope
+of the  pattern into our current scope.
 
 Type Patterns
 %%%%%%%%%%%%%
@@ -600,14 +581,12 @@ Example,
 ::
       let true = 1 is %integer.
 
-Named Patterns
-%%%%%%%%%%%%%%
+Conditional Patterns (1)
+%%%%%%%%%%%%%%%%%%%%%%%%
 
-Syntax: ``name_exp ':' pattern``
+Syntax: ``exp ':' pattern``
 
-Named patterns allow you to bind the term matched by the pattern to a variable.
-Here the name expression has to evaluate to either a variable,
-object member variable, or list location.
+These patterns allow you to express constraints on exp based on the pattern.
 
 Example,
 ::
@@ -616,17 +595,17 @@ Example,
 The variable ``x`` will be bound to the value of ``val`` if that value matches the
 type pattern ``%integer``.
 
-Named patterns are a syntactic short hand for the equivalent conditional pattern,
+These patterns are a syntactic short hand for the equivalent conditional pattern,
 ::
-      name_exp if name_exp is pattern
+      exp if exp is pattern
 
 That means the following two ``let`` statements are equivalent,
 ::
       let x:(q,p) = (1,2).
       let x if x is (q,p) = (1,2).
 
-Conditional Patterns
-%%%%%%%%%%%%%%%%%%%%
+Conditional Patterns (2)
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``pattern IF cond_exp``
 
@@ -636,17 +615,17 @@ evaluates to true.
 Example,
 ::
       load system math.
-      let k if (math @mod(k,2) == 0) = val.
+      let k if (math@mod(k,2) == 0) = val.
 
 Here ``k`` only matches the value of ``val`` if that value is an even number.
 
-Pure Constraint Patterns
-%%%%%%%%%%%%%%%%%%%%%%%%
+Patterns with Scope
+%%%%%%%%%%%%%%%%%%%
 
 Syntax: ``%[ pattern ]% (BIND '[' ID (AS ID)? (',' ID (AS ID)?)*']')?``
 
-A pure constraint pattern is a pattern that does not create any bindings
-in the current scope.  Any pattern can be turned into a pure constraint pattern
+A pattern with scope is a pattern that does not create any bindings
+in the current scope.  Any pattern can be turned into a scoped pattern
 by placing it between the ``%[`` and ``]%`` operators.
 
 Example,
@@ -654,13 +633,13 @@ Example,
       let pos_int = pattern %[(x:%integer) if x > 0]%
       let i:*pos_int = val.
 
-The first line defines a pure constraint pattern for the positive integers.
+The first line defines a scoped pattern for the positive integers.
 Notice that the pattern internally uses the variable ``x`` in order to evaluate
 the conditional pattern but because it has been declared as a pure constraint
 pattern this value binding is not exported to the current scope during pattern matching.
 On the second line we constrain the pattern ``i`` to only the positive integer values using
-the pure constraint pattern stored in ``p``.  This pattern match will only succeed if ``val``
-evaluates to a postive integer.
+the scoped pattern stored in ``p``.  This pattern match will only succeed if ``val``
+is a postive integer.
 
 Asteroid Grammar
 ^^^^^^^^^^^^^^^^
@@ -684,15 +663,15 @@ are written in quotes.
 
   stmt
     : '.' // NOOP
-    | LOAD SYSTEM? (STRING | ID) '.'?
+    | LOAD SYSTEM? (STRING | ID) (AS ID)? '.'?
     | GLOBAL id_list '.'?
-    | ASSERT exp '.'?
     | STRUCTURE ID WITH struct_stmts END
     | LET pattern '=' exp '.'?
     | LOOP DO? stmt_list END
     | FOR pattern IN exp DO stmt_list END
     | WHILE exp DO stmt_list END
     | REPEAT DO? stmt_list UNTIL exp '.'?
+    | MATCH exp (WITH pattern DO stmt_list)* END
     | IF exp DO stmt_list (ELIF exp DO stmt_list)* (ELSE DO? stmt_list)? END
     | TRY DO? stmt_list (CATCH pattern DO stmt_list)+ END
     | THROW exp '.'?
@@ -724,6 +703,10 @@ are written in quotes.
   ////////////////////////////////////////////////////////////////////////////////////////
   // expressions/patterns
 
+
+
+
+
   exp
     : pattern
 
@@ -734,6 +717,10 @@ are written in quotes.
 
   head_tail
     : conditional ('|' exp)?
+
+
+
+
 
 
   conditional
@@ -783,8 +770,6 @@ are written in quotes.
     | NOT call_or_index
     | MINUS call_or_index
     | PLUS call_or_index
-    | ESCAPE STRING
-    | EVAL primary
     | '(' tuple_stuff ')'
     | '[' list_stuff ']'
     | function_const
@@ -829,8 +814,25 @@ single integer value.
 Builtin Functions
 -----------------
 
+**assert** x
+      Throws an exception if x evaluates to false; otherwise it returns a none value.
+
+**eval** x:%string
+      Evaluate x as a piece of Asteroid code and return the computed value.  The following is a
+      simple example,
+      ::
+            let a = eval "1+1".
+            assert(a == 2).
+
+**escape** x:%string
+      Evaluate x as a piece of Python code and return the computed value.  For more details please
+      see the section on embedding Python code in this reference guide.
+
 **getid** x
       Returns a unique id of any Asteroid object as an integer.
+
+**gettype** x
+      Returns the type of x as a string.
 
 **hd** x:%list
       Returns the first element of a list. It is an error to apply this
@@ -839,6 +841,16 @@ Builtin Functions
 **isdefined** x:%string
       Returns true if a variable or type name is defined in the
       current environment otherwise it returns false. The variable or type name must be given as a string.
+
+**islist** x
+      Returns true if x is a list otherwise it will return false.
+
+**isnone** x
+      Returns true if x is equal to the value none.
+
+**isscalar** x
+      Returns true if x is either an integer or a real value.
+
 **len** x
       Returns the length of x. The
       function can only be applied to lists, strings, tuples, or structures.
@@ -854,6 +866,23 @@ Builtin Functions
       Returns the rest of the list without the first element.  It is an
       error to apply this function to an empty list.
 
+**tobase** (x:%integer,base:%integer)
+      Represents the given integer x as a numeral string in different bases.
+
+**tointeger** (x:%string,base:%integer) | x
+      Converts a given input to an integer. If a base value is specified then
+      the resulting integer is in the corresponding base.
+
+**toplevel** ()
+      Returns true if flow of control is in the "toplevel" module, that is, the module with which the
+      the interpreter was called; otherwise it will return false.
+
+**toreal** x
+      Returns the input as a real number.
+
+**tostring** x | (x,stringformat(width:%integer,precision:%integer,scientific:%boolean))
+      Converts an Asteroid object to a string. If format values are given,
+      it applies the formatting to the string object.
 
 
 List and String Objects
@@ -971,7 +1000,7 @@ string **@flip** ()
       Returns a copy of the string with its characters in the reverse order.
 
 string **@index** item:%string | (item:%string, loc(startix:%integer)) | (item:%string, loc(startix:%integer, endix:%integer))
-      Returns an integer index of the item in the string or none if item was not found.
+      Returns an integer index of the item in the string or -1 if item was not found.
       The  argument loc allows you to specify startix and endix and are used to limit the search
       to a particular substring of the string. The returned index is computed relative to the beginning
       of the full string rather than the startix.
@@ -1144,8 +1173,8 @@ An example:
     load system io.
     load system math.
 
-    let x = math @sin( math @pi / 2 ).
-    io @println("The sine of pi / 2 is " + x + ".").
+    let x = math @sin( math @pi / 2.0 ).
+    io @println("The sine of pi / 2 is " + tostring x + ".").
 Constants
 %%%%%%%%%
 
@@ -1155,6 +1184,8 @@ math **@pi**
 math **@e**
       The mathematical constant e = 2.718281…, to available precision.
 
+math **@tau**
+      The mathematical constant τ = 6.283185…, to available precision.
 
 Power and logarithmic functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1162,30 +1193,65 @@ Power and logarithmic functions
 math **@exp** x:%integer
       Returns e raised to the power x, where e = 2.718281… is the base of the natural logarithm.
 
+math **@expm1** x
+      Returns e raised to the power x minus 1. This function maintains a higher level of precision then the standard operation.
+
+math **@isqrt** x:%real
+      Returns the floor of the square root of x as a integer.
+
+math **@ldexp** (x,i)
+      Returns x * (2^i).
+
 math **@log** x | (x, base:%integer)
       If only argument x is the input, return the natural logarithm of x (to base e).
       If two arguments, (x, base:%integer), are given as input, return the logarithm
       of x to the given base, calculated as log(x)/log(base).
 
+math **@log1p** x
+      Returns the natural logarithm of 1 + x.
+
+math **@log2** x
+      Returns the base 2 logarithm of x.
+
+math **@log10** x
+      Returns the base 10 logarithm of x.
+
 math **@pow** (b, p:%integer)
-      Return b raised to the power p.  The return type depends on the type
+      Returns b raised to the power p.  The return type depends on the type
       of the base.
 
 math **@sqrt** x
-      Return the square root of x as a real.
-
+      Returns the square root of x as a real.
 
 Number-theoretic and representation functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 math **@abs** x
-      Return that absolute value of x.  The return type depends on the type of x.
+      Returns that absolute value of x.  The return type depends on the type of x.
 
 math **@ceil** x:%real
       Returns the ceiling of x: the smallest integer greater than or equal to x.
 
+math **@comb** (n:%integer,k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and without order. This is equal to n! / k!(n - k)!.
+
+math **@copysign** (x,y)
+      Returns a real with the absolute value of x and the sign of y.
+
+math **@dist** (x,y)
+      Return the Euclidean distance as a float between two points x and y, each given as a tuple or list of coordinates.
+
+math **@factorial** (n:%integer)
+      Returns the factorial of the integer n.
+
 math **@floor** x:%real
       Returns the floor of x: the largest integer less than or equal to x.
+
+math **@fmod** (v,d)
+      Implements the modulus operation as defined by the platform C library. This is equal to v - n*d for some integer n such that the result has the same sign as v and magnitude less than abs(d).
+
+math **@fsum** x:%list | x:%tuple
+      Calculate the sum of all the elements of a list or tuple. This function carries a higher floating point precison level than the standard sum() function by tracking multiple intermediate partial sums.
 
 math **@gcd** (a:%integer, b:%integer)
       Returns the greatest common denominator that both integers share.
@@ -1195,9 +1261,30 @@ math **@isclose** (a:%real, b:%real) | (a:%real, b:%real, t:%real)
       Default tolerance is 1e-09.  An alternative tolerance can be specified with
       the t argument.
 
+math **@lcm** (a:%integer,b:%integer)
+      Returns the least common multiple of the integers a and b.
+
 math **@mod** (v,d)
       Implements the modulus operation. Returns the remainder of the quotient v/d.
 
+math **@perm** (n:%integer, k:%integer)
+      Returns the numbers of ways to choose k items from n total items without repetition and with order. This is equal to n! / (n - k)!.
+
+math **@prod** x:%list | x:%tuple
+      Calculate and return the product of all the elements of a list or tuple x.
+
+math **@remainder** (x,y)
+      Returns the IEEE 754-style remainder of x with respect to y.
+
+math **@round** x:%real
+      Returns x rounded to the nearest integer. If two integers are equally
+      close, x is rounded to the nearest even integer.
+
+math **@sum** x:%list | x:%tuple
+      Calculate and return the sum of all the elements of a list or tuple x.
+
+math **@trunc** x:%real
+      Returns x with its fractional component set to 0.
 
 Trigonometric functions
 %%%%%%%%%%%%%%%%%%%%%%%
@@ -1211,8 +1298,14 @@ math **@asin** x
 math **@atan** x
       Returns the arc tangent of x in radians. The result is between -pi/2 and pi/2.
 
+math **@atan2** (x,y)
+      Returns the arc tangent of y / x in radians. The result is between -pi and pi.
+
 math **@cos** x
       Returns the cosine of x radians.
+
+math **@hypot** (x,y)
+      Returns the Euclidean norm as a real of x and y. This is equivalent to sqrt(x^2 + y^2).
 
 math **@sin** x
       Returns the sine of x radians.
@@ -1250,6 +1343,20 @@ math **@degrees** x
 math **@radians** x
       Converts angle x from degrees to radians.
 
+Special functions
+%%%%%%%%%%%%%%%%%
+
+math **@erf** x
+      Returns the error function (also called the Gauss error function) at x.
+
+math **@erfc** x
+      Returns the complement of the error function at x. The is defined as 1 - erf(x)
+
+math **@gamma** x
+      Returns the Gamma function at x.
+
+math **@lgamma** x
+      Returns the natural logarithm of the absolute value of the Gamma function at x.
 
 os
 ^^
@@ -1302,8 +1409,8 @@ os **@exit** () | v:%integer | msg:%string
       Signaling an intention to exit the interpreter.
       When an argument value other than none is provided
       it is considered a status value. If it is
-      an integer, zero is considered “successful termination” and any
-      nonzero value is considered “abnormal termination” by shells and
+      an integer, zero is considered "successful termination" and any
+      nonzero value is considered "abnormal termination" by shells and
       the like. Most systems require it to be in the range 0–127, and
       produce undefined results otherwise. Some systems have a
       convention for assigning specific meanings to specific exit codes,
@@ -1394,6 +1501,109 @@ os **@syscmd** cmd:%string
 
 
 
+patterns
+^^^^^^^^
+
+The patterns module implements common patterns.
+An example:
+::
+   load system patterns.
+
+   let evens = [].
+   for num in 1 to 10 do
+      if num is *patterns@even do
+         let evens = evens@append(num).
+      end
+   end
+   assert(evens is [2,4,6,8,10]).
+If a pattern only applies to a certain datatype then a constraint expression of the form ``:%<datatype>`` appears
+right after the pattern in the documentation.  If the pattern applies to multiple datatypes then the
+different datatypes are separated by or-bars, e.g. ``:%<datatype1>|%<datatype2>``.
+
+Common number sets
+%%%%%%%%%%%%%%%%%%
+
+patterns **@digit** \: %integer
+      Matches single digit integers.
+
+patterns **@even** \: %integer
+      Matches integers which are even numbers.
+
+patterns **@nat** \: %integer
+      Matches integers which are natural numbers.
+
+patterns **@negative** \: %integer | %real
+      Matches negative reals and integers.
+
+patterns **@neg_int** \: %integer
+      Matches negative integers.
+
+patterns **@neg_int** \: %integer
+      Matches negative integers.
+
+patterns **@odd** \: %integer
+      Matches integers which are odd numbers.
+
+patterns **@positive** \: %integer | %real
+      Matches positive reals and integers.
+
+patterns **@pos_int** \: %integer
+      Matches positive integers.
+
+patterns **@pos_real** \: %real
+      Matches postive reals.
+
+patterns **@prime** \: %integer
+      Matches prime numbers.
+
+patterns **@zero** \: %integer | %real
+      Matches the value 0, either as an integer or a real.
+
+Containers
+%%%%%%%%%%
+
+patterns **@bool_list** \: %list
+      Matches lists which only contain booleans.
+
+patterns **@func_list** \: %list
+      Matches lists which only contain functions.
+
+patterns **@int_list** \: %list
+      Matches lists which only contain integers.
+
+patterns **@list_list** \: %list
+      Matches lists which only contain lists.
+
+patterns **@real_list** \: %list
+      Matches lists which only contain reals.
+
+patterns **@str_list** \: %list
+      Matches lists which only contain strings.
+
+patterns **@tuple_list** \: %list
+      Matches lists which only contain tuples.
+
+Strings
+%%%%%%%
+
+patterns **@alphabetic** \: %string
+      Matches strings which only contain alphabetic characters.
+
+patterns **@alphanumeric** \: %string
+      Matches strings which only contain alphanumeric characters.
+
+patterns **@lowercase** \: %string
+      Matches strings which only contain lowercase alphabetic characters.
+
+patterns **@numeric** \: %string
+      Matches strings which only contain numeric characters.
+
+patterns **@uppercase** \: %string
+      Matches strings which only contain uppercase alphabetic characters.
+
+
+
+
 pick
 ^^^^
 
@@ -1404,7 +1614,7 @@ An example:
    load system io.
    load system pick.
 
-   let po = pick @pick([1 to 10]).
+   let po = pick @pick [1 to 10].
    let objects = po @pickitems 3.
    io @println objects.
 pick **@pick** l:%list
@@ -1496,7 +1706,7 @@ A simple use case:
 
    let s = stream @stream [1 to 10].
    while not s @eof() do
-      io @print (s @get() + " ").
+      io @print (tostring (s @get()) + " ").
    end
    io @println "".
 which outputs::
@@ -1528,85 +1738,7 @@ __STREAM__ **@rewind** ()
       Resets the stream pointer to the first element of the stream.
 
 
-type
-^^^^
 
-The type module defines type related functions and structures.
-Here is a program that exercises some of the string formatting options:
-::
-    load system io.
-    load system type.
-    load system math.
-
-    -- if the width specifier is larger than the length of the value
-    -- then the value will be right justified
-    let b = type @tostring(true,type @stringformat(10)).
-    io @println b.
-
-    let i = type @tostring(5,type @stringformat(5)).
-    io @println i.
-
-    -- we can format a string by applying tostring to the string
-    let s = type @tostring("hello there!",type @stringformat(30)).
-    io @println s.
-
-    -- for floating point values: first value is width, second value precision.
-    -- if precision is missing then value is left justified and zero padded on right.
-    let r = type @tostring(math @pi,type @stringformat(6,3)).
-    io @println r.
-The output of the program is,
-::
-
-          true
-        5
-                      hello there!
-     3.142
-
-Notice the right justification of the various values within the given string length.
-
-Type Conversion
-%%%%%%%%%%%%%%%
-
-type **@tobase** (x:%integer,base:%integer)
-      Represents the given integer x as a numeral string in different bases.
-
-type **@toboolean** x
-      Interpret x as a Boolean value.
-
-type **@tointeger** (x:%string,base:%integer) | x
-      Converts a given input to an integer. If a base value is specified then
-      the resulting integer is in the corresponding base.
-
-type **@toreal** x
-      Returns the input as a real number.
-
-type  **@tostring** x | (x,type @stringformat(width:%integer,precision:%integer,scientific:%boolean))
-      Converts an Asteroid object to a string. If format values are given,
-      it applies the formatting to the string object.
-
-
-
-Type Query Functions
-%%%%%%%%%%%%%%%%%%%%
-
-type **@islist** x
-      Returns true if x is a list otherwise it will return false.
-
-type **@isnone** x
-      Returns true if x is equal to the value none.
-
-type **@isscalar** x
-      Returns true if x is either an integer or a real value.
-
-type **@gettype** x
-      Returns the type of x as a string.
-
-A simple example program using the ``gettype`` function,
-::
-   load system type.
-
-   let i = 1.
-   assert(type @gettype(i) == "integer").
 util
 ^^^^
 
@@ -1766,7 +1898,7 @@ The program prints out,
 Embedding Python into an Asteroid Program
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Using Asteroid's ``escape`` expression allows us to embed arbitray Python
+Using Asteroid's ``escape`` function allows us to embed arbitray Python
 code into an Asteroid program,
 ::
       -- Printing hello once from each environment
@@ -1785,7 +1917,7 @@ Please note that the format of the Python code in the escaped string should foll
 same guidelines as the Python code embedded in strings handed to the Python `exec
 function <https://docs.python.org/3/library/functions.html#exec>`_.
 
-Not only does the ``escape`` expression give you access to the Python environment but
+Not only does the ``escape`` function give you access to the Python environment but
 it also gives you access to the current Asteroid interpreter state including its
 symbol table.  That means we can access any variable defined in the Asteroid
 environment from Python,
@@ -1808,7 +1940,7 @@ is the actual value stored.  In this case our program prints out,
 
 That is the type of the value is a string and the value is the actual string ``Hello World!``.
 
-Since ``escape`` represents an expression we can also return values from the
+Since ``escape`` is a function we can also return values from the
 Python code using a special ``__retval__`` variable.  The only trick is that
 we have to remember that values in Asteroid are pairs consisting of type information
 and values.  Here is a very simple program that exercises that part of the Python API,

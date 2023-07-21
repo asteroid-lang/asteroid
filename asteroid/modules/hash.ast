@@ -5,10 +5,10 @@
 --
 -- (c) Lutz Hamel, University of Rhode Island
 ------------------------------------------------------------------
-load system type.
+
 
 ------------------------------------------------------------------
-structure __HASH__ with
+structure Hash with
 ------------------------------------------------------------------
 -- Asteroid hash table implementation using Python dictionaries
 
@@ -26,6 +26,7 @@ this_val = state.symbol_table.lookup_sym('this')
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # the table is in the first slot in the object memory
@@ -37,8 +38,10 @@ end -- __init__
 ------------------------------------------------------------------
 function insert
 ------------------------------------------------------------------
-with (name,value) do escape
+with (name,value) do 
+return escape
 "
+global __retval__
 this_val = state.symbol_table.lookup_sym('this')
 name_val = state.symbol_table.lookup_sym('name')
 value_val = state.symbol_table.lookup_sym('value')
@@ -46,17 +49,21 @@ value_val = state.symbol_table.lookup_sym('value')
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # the table is in the first slot in the object memory
 # insert name-value pair
 (FOREIGN, dictionary) = memory[0]
 dictionary[name_val] = value_val
+
+__retval__ = this_val
 "
 with item_list:%list do
   for (k,v) in item_list do
     this @insert (k,v).
   end
+  return this
 end -- insert
 
 ------------------------------------------------------------------
@@ -72,6 +79,7 @@ name_val = state.symbol_table.lookup_sym('name')
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # the table is in the first slot in the object memory
@@ -96,6 +104,7 @@ this_val = state.symbol_table.lookup_sym('this')
 # destructure object
 (OBJECT,
  (STRUCT_ID, (ID, struct_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # the table is in the first slot in the object memory
@@ -121,21 +130,14 @@ end -- aslist
 function __str__
 ------------------------------------------------------------------
 with none do
-  return type @tostring (this @aslist ()).
+  return tostring (this @aslist ()).
 end -- __str__
 
-end -- __HASH__
+end -- Hash structure
 
-------------------------------------------------------------------
-structure __HASH_MODULE__
-------------------------------------------------------------------
-with
-
+-- here for backwards compatibility
 function hash with none do
-   return __HASH__().
+   return Hash().
 end
 
-end -- __HASH_MODULE__
 
-------------------------------------------------------------------
-let hash = __HASH_MODULE__().

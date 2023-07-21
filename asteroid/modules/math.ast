@@ -7,31 +7,14 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
-structure __MATH_MODULE__ with
 
 ------------------------------------------------------------------
 -- Constants
 ------------------------------------------------------------------
-data pi.
-data e.
 
-function __init__ with none do
-
-let this @pi = escape -- init pi constant
-"
-from math import pi
-global __retval__
-__retval__ = ('real',pi)
-"
-
-let this @e = escape -- init e constant
-"
-from math import e
-global __retval__
-__retval__ = ('real',e)
-"
-
-end -- __init__
+let pi = escape "from math import pi;global __retval__;__retval__=('real',pi)"
+let tau = escape "from math import tau;global __retval__;__retval__=('real',tau)"
+let e = escape "from math import e;global __retval__;__retval__=('real',e)"
 
 ------------------------------------------------------------------
 -- Power and logarithmic functions
@@ -116,8 +99,199 @@ __retval__ = ('real',sqrt(val_a[1]))
 end
 
 ------------------------------------------------------------------
+function isqrt
+------------------------------------------------------------------
+-- Return the integer square root of the nonnegative integer n. 
+-- This is the floor of the exact square root of n, or the greatest 
+-- integer a such that a^2 <= n.
+with a do return escape
+"
+global __retval__
+from asteroid.state import state
+from math import isqrt
+
+val_a = state.symbol_table.lookup_sym('a')
+if val_a[0] not in ['integer','real']:
+  raise ValueError('unsupported type \'{}\' for isqrt'.format(val_a[0]))
+__retval__ = ('integer',isqrt(val_a[1]))
+"
+end
+
+------------------------------------------------------------------
+function ldexp
+------------------------------------------------------------------
+-- Return x * (2**i)
+with (x,i) do return escape
+"
+global __retval__
+from math import ldexp
+
+val_x = state.symbol_table.lookup_sym('x')
+val_i = state.symbol_table.lookup_sym('i')
+
+if val_x[0] not in ['integer','real'] or val_i[0] not in ['integer','real']:
+  raise ValueError('unsupported type for ldexp')
+__retval__ = ('real',ldexp(val_x[1],val_i[1]))
+"
+end
+
+------------------------------------------------------------------
+function expm1
+------------------------------------------------------------------
+-- Return e raised to the power x, minus 1.
+with x do return escape
+"
+global __retval__
+from math import expm1
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['integer','real']:
+  raise ValueError('unsupported type for expm1')
+__retval__ = ('real',expm1(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function log1p
+------------------------------------------------------------------
+-- Return the natural logarithm of 1+x (base e).
+with x do return escape
+"
+global __retval__
+from math import log1p
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['integer','real']:
+  raise ValueError('unsupported type for log1p')
+__retval__ = ('real',log1p(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function log2
+------------------------------------------------------------------
+-- Return the base-2 logarithm of x.
+with x do return escape
+"
+global __retval__
+from math import log2
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['integer','real']:
+  raise ValueError('unsupported type for log2')
+__retval__ = ('real',log2(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function log10
+------------------------------------------------------------------
+-- Return the base-10 logarithm of x.
+with x do return escape
+"
+global __retval__
+from math import log10
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['integer','real']:
+  raise ValueError('unsupported type for log10')
+__retval__ = ('real',log10(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
 -- Number-theoretic and representation functions
 ------------------------------------------------------------------
+
+------------------------------------------------------------------
+function prod
+------------------------------------------------------------------
+-- Returns the product of a list or tuple
+-- conditional pattern match asserts the the input is a list or 
+-- tuple and that every element is a real or integer value. This 
+-- is to avoid strings getting in and having Python's definition 
+-- of multiplication between ints and strings applied.
+with x if ((x is %list) or (x is %tuple)) 
+          do return escape
+"
+global __retval__
+from math import prod
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['list','tuple'] :
+  raise ValueError('unsupported type for prod')
+
+__val__ =  prod( to_python_list(val_x) )
+
+if isinstance(__val__,float):
+  __retval__ = ('real',__val__)
+else:
+  __retval__ = ('integer',__val__)
+"
+end
+
+------------------------------------------------------------------
+function sum
+------------------------------------------------------------------
+-- Returns the sum of a list or tuple
+with x do return escape
+"
+global __retval__
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['list','tuple'] :
+  raise ValueError('unsupported type for sum')
+
+__val__ =  sum( to_python_list(val_x) )
+
+if isinstance(__val__,float):
+  __retval__ = ('real',__val__)
+else:
+  __retval__ = ('integer',__val__)
+"
+end
+
+------------------------------------------------------------------
+function fsum
+------------------------------------------------------------------
+-- Returns the sum of a list or tuple. Returns an accurate 
+-- floating point sum of values in the iterable. Avoids loss of
+-- precision by tracking multiple intermediate partial sums.
+with x do return escape
+"
+global __retval__
+from math import fsum
+
+val_x = state.symbol_table.lookup_sym('x')
+
+if val_x[0] not in ['list','tuple'] :
+  raise ValueError('unsupported types for fsum')
+
+__retval__ = ('real',fsum( to_python_list(val_x) ))
+
+"
+end
+
+------------------------------------------------------------------
+function remainder
+------------------------------------------------------------------
+with (a,b) do return escape
+"
+global __retval__
+from math import remainder
+
+val_a = state.symbol_table.lookup_sym('a')
+val_b = state.symbol_table.lookup_sym('b')
+
+__retval__ = ('real', remainder(val_a[1], val_b[1]))
+"
+end
 
 ------------------------------------------------------------------
 function abs
@@ -166,6 +340,21 @@ __retval__ = ('integer', math.floor(val_x[1]))
 end
 
 ------------------------------------------------------------------
+function round
+------------------------------------------------------------------
+-- Return x rounded to the nearest integer. If two integers are equally close,
+-- x is rounded to the nearest even integer.
+with (x:%real) do return escape
+"
+global __retval__
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('integer', round(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
 function gcd
 ------------------------------------------------------------------
 with (a:%integer,b:%integer) do return escape
@@ -176,8 +365,71 @@ from math import gcd
 val_a = state.symbol_table.lookup_sym('a')
 val_b = state.symbol_table.lookup_sym('b')
 
-
 __retval__ = ('integer', gcd(val_a[1], val_b[1]))
+"
+end
+
+------------------------------------------------------------------
+function lcm
+------------------------------------------------------------------
+-- Return the least common multiple of the integer arguments. 
+with (a:%integer,b:%integer) do return escape
+"
+global __retval__
+from math import lcm
+
+val_a = state.symbol_table.lookup_sym('a')
+val_b = state.symbol_table.lookup_sym('b')
+
+__retval__ = ('integer', lcm(val_a[1], val_b[1]))
+"
+end
+
+------------------------------------------------------------------
+function copysign
+------------------------------------------------------------------
+-- Return a float with the absolute value of x and the sign of y. 
+with (x,y) do return escape
+"
+global __retval__
+from math import copysign
+
+val_x = state.symbol_table.lookup_sym('x')
+val_y = state.symbol_table.lookup_sym('y')
+
+if val_x[0] not in ['integer','real'] or val_y[0] not in ['integer','real']:
+  raise ValueError('unsupported types for copysign')
+__retval__ = (val_x[0], copysign(val_x[1],val_y[1]))
+"
+end
+
+------------------------------------------------------------------
+function factorial
+------------------------------------------------------------------
+-- Return n factorial as an integer.
+with n:%integer do return escape
+"
+global __retval__
+from math import factorial
+
+val_n = state.symbol_table.lookup_sym('n')
+
+__retval__ = ('integer', factorial(val_n[1]))
+"
+end
+
+------------------------------------------------------------------
+function trunc
+------------------------------------------------------------------
+-- Return n with its fractional component set to 0.
+with n:%real do return escape
+"
+global __retval__
+from math import trunc
+
+val_n = state.symbol_table.lookup_sym('n')
+
+__retval__ = ('integer', trunc(val_n[1]))
 "
 end
 
@@ -212,25 +464,45 @@ end
 ------------------------------------------------------------------
 function mod
 ------------------------------------------------------------------
-with (v,d) do return escape
+-- only defined as a function over integers for now
+with (v:%integer,d:%integer) do return escape
 "
 global __retval__
-from asteroid.state import state
-from asteroid.support import promote
 
 val_v = state.symbol_table.lookup_sym('v')
 val_d = state.symbol_table.lookup_sym('d')
 
-if val_v[0] not in ['integer','real']:
-  raise ValueError('unsupported type \'{}\' for mod'.format(val_v[0]))
-
-if val_d[0] not in ['integer','real']:
-  raise ValueError('unsupported type \'{}\' for mod'.format(val_d[0]))
-
-__retval__ = (promote(val_v[0],val_d[0]),val_v[1] % val_d[1])
+__retval__ = ('integer',val_v[1] % val_d[1])
+"
+with _ do escape 
+"
+raise ValueError('unsupported type in \'mod\'')
 "
 end
 
+------------------------------------------------------------------
+function fmod
+------------------------------------------------------------------
+-- Return fmod(x, y), as defined by the platform C library. The
+-- intent of the C standard is that fmod(x, y) be exactly 
+-- (mathematically; to infinite precision) equal to x - n*y for
+-- some integer n such that the result has the same sign as x 
+-- and magnitude less than abs(y). 
+with (v:%integer,d:%integer) do return escape
+"
+global __retval__
+from math import fmod
+
+val_v = state.symbol_table.lookup_sym('v')
+val_d = state.symbol_table.lookup_sym('d')
+
+__retval__ = ('integer',fmod(val_v[1], val_d[1]))
+"
+with _ do escape 
+"
+raise ValueError('unsupported type in \'fmod\'')
+"
+end
 
 ------------------------------------------------------------------
 -- Trigonometric functions
@@ -281,6 +553,23 @@ global __retval__
 x_val = state.symbol_table.lookup_sym('x')
 
 __retval__ = ('real', math.atan(x_val[1]))
+"
+end
+
+------------------------------------------------------------------
+function atan2
+------------------------------------------------------------------
+-- Return atan(y / x), in radians. The result is between -pi and 
+-- pi.
+with (x,y) do return escape
+"
+import math
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+y_val = state.symbol_table.lookup_sym('y')
+
+__retval__ = ('real', math.atan2(x_val[1],y_val[1]))
 "
 end
 
@@ -420,6 +709,48 @@ __retval__ = ('real', math.tanh(x_val[1]))
 end
 
 ------------------------------------------------------------------
+function dist
+------------------------------------------------------------------
+-- Return the Euclidean distance between two points p and q, each
+-- given as a sequence (or iterable) of coordinates.  
+with (x,y) do return escape
+"
+global __retval__
+from math import dist
+
+val_x = state.symbol_table.lookup_sym('x')
+val_y = state.symbol_table.lookup_sym('y')
+
+if val_x[0] not in ['list','tuple'] or val_y[0] not in  ['list','tuple']:
+  raise ValueError('unsupported types for dist')
+if len(val_x[1]) != len(val_y[1]):
+  raise ValueError('points must do of same dimension for dist')
+
+__retval__ = ('real', dist(to_python_list(val_x),to_python_list(val_y)))
+"
+end
+
+------------------------------------------------------------------
+function hypot
+------------------------------------------------------------------
+-- Return the Euclidean norm, sqrt(sum(x**2 for x in coordinates))  
+with (a,b) do return escape
+"
+global __retval__
+from math import hypot
+
+val_a = state.symbol_table.lookup_sym('a')
+val_b = state.symbol_table.lookup_sym('b')
+
+__retval__ = ('real',hypot(val_a[1],val_b[1]))
+"
+end
+
+------------------------------------------------------------------
+-- Conversions
+------------------------------------------------------------------
+
+------------------------------------------------------------------
 function degrees
 ------------------------------------------------------------------
 -- Convert angle x from radians to degrees.
@@ -449,6 +780,108 @@ __retval__ = ('real', math.radians(x_val[1]))
 "
 end
 
-end -- __MATH_MODULE__
+------------------------------------------------------------------
+-- Combinatoric functions
+------------------------------------------------------------------
 
-let math = __MATH_MODULE__()
+------------------------------------------------------------------
+function comb
+------------------------------------------------------------------
+-- Return the number of ways to choose k items from n items 
+-- without repetition and without order. Evaluates to 
+-- n! / (k! * (n - k)!) when k <= n and evaluates to zero when 
+-- k > n.
+with (n:%integer,k:%integer) do return escape
+"
+global __retval__
+from math import comb
+
+val_n = state.symbol_table.lookup_sym('n')
+val_k = state.symbol_table.lookup_sym('k')
+
+__retval__ = ('integer',comb(val_n[1],val_k[1]))
+"
+end
+
+------------------------------------------------------------------
+function perm
+------------------------------------------------------------------
+-- Return the number of ways to choose k items from n items 
+-- without repetition and with order. Evaluates to 
+-- n! / (n - k)! when k <= n and evaluates to zero when k > n.
+with (n:%integer,k:%integer) do return escape
+"
+global __retval__
+from math import perm
+
+val_n = state.symbol_table.lookup_sym('n')
+val_k = state.symbol_table.lookup_sym('k')
+
+__retval__ = ('integer',perm(val_n[1],val_k[1]))
+"
+end
+
+------------------------------------------------------------------
+-- Special functions
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function erf
+------------------------------------------------------------------
+-- Return the error function at x.
+with x do return escape
+"
+global __retval__
+from math import erf
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('real',erf(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function erfc
+------------------------------------------------------------------
+-- Return the complementary error function at x.
+with x do return escape
+"
+global __retval__
+from math import erfc
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('real',erfc(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function gamma
+------------------------------------------------------------------
+-- Return the Gamma function at x.
+with x do return escape
+"
+global __retval__
+from math import gamma
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('real',gamma(val_x[1]))
+"
+end
+
+------------------------------------------------------------------
+function lgamma
+------------------------------------------------------------------
+-- Return the natural logarithm of the absolute value of the Gamma
+-- function at x.
+with x do return escape
+"
+global __retval__
+from math import lgamma
+
+val_x = state.symbol_table.lookup_sym('x')
+
+__retval__ = ('real',lgamma(val_x[1]))
+"
+end

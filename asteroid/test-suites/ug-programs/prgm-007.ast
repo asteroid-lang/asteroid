@@ -1,2 +1,2 @@
     load system io.
-    io @println ("this is my list: " + [1,2,3]).
+    io @println ("this is my list: " + tostring [1,2,3]).

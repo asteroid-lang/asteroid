@@ -1,20 +1,19 @@
     load system io.
-    load system type.
     load system math.
 
     -- if the width specifier is larger than the length of the value
     -- then the value will be right justified
-    let b = type @tostring(true,type @stringformat(10)).
+    let b = tostring(true,stringformat(10)).
     io @println b.
 
-    let i = type @tostring(5,type @stringformat(5)).
+    let i = tostring(5,stringformat(5)).
     io @println i.
 
     -- we can format a string by applying tostring to the string
-    let s = type @tostring("hello there!",type @stringformat(30)).
+    let s = tostring("hello there!",stringformat(30)).
     io @println s.
 
     -- for floating point values: first value is width, second value precision.
     -- if precision is missing then value is left justified and zero padded on right.
-    let r = type @tostring(math @pi,type @stringformat(6,3)).
+    let r = tostring(math@pi,stringformat(6,3)).
     io @println r.

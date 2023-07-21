@@ -5,14 +5,14 @@
 --
 -- (c) University of Rhode Island
 
-
-load system type.
+-- define the io module.
 
 ------------------------------------------------------------------
--- Basic file i/o
+
 ------------------------------------------------------------------
 structure __FILE__ with
 ------------------------------------------------------------------
+-- Basic file i/o
 
 data fd.
 
@@ -32,6 +32,7 @@ mode_val = state.symbol_table.lookup_sym('mode')
 # destructure object
 (OBJECT,
 (CLASS_ID, (ID, class_id)),
+(MEMBER_NAMES, (LIST, member_names)),
 (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 # Open file
@@ -62,6 +63,7 @@ else:
 # destructure object
 (OBJECT,
 (CLASS_ID, (ID, class_id)),
+(MEMBER_NAMES, (LIST, member_names)),
 (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 memory[0] = ('foreign', stream)
@@ -80,6 +82,7 @@ this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 (FOREIGN, f_val) = memory[0]
@@ -99,6 +102,7 @@ this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 (FOREIGN, f_val) = memory[0]
@@ -118,6 +122,7 @@ this_val = state.symbol_table.lookup_sym('this')
 
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 (FOREIGN, f_val) = memory[0]
@@ -137,11 +142,12 @@ what_val = state.symbol_table.lookup_sym('what')
 
 (OBJECT,
  (CLASS_ID, (ID, class_id)),
+ (MEMBER_NAMES, (LIST, member_names)),
  (OBJECT_MEMORY, (LIST, memory))) = this_val
 
 (FOREIGN, f_val) = memory[0]
 
-f_val.write(what_val[1])
+f_val.write(term2string(what_val))
 "
 end
 
@@ -151,21 +157,11 @@ end -- __FILE__
 
 
 
--- define the io module object.
-------------------------------------------------------------------
-structure __IO_MODULE__ with
-------------------------------------------------------------------
 
 -- Predefined standard stream constants
-data __STDIN__.
-data __STDOUT__.
-data __STDERR__.
-
-function __init__ with none do
-   let this @__STDIN__ = __FILE__("__STDIN__").
-   let this @__STDOUT__ = __FILE__("__STDOUT__").
-   let this @__STDERR__ = __FILE__("__STDERR__").
-end
+let __STDIN__ = __FILE__("__STDIN__").
+let __STDOUT__ = __FILE__("__STDOUT__").
+let __STDERR__ = __FILE__("__STDERR__").
 
 -- File I/O library functions
 ------------------------------------------------------------------
@@ -190,9 +186,8 @@ function read
 ------------------------------------------------------------------
 with(file:%__FILE__) do
     return file @read().
-
 with none do
-    return this @__STDIN__ @ read().
+    return __STDIN__ @ read().
 end
 
 ------------------------------------------------------------------
@@ -209,7 +204,7 @@ function readln
 with(file:%__FILE__) do
     return file @readln().
 with none do
-    return this @__STDIN__ @readln().
+    return __STDIN__ @readln().
 end
 
 ------------------------------------------------------------------
@@ -217,13 +212,8 @@ function write
 -- Write to a given file
 ------------------------------------------------------------------
 with what:%string do
-this @__STDOUT__ @write(what).
-
-escape "
-import sys
-sys.stdout.flush()
-"
-
+    __STDOUT__ @write(what).
+    escape "import sys;sys.stdout.flush()".
 with(file:%__FILE__, what:%string) do
     file @write(what).
 end
@@ -233,7 +223,7 @@ function writeln
 -- Write a complete line to a given file
 ------------------------------------------------------------------
 with what:%string do
-    this @__STDOUT__ @write(what + "\n").
+    __STDOUT__ @write(what + "\n").
 
 with(file:%__FILE__, what:%string) do
     file @write(what + "\n").
@@ -246,14 +236,14 @@ end
 function println
 ------------------------------------------------------------------
 with item do
-    this @writeln(type @tostring item).
+    writeln(tostring item).
 end
 
 ------------------------------------------------------------------
 function print
 ------------------------------------------------------------------
 with item do
-    this @write(type @tostring item).
+    write(tostring item).
 end
 
 ------------------------------------------------------------------
@@ -261,10 +251,10 @@ function input
 ------------------------------------------------------------------
 -- input drops the trailing newline char
 with none do
-    return this @readln() @replace("\n","").
+    return readln() @replace("\n","").
 with prompt do
-    this @write (type @tostring prompt).
-    return this @readln() @replace("\n","").
+    write (tostring prompt).
+    return readln() @replace("\n","").
 end
 
 ------------------------------------------------------------------
@@ -280,9 +270,3 @@ pprint(item_val)
 return none
 end
 
-end -- __IO_MODULE__
-
-
-------------------------------------------------------------------
--- instantiate the io module object
-let io = __IO_MODULE__().

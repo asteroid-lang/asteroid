@@ -1,5 +1,4 @@
   load system io.
-  load system type.
   load system util.
   load system pick.
   load system random.
@@ -7,7 +6,7 @@
   random @seed(42).
 
   -- make up lists of symbols useful for password construction
-  let int_list = [0 to 9] @map(type @tostring).
+  let int_list = [0 to 9] @map(tostring).
   let lc_list = [97 to 122] @map(util @achar). -- lower case characters
   let uc_list = [65 to 90] @map(util @achar). --upper case characters
   let sp_list = ["!","_","#","$","%","*"].

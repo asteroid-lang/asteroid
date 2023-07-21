@@ -1,0 +1,4 @@
+load system io as myio.
+
+myio @println "Hello, World!".
+

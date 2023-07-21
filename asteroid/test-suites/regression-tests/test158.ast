@@ -1,0 +1,589 @@
+load system io.
+load system patterns.
+load system math.
+
+-- Expirmental patterns library test
+
+let failures = 0.
+let EXPECTED = pattern with Exception( "PatternMatchFailed" , _ ).
+
+--                                      **********************
+--                                      **** prime        ****
+--                                      **********************
+let x:*patterns@prime = 2.
+let x:*patterns@prime = 3.
+let x:*patterns@prime = 5.
+let x:*patterns@prime = 11.
+let x:*patterns@prime = 13.
+let x:*patterns@prime = 17.
+let x:*patterns@prime = 97.
+let x:*patterns@prime = 83.
+let x:*patterns@prime = 15485863.
+
+try
+    let x:*patterns@prime = 10.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@prime = 1024.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@prime = 999.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@prime = 63.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+--                                      **********************
+--                                      **** natural      ****
+--                                      **********************
+let x:*patterns@nat = 1.
+let x:*patterns@nat = 2.
+let x:*patterns@nat = 5.
+let x:*patterns@nat = 1486987.
+let x:*patterns@nat = 1010101.
+
+try
+    let x:*patterns@nat = -10.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@nat = -1.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@nat = 1.5.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+--                                      **********************
+--                                      **** pos/neg      ****
+--                                      **********************
+let x:*patterns@positive = 1.
+let x:*patterns@positive = 111111111.
+let x:*patterns@positive = 10.
+let x:*patterns@positive = 1235.3654.
+
+let x:*patterns@pos_int = 12.
+let x:*patterns@pos_int = 12213.
+let x:*patterns@pos_int = 1.
+
+let x:*patterns@pos_real = 1.23.
+let x:*patterns@pos_real = 15222.23.
+let x:*patterns@pos_real = 0.00023.
+
+let x:*patterns@negative = -1.
+let x:*patterns@negative = -111111111.
+let x:*patterns@negative = -10.
+let x:*patterns@negative = -1235.3654.
+
+let x:*patterns@neg_int = -12.
+let x:*patterns@neg_int = -12213.
+let x:*patterns@neg_int = -1.
+
+let x:*patterns@neg_real = -1.23.
+let x:*patterns@neg_real = -15222.23.
+let x:*patterns@neg_real = -0.00023.
+
+try
+    let x:*patterns@positive = -100.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@positive = -0.001.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@pos_int = -12.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@pos_int = 1.2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@pos_real = -1.2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@pos_real = 1.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@negative = 0.001.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@negative = 12.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@neg_int = -12.002.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@neg_int = 12.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@neg_real = 1.2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@neg_real = -51.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+--                                      **********************
+--                                      **** zero         ****
+--                                      **********************
+let x:*patterns@zero = 0.
+let x:*patterns@zero = 0.0.
+
+try
+    let x:*patterns@zero = 2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@zero = 0.00000000000001.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@zero = -0.2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@zero = -10.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+--                                      **********************
+--                                      **** even/odd     ****
+--                                      **********************
+let x:*patterns@even = 2.
+let x:*patterns@even = 16.
+let x:*patterns@even = 2048.
+let x:*patterns@odd = 1.
+let x:*patterns@odd = 111117.
+let x:*patterns@odd = 3.
+
+try
+    let x:*patterns@even = 1.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@even = 2.01.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@even = 7.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@odd = 0.7.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@odd = 2.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@odd = 1024.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+--                                      **********************
+--                                      **** containers   ****
+--                                      **********************
+let x:*patterns@int_list = [1,2,3,4].
+let x:*patterns@int_list = [10].
+let x:*patterns@int_list = [-1,15,32].
+
+try
+    let x:*patterns@int_list = [1,2,3,4,5,6,7,8.2345,9,10,11,12,13,14,15].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@int_list = [1,2,3,4,"not a number",6,7,8,9,10,11,12,13,14,15].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@int_list = [ "a", "b", "c" ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@real_list = [-1.0,15.0,32.3].
+let x:*patterns@real_list = [ 1.000000001 ].
+let x:*patterns@real_list = [ 1.1 ,2.2 ,3.3 ,4.4 ,5.5 ,6.6 ,7.7 ,8.8 ,9.9 ,10.1].
+
+try
+    let x:*patterns@real_list = [ 1.1 ,2.2 ,3.3 ,4.4 ,5 ,6.6 ,7.7 ,8.8 ,9.9 ,10.1].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@real_list = [ 1.1 ,2.2 ,3.3 ,4.4 ,"not a number" ,6.6 ,7.7 ,8.8 ,9.9 ,10.1].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@real_list = [ "a", "b", "c" ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@str_list = [ "a", "b", "c" ].
+let x:*patterns@str_list = [ "a" ].
+let x:*patterns@str_list = [ "hello", "hello", "a", "b", "c", "d", "e", "f", "g" ].
+
+try
+    let x:*patterns@str_list = [ "a", "b", 1, "c" ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@str_list = [ "hello", "hello", "a", "b", 1, "c", "d", "e", "f", "g" ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@str_list = [ "hello", "hello", "a", "b", (lambda with x do true), "c", "d", "e", "f", "g" ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@bool_list = [ true, true, true, false, false, true, false, true, false, true, false, false ].
+let x:*patterns@bool_list = [ true ].
+let x:*patterns@bool_list = [ false, true, false, false ].
+let x:*patterns@bool_list = [ false ].
+
+try
+    let x:*patterns@bool_list = [ true, true, true, false, false, 1, false, true, false, true, false, false ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@bool_list = [ true, true, true, false, false, "false", false, true, false, true, false, false ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@bool_list = [ true, true, true, false, false, math@pi ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+function foo1
+    with _ do
+        true
+    end
+function foo2
+    with _ do
+        true
+    end
+function foo3
+    with _ do
+        true
+    end
+function foo4
+    with _ do
+        true
+    end
+function foo5
+    with _ do
+        true
+    end
+function foo6
+    with _ do
+        true
+    end
+
+let x:*patterns@func_list = [ foo1,foo2,foo3,foo4,foo5,foo6 ].
+let x:*patterns@func_list = [ patterns@is_prime ].
+let x:*patterns@func_list = [ foo1,foo2,foo3,(lambda with x do true ),foo4,foo5,foo6 ].
+
+try
+    let x:*patterns@func_list = [ foo1,foo2,foo3,10,foo4,foo5,foo6 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@func_list = [ foo1,foo2,foo3,"string",foo4,foo5,foo6 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@func_list = [ foo1,patterns@func_list,foo4,foo5,foo6 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@list_list = [ [1,2],[3,4],[4,5] ].
+let x:*patterns@list_list = [ [1,2],[3,4],[4,5],[6,7],[8,9,10,11] ].
+let x:*patterns@list_list = [ [1,2] ].
+
+try
+    let x:*patterns@list_list = [ [1,2],[3,4],4,5 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@list_list = [ (1,2) ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@list_list = [ 1,2,3 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@tuple_list = [ (1,2),(3,4),(4,5) ].
+let x:*patterns@tuple_list = [ (1,2),(3,4),(4,5),(6,7),(8,9,10,11) ].
+let x:*patterns@tuple_list = [ (1,2) ].
+
+try
+    let x:*patterns@tuple_list = [ (1,2),(3,4),4,5 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@tuple_list = [ [1,2] ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@tuple_list = [ 1,2,3 ].
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+--                                      **********************
+--                                      **** strings      ****
+--                                      **********************
+
+let x:*patterns@alphabetic =  "helloworld".
+let x:*patterns@alphabetic =  "abcdefghijklmnopqrstuvwxyz".
+let x:*patterns@alphabetic =  "testingtesting".
+
+try
+    let x:*patterns@alphabetic = "hello world!".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@alphabetic = "abc123".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@alphabetic = "onebad$character".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@numeric =  "123456789".
+let x:*patterns@numeric =  "1".
+let x:*patterns@numeric =  "6598942".
+
+try
+    let x:*patterns@numeric = "1234five678".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@numeric = "987654321O". -- o not 0
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@numeric = "1b11101".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@alphanumeric = "abc123".
+let x:*patterns@alphanumeric = "1234five6789".
+let x:*patterns@alphanumeric = "1l1l1l1".
+
+try
+    let x:*patterns@alphanumeric = "1b11101-123".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@alphanumeric = "!$%^&*".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@alphanumeric = "HELLO?".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@lowercase = "abcdefg".
+let x:*patterns@lowercase = "hello".
+let x:*patterns@lowercase = "z".
+
+try
+    let x:*patterns@lowercase = "HELLO".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@lowercase = "abcDefg".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@lowercase = "uppercaseA".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
+let x:*patterns@uppercase = "Z".
+let x:*patterns@uppercase = "HELLO".
+
+try
+    let x:*patterns@uppercase = "HelloWorld".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@uppercase = "a".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@uppercase = "ABCDeFGHIJKLMNOPQRSTUVWXYZ".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+let x:*patterns@char = "a".
+let x:*patterns@char = "1".
+let x:*patterns@char = "?".
+
+try
+    let x:*patterns@char = "ABC".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@char = "??".
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+try
+    let x:*patterns@char = 1.
+    let failures = failures + 1.
+catch *EXPECTED do
+    .
+end
+
+
+
+
+assert(failures == 0).
+io@println "PASS".

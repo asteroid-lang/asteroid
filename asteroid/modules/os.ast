@@ -9,44 +9,7 @@
 ------------------------------------------------------------------
 load system hash.
 
-structure __OS_MODULE__ with
-
-------------------------------------------------------------------
--- The list of command line arguments passed to an Asteroid script. 
--- argv[0] is the name of the Asteroid script (it is operating 
--- system dependent whether this is a full pathname or not).
--- In interactive mode argv[0] will be the empty string.
-data argv.
-
-------------------------------------------------------------------
--- A hash table where keys and values are strings that represent 
--- the process environment. For example, 
---    os @env @get "HOME"
---  is the pathname of your home directory (on some platforms), 
--- and is equivalent to getenv("HOME") in C.
-data env.
-
-------------------------------------------------------------------
--- This string contains a platform identifier.
-data platform.
-
-------------------------------------------------------------------
-function __init__ 
-------------------------------------------------------------------
--- constructor for the __OS_MODULE__
-with none do
-   let this @argv = this @__getargv().
-   let this @platform = this @__getplatform().
-   -- construct the env hashtable
-   let l = this @__getenv(). -- list of key/value pairs
-   let this @env = hash @hash ().
-   this @env @insert l.
-end
-
-------------------------------------------------------------------
-function __getargv 
-------------------------------------------------------------------
-with none do return escape
+function __getargv  with none do return escape
 "
 global __retval__
 import sys
@@ -75,10 +38,7 @@ __retval__ = ('list', out)
 "
 end -- __getargv
 
-------------------------------------------------------------------
-function __getenv
-------------------------------------------------------------------
-with none do return escape
+function __getenv with none do return escape
 "
 global __retval__
 from os import environ
@@ -90,16 +50,32 @@ __retval__ = ('list', outlist_val)
 "
 end -- __getplatform
 
-------------------------------------------------------------------
-function __getplatform
-------------------------------------------------------------------
-with none do return escape
+function __getplatform with none do return escape
 "
 global __retval__
 from sys import platform
 __retval__ = ('string', platform)
 "
 end -- __getplatform
+
+------------------------------------------------------------------
+-- The list of command line arguments passed to an Asteroid script. 
+-- argv[0] is the name of the Asteroid script (it is operating 
+-- system dependent whether this is a full pathname or not).
+-- In interactive mode argv[0] will be the empty string.
+let argv = __getargv().
+
+------------------------------------------------------------------
+-- A hash table where keys and values are strings that represent 
+-- the process environment. For example, 
+--    os @env @get "HOME"
+--  is the pathname of your home directory (on some platforms), 
+-- and is equivalent to getenv("HOME") in C.
+let env = hash @hash () @insert (__getenv ()).
+
+------------------------------------------------------------------
+-- This string contains a platform identifier.
+let platform = __getplatform().
 
 ------------------------------------------------------------------
 function basename
@@ -165,9 +141,9 @@ function exit
 -- Signaling an intention to exit the interpreter.
 -- When an argument value other than none is provided
 -- it is considered a status value. If it is 
--- an integer, zero is considered “successful termination” and any 
--- nonzero value is considered “abnormal termination” by shells and 
--- the like. Most systems require it to be in the range 0–127, and 
+-- an integer, zero is considered "successful termination" and any 
+-- nonzero value is considered "abnormal termination" by shells and 
+-- the like. Most systems require it to be in the range 0 to 127, and 
 -- produce undefined results otherwise. Some systems have a 
 -- convention for assigning specific meanings to specific exit codes, 
 -- but these are generally underdeveloped; Unix programs generally 
@@ -398,7 +374,3 @@ __retval__ = ('integer', status)
 "
 end -- syscmd
 
-end -- __OS_MODULE__
-
-------------------------------------------------------------------
-let os = __OS_MODULE__().

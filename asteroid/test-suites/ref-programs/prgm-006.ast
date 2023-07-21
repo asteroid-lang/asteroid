@@ -1,0 +1,15 @@
+
+      load system io.
+
+      let x = tointeger (io @input "Please enter an integer: ").
+
+      if x < 0 do
+          io @println "Negative".
+      elif x == 0 do
+          io @println "Zero".
+      elif x == 1 do
+          io @println "One".
+      else do
+          io @println "Positive".
+      end
+

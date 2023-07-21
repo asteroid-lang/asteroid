@@ -57,18 +57,18 @@ class SymTab:
             self.globals.pop(CURR_SCOPE)
             return scope
 
-    def get_curr_scope(self, option="items"):
+    def get_curr_scope(self, scope=CURR_SCOPE, option="items"):
         if option == "items":
-            return list(self.scoped_symtab[CURR_SCOPE].items())
+            return list(self.scoped_symtab[scope].items())
         elif option == "unifiers":
             unifiers = []
-            for (sym,val) in self.scoped_symtab[CURR_SCOPE].items():
+            for (sym,val) in self.scoped_symtab[scope].items():
                 unifiers += [(('id',sym),val)]
             return unifiers
         elif option == "keys":
-            return list(self.scoped_symtab[CURR_SCOPE].keys())
+            return list(self.scoped_symtab[scope].keys())
         elif option == "values":
-            return list(self.scoped_symtab[CURR_SCOPE].values())
+            return list(self.scoped_symtab[scope].values())
         else:
             raise ValueError("unknown option")
 

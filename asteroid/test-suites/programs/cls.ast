@@ -1,0 +1,11 @@
+#!/usr/bin/env asteroid
+load system io.
+load system util.
+load system random.
+
+util @cls().
+
+for i in 1 to 3 do
+    io @println ("Random value " + tostring(random@random())).
+    util @sleep 0.5
+end

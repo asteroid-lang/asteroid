@@ -5,6 +5,9 @@
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
+-- Note: this is just a file with definitions that need to wind 
+-- up in the global scope of the interpreter.
+
 
 ------------------------------------------------------------------
 structure Error
@@ -48,6 +51,7 @@ if item_val[0] in ['list','tuple','string']:
 elif item_val[0] == 'object':
     (OBJECT,
         (STRUCT_ID, (ID, name)),
+        (MEMBER_NAMES, (LIST, member_names)),
         (OBJECT_MEMORY, (LIST, object_memory))) = item_val
     l = len(data_only(object_memory))
     __retval__ = ('integer', l)
@@ -145,6 +149,234 @@ with
          let this @startix = startval.
          let this @endix = none.
       end
+end
+
+------------------------------------------------------------------
+let __TP__ = pattern
+------------------------------------------------------------------
+-- pattern for selecting proper formatting body in 'tostring'
+with x if (x is %boolean) or
+         (x is %integer) or
+         (x is %string).
+
+------------------------------------------------------------------
+structure __STRINGFORMAT__
+------------------------------------------------------------------
+-- formatting object for 'tostring'
+with
+  data length.
+  data precision.
+  data scientific.
+  function __init__
+    with (l:%integer,p:%integer,s:%boolean) do
+      let this @length = l.
+      let this @precision = p.
+      let this @scientific = s.
+    with (l:%integer,p:%integer) do
+      let this @length = l.
+      let this @precision = p.
+      let this @scientific = none.
+    with l:%integer do
+      let this @length = l.
+      let this @precision = none.
+      let this @scientific = none.
+    end
+end
+
+------------------------------------------------------------------
+-- TYPE CONVERSION FUNCTIONS --
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function tobase
+------------------------------------------------------------------
+-- represent the given integer x as a numeral in different bases
+with (x:%integer,base:%integer) do return escape
+"
+global __retval__
+
+x_val = state.symbol_table.lookup_sym('x')
+base_val = state.symbol_table.lookup_sym('base')
+
+if base_val[1] == 2:
+  __retval__ = ('string', format(x_val[1],'b'))
+elif base_val[1] == 8:
+  __retval__ = ('string', format(x_val[1],'o'))
+elif base_val[1] == 16:
+  __retval__ = ('string', format(x_val[1],'X'))
+else:
+  raise ValueError('illegal base value {}'
+          .format(base_val[1]))
+"
+end
+
+-- Note: we no longer support this, it encourages lazy programming
+-- by relying on the fuzzy concept of "truthiness"
+------------------------------------------------------------------
+-- function toboolean
+------------------------------------------------------------------
+-- with item do return escape
+-- "
+-- global __retval__
+--
+-- item_val = state.symbol_table.lookup_sym('item')
+-- __retval__ = map2boolean(item_val)
+-- "
+-- end
+
+------------------------------------------------------------------
+function tointeger
+------------------------------------------------------------------
+with (item:%string,base:%integer) do return escape
+"
+global __retval__
+item_val = state.symbol_table.lookup_sym('item')
+base_val = state.symbol_table.lookup_sym('base')
+__retval__ = ('integer', int(item_val[1], base=base_val[1]))
+"
+with item do return escape
+"
+global __retval__
+
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('integer', int(item_val[1]))
+"
+end
+
+------------------------------------------------------------------
+function toreal
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('real', float(item_val[1]))
+"
+end
+
+------------------------------------------------------------------
+function tostring
+------------------------------------------------------------------
+-- convert an asteroid object to string.
+-- if format values are given apply the
+-- formatting to the object.
+
+with (v:*__TP__,__STRINGFORMAT__(w:%integer,none,none)) do
+  -- booleans, integers, and strings (see TP pattern) with width spec are
+  -- right justified. if width spec is too narrow it is ignored.
+  let vs = tostring v.
+  let padl = w - vs @length().
+  if padl > 0 do
+    return [1 to padl] @map(lambda with _ do return " ") @join("") + vs.
+  else do
+    return vs.
+  end
+with (v:%real,__STRINGFORMAT__(w:%integer,none,none)) do return escape
+-- floating point values with only a width spec are left justified with
+-- zero padding on the right.
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+
+fmtstr = '{:'+str(w_val)+'f}'
+__retval__ = ('string', fmtstr.format(v_val))
+"
+-- floating point values with a width and precision specs
+-- are formatted according to Python formatting rules
+with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer,none)) do return escape
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+(P_TYPE, p_val) = state.symbol_table.lookup_sym('p')
+
+fmtstr = '{:'+str(w_val)+'.'+str(p_val)+'f}'
+__retval__ = ('string', fmtstr.format(v_val))
+"
+-- floating point values with width, precision and scientific notation specs
+-- are formatted according to Python formatting rules
+with (v:%real,__STRINGFORMAT__(w:%integer,p:%integer,s:%boolean)) do return escape
+"
+global __retval__
+(V_TYPE, v_val) = state.symbol_table.lookup_sym('v')
+(W_TYPE, w_val) = state.symbol_table.lookup_sym('w')
+(P_TYPE, p_val) = state.symbol_table.lookup_sym('p')
+(S_TYPE, s_val) = state.symbol_table.lookup_sym('s')
+
+fmtstr = '{:'+str(w_val)+'.'+str(p_val)+('e}' if s_val else 'f}')
+__retval__ = ('string', fmtstr.format(v_val))
+"
+with item do return escape
+-- default clause
+"
+global __retval__
+from asteroid.support import term2string
+
+item_val = state.symbol_table.lookup_sym('item')
+__retval__ = ('string', term2string(item_val))
+"
+end
+
+------------------------------------------------------------------
+function stringformat
+------------------------------------------------------------------
+-- a wrapper around our __STRINGFORMAT__ object as a member
+-- of our module.
+with (l:%integer,p:%integer,s:%boolean) do
+  return __STRINGFORMAT__(l,p,s).
+with (l:%integer,p:%integer) do
+  return __STRINGFORMAT__(l,p).
+with l:%integer do
+  return __STRINGFORMAT__(l).
+end
+
+------------------------------------------------------------------
+-- TYPE QUERY FUNCTIONS --
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function islist
+------------------------------------------------------------------
+with item do
+  return item is %list
+end
+
+------------------------------------------------------------------
+function isnone
+------------------------------------------------------------------
+with x do
+  return x is %none.
+end
+
+------------------------------------------------------------------
+function isscalar
+------------------------------------------------------------------
+with item do
+  return (item is %integer) or (item is %real).
+end
+
+------------------------------------------------------------------
+function gettype
+------------------------------------------------------------------
+-- get the type of 'x' as an Asteroid string
+with x do return escape
+"
+global __retval__
+val = state.symbol_table.lookup_sym('x')
+if val[0] == 'object':
+  (OBJECT, (STRUCT_ID, (ID, x_type)), MEMBER_LIST, OBJECT_MEMORY) = val
+elif val[0] in ['function-val','member-function-val']:
+  # internally we store functions as function values
+  # but to the user these look like functions as the 
+  # type counter part to the %function type pattern
+  # will match both function-val and member-function-val
+  x_type = 'function'
+else:
+  x_type = val[0]
+__retval__ = ('string', x_type)
+"
 end
 
 ------------------------------------------------------------------
@@ -467,7 +699,11 @@ function __list_filter__
 with f:%function do
     let out = [].
     for e in this do
-        let out = out+([e] if f(e) else []).
+        let r = f e.
+        if gettype r =/= "boolean" do 
+          escape "raise ValueError('list filter function has to return a Boolean')"
+        end
+        let out = out+([e] if r else []).
     end
     return out.
 end
@@ -704,10 +940,7 @@ startix_val = state.symbol_table.lookup_sym('startix')
 endix_val = state.symbol_table.lookup_sym('endix')
 
 val = this_val[1].find(item_val[1], startix_val[1], endix_val[1])
-if val == -1:
-    __retval__ = ('none', None)
-else:
-    __retval__ = ('integer', val)
+__retval__ = ('integer', val)
 "
 with (item:%string,loc(startix:%integer,none)) do return escape
 "
@@ -718,10 +951,7 @@ item_val = state.symbol_table.lookup_sym('item')
 startix_val = state.symbol_table.lookup_sym('startix')
 
 val = this_val[1].find(item_val[1], startix_val[1])
-if val == -1:
-    __retval__ = ('none', None)
-else:
-    __retval__ = ('integer',val)
+__retval__ = ('integer',val)
 "
 with item:%string do return escape
 "
@@ -731,10 +961,7 @@ this_val = state.symbol_table.lookup_sym('this')
 item_val = state.symbol_table.lookup_sym('item')
 
 val = this_val[1].find(item_val[1])
-if val == -1:
-    __retval__ = ('none', None)
-else:
-    __retval__ = ('integer',val)
+__retval__ = ('integer',val)
 "
 end
 

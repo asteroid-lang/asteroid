@@ -1,11 +1,15 @@
+# when cutting releases make sure that PYTHONPATH points
+# to the root directory of the github repo
+
 from setuptools import setup, find_packages
+from asteroid.version import VERSION
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name="asteroid-lang",
-    version="1.1.4",
+    version=VERSION,
     author="University of Rhode Island",
     author_email="lutzhamel@uri.edu",
     description="A modern, multi-paradigm programming language.",
@@ -28,7 +32,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.10",
     entry_points={
         "console_scripts": [
             "asteroid = asteroid:main",

@@ -1,5 +1,4 @@
    load system io.
-   load system type.
 
    structure Dog with
       data name.
@@ -17,6 +16,6 @@
    let dogs = [fido,buddy,bella].
 
    -- print out all the dogs that know how to fetch
-   for (Dog(name,tricks) if type @tostring tricks is ".*fetch.*") in dogs do
+   for (Dog(name,tricks) if tostring tricks is ".*fetch.*") in dogs do
       io @println (name+" knows how to fetch").
    end

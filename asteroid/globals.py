@@ -1,7 +1,7 @@
 ###########################################################################################
 # globals for Asteroid
 #
-# (c) Lutz Hamel, University of Rhode Island
+# (c) University of Rhode Island
 ###########################################################################################
 
 from asteroid.support import term2string #Used by redundantPatternFound exception
@@ -11,7 +11,10 @@ from asteroid.support import term2string #Used by redundantPatternFound exceptio
 asteroid_file_suffix = ".ast"
 
 ###########################################################################################
-# symbols for builtin operators.
+# symbols for builtin operators and functions. these operators and functions do not 
+# need/are not allowed to have a function local scope.  therefore they are implemented
+# here as builtins as part of the interpreter proper.  for other builtins that do 
+# not have this restriction see the prologue.
 # NOTE: if you add new builtins make sure to keep this table in sync.
 
 binary_operators = {
@@ -27,15 +30,22 @@ binary_operators = {
     '__lt__',
     '__ge__',
     '__gt__',
-    }
+}
 
 unary_operators = {
     '__uminus__',
     '__uplus__',
     '__not__',
+    'assert',
+    'escape',
+    'eval',
     }
 
-operator_symbols = binary_operators | unary_operators
+nullary_operators = {
+    'toplevel',
+}
+
+builtins = binary_operators | unary_operators | nullary_operators
 
 #########################################################################
 # Use the exception mechanism to return values from function calls
@@ -121,11 +131,9 @@ class RedundantPatternFound(Exception):
         if (location1 != None):
             self.file = location1[0]
         self.function = function_name
-        self.message = "Redundant Pattern Detected\n"
-        self.message += "\tFunction: " + self.function + " from file " + self.file
-        self.message += "\n\tPattern: " + term2string(self.pattern1) + " on line " + self.line1
-        self.message += "\n\twill consume all matches for"
-        self.message += "\n\tPattern: " + term2string(self.pattern2) + " on line " + self.line2
+        self.message = "redundant pattern detected in '{}': ".format(self.function)
+        self.message += "the pattern on line {} will consume all matches for pattern on line {}"\
+                            .format(self.line1,self.line2)
         super().__init__(self.message)
 
     def __str__(self):
@@ -141,7 +149,6 @@ unify_not_allowed = {
     'where-list',
     'raw-to-list',
     'raw-where-list',
-    'if-exp',
     'foreign',
     'escape',
     'is',
@@ -170,3 +177,4 @@ patterns = {
 # list of structures that a pattern type-pattern will subsume/overlap
 
 pattern_subsumes = patterns - {'id'}
+

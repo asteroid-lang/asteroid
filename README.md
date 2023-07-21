@@ -4,6 +4,31 @@ be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
 
+## New in Release 2.0.1
+
+* We now support the ASTEROIDPATH environment variable which is expected to have a colon seperated list of directories to search for user defined modules.
+
+* The logical operators 'and' and 'or' are now evaluated in short-circuit fashion.
+
+* Files loaded with the 'load' statement are now considered modules and work similarly to Python modules.
+
+* Added the 'toplevel' function which returns true if control is in the module originally loaded by the interpreter.
+
+* Added the match statement similar to the match statement in Python.
+
+* No longer supports type hierarchies for the primitive types.  The functions in the 'type' module are now considered builtins. The 'type' module itself has been eliminated.
+
+* The Minimal Asteroid Debugger (MAD) replaces ADB in this release.
+
+* The shorthand conditional pattern can now be applied to arbitrary patterns. E.g. The pattern 
+  ```
+  (a,b,c):(%integer,%integer,%integer)
+  ```
+  constrains the triple `(a,b,c)` to be a triple of integers.  The above shorthand conditional pattern is equivalent to the conditional pattern,
+  ```
+  (a,b,c) if (a,b,c) is (%integer,%integer,%integer)
+  ```
+  
 ## New in Release 1.1.4
 
 * Allows pattern constraint operator to map certain variables that a pattern 

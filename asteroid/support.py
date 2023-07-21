@@ -5,6 +5,7 @@
 ###########################################################################################
 
 import re
+import sys
 
 from asteroid.state import state
 
@@ -20,6 +21,11 @@ def gettemp():
     return new_name
 
 ###########################################################################################
+__dump_level = sys.maxsize  # during debugging you can set this to limit tree dump size
+
+def set_AST_dump_level(n):
+    __dump_level = n
+
 def dump_AST(node):
     '''
     this function will print any AST that follows the
@@ -32,7 +38,8 @@ def dump_AST(node):
     print('')
 
 def _dump_AST(node, level=0):
-
+    if level > __dump_level:
+        return
     if isinstance(node, tuple):
         _indent(level)
         nchildren = len(node) - 1
@@ -119,13 +126,8 @@ def promote(type1, type2):
         return 'list'
     elif type1 == 'tuple' and type2 == 'tuple':
         return 'tuple'
-    elif type1 == 'none' and type2 == 'none':
-        return 'none'
     else:
-        if type1 == type2:
-            raise ValueError("binary operation on type '{}' not supported".format(type1))
-        else:
-            raise ValueError("type '{}' and type '{}' are incompatible".format(type1, type2))
+        return 'none'
 
 ###########################################################################################
 # Asteroid uses truth values similar to Python's Pythonic truth values:
@@ -187,8 +189,23 @@ def data_ix_list(memory):
     return ix_list
 
 ###########################################################################################
-# term2string is an unparsing function mapping AST into a string
-# it supports as much unparsing as is currently needed.
+def to_python_list(asteroid_list):
+    '''
+    convert a list from Asteroid list or tuple AST format into a standard Python list.
+    ex. ('list',[('integer',1),('integer',2)])   =>   [1,2]
+    '''
+    output = []
+    
+    for (_type,val) in asteroid_list[1]:
+        output.append(val)
+        
+    return output
+
+###########################################################################################
+# term2string is an unparsing function mapping AST snippets representing **values** into 
+# a Python string
+#
+# DO NOT attempt to make this into a general AST unparser!
 
 # the following two tables are used in format processing of strings
 # in term2string to support "\\", "\n", "\t", and "\"" characters.
@@ -203,7 +220,8 @@ combined_re = '|'.join(named_re_list)
 
 def term2string(term):
     TYPE = term[0]
-
+    #lhh
+    #print(term)
     if TYPE == 'string':
         val = term[1]
         output_str = ""
@@ -211,8 +229,6 @@ def term2string(term):
         for mo in match_object_list:
             type = mo.lastgroup
             value = mo.group()
-            #lhh
-            #print(type)
             if type == 'BS2':
                 output_str += "\\"
             elif type == 'NL':
@@ -228,7 +244,7 @@ def term2string(term):
                                  .format(type))
         return output_str
 
-    elif TYPE in ['id', 'integer', 'real']:
+    elif TYPE in ['integer', 'real']:
         val = term[1]
         return str(val)
 
@@ -252,13 +268,8 @@ def term2string(term):
     elif TYPE == 'object':
         (OBJECT,
          (STRUCT_ID, (ID, struct_id)),
+         (MEMBER_NAMES, (LIST, member_names)),
          (OBJECT_MEMORY, (LIST, object_memory))) = term
-
-        struct_val = state.symbol_table.lookup_sym(struct_id)
-
-        (STRUCT,
-            (MEMBER_NAMES, (LIST, member_names)),
-            (STRUCT_MEMORY, (LIST, struct_memory))) = struct_val
 
         # if __str__ function exists for this object use it
         if '__str__' in member_names:
@@ -266,11 +277,6 @@ def term2string(term):
             str_fval = object_memory[slot_ix]
             # calling a __str__ member function
             import asteroid.walk
-            # for some reason we have to reinitialize unify again
-            if asteroid.walk.debugging:
-                asteroid.walk.unify = asteroid.walk.debug_unify
-            else:
-                asteroid.walk.unify = asteroid.walk.__unify
             (STRING, obj_str) = asteroid.walk.handle_call(term, # object reference
                                     str_fval,
                                     ('none', None),
@@ -288,161 +294,6 @@ def term2string(term):
     elif TYPE in ['function-val', 'member-function-val']:
         return '(function ...)'
 
-    elif TYPE == 'apply':
-        (APPLY, f, args) = term
-        operator_table = {
-            '__uminus__'    : ("-", True),
-            '__uplus__'     : ("+", True),
-            '__not__'       : ("not ", True),
-            '__plus__'      : ("+", False),
-            '__minus__'     : ("-", False),
-            '__times__'     : ("*", False),
-            '__divide__'    : ("/", False),
-            '__or__'        : (" or ", False),
-            '__and__'       : (" and ", False),
-            '__eq__'        : (" == ", False),
-            '__ne__'        : (" != ", False),
-            '__le__'        : (" <= ", False),
-            '__lt__'        : (" < ", False),
-            '__ge__'        : (" >= ", False),
-            '__gt__'        : (" > ", False)
-        }
-        if isinstance(f[1], str) and f[1] in operator_table:
-            (op_symbol, is_unary) = operator_table[f[1]]
-            if is_unary:
-                term_string = "{}({})".format(
-                    op_symbol, term2string(args)
-                )
-            else:
-                (_, arglist) = args
-                term_string = "{}{}{}".format(
-                    term2string(arglist[0]), op_symbol, term2string(arglist[1])
-                )
-        else:
-            term_string = term2string(f)
-            term_string += term2string(args)
-
-        return term_string
-
-    elif TYPE == 'pattern':
-        # we are printing out a term - just ignore the pattern operator
-        val = term[1]
-        return term2string(val)
-
-    elif TYPE == 'nil':
-        return ''
-
-    elif TYPE == 'head-tail':           # Handle a head-tail pattern
-        length = head_tail_length(term)
-        term_string = "["
-        for ix in range(1,length):
-
-            #update output text with each entry in head-tail list
-            term_string += term2string(term[1])
-
-            #step down the head-tail tree
-            term = term[2]
-
-            #Insert head-tail entry delimiter
-            term_string+= "|"
-
-            #Catch the last entry
-            if (ix == (length-1)):
-                term_string += term2string(term)
-
-        #Put the head-tail list delimiter on the end and then return
-        term_string += "]"
-        return term_string
-
-    elif TYPE == 'raw-head-tail':
-        (RHT, e1, e2) = term
-        walked_e1 = term2string(e1)
-        walked_e2 = term2string(e2)
-
-        return walked_e1 + "|" + walked_e2
-
-    elif TYPE == 'typematch':           # Handle a type pattern
-        (TYPECLASS,cType) = term
-        term_string = '%'
-        term_string += cType
-        return term_string
-
-    elif TYPE == 'constraint':          # Handle a constraint-only pattern
-        (CONSTRAINT,ptrn,bl) = term
-        term_string = '%['
-        term_string += term2string(ptrn)
-        term_string += ']%'
-        if bl[0] != 'nil':
-            term_string += '(binding list...)'
-        return term_string
-
-    elif TYPE == 'deref':               # Handle a first-class pattern
-        (DEREF, d_exp, binding_list) = term
-        term_string = "*" + term2string(d_exp)
-
-        #Get the actual pattern from the symbol table
-        # NOTE: THIS BREAKS WHEN A PATTERN IS NOT DEFINED IN SCOPE
-        # TODO: FIX THIS
-        # NOTE: this is NOT possible in the general case because the 
-        # pattern could be produced by a function call: *foo()
-        # \/\/\/\/\/\/\/\/\/
-        #term_string += term2string(state.symbol_table.lookup_sym(pName))
-
-        if binding_list[0] != 'nil':
-            term_string += '(binding list...)'
-
-        return term_string
-
-    elif TYPE == 'if-exp':              # Handle a conditional pattern
-        (IF_EXP,EXPRESSION,value,NULL) = term
-        # conditions can be arbitrary computations not structural terms
-        # therefore we don't print the whole tree.
-        return term2string(value)+' if (condition...)'
-
-    elif TYPE == 'index':
-        (INDEX, base, ix) = term
-        return term2string(base) + "@ " + term2string(ix)
-
-    elif TYPE == 'foreign':
-        return "(foreign ...)"
-
-    elif TYPE == 'is':
-        (IS, e1, e2) = term
-
-        return term2string(e1) + " is " + term2string(e2)
-
-    elif TYPE == 'in':
-        (IN, e1, e2) = term
-
-        return term2string(e1) + " in " + term2string(e2)
-
-    elif TYPE == 'to-list':
-        (TO_LIST, (START, start), (STOP, stop), (STRIDE, stride)) = term
-        return "[" + term2string(start) + " to " + term2string(stop) + ", stride: " + term2string(stride) + "]"
-
     else:
         return '('+TYPE+'...)'
 
-##############################################################################################
-# Function head_tail_length determines the lenth of a head-tail node by walking to the end.
-# The length is then returned from this function as in integer.
-# Example Input : [h1|h2|h3|tail]
-#         Output: 3
-# The output is 3 because the input heal-tail pattern has 3 heads.
-#
-def head_tail_length( node ):
-
-    # Counter to hold length of head-tail node
-    ctr = 1
-
-    # Try to walk down the tree, incrementing the counter
-    # return the counter when we fail
-    while(1):
-        try:
-            node = node[2]
-        except:
-            return ctr
-        else:
-            ctr += 1
-
-##############################################################################################

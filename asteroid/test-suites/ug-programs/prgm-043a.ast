@@ -1,12 +1,12 @@
    -- declare a pattern that matches scalar values
-   let Scalar = pattern %[p if (p is %integer) or (p is %real)]%.
+   let scalar = pattern %[p if (p is %integer) or (p is %real)]%.
 
    -- declare a pattern that matches pairs of scalars
-   let Pair = pattern %[(x:*Scalar,y:*Scalar)]%.
+   let pair = pattern %[(x:*scalar,y:*scalar)]%.
 
    -- compute the dot product of two pairs of scalars
    function dot2d 
-      with (*Pair bind [x as a1, y as a2], *Pair bind [x as b1, y as b2]) do
+      with (*pair bind [x as a1, y as a2], *pair bind [x as b1, y as b2]) do
          a1*b1 + a2*b2
    end
 

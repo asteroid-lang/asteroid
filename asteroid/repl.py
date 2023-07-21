@@ -11,7 +11,7 @@ from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
 
-from sys import stdin
+from sys import stdin,exit
 import platform
 
 if platform.system() == 'Windows':
@@ -23,24 +23,21 @@ def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
     if new:
         state.initialize()
-        load_prologue()
+        if prologue:
+            load_prologue()
         print_repl_menu()
     try:
-        run_repl(redundancy, prologue, functional_mode)
+        run_repl(redundancy, functional_mode)
     except EOFError:
         print()
         pass
 
 def print_repl_menu():
-    print("Asteroid Version", VERSION)
+    print("Asteroid", VERSION)
     print("(c) University of Rhode Island")
-    print("Type \"asteroid -h\" for help")
-    if platform.system() == 'Windows':
-        print("Press CTRL-Z + Return to exit")
-    else:
-        print("Press CTRL-D to exit")
+    print("Type \"help\" for additional information")
 
-def run_repl(redundancy, prologue, functional_mode):
+def run_repl(redundancy, functional_mode):
 
     # The two different prompt types either > for a new statement
     # or . for continuing one
@@ -51,9 +48,7 @@ def run_repl(redundancy, prologue, functional_mode):
     # Our line to be interpreted
     line = ""
     while True:
-        """
-        Line input, breaking, and exiting
-        """
+        ### Line input, breaking, and exiting
         try:
             # Get the new input and append it to the previous line (Possibly empty)
             # with a newline in between
@@ -66,6 +61,22 @@ def run_repl(redundancy, prologue, functional_mode):
             else:
                 line += "\n" + input(current_prompt)
 
+            # see if we are looking at native repl commands
+            if line in ["help","quit"]:
+                match line:
+                    case "help":
+                        print()
+                        print("help          -- this message")
+                        print("quit          -- leave the Asteroid interpreter")
+                        print("load \"<file>\" --  load and run the program in <file>")
+                        print()
+                        print("or type any valid Asteroid statement at the prompt")
+                        print()
+                        line = ""
+                    case "quit":
+                        exit(0)
+                continue
+
         except KeyboardInterrupt:
             line = ""
             current_prompt = arrow_prompt
@@ -76,15 +87,13 @@ def run_repl(redundancy, prologue, functional_mode):
             print()
             break
 
-        """
-        Interpretation, multiline input, and exception handling
-        """
+        ### Interpretation, multiline input, and exception handling
         try:
             # Try to interpret the new statement
             interp(line,
                    initialize_state=False,
                    redundancy=redundancy,
-                   prologue=prologue,
+                   prologue=False, # prologue is managed by repl above
                    functional_mode=functional_mode,
                    exceptions=True)
 
@@ -95,11 +104,9 @@ def run_repl(redundancy, prologue, functional_mode):
             if function_return_value[-1]:
                 # Get the last return value (type, value)
                 retval = function_return_value[-1]
-
                 # If it isn't none, print out the value
                 if retval[1] != None:
                     print(term2string(function_return_value[-1]))
-
                     # Reset the return value
                     function_return_value[0] = None
 

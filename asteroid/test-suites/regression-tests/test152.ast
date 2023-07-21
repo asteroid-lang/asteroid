@@ -1,0 +1,8 @@
+load system os.
+load system io.
+
+if os @platform == "darwin" do
+	io @println (os @env @get "HOME").
+end
+
+

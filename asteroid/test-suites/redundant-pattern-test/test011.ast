@@ -23,9 +23,8 @@ try
     
     let var = test_function( "test string z" ).
     io @println ( var ).
+    throw Error("Fail: subsumption not detected")
+
 catch Exception("RedundantPatternFound",s) do
     io @println("PASS.").
-catch e do
-    io @println("FAIL.").
-    throw Error("FAIL: unexpected error "+e).
 end.
