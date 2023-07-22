@@ -178,7 +178,5 @@ Hello, my name is Bella and my tricks are roll over and fetch
 Fido knows how to fetch
 Bella knows how to fetch
 ```
-You can try Asteroid without installing anything in our cloud-based Asteroid installation (see 'Try it!' below) or you can install Asteroid on your machine via 'pip' (see the PyPI Project Page below).
-
 
 [Documentation](https://asteroid-lang.readthedocs.io) | [Install](https://pypi.org/project/asteroid-lang/) | [GitHub Repository](https://github.com/asteroid-lang) 
