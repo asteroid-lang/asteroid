@@ -1,5 +1,5 @@
 
-[Documentation](https://asteroid-lang.readthedocs.io) | [Install](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
+[Documentation](https://asteroid-lang.readthedocs.io) | [Install](https://pypi.org/project/asteroid-lang/) |  [GitHub Repository](https://github.com/asteroid-lang) 
 
 ![asteroid](asteroid-small.png)
 
@@ -133,7 +133,6 @@ end
 Asteroid supports OO programming.  Here is a program loosely based on the [dog example](https://docs.python.org/3/tutorial/classes.html) from the Python documentation.  This example builds a list of dog objects that all know some tricks.  After the dogs introduce themselves we loop over the list and find all the dogs that know to 'fetch'.
 ```
 load system io.
-load system type.
 
 structure Dog with
    data name.
@@ -162,7 +161,7 @@ for d in dogs do
 end
 
 -- print out all the dogs that know how to fetch
-for (Dog(name,tricks) if type @tostring tricks is ".*fetch.*") in dogs do
+for (Dog(name,tricks) if tostring tricks is ".*fetch.*") in dogs do
    io @println (name+" knows how to fetch").
 end
 ```
@@ -182,4 +181,4 @@ Bella knows how to fetch
 You can try Asteroid without installing anything in our cloud-based Asteroid installation (see 'Try it!' below) or you can install Asteroid on your machine via 'pip' (see the PyPI Project Page below).
 
 
-[Documentation](https://asteroid-lang.readthedocs.io) | [Install](https://pypi.org/project/asteroid-lang/) | [Try it!](https://replit.com/@lutzhamel/asteroid#.replit) | [GitHub Repository](https://github.com/asteroid-lang) 
+[Documentation](https://asteroid-lang.readthedocs.io) | [Install](https://pypi.org/project/asteroid-lang/) | [GitHub Repository](https://github.com/asteroid-lang) 
