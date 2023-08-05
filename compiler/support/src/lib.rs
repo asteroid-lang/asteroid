@@ -37,27 +37,27 @@ pub fn map2boolean<'a>(node: &'a AstroNode) -> Option<AstroNode> {
     }
 }
 /******************************************************************************/
-pub fn promote(type1:&str,type2:&str) -> Option<String> {
+pub fn promote<'a>(type1:&'a str,type2:&'a str) ->  &'a str {
     if type1 == "string" && ["string","real","integer","list","tuple","boolean"].contains(&type2) {
-        Some(String::from("string"))
+        "string"
     } else if type2 == "string" &&  ["string","real","integer","list","tuple","boolean"].contains(&type1) {
-        Some(String::from("string"))
+        "string"
     } else if type1 == "real" && ["real","integer","boolean"].contains(&type2) {
-        Some(String::from("real"))
+        "real"
     } else if type2 == "real" && ["real","integer","boolean"].contains(&type1) {
-        Some(String::from("real"))
+        "real"
     } else if type1 == "integer" && ["integer","boolean"].contains(&type2) {
-        Some(String::from("integer"))
+        "integer"
     } else if type2 == "integer" && ["integer","boolean"].contains(&type1) {
-        Some(String::from("integer"))
+        "integer"
     } else if type1 == "boolean" && type2 == "boolean" {
-        Some(String::from("boolean"))
+        "boolean"
     } else if type1 == "list" && type2 == "list" {
-        Some(String::from("list"))
+        "list"
     } else if type1 == "tuple" && type2 == "tuple" {
-        Some(String::from("tuple"))
+        "tuple"
     } else if type1 == "none" && type2 == "none" {
-        Some(String::from("none"))
+        "none"
     } else {
         if type1 == type2 {
             panic!("binary operation on type '{}' not supported",type1);

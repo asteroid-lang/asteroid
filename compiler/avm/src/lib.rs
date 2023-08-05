@@ -14,14 +14,21 @@ use support::*;   //Asteroid support functions
 use std::rc::Rc;  //Multiple ownership(astronodes)
 use regex::Regex; //Regular expressions
 
+static OPERATOR_SYMBOLS: [&str; 12] = [ "__plus__", "__minus__", "__times__", "__divide__", "__or__", "__and__", "__eq__", 
+                                        "__ne__", "__lt__", "__le__", "__ge__", "__gt__" ];
+static BINARY_OPERATORS: [&str; 12] = [ "__plus__", "__minus__", "__times__", "__divide__", "__or__", "__and__", "__eq__", 
+                                        "__ne__", "__lt__", "__le__", "__ge__", "__gt__" ];
+
 /******************************************************************************/
 pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut State, unifying: bool) -> Result<Vec<(Rc<AstroNode>,Rc<AstroNode>)>, (&'static str,String) >{
    
     let term_type = peek( Rc::clone(&term) ).unwrap();
     let pattern_type = peek( Rc::clone(&pattern) ).unwrap();
 
+    println!("Unifying: {} and {}",term_type,pattern_type);
 
-    if term_type == "string" && pattern_type != "id"{ // Apply regular expression pattern match
+    if term_type == "string" && (pattern_type != "id" && pattern_type != "index") { // Apply regular expression pattern match
+        println!("Here with {} AND {}",term_type,pattern_type);
         if pattern_type == "string" {
             // Note: a pattern needs to match the whole term.
             let AstroNode::AstroString(AstroString{id:t_id,value:ref t_value}) = *term 
@@ -48,34 +55,6 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
             Ok( vec![] ) // Return an empty unifier
         } else {
             Err( ("PatternMatchFailed", format!("{} is not the same as {}",term2string(&pattern).unwrap(),term2string(&term).unwrap())))
-        }
-
-    } else if term_type == "list" || pattern_type == "list" {
-
-        if term_type != "list" || pattern_type != "list" {
-            Err( ("PatternMatchFailed", format!("term and pattern do not agree on list/tuple constructor")))
-        } else {
-
-            let AstroNode::AstroList(AstroList{id:_,length:t_length,contents:ref t_contents}) = *term
-                else {panic!("Unify: expected list.")};
-            let AstroNode::AstroList(AstroList{id:_,length:p_length,contents:ref p_contents}) = *pattern
-                else {panic!("Unify: expected list.")};
-
-
-            if t_length != p_length {
-                Err( ("PatternMatchFailed", format!("term and pattern lists/tuples are not the same length")))
-            } else {
-                let mut unifiers = vec![];
-                for i in 0..(t_length-1) {
-                    let x = unify( Rc::clone( &t_contents[i]), Rc::clone( &p_contents[i]), state, unifying );
-                    match x {
-                        Ok(mut success) => unifiers.append( &mut success ),
-                        Err(_) => return x,
-                    }
-                }
-                check_repeated_symbols( &unifiers );
-                Ok( unifiers )
-            }
         }
 
     } else if !unifying && term_type == "namedpattern" {
@@ -190,13 +169,17 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         }
 
     } else if pattern_type == "typematch" {
+        
         let AstroNode::AstroTypeMatch(AstroTypeMatch{id:_,expression:ref p_exp}) = *pattern
             else {panic!("Unify: expected typematch.")};
         //let look_next = 0u32; // Indicates what index we will look into next
 
-        let p_type = peek( Rc::clone(p_exp) ).unwrap();
+        let AstroNode::AstroString(AstroString{id:_,value:ref p_type}) = **p_exp
+            else {panic!("Unify: expected string.")};
 
-        if ["string","real","integer","list","tuple","boolean","none"].contains( &p_type ) {
+        //let p_type = peek( Rc::clone(p_exp) ).unwrap();
+
+        if ["string","real","integer","list","tuple","boolean","none"].contains( &p_type.as_str() ) {
             if !unifying {
                 if ["list","head-tail"].contains( &term_type ) {
                     if p_type == "list" {
@@ -256,6 +239,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
 
         // name_exp can be an id or an index expression.
         let mut unifiers = unify( Rc::clone(&term), Rc::clone(p_pattern),state,unifying ).unwrap();
+
         unifiers.push( (Rc::new(AstroNode::AstroID(p_name.clone())), Rc::clone(&term)) );
         Ok( unifiers )
 
@@ -310,29 +294,57 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         } else if let AstroNode::AstroTuple(AstroTuple{id:_,length:len,contents:ref content}) = **p_arg {
             unify( Rc::clone(t_mem), Rc::clone(p_arg), state, unifying )
         } else {
-            unify( Rc::clone(t_mem), Rc::new(AstroNode::AstroList(AstroList::new(1,vec![Rc::clone(p_arg)]).unwrap())) , state, unifying )
+            unify( Rc::clone(t_mem), Rc::new(AstroNode::AstroList(AstroList::new(1,Rc::new(vec![Rc::clone(p_arg)])).unwrap())) , state, unifying )
         }
         
     } else if pattern_type == "index" {
         // list element lval access
         Ok( vec![(Rc::clone(&pattern),Rc::clone(&term))] )
     
-    } else if term_type == "id" && unifying {
+    //} else if term_type == "id" && unifying {
         // variable in term not allowed when unifying
-        let AstroNode::AstroID(AstroID{id:_,name:ref t_name}) = *term
-            else {panic!("Unify: expected id.")};
+    //    let AstroNode::AstroID(AstroID{id:_,name:ref t_name}) = *term
+    //        else {panic!("Unify: expected id.")};
 
-        Err(  ("PatternMatchFailed",format!("variable '{}' in term not allowed.",t_name)))
+    //    Err(  ("PatternMatchFailed",format!("variable '{}' in term not allowed.",t_name)))
 
     } else if pattern_type == "id" {
-        
+
         let AstroNode::AstroID(AstroID{id:_,name:ref p_name}) = *pattern
-            else {panic!("Unify: expected id.")};
+            else {panic!("Unify: expected id.")};       
 
         if p_name == "_" {
             Ok( vec![] )
         } else {
             Ok( vec![(Rc::clone(&pattern),Rc::clone(&term))] )
+        }
+    
+    } else if term_type == "list" || pattern_type == "list" {
+
+        if term_type != "list" || pattern_type != "list" {
+            Err( ("PatternMatchFailed", format!("term and pattern do not agree on list/tuple constructor")))
+        } else {
+
+            let AstroNode::AstroList(AstroList{id:_,length:t_length,contents:ref t_contents}) = *term
+                else {panic!("Unify: expected list.")};
+            let AstroNode::AstroList(AstroList{id:_,length:p_length,contents:ref p_contents}) = *pattern
+                else {panic!("Unify: expected list.")};
+
+
+            if t_length != p_length {
+                Err( ("PatternMatchFailed", format!("term and pattern lists/tuples are not the same length")))
+            } else {
+                let mut unifiers = vec![];
+                for i in 0..(t_length-1) {
+                    let x = unify( Rc::clone( &t_contents[i]), Rc::clone( &p_contents[i]), state, unifying );
+                    match x {
+                        Ok(mut success) => unifiers.append( &mut success ),
+                        Err(_) => return x,
+                    }
+                }
+                check_repeated_symbols( &unifiers );
+                Ok( unifiers )
+            }
         }
 
     } else if ["head-tail","raw-head-tail"].contains(&pattern_type) {
@@ -342,7 +354,11 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
     } else if pattern_type == "deref" {
         // can be an AST representing any computation
         // that produces a pattern.
-        let p = walk(pattern,state).unwrap();
+
+        let AstroNode::AstroDeref( AstroDeref{id:_,expression:ref exp}) = *pattern
+            else {panic!("Unify: expected deref")};
+
+        let p = walk( Rc::clone(&exp),state).unwrap();
 
         unify(term,p,state,unifying)
 
@@ -381,7 +397,7 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
         Err( ("PatternMatchFailed",format!("nodes '{}' and '{}' are not the same",peek(Rc::clone(&term)).unwrap(),peek(Rc::clone(&pattern)).unwrap())))
 
     } else { 
-        println!("Hello");
+
         let mut unifier: Vec<(Rc<AstroNode>,Rc<AstroNode>)> = vec![];
         let mut len: usize;
         let mut content: Vec<Rc<AstroNode>>;
@@ -416,6 +432,9 @@ pub fn unify<'a>( term: Rc<AstroNode>, pattern: Rc<AstroNode>, state: &'a mut St
 
 /******************************************************************************/
 pub fn walk<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{ 
+
+    println!("Walking: {}",peek(Rc::clone(&node)).unwrap());
+
     match *node {
         AstroNode::AstroInteger(_) => Ok(node),
         AstroNode::AstroReal(_) => Ok(node),
@@ -462,11 +481,15 @@ pub fn list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<As
     let AstroNode::AstroList( AstroList{id,length,ref contents} ) = *node 
         else { panic!("ERROR: walk: expected list in list_exp()") };
 
+    println!("LIST LEN IN: {}",length);
+
     let mut new_contents = Vec::with_capacity(length);
     for i in 0..length {
+        println!("I:{}",i);
         new_contents.push(  walk( contents[i].clone(), state).unwrap());
     }
-    Ok( Rc::new( AstroNode::AstroList( AstroList::new(length,new_contents).unwrap())))
+    println!("LIST LEN out: {}",new_contents.len());
+    Ok( Rc::new( AstroNode::AstroList( AstroList::new(length,Rc::new(new_contents)).unwrap())))
 }
 /******************************************************************************/
 pub fn tuple_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
@@ -522,7 +545,7 @@ pub fn to_list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc
         newlist.push(Rc::new(AstroNode::AstroInteger(AstroInteger::new( i ).unwrap())));
     }
 
-    Ok( Rc::new(AstroNode::AstroList( AstroList::new(len,newlist).unwrap())))
+    Ok( Rc::new(AstroNode::AstroList( AstroList::new(len,Rc::new(newlist)).unwrap())))
 }
 /******************************************************************************/
 pub fn raw_to_list_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
@@ -541,11 +564,11 @@ pub fn head_tail_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<
 
     let mut new_contents = Vec::with_capacity(length);
     new_contents.push(head.to_owned());
-    for content in contents {
+    for content in &*(Rc::clone(contents)) {
         new_contents.push(content.to_owned());
     }
 
-    Ok( Rc::new( AstroNode::AstroList( AstroList::new( length + 1, new_contents).unwrap()))) 
+    Ok( Rc::new( AstroNode::AstroList( AstroList::new( length + 1, Rc::new(new_contents)).unwrap()))) 
 }
 /******************************************************************************/
 pub fn raw_head_tail_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
@@ -590,7 +613,7 @@ pub fn quote_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<A
 
     // quoted code should be treated like a constant if not ignore_quote
     if state.ignore_quote {
-        walk((*expression).clone(),state)
+        walk( Rc::clone(expression) ,state)
     } else {
         Ok( node )
     }
@@ -612,29 +635,221 @@ pub fn id_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<Astr
 /******************************************************************************/
 pub fn apply_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
     let AstroNode::AstroApply(AstroApply{id,ref function,ref argument}) = *node 
-        else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
+        else { panic!("ERROR: walk: expected apply expression in apply_exp().") }; 
 
     //TODO 
     // handle builtin operators that look like apply lists.
+    if let AstroNode::AstroID( AstroID{id:_,name:ref tag}) = **function {
+        if OPERATOR_SYMBOLS.contains( &(tag.as_str()) ) {
+            handle_builtins( Rc::clone(&node), state)
+        } else{
+            Ok( node)
+        }
+    } else {
 
-    // handle function application
-    let f_val = walk( (*function).clone(), state).unwrap();
-    //let f_name = ;
-    let arg_val = walk( (*argument).clone(), state).unwrap();
+        // handle function application
+        let f_val = walk( (*function).clone(), state).unwrap();
+        //let f_name = ;
+        let arg_val = walk( (*argument).clone(), state).unwrap();
 
+        Ok(node)
+    }
+}
+/******************************************************************************/
+pub fn handle_builtins<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+
+    let AstroNode::AstroApply(AstroApply{id,ref function,ref argument}) = *node 
+        else { panic!("ERROR: handle_builtins: expected apply expression.") }; 
+    let AstroNode::AstroID( AstroID{id:_,name:ref builtin_type} ) = **function
+        else { panic!("ERROR: handle_builtins: expected id. ")};
+
+    if BINARY_OPERATORS.contains( &builtin_type.as_str() ) {
+        
+        let AstroNode::AstroTuple( AstroTuple{id:_,length:2,contents:ref args}) = **argument
+            else {panic!("ERROR: handle_builtins: expected tuple for args.")};
+
+        let val_a = walk( Rc::clone(&args[0]), state ).unwrap();
+        let val_b = walk( Rc::clone(&args[1]), state ).unwrap();
+        
+        if builtin_type == "__plus__" {
+            
+            if let AstroNode::AstroInteger( AstroInteger{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroInteger( AstroInteger::new(v1+v2).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 as f64 + v2).unwrap())));
+                } else if let AstroNode::AstroString( AstroString{id:_,value:ref v2}) = *val_b {
+                        return Ok( Rc::new( AstroNode::AstroString(AstroString::new(v1.to_string()+v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroReal( AstroReal{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 + v2 as f64).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 + v2).unwrap())));
+                } else if let AstroNode::AstroString( AstroString{id:_,value:ref v2}) = *val_b {
+                    return Ok( Rc::new( AstroNode::AstroString(AstroString::new(v1.to_string()+v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroList( AstroList{id:_,length:len1,contents:ref c1}) = *val_a {
+                if let AstroNode::AstroList( AstroList{id:_,length:len2,contents:ref c2}) = *val_b {
+                    let mut c3 = (**c1).clone(); // we have to do a data-clone here otherwise we edit other nodes in place
+                    c3.append( &mut (**c2).clone() );
+                    return Ok( Rc::new( AstroNode::AstroList( AstroList::new(len1+len2,Rc::new( c3 )).unwrap())));
+                } 
+                
+            } else if let AstroNode::AstroString( AstroString{id:_,value:ref v1}) = *val_a {
+                if let AstroNode::AstroString( AstroString{id:_,value:ref v2}) = *val_b {
+                    return Ok( Rc::new( AstroNode::AstroString(AstroString::new(v1.to_owned()+v2).unwrap())));
+                } else if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new( AstroNode::AstroString(AstroString::new(v1.to_owned()+&v2.to_string()).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new( AstroNode::AstroString(AstroString::new(v1.to_owned()+&v2.to_string()).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else {
+                return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+            }
+
+        } else if builtin_type == "__minus__" {
+
+            if let AstroNode::AstroInteger( AstroInteger{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroInteger( AstroInteger::new(v1 - v2).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 as f64 - v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroReal( AstroReal{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 - v2 as f64).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 - v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else { // We can only subtract real/integers
+                return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+            }
+
+        } else if builtin_type == "__times__" {
+
+            if let AstroNode::AstroInteger( AstroInteger{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroInteger( AstroInteger::new(v1 * v2).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 as f64 * v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroReal( AstroReal{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 * v2 as f64).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 * v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else { // We can only multiply real/integers
+                return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+            }    
+        } else if builtin_type == "__divide__" {
+
+            if let AstroNode::AstroInteger( AstroInteger{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroInteger( AstroInteger::new(v1 / v2).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 as f64 / v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroReal( AstroReal{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 / v2 as f64).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroReal( AstroReal::new(v1 / v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else { // We can only divide real/integers
+                return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+            }    
+        } else if builtin_type == "__or__" {
+
+            let b1 = map2boolean( &val_a).unwrap();
+            let b2 = map2boolean( &val_b).unwrap();
+            let AstroNode::AstroBool( AstroBool{id:_,value:b1_val}) = b1
+                else {panic!("handle_builtins: expected boolean.")};
+            let AstroNode::AstroBool( AstroBool{id:_,value:b2_val}) = b2
+                else {panic!("handle_builtins: expected boolean.")};
+
+            return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(b1_val || b2_val).unwrap())));
+        } else if builtin_type == "__and__" {
+
+            let b1 = map2boolean( &val_a).unwrap();
+            let b2 = map2boolean( &val_b).unwrap();
+            let AstroNode::AstroBool( AstroBool{id:_,value:b1_val}) = b1
+                else {panic!("handle_builtins: expected boolean.")};
+            let AstroNode::AstroBool( AstroBool{id:_,value:b2_val}) = b2
+                else {panic!("handle_builtins: expected boolean.")};
+
+            return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(b1_val && b2_val).unwrap())));
+        } else if builtin_type == "__gt__" {
+
+            if let AstroNode::AstroInteger( AstroInteger{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(v1 > v2).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(v1 as f64 > v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else if let AstroNode::AstroReal( AstroReal{id:_,value:v1}) = *val_a {
+                if let AstroNode::AstroInteger( AstroInteger{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(v1 > v2 as f64).unwrap())));
+                } else if let AstroNode::AstroReal( AstroReal{id:_,value:v2}) = *val_b {
+                    return Ok( Rc::new(AstroNode::AstroBool( AstroBool::new(v1 > v2).unwrap())));
+                } else {
+                    return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+                }
+
+            } else { // We can only subtract real/integers
+                return Err( ("ValueError", format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)).unwrap())));
+            }
+
+        }
+    
+    
+
+        
+    }
     Ok(node)
 }
 /******************************************************************************/
 pub fn index_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
     let AstroNode::AstroIndex(AstroIndex{id,ref structure,ref index_exp}) = *node 
-        else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
+        else { panic!("ERROR: walk: expected index expression in index_exp().") }; 
 
     // look at the semantics of 'structure'
     let structure_val = walk((*structure).clone(),state).unwrap();
 
     // indexing/slicing
     let result = read_at_ix(structure_val,(*index_exp).clone(),state).unwrap();
-
+    println!("INDEX EXP OUT: {}",peek(Rc::clone(&result)).unwrap());
     Ok(result)
 }
 /******************************************************************************/
@@ -679,14 +894,14 @@ pub fn if_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<Astr
     let AstroNode::AstroIf(AstroIf{id,ref cond_exp,ref then_exp,ref else_exp}) = *node 
         else { panic!("ERROR: walk: expected id expression in id_exp().") }; 
 
-    let cond_val = map2boolean(&walk( (*cond_exp).clone(), state ).unwrap()).unwrap();
+    let cond_val = map2boolean(&walk( Rc::clone(&cond_exp), state ).unwrap()).unwrap();
     let AstroNode::AstroBool(AstroBool{id,value}) = cond_val 
         else {panic!("Expected boolean from map2boolean.")};
     
     if value {
-        walk((*then_exp).clone(),state)
+        walk(Rc::clone(&then_exp),state)
     } else {
-        walk((*else_exp).clone(),state)
+        walk(Rc::clone(&else_exp),state)
     }
 }
 /*******************************************************************************
@@ -753,11 +968,9 @@ pub fn declare_unifiers<'a>( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)>, stat
             // can be successful!!  They have to be declared so that there
             // is memory associated with the structure.
 
-            // look at the semantics of 'structure'
-            let structure_val = walk(Rc::clone(structure),state);
             // indexing/slicing
             // update the memory of the object.
-            // store_at_ix(structure_val,index_exp);
+            store_at_ix(Rc::clone(structure),Rc::clone(index_exp),Rc::clone(value),state);
         } else {
             return Err(("ValueError",format!("unknown unifier type '{}'",peek(Rc::clone(lhs)).unwrap())));
         }
@@ -765,13 +978,68 @@ pub fn declare_unifiers<'a>( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)>, stat
     Ok(())
 }
 /******************************************************************************/
+pub fn declare_formal_args<'a>( unifiers: &Vec<(Rc<AstroNode>,Rc<AstroNode>)>, state: &'a mut State ) -> Result<(), (&'static str,String) >{
+    // unfiers is of the format: [ (pattern, term), (pattern, term),...]
+
+    for (pattern,term) in unifiers {
+        if let AstroNode::AstroID(AstroID{id:_,ref name}) = **pattern {
+            if name == "this" {
+                return Err(("ValueError","'this' is a reserved keyword.".to_string()));
+            } else {
+                state.enter_sym(&name,Rc::clone(term));
+            }
+        } else {
+            return Err(("ValueError",format!("unknown unifier type '{}'",peek(Rc::clone(pattern)).unwrap())));
+        }
+    }
+    Ok(())
+}
+/******************************************************************************/
+pub fn store_at_ix<'a>( structure: Rc<AstroNode>, ix: Rc<AstroNode>, value: Rc<AstroNode>, state: &'a mut State ) -> Result<(), (&'static str,String)>{
+
+    // look at the semantics of 'structure'
+    let structure_val = walk(Rc::clone(&structure),state).unwrap();
+    
+
+    if let AstroNode::AstroList( AstroList{id:_,length:l,contents:ref mem} ) = *structure_val {
+
+        let ix_val = walk(Rc::clone(&ix), state).unwrap();
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:int_val}) = *ix_val // TODO error clean up
+            else {panic!("Store at ix: expected integer ix.")};
+
+        let mut new_mem = (**mem).clone();
+        new_mem.insert(int_val as usize,Rc::clone(&value));
+        let new_struct = AstroNode::AstroList( AstroList::new(l,Rc::new(new_mem)).unwrap() );
+
+        if let AstroNode::AstroID(AstroID{id:_,name:ref tag}) = *structure {
+            state.enter_sym( tag, Rc::new( new_struct ) );
+        } 
+        
+
+        Ok(()) 
+    } else {
+        Err(("ValueError",format!("Index op not supported for '{}'",peek(structure_val).unwrap())))
+    }
+}
+/******************************************************************************/
 // TODO needs work
 pub fn read_at_ix<'a>( structure_val: Rc<AstroNode>, ix: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
 
     // find the actual memory we need to access
     let struct_type = peek(structure_val.clone()).unwrap();
-    let ix_type = peek(ix).unwrap();
+    let ix_type = peek(Rc::clone(&ix)).unwrap();
 
+    if ["list"].contains( &struct_type ) {
+        if ix_type == "integer" {
+            
+            let AstroNode::AstroInteger(AstroInteger{id:_,value:ix_val}) = *ix
+                else {panic!("read_at_ix: expected integer.")};
+            let AstroNode::AstroList( AstroList{id:_,length:len,contents:ref c}) = *structure_val
+                else {panic!("read_at_ix: expected list.")};
+            
+            return Ok( Rc::clone( &c[ix_val as usize] ) );
+        }
+    }
     /**
 
     if struct_type == "list" || struct_type == "tuple" || struct_type == "string" {
@@ -905,7 +1173,7 @@ mod tests {
         }
     }
     #[test]
-    fn test_unify_lists() {
+    fn test_unify_intlists() {
         let mut state = State::new().unwrap();
         let u_mode = true;
 
@@ -913,10 +1181,10 @@ mod tests {
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
         let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(3).unwrap()));
 
-        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i1.clone(),i2.clone(),i3.clone()]).unwrap()));
-        let l2 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i2.clone(),i3.clone()]).unwrap()));
-        let l3 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i3.clone(),i2.clone(),i1.clone()]).unwrap()));
-        let l4 = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![i1.clone(),i2.clone(),i3.clone()]).unwrap()));
+        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i1.clone(),i2.clone(),i3.clone()])).unwrap()));
+        let l2 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i2.clone(),i3.clone()])).unwrap()));
+        let l3 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i3.clone(),i2.clone(),i1.clone()])).unwrap()));
+        let l4 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i1.clone(),i2.clone(),i3.clone()])).unwrap()));
 
         let out1 = unify( Rc::clone(&l1),Rc::clone(&l4),&mut state,u_mode ).unwrap(); //Should pass unwrapping
         let out2 = unify( Rc::clone(&l1),Rc::clone(&l2),&mut state,u_mode );
@@ -958,7 +1226,6 @@ mod tests {
     }
     #[test]
     fn test_unify_var_to_int() {
-        // Hand compiled
         // let x = 123.
 
         let mut state = State::new().unwrap();
@@ -975,7 +1242,6 @@ mod tests {
     }
     #[test]
     fn test_unify_var_to_real() {
-        // Hand compiled
         // let x = 1.23.
 
         let mut state = State::new().unwrap();
@@ -992,7 +1258,6 @@ mod tests {
     }
     #[test]
     fn test_unify_var_to_string() {
-        // Hand compiled
         // let x = "hello123".
 
         let mut state = State::new().unwrap();
@@ -1009,7 +1274,6 @@ mod tests {
     }
     #[test]
     fn test_unify_var_to_bool() {
-        // Hand compiled
         // let x = false.
 
         let mut state = State::new().unwrap();
@@ -1067,8 +1331,8 @@ mod tests {
         let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(3).unwrap()));
         let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
         let val2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(4).unwrap())); 
-        let varlist = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![Rc::clone(&var1),Rc::clone(&var2)]).unwrap()));
-        let vallist = Rc::new( AstroNode::AstroList( AstroList::new(3,vec![Rc::clone(&val1),Rc::clone(&val2)]).unwrap()));
+        let varlist = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![Rc::clone(&var1),Rc::clone(&var2)])).unwrap()));
+        let vallist = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![Rc::clone(&val1),Rc::clone(&val2)])).unwrap()));
 
         declare_unifiers( &unify(vallist,varlist,&mut state,true).unwrap(), &mut state );
 
@@ -1082,5 +1346,706 @@ mod tests {
             AstroNode::AstroInteger(AstroInteger{id:_,value:4}) => (),
             _ => panic!("test failed"),
         };
+    }
+    #[test]
+    fn test_unify_varlist_to_multilist() {
+        // let [x,y,3] = ["string1",1.3334,3].
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroString(AstroString::new("string1".to_string()).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
+        let val2 = Rc::new(AstroNode::AstroReal(AstroReal::new(1.3334).unwrap()));
+        let int1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(3).unwrap())); 
+        let int2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(3).unwrap()));
+        let varlist = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![Rc::clone(&var1),Rc::clone(&var2),Rc::clone(&int1)])).unwrap()));
+        let vallist = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![Rc::clone(&val1),Rc::clone(&val2),Rc::clone(&int2)])).unwrap()));
+
+        declare_unifiers( &unify(vallist,varlist,&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroString(AstroString{id:_,value:ref val}) if val == "string1" => (),
+            _ => panic!("test failed"),
+        };
+        let check2 = state.lookup_sym("y",true);
+        match *check2 {
+            AstroNode::AstroReal(AstroReal{id:_,value:val}) if val == 1.3334 => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_vartuple_to_inttuple() {
+        // let (x,y,z) = (2,3,4).
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
+        let val2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(3).unwrap())); 
+        let var3 = Rc::new(AstroNode::AstroID(AstroID::new("z".to_string()).unwrap()));
+        let val3 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(4).unwrap())); 
+        let varlist = Rc::new( AstroNode::AstroTuple( AstroTuple::new(3,vec![Rc::clone(&var1),Rc::clone(&var2),Rc::clone(&var3)]).unwrap()));
+        let vallist = Rc::new( AstroNode::AstroTuple( AstroTuple::new(3,vec![Rc::clone(&val1),Rc::clone(&val2),Rc::clone(&val3)]).unwrap()));
+
+        declare_unifiers( &unify(vallist,varlist,&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:2}) => (),
+            _ => panic!("test failed"),
+        };
+        let check2 = state.lookup_sym("y",true);
+        match *check2 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:3}) => (),
+            _ => panic!("test failed"),
+        };
+        let check2 = state.lookup_sym("z",true);
+        match *check2 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:4}) => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_var_to_var() {
+        // let x = 234.
+        // let y = x.
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(234).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string()).unwrap()));
+
+        declare_unifiers( &unify(val1,Rc::clone(&var1),&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:234}) => (),
+            _ => panic!("test failed"),
+        };
+
+        declare_unifiers( &unify(Rc::clone(&var1),var2,&mut state,true).unwrap(), &mut state );
+
+        let check2 = state.lookup_sym("y",true);
+        match *check2 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:234}) => (),
+            AstroNode::AstroInteger(AstroInteger{id:_,value:v}) => println!("{}",v),
+            _ =>    println!("DEBUG: {}", peek(Rc::clone(&check2)).unwrap()),
+        };
+
+    }
+    #[test]
+    fn test_unify_int_to_namedpattern() {
+        // let x:%integer = 17.
+
+        let mut state = State::new().unwrap();
+        let var1 = AstroID::new("x".to_string()).unwrap();
+        let pmatch_type = Rc::new(AstroNode::AstroString( AstroString::new( "integer".to_string()).unwrap()));
+        let pmatch = Rc::new(AstroNode::AstroTypeMatch(AstroTypeMatch::new(pmatch_type).unwrap()));
+        let p = Rc::new(AstroNode::AstroNamedPattern(AstroNamedPattern::new(var1,pmatch).unwrap()));
+        let val1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(17).unwrap()));
+
+        declare_unifiers( &unify(val1,p,&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:17}) => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_unify_index_to_int() {
+        // let x = [1,0,3].
+        // let x@1 = 2.
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(0).unwrap()));
+        let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(3).unwrap()));
+        let i4 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i1.clone(),i2.clone(),i3.clone()])).unwrap()));
+        let idx_exp = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+
+        declare_unifiers( &unify(Rc::clone(&l1),Rc::clone(&var1),&mut state,true).unwrap(), &mut state );
+
+        let idx1 = Rc::new( AstroNode::AstroIndex( AstroIndex::new( Rc::clone(&var1), Rc::clone(&idx_exp) ).unwrap()));
+
+        declare_unifiers( &unify(Rc::clone(&i4),Rc::clone(&idx1),&mut state,true).unwrap(), &mut state );
+        let check1 = state.lookup_sym("x",true);
+
+        let AstroNode::AstroList(AstroList{id:_,length:3,contents:ref c}) = *check1
+            else {panic!("test failed")};
+        
+        if let AstroNode::AstroInteger(AstroInteger{id:_,value:2}) = *c[1] {
+            ();
+        } else {
+            panic!("test failed");
+        }
+    }
+    #[test]
+    fn test_prog_addition_int_to_int() {
+        // program
+        // let a = 1 + 1.
+
+        // python compiler:
+        // set_lineinfo('prog.ast',1)
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('integer', 1)])))
+        // unifiers = unify(exp_val,('id', 'a'))
+        // declare_unifiers(unifiers)
+
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('integer', 1)])))
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&i1),Rc::clone(&i2)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:2}) = *check1
+            else {panic!("test failed")};
+    }
+    #[test]
+    fn test_prog_addition_int_to_real() {
+        // program
+        // let a = 1 + 1.
+
+        // python compiler:
+        // set_lineinfo('prog.ast',1)
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('real', 1.1)])))
+        // unifiers = unify(exp_val,('id', 'a'))
+        // declare_unifiers(unifiers)
+
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('real', 1.1)])))
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.1).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&i1),Rc::clone(&r1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroReal(AstroReal{id:_,value:v}) = *check1
+            else {panic!("test failed")};
+        if v == 2.1 {
+            ();
+        } else {
+            panic!("test failed");
+        }
+    }
+    #[test]
+    fn test_prog_addition_real_to_int() {
+        // program
+        // let a = 1 + 1.
+
+        // python compiler:
+        // set_lineinfo('prog.ast',1)
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('real', 1.35), ('integer', 1)])))
+        // unifiers = unify(exp_val,('id', 'a'))
+        // declare_unifiers(unifiers)
+
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple',  [('real', 1.35), ('integer', 1)])))
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.35).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&r1),Rc::clone(&i1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroReal(AstroReal{id:_,value:v}) = *check1
+            else {panic!("test failed")};
+        if v == 2.35 {
+            ();
+        } else {
+            panic!("test failed");
+        }
+    }
+    #[test]
+    fn test_prog_addition_real_to_real() {
+        // program
+        // let a = 1 + 1.
+
+        // python compiler:
+        // set_lineinfo('prog.ast',1)
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('real', 1.35), ('real', 2.15)])))
+        // unifiers = unify(exp_val,('id', 'a'))
+        // declare_unifiers(unifiers)
+
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple',  [('real', 1.35), ('real', 2.15)])))
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.35).unwrap()));
+        let r2 = Rc::new( AstroNode::AstroReal( AstroReal::new(2.15).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&r1),Rc::clone(&r2)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroReal(AstroReal{id:_,value:v}) = *check1
+            else {panic!("test failed")};
+        if v == 3.5 {
+            ();
+        } else {
+            panic!("test failed");
+        }
+    }
+    #[test]
+    fn test_prog_addition_list_to_list() {
+        // set_lineinfo('prog.txt',1)
+        // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('list', [('integer', 1), ('integer', 2)]), ('list', [('integer', 3), ('integer', 4)])])))
+        // unifiers = unify(exp_val,('id', 'b'))
+        // declare_unifiers(unifiers)
+
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(3).unwrap()));
+        let i4 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(4).unwrap()));
+        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(2,Rc::new(vec![i1.clone(),i2.clone()])).unwrap()));
+        let l2 = Rc::new( AstroNode::AstroList( AstroList::new(2,Rc::new(vec![i3.clone(),i4.clone()])).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&l1),Rc::clone(&l2)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroList(AstroList{id:_,length:4,contents:ref c}) = *check1
+            else {panic!("test failed")};
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:1}) = *c[0]
+            else {panic!("test failed")};
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:2}) = *c[1]
+            else {panic!("test failed")};
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:3}) = *c[2]
+            else {panic!("test failed")};
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:4}) = *c[3]
+            else {panic!("test failed")};
+    }
+    #[test]
+    fn test_prog_addition_string_to_string() {
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string()).unwrap()));
+        let s2 = Rc::new( AstroNode::AstroString( AstroString::new("World!".to_string()).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&s1),Rc::clone(&s2)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroString(AstroString{id:_,value:ref v}) = *check1
+            else {panic!("test failed")};
+        assert_eq!("Hello World!",v);
+    }
+    #[test]
+    fn test_prog_addition_string_to_int() {
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string()).unwrap()));
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(123).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&s1),Rc::clone(&i1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroString(AstroString{id:_,value:ref v}) = *check1
+            else {panic!("test failed")};
+        assert_eq!("Hello 123",v);
+    }
+    #[test]
+    fn test_prog_addition_string_to_real() {
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string()).unwrap()));
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.23).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&s1),Rc::clone(&r1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroString(AstroString{id:_,value:ref v}) = *check1
+            else {panic!("test failed")};
+        assert_eq!("Hello 1.23",v);
+    }
+    #[test]
+    fn test_prog_addition_int_to_string() {
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new(" Hello".to_string()).unwrap()));
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(123).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&i1),Rc::clone(&s1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroString(AstroString{id:_,value:ref v}) = *check1
+            else {panic!("test failed")};
+        assert_eq!("123 Hello",v);
+    }
+    #[test]
+    fn test_prog_addition_real_to_string() {
+        // rust compiler:
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        
+        let s1 = Rc::new( AstroNode::AstroString( AstroString::new(" Hello".to_string()).unwrap()));
+        let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.23).unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&r1),Rc::clone(&s1)]).unwrap()));
+        let id1 = Rc::new( AstroNode::AstroID( AstroID::new( "__plus__".to_string() ).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&id1), Rc::clone(&t1)).unwrap()));
+        let exp_val = walk( Rc::clone( &apply1), &mut state ).unwrap();
+
+        // unifiers = unify(exp_val,('id', 'a'))
+        let id2 = Rc::new( AstroNode::AstroID( AstroID::new( "a".to_string() ).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&id2), &mut state, true).unwrap();
+
+        // declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state );
+
+        let check1 = state.lookup_sym("a",true);
+        let AstroNode::AstroString(AstroString{id:_,value:ref v}) = *check1
+            else {panic!("test failed")};
+        assert_eq!("1.23 Hello",v);
+    }
+    #[test]
+    fn test_prog_firstclass_conditional_patternmatch() {
+        //let POS_INT = pattern with x if x > 0.
+        //let x: *POS_INT = 2.
+
+        /*
+        set_lineinfo('prog.txt',1)
+        exp_val = walk(('quote', ('if-exp', ('apply', ('id', '__gt__'), ('tuple', [('id', 'x'), ('integer', 0)])), ('id', 'x'), ('null',))))
+        unifiers = unify(exp_val,('id', 'POS_INT'))
+        declare_unifiers(unifiers)
+
+        set_lineinfo('prog.txt',2)
+        exp_val = walk(('integer', 2))
+        unifiers = unify(exp_val,('named-pattern', ('id', 'x'), ('deref', ('id', 'POS_INT'))))
+        declare_unifiers(unifiers)
+        */
+
+        let mut state = State::new().unwrap();
+
+        // set_lineinfo('prog.ast',1)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
+        process_lineinfo(  new_lineinfo, &mut state );
+        
+        //exp_val = walk(('quote', ('if-exp', ('apply', ('id', '__gt__'), ('tuple', [('id', 'x'), ('integer', 0)])), ('id', 'x'), ('null',))))
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("__gt__".to_string()).unwrap()));
+        let var2 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let var3 = Rc::new(AstroNode::AstroID(AstroID::new("POS_INT".to_string()).unwrap()));
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(0).unwrap()));
+        let null1 = Rc::new( AstroNode::AstroNone( AstroNone::new().unwrap()));
+        let t1 = Rc::new( AstroNode::AstroTuple( AstroTuple::new(2,vec![Rc::clone(&var2),Rc::clone(&i1)]).unwrap()));
+        let apply1 = Rc::new( AstroNode::AstroApply( AstroApply::new( Rc::clone(&var1), Rc::clone(&t1) ).unwrap()));
+        let if1 = Rc::new( AstroNode::AstroIf( AstroIf::new( Rc::clone(&apply1), Rc::clone(&var2), Rc::clone(&null1)).unwrap()));
+        let quote1 = Rc::new( AstroNode::AstroQuote( AstroQuote::new( Rc::clone( &if1)).unwrap()));
+        let exp_val = walk( quote1, &mut state );
+
+        //error handling
+        let exp_val = match exp_val {
+            Ok( val ) => val,
+            Err( (_type,msg) ) => panic!("{}: {}",_type,msg),
+        };
+
+        //unifiers = unify(exp_val,('id', 'POS_INT'))
+        let unifiers = unify( exp_val, var3, &mut state, true);
+
+        //error handling
+        let unifiers = match unifiers {
+            Ok( val ) => val,
+            Err( (_type,msg) ) => panic!("{}: {}",_type,msg),
+        };
+
+        //declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state);
+
+        //set_lineinfo('prog.txt',2)
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:2}));
+        process_lineinfo(  new_lineinfo, &mut state );
+
+        //exp_val = walk(('integer', 2))
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let exp_val = walk( i2, &mut state );
+
+        //error handling
+        let exp_val = match exp_val {
+            Ok( val ) => val,
+            Err( (_type,msg) ) => panic!("{}: {}",_type,msg),
+        };
+
+        //unifiers = unify(exp_val,('named-pattern', ('id', 'x'), ('deref', ('id', 'POS_INT'))))
+        let var3 = AstroID::new("x".to_string()).unwrap();
+        let var4 = Rc::new(AstroNode::AstroID(AstroID::new("POS_INT".to_string()).unwrap()));
+        let deref1 = Rc::new( AstroNode::AstroDeref(AstroDeref::new( Rc::clone(&var4) ).unwrap()));
+        let namedp1 = Rc::new(AstroNode::AstroNamedPattern(AstroNamedPattern::new( var3, Rc::clone(&deref1)).unwrap()));
+        let unifiers = unify( Rc::clone(&exp_val), Rc::clone(&namedp1), &mut state, true);
+
+        //error handling
+        let unifiers = match unifiers {
+            Ok( val ) => val,
+            Err( (_type,msg) ) => panic!("{}: {}",_type,msg),
+        };
+
+        //declare_unifiers(unifiers)
+        declare_unifiers( &unifiers, &mut state);
+
+        let check1 = state.lookup_sym("x",true);
+        match *check1 {
+            AstroNode::AstroInteger(AstroInteger{id:_,value:2}) => (),
+            _ => panic!("test failed"),
+        };
+    }
+    #[test]
+    fn test_prog_function_sum() {
+
+        // def _ast72(arg):
+        //     set_lineinfo('prog.txt',3)
+        //     try:
+        //         unifiers = unify(arg,('named-pattern', ('id', 'n'), ('deref', ('id', 'POS_INT'))))
+        //         state.symbol_table.push_scope({})
+        //         declare_formal_args(unifiers)
+        //         set_lineinfo('prog.txt',4)
+        //         val = walk(('apply', ('id', '__plus__'), ('tuple', [('id', 'n'), ('apply', ('id', 'sum'), ('apply', ('id', '__minus__'), ('tuple', [('id', 'n'), ('integer', 1)])))])))
+        //         state.symbol_table.pop_scope()
+        //         return val
+
+        //         state.symbol_table.pop_scope()
+        //     except PatternMatchFailed:
+        //         set_lineinfo('prog.txt',5)
+        //         try:
+        //             unifiers = unify(arg,('integer', 0))
+        //             state.symbol_table.push_scope({})
+        //             declare_formal_args(unifiers)
+        //             set_lineinfo('prog.txt',6)
+        //             val = walk(('integer', 0))
+        //             state.symbol_table.pop_scope()
+        //             return val
+
+        //             state.symbol_table.pop_scope()
+        //         except PatternMatchFailed:
+        //             raise ValueError('none of the function bodies unified with actual parameters')
+    
+        // set_lineinfo('prog.txt',1)
+        // exp_val = walk(('quote', ('if-exp', ('apply', ('id', '__gt__'), ('tuple', [('id', 'x'), ('integer', 0)])), ('id', 'x'), ('null',))))
+        // unifiers = unify(exp_val,('id', 'POS_INT'))
+        // declare_unifiers(unifiers)
+     
+        // set_lineinfo('prog.txt',2)
+        // exp_val = walk(('function-exp', ('implementation', '_ast72')))
+        // unifiers = unify(exp_val,('id', 'sum'))
+        // declare_unifiers(unifiers)
+     
+        // set_lineinfo('prog.txt',8)
+        // exp_val = walk(('apply', ('id', 'sum'), ('integer', 5)))
+        // unifiers = unify(exp_val,('id', 'y'))
+        // declare_unifiers(unifiers)
+        let mut state = State::new().unwrap();
+
+        fn _ast1<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result< Rc<AstroNode>, (&'static str,String)>{
+            let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:3}));
+            process_lineinfo(  new_lineinfo, state );
+
+            let id1 = AstroID::new("n".to_string()).unwrap();
+            let id2 = Rc::new(AstroNode::AstroID(AstroID::new("POS_INT".to_string()).unwrap())); 
+            let deref1 = Rc::new(AstroNode::AstroDeref(AstroDeref::new(Rc::clone(&id2)).unwrap()));
+            let namedp1 = Rc::new(AstroNode::AstroNamedPattern(AstroNamedPattern::new(id1,Rc::clone(&deref1)).unwrap()));
+
+            let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(0).unwrap()));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&namedp1), state, true ) {
+                println!("YAY!");
+                state.push_scope();
+                let out1 = declare_formal_args( &unifiers, state );
+
+                match out1 {
+                    Ok(_) => (),
+                    Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+                };
+
+                let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
+                process_lineinfo(  new_lineinfo, state );
+
+                state.pop_scope();
+            } else if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&i1), state, true ) {
+                println!("YAY!");
+            } else {
+                return Err(("ValueError","none of the function bodies unified with actual parameters".to_string()))
+            }
+            Ok( node )
+        }
+    }
+    //#[test]
+    fn test_unify_indexindex_to_string() {
+        // let x = [1,[2,3,4],5].
+        // let x@1@0 = "hello".
+
+        let mut state = State::new().unwrap();
+        let var1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string()).unwrap()));
+        let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2).unwrap()));
+        let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(3).unwrap()));
+        let i4 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(4).unwrap()));
+        let i5 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(5).unwrap()));
+        let i6 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1).unwrap()));
+        let i7 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(0).unwrap()));
+        let l1 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i2.clone(),i3.clone(),i4.clone()])).unwrap()));
+        let l2 = Rc::new( AstroNode::AstroList( AstroList::new(3,Rc::new(vec![i1.clone(),l1.clone(),i5.clone()])).unwrap()));
+        let s1 = Rc::new(AstroNode::AstroString(AstroString::new("hello".to_string()).unwrap()));
+
+
+        let idx1 = Rc::new( AstroNode::AstroIndex( AstroIndex::new( Rc::clone(&var1), Rc::clone(&i6) ).unwrap()));
+        let idx2 = Rc::new( AstroNode::AstroIndex( AstroIndex::new( Rc::clone(&idx1), Rc::clone(&i7) ).unwrap()));
+
+        declare_unifiers( &unify(Rc::clone(&l2),Rc::clone(&var1),&mut state,true).unwrap(), &mut state );
+
+        let check1 = state.lookup_sym("x",true);
+        let AstroNode::AstroList(AstroList{id:_,length:3,contents:ref c1}) = *check1
+            else {panic!("test failed")};
+
+        declare_unifiers( &unify(Rc::clone(&s1),Rc::clone(&idx2),&mut state,true).unwrap(), &mut state );
+
+        let check2 = state.lookup_sym("x",true);
+        let AstroNode::AstroList(AstroList{id:_,length:3,contents:ref c2}) = *check2
+            else {panic!("test failed")};
+
+        if let AstroNode::AstroList(AstroList{id:_,length:3,contents:ref c3}) = *c2[1] {
+            if let AstroNode::AstroInteger(AstroInteger{id:_,value:2}) = *c3[0] {
+                ();
+            } else {
+                panic!("test failed");
+            }
+        } else {
+            panic!("test failed");
+        }
     }
 }

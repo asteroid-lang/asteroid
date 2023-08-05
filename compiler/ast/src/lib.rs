@@ -98,10 +98,10 @@ impl AstroNil {
 pub struct AstroList {
     pub id: u8,
     pub length: usize,
-    pub contents: Vec<Rc<AstroNode>>,
+    pub contents: Rc<Vec<Rc<AstroNode>>>,
 }
 impl AstroList {
-    pub fn new(l: usize, c: Vec<Rc<AstroNode>> ) -> Option<Self>{
+    pub fn new(l: usize, c: Rc<Vec<Rc<AstroNode>>> ) -> Option<Self>{
         Some(AstroList { id: 7, length: l, contents: c })
     }
 }
