@@ -5,6 +5,7 @@
 /******************************************************************************/ 
 #![allow(unused)]
 
+use std::collections::HashMap;
 use symtab::*;   //Asteroid symbol table
 use ast::*;      //Asteroid AST representation
 use std::rc::Rc; //Used for astronodes: may have multiple owners
@@ -12,7 +13,7 @@ use std::rc::Rc; //Used for astronodes: may have multiple owners
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
 /******************************************************************************/  
-#[derive( Clone,PartialEq)]                         
+#[derive( Clone )]                         
 pub struct State {
     pub symbol_table: symtab::Symtab,// Symbol table
     pub modules: Vec<String>,        // List of currently loaded modules
@@ -28,7 +29,7 @@ pub struct State {
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
-    
+    pub dispatch_table: HashMap<String, fn( node: Rc<AstroNode>, state: &mut State ) -> Result< Rc<AstroNode>, (&'static str,String)>>,
 }
 impl State {
     /**************************************************************************/
@@ -36,12 +37,13 @@ impl State {
     pub fn new() -> Option<Self> {
         Some( State { symbol_table: symtab::Symtab::new().unwrap(),
                       modules: Vec::with_capacity(MODULES_HINT),
-                      ast: AstroNode::AstroNone(ast::AstroNone::new().unwrap()),
+                      ast: AstroNode::AstroNone(ast::AstroNone::new()),
                       ignore_quote: false,
                       constraint_lvl: 0,
                       cond_warning: false,
                       eval_redundancy: true,
-                      lineinfo: (String::from("<input>"),1),                   })
+                      lineinfo: (String::from("<input>"),1),
+                      dispatch_table: HashMap::new(),                  })
     }
     /**************************************************************************/
     // Function add_module() is used to add a new module name to the list 
@@ -73,7 +75,7 @@ impl State {
     // field by 1. 
     pub fn dec_constraint_lvl(&mut self) {
         if self.constraint_lvl == 0 {
-            panic!("STATE ERROR: cannot go below consrtaint level 0.");
+            panic!("STATE ERROR: cannot go below constraint level 0.");
         }
         self.constraint_lvl -= 1;
     }

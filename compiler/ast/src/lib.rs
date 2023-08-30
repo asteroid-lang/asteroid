@@ -8,6 +8,9 @@
 use std::rc::Rc;  // used for astronodes; an astronode may have up to two owners
                   // at a time: The state object and whatever function(s) is/are 
                   // processing the astronode
+use std::cell::RefCell;
+use std::collections::HashMap;//Symbol Table
+
 
 /******************************************************************************/
 // Abstract Syntax Tree representation for a integer type node
@@ -17,8 +20,8 @@ pub struct AstroInteger {
     pub value: isize,
 }
 impl AstroInteger {
-    pub fn new(v: isize) -> Option<Self> {
-        Some(AstroInteger { id: 0, value: v })
+    pub fn new(v: isize) -> Self {
+        AstroInteger { id: 0, value: v }
     }
 }
 /******************************************************************************/
@@ -29,8 +32,8 @@ pub struct AstroReal {
     pub value: f64,
 }
 impl AstroReal {
-    pub fn new(v: f64) -> Option<Self> {
-        Some( AstroReal { id: 1, value: v} )
+    pub fn new(v: f64) -> Self {
+       AstroReal { id: 1, value: v}
     }
 }
 /******************************************************************************/
@@ -41,8 +44,8 @@ pub struct AstroBool {
     pub value: bool,   
 }
 impl AstroBool {
-    pub fn new(v: bool) -> Option<Self>{
-        Some(AstroBool{ id: 2, value: v})
+    pub fn new(v: bool) -> Self {
+        AstroBool{ id: 2, value: v}
     }
 }
 /******************************************************************************/
@@ -53,8 +56,8 @@ pub struct AstroString {
     pub value: String
 }
 impl AstroString {
-    pub fn new(v: String) -> Option<Self>{
-        Some(AstroString { id: 3, value: v})
+    pub fn new(v: String) -> Self {
+        AstroString { id: 3, value: v}
     }
 }
 /******************************************************************************/
@@ -66,8 +69,8 @@ pub struct AstroLineInfo {
     pub line_number: usize,
 }
 impl AstroLineInfo {
-    pub fn new(m: String, n: usize) -> Option<Self>{
-        Some(AstroLineInfo { id: 4, module: m, line_number: n})
+    pub fn new(m: String, n: usize) -> Self {
+        AstroLineInfo { id: 4, module: m, line_number: n}
     }
 }
 /******************************************************************************/
@@ -77,8 +80,8 @@ pub struct AstroNone {
     pub id: u8,
 }
 impl AstroNone {
-    pub fn new() -> Option<Self>{
-        Some(AstroNone { id: 5 })
+    pub fn new() -> Self {
+        AstroNone { id: 5 }
     }
 }
 /******************************************************************************/
@@ -88,8 +91,8 @@ pub struct AstroNil {
     pub id: u8,
 }
 impl AstroNil {
-    pub fn new() -> Option<Self>{
-        Some(AstroNil { id: 6 })        
+    pub fn new() -> Self {
+        AstroNil { id: 6 }     
     }
 }
 /******************************************************************************/
@@ -101,8 +104,8 @@ pub struct AstroList {
     pub contents: Rc<Vec<Rc<AstroNode>>>,
 }
 impl AstroList {
-    pub fn new(l: usize, c: Rc<Vec<Rc<AstroNode>>> ) -> Option<Self>{
-        Some(AstroList { id: 7, length: l, contents: c })
+    pub fn new(l: usize, c: Rc<Vec<Rc<AstroNode>>> ) -> Self {
+        AstroList { id: 7, length: l, contents: c }
     }
 }
 /******************************************************************************/
@@ -114,8 +117,8 @@ pub struct AstroTuple {
     pub contents: Vec<Rc<AstroNode>>,
 }
 impl AstroTuple {
-    pub fn new(l: usize, c: Vec<Rc<AstroNode>> ) -> Option<Self>{
-        Some(AstroTuple{ id: 8, length: l, contents: c })
+    pub fn new(l: usize, c: Vec<Rc<AstroNode>> ) -> Self {
+        AstroTuple{ id: 8, length: l, contents: c }
     }
 }
 /******************************************************************************/
@@ -128,8 +131,8 @@ pub struct AstroToList {
     pub stride: Rc<AstroNode>,
 }
 impl AstroToList {
-    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Option<Self> {
-        Some(AstroToList { id: 9, start: start, stop: stop, stride: stride })
+    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Self {
+        AstroToList { id: 9, start: start, stop: stop, stride: stride }
     }
 }
 /******************************************************************************/
@@ -141,8 +144,8 @@ pub struct AstroHeadTail {
     pub tail: Rc<AstroNode>,
 }
 impl AstroHeadTail {
-    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Option<Self> {
-        Some(AstroHeadTail { id: 10, head: h, tail: t})
+    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+        AstroHeadTail { id: 10, head: h, tail: t}
     }
 }
 /******************************************************************************/
@@ -155,8 +158,8 @@ pub struct AstroRawToList {
     pub stride: Rc<AstroNode>,
 }
 impl AstroRawToList {
-    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Option<Self> {
-        Some(AstroRawToList { id: 11, start: start, stop: stop, stride: stride })
+    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Self {
+        AstroRawToList { id: 11, start: start, stop: stop, stride: stride }
     }
 }
 /******************************************************************************/
@@ -168,8 +171,8 @@ pub struct AstroRawHeadTail {
     pub tail: Rc<AstroNode>,
 }
 impl AstroRawHeadTail {
-    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Option<Self> {
-        Some(AstroRawHeadTail { id: 12, head: h, tail: t})
+    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+        AstroRawHeadTail { id: 12, head: h, tail: t}
     }
 }
 /******************************************************************************/
@@ -181,8 +184,8 @@ pub struct AstroSequence {
     pub second: Rc<AstroNode>,
 }
 impl AstroSequence {
-    pub fn new(f: Rc<AstroNode>, s: Rc<AstroNode>) -> Option<Self>{
-        Some(AstroSequence {id: 13, first: f, second: s})        
+    pub fn new(f: Rc<AstroNode>, s: Rc<AstroNode>) -> Self{
+        AstroSequence {id: 13, first: f, second: s}       
     }
 }
 /******************************************************************************/
@@ -190,11 +193,27 @@ impl AstroSequence {
 #[derive( Clone,PartialEq)]
 pub struct AstroFunction {
     pub id: u8,
-    pub body_list: AstroList
+    pub body_list: Rc<AstroNode>
 }
 impl AstroFunction {
-    pub fn new(body: AstroList) -> Option<Self>{
-        Some( AstroFunction { id: 14, body_list: body} )
+    pub fn new(body: Rc<AstroNode>) -> Self{
+        AstroFunction { id: 14, body_list: body}
+    }
+}
+/******************************************************************************/
+// Abstract Syntax Tree representation for a function type node
+#[derive( Clone,PartialEq)]
+pub struct AstroFunctionVal {
+    pub id: u8,
+    pub body_list: Rc<AstroNode>,
+    pub closure: Rc<(Vec<HashMap<String, Rc<AstroNode>>>,Vec<Vec<String>>,usize)>
+    // closure is a reference to a vector(scope levels; 0 is global) of 
+    // hashmaps(namespace) mapping strings(tag) to astronodes(value) along with a
+    // vector of strings(global vars) and a usize(current scope level)
+}
+impl AstroFunctionVal {
+    pub fn new(body_list: Rc<AstroNode>, closure: Rc<(Vec<HashMap<String, Rc<AstroNode>>>,Vec<Vec<String>>,usize)>) -> Self{
+        AstroFunctionVal { id: 21, body_list: body_list, closure: closure} 
     }
 }
 /******************************************************************************/
@@ -205,8 +224,8 @@ pub struct AstroEval {
     pub expression: Rc<AstroNode>,
 }
 impl AstroEval {
-    pub fn new(expr: Rc<AstroNode>) -> Option<Self>{
-        Some(AstroEval { id: 15, expression: expr})
+    pub fn new(expr: Rc<AstroNode>) -> Self{
+        AstroEval { id: 15, expression: expr}
     }
 }
 /******************************************************************************/
@@ -217,8 +236,8 @@ pub struct AstroQuote {
     pub expression: Rc<AstroNode>,
 }
 impl AstroQuote {
-    pub fn new(expr: Rc<AstroNode>) -> Option<Self>{
-        Some(AstroQuote { id: 16, expression: expr})
+    pub fn new(expr: Rc<AstroNode>) -> Self{
+        AstroQuote { id: 16, expression: expr}
     }
 }
 /******************************************************************************/
@@ -229,8 +248,8 @@ pub struct AstroConstraint {
     pub expression: Rc<AstroNode>,
 }
 impl AstroConstraint {
-    pub fn new(expr: Rc<AstroNode>) -> Option<Self>{
-        Some(AstroConstraint { id: 17, expression: expr})
+    pub fn new(expr: Rc<AstroNode>) -> Self{
+        AstroConstraint { id: 17, expression: expr}
     }
 }
 /******************************************************************************/
@@ -241,8 +260,8 @@ pub struct AstroTypeMatch {
     pub expression: Rc<AstroNode>,
 }
 impl AstroTypeMatch {
-    pub fn new(expr: Rc<AstroNode>) -> Option<Self>{
-        Some(AstroTypeMatch { id: 18, expression: expr})
+    pub fn new(expr: Rc<AstroNode>) -> Self{
+        AstroTypeMatch { id: 18, expression: expr}
     }
 }
 /******************************************************************************/
@@ -253,8 +272,8 @@ pub struct AstroForeign {
     content: String,
 }
 impl AstroForeign {
-    pub fn new(c: String) -> Option<Self> {
-        Some(AstroForeign { id: 19, content: c })
+    pub fn new(c: String) -> Self {
+        AstroForeign { id: 19, content: c }
     }
 }
 /******************************************************************************/
@@ -265,8 +284,8 @@ pub struct AstroID {
     pub name: String,
 }
 impl AstroID {
-    pub fn new(s: String) -> Option<Self> {
-        Some(AstroID {id: 20, name: s})
+    pub fn new(s: String) -> Self {
+        AstroID {id: 20, name: s}
     }
 }
 /******************************************************************************/
@@ -275,11 +294,11 @@ impl AstroID {
 pub struct AstroObject {
     pub id: u8,
     pub struct_id: AstroID,
-    pub object_memory: Rc<AstroNode>,
+    pub object_memory: Rc<RefCell<Vec<Rc<AstroNode>>>>,
 }
 impl AstroObject {
-    pub fn new(name: AstroID, mem: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroObject { id: 22, struct_id: name, object_memory: mem} )
+    pub fn new(name: AstroID, mem: Rc<RefCell<Vec<Rc<AstroNode>>>>) -> Self {
+        AstroObject { id: 22, struct_id: name, object_memory: mem}
     }
 }
 /******************************************************************************/
@@ -291,8 +310,8 @@ pub struct AstroApply {
     pub argument: Rc<AstroNode>,
 }
 impl AstroApply {
-    pub fn new(f: Rc<AstroNode>, a: Rc<AstroNode>) -> Option<Self>{
-        Some( AstroApply { id: 23, function: f, argument: a } )
+    pub fn new(f: Rc<AstroNode>, a: Rc<AstroNode>) -> Self{
+        AstroApply { id: 23, function: f, argument: a }
     }
 }
 /******************************************************************************/
@@ -304,8 +323,8 @@ pub struct AstroIndex {
     pub index_exp: Rc<AstroNode>,
 }
 impl AstroIndex {
-    pub fn new(s: Rc<AstroNode>, i: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroIndex { id: 24, structure: s, index_exp: i} )
+    pub fn new(s: Rc<AstroNode>, i: Rc<AstroNode>) -> Self {
+        AstroIndex { id: 24, structure: s, index_exp: i}
     }
 }
 /******************************************************************************/
@@ -316,8 +335,8 @@ pub struct AstroEscape {
     pub content: String,
 }
 impl AstroEscape {
-    pub fn new(c: String) -> Option<Self>{
-        Some(AstroEscape { id: 25, content: c})
+    pub fn new(c: String) -> Self{
+        AstroEscape { id: 25, content: c}
     }
 }
 /******************************************************************************/
@@ -329,8 +348,8 @@ pub struct AstroIs {
     pub term: Rc<AstroNode>,
 }
 impl AstroIs {
-    pub fn new(p: Rc<AstroNode>, t: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroIs { id: 26, pattern: p, term: t} )
+    pub fn new(p: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+        AstroIs { id: 26, pattern: p, term: t} 
     }
 }
 /******************************************************************************/
@@ -342,8 +361,8 @@ pub struct AstroIn {
     pub expression_list: Rc<AstroNode>,
 }
 impl AstroIn {
-    pub fn new(e: Rc<AstroNode>, l: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroIn { id: 27, expression: e, expression_list: l} )
+    pub fn new(e: Rc<AstroNode>, l: Rc<AstroNode>) -> Self {
+        AstroIn { id: 27, expression: e, expression_list: l}
     }
 }
 /******************************************************************************/
@@ -356,8 +375,8 @@ pub struct AstroIf {
     pub else_exp: Rc<AstroNode>,
 }
 impl AstroIf {
-    pub fn new(c: Rc<AstroNode>, t: Rc<AstroNode>, e: Rc<AstroNode>) -> Option<Self> {
-        Some(AstroIf { id: 28, cond_exp: c, then_exp: t, else_exp: e})
+    pub fn new(c: Rc<AstroNode>, t: Rc<AstroNode>, e: Rc<AstroNode>) -> Self {
+        AstroIf { id: 28, cond_exp: c, then_exp: t, else_exp: e}
     }
 }
 /******************************************************************************/
@@ -369,8 +388,8 @@ pub struct AstroNamedPattern {
     pub pattern: Rc<AstroNode>,
 }
 impl AstroNamedPattern {
-    pub fn new(n: AstroID, p: Rc<AstroNode>) ->Option<Self>{
-        Some( AstroNamedPattern { id: 29, name: n, pattern: p})
+    pub fn new(n: AstroID, p: Rc<AstroNode>) -> Self{
+        AstroNamedPattern { id: 29, name: n, pattern: p}
     }
 }
 /******************************************************************************/
@@ -381,21 +400,20 @@ pub struct AstroDeref {
     pub expression: Rc<AstroNode>,
 }
 impl AstroDeref {
-    pub fn new(e: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroDeref { id: 30, expression: e })
+    pub fn new(e: Rc<AstroNode>) -> Self {
+        AstroDeref { id: 30, expression: e }
     }
 }
-/******************************************************************************/
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct AstroStruct {
     pub id: u8,
-    pub member_names: Rc<AstroNode>,
-    pub struct_memory: Rc<AstroNode>
+    pub member_names: RefCell<Vec<Rc<AstroNode>>>,
+    pub struct_memory: RefCell<Vec<Rc<AstroNode>>>,
 }
 impl AstroStruct {
-    pub fn new(mn: Rc<AstroNode>,sm: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroStruct { id: 31, member_names: mn, struct_memory: sm})
+    pub fn new(mn: RefCell<Vec<Rc<AstroNode>>>,sm: RefCell<Vec<Rc<AstroNode>>>) -> Self {
+        AstroStruct { id: 31, member_names: mn, struct_memory: sm}
     }
 }
 /******************************************************************************/
@@ -406,15 +424,34 @@ pub struct AstroMemberFunctionVal {
     pub body: Rc<AstroNode>,
 }
 impl AstroMemberFunctionVal {
-    pub fn new(arg: Rc<AstroNode>,body: Rc<AstroNode>) -> Option<Self> {
-        Some( AstroMemberFunctionVal{id:32,argument:arg,body:body})
+    pub fn new(arg: Rc<AstroNode>,body: Rc<AstroNode>) -> Self {
+        AstroMemberFunctionVal{id:32,argument:arg,body:body}
     }
 }
 /******************************************************************************/
-
-
-
+#[derive( Clone,PartialEq)]
+pub struct AstroData {
+    pub id: u8,
+    pub value: Rc<AstroNode>,
+}
+impl AstroData {
+    pub fn new( value: Rc<AstroNode> ) -> Self {
+        AstroData{id:33,value:value}
+    }
+}
 /******************************************************************************/
+#[derive( Clone,PartialEq)]
+pub struct AstroUnify {
+    pub id: u8,
+    pub term: Rc<AstroNode>,
+    pub pattern: Rc<AstroNode>,
+}
+impl AstroUnify {
+    pub fn new( term: Rc<AstroNode>, pattern: Rc<AstroNode> ) -> Self {
+        AstroUnify{id:34,term:term,pattern:pattern}
+    }
+}
+
 /******************************************************************************/
 /******************************************************************************/
 #[derive( Clone,PartialEq )]
@@ -434,6 +471,7 @@ pub enum AstroNode {
     AstroRawHeadTail(AstroRawHeadTail),
     AstroSequence(AstroSequence),
     AstroFunction(AstroFunction),
+    AstroFunctionVal(AstroFunctionVal),
     AstroEval(AstroEval),
     AstroQuote(AstroQuote),
     AstroConstraint(AstroConstraint),
@@ -451,42 +489,47 @@ pub enum AstroNode {
     AstroDeref(AstroDeref),
     AstroStruct(AstroStruct),
     AstroMemberFunctionVal(AstroMemberFunctionVal),
+    AstroData(AstroData),
+    AstroUnify(AstroUnify),
 }
 /******************************************************************************/
-pub fn peek<'a>(node: Rc<AstroNode> ) -> Option<&'a str> {
+pub fn peek<'a>(node: Rc<AstroNode> ) -> &'a str {
     match *node {
-        AstroNode::AstroInteger(_) => Some("integer"),
-        AstroNode::AstroReal(_) => Some("real"),
-        AstroNode::AstroBool(_) => Some("bool"),
-        AstroNode::AstroString(_) => Some("string"),
-        AstroNode::AstroLineInfo(_) => Some("lineinfo"),
-        AstroNode::AstroNone(_) => Some("none"),
-        AstroNode::AstroNil(_) => Some("nil"),
-        AstroNode::AstroList(_) => Some("list"),
-        AstroNode::AstroTuple(_) => Some("tuple"),
-        AstroNode::AstroToList(_) => Some("tolist"),
-        AstroNode::AstroHeadTail(_) => Some("headtail"),
-        AstroNode::AstroRawToList(_) => Some("rawtolist"),
-        AstroNode::AstroRawHeadTail(_) => Some("rawheadtail"),
-        AstroNode::AstroSequence(_) => Some("sequence"),
-        AstroNode::AstroFunction(_) => Some("function"),
-        AstroNode::AstroEval(_) => Some("eval"),
-        AstroNode::AstroQuote(_) => Some("quote"),
-        AstroNode::AstroConstraint(_) => Some("constraint"),
-        AstroNode::AstroTypeMatch(_) => Some("typematch"),
-        AstroNode::AstroForeign(_) => Some("foreign"),
-        AstroNode::AstroID(_) => Some("id"),
-        AstroNode::AstroObject(_) => Some("object"),
-        AstroNode::AstroApply(_) => Some("apply"),
-        AstroNode::AstroIndex(_) => Some("index"),
-        AstroNode::AstroEscape(_) => Some("escape"),
-        AstroNode::AstroIs(_) => Some("is"),
-        AstroNode::AstroIn(_) => Some("in"),
-        AstroNode::AstroIf(_) => Some("if"),
-        AstroNode::AstroNamedPattern(_) => Some("namedpattern"),
-        AstroNode::AstroDeref(_) => Some("deref"),
-        AstroNode::AstroStruct(_) => Some("struct"),
-        AstroNode::AstroMemberFunctionVal(_) => Some("memberfunctionval"),
+        AstroNode::AstroInteger(_) => "integer",
+        AstroNode::AstroReal(_) => "real",
+        AstroNode::AstroBool(_) => "bool",
+        AstroNode::AstroString(_) => "string",
+        AstroNode::AstroLineInfo(_) => "lineinfo",
+        AstroNode::AstroNone(_) => "none",
+        AstroNode::AstroNil(_) => "nil",
+        AstroNode::AstroList(_) => "list",
+        AstroNode::AstroTuple(_) => "tuple",
+        AstroNode::AstroToList(_) => "tolist",
+        AstroNode::AstroHeadTail(_) => "headtail",
+        AstroNode::AstroRawToList(_) => "rawtolist",
+        AstroNode::AstroRawHeadTail(_) => "rawheadtail",
+        AstroNode::AstroSequence(_) => "sequence",
+        AstroNode::AstroFunction(_) => "function",
+        AstroNode::AstroFunctionVal(_) => "functionval",
+        AstroNode::AstroEval(_) => "eval",
+        AstroNode::AstroQuote(_) => "quote",
+        AstroNode::AstroConstraint(_) => "constraint",
+        AstroNode::AstroTypeMatch(_) => "typematch",
+        AstroNode::AstroForeign(_) => "foreign",
+        AstroNode::AstroID(_) => "id",
+        AstroNode::AstroObject(_) => "object",
+        AstroNode::AstroApply(_) => "apply",
+        AstroNode::AstroIndex(_) => "index",
+        AstroNode::AstroEscape(_) => "escape",
+        AstroNode::AstroIs(_) => "is",
+        AstroNode::AstroIn(_) => "in",
+        AstroNode::AstroIf(_) => "if",
+        AstroNode::AstroNamedPattern(_) => "namedpattern",
+        AstroNode::AstroDeref(_) => "deref",
+        AstroNode::AstroStruct(_) => "struct",
+        AstroNode::AstroMemberFunctionVal(_) => "memberfunctionval",
+        AstroNode::AstroData(_) => "data",
+        AstroNode::AstroUnify(_) => "unify",
     }
 }
 /******************************************************************************/

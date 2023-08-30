@@ -136,11 +136,12 @@ impl Symtab {
     // Function dump dumps the complete contents of the symbol table to the 
     // console. TODO print values too.
     pub fn dump(&self) {
+        println!("SYMBOL TABLE DUMP");
         let n_scopes = self.scoped_symtab.len();
         for i in (0..n_scopes).rev() {
             println!("SCOPE LEVEL: {}",i);
-            for (key, _) in &self.scoped_symtab[i] {
-                println!("Found ID: {}", key);
+            for (key, value) in &self.scoped_symtab[i] {
+                println!("Found ID: {}: {}", key, peek(Rc::clone(value)));
             }
         }
         for i in (0..n_scopes).rev() {

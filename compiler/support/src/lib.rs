@@ -6,6 +6,9 @@
 #![allow(unused)]
 
 use ast::*;
+use std::rc::Rc;  
+use std::cell::RefCell;
+
 /*******************************************************************************
 # Asteroid uses truth values similar to Python's Pythonic truth values:
 #
@@ -25,15 +28,15 @@ use ast::*;
 *******************************************************************************/
 pub fn map2boolean<'a>(node: &'a AstroNode) -> Option<AstroNode> {
     match node {
-        AstroNode::AstroInteger( AstroInteger{id:0,value:0} ) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroReal( AstroReal{id:1,value} ) if *value == 0.0 => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroNone(_) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroNil(_) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroBool( AstroBool{id:2,value:false} ) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroString( AstroString{id:3,value} ) if value == "" => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroList( AstroList{id:7,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        AstroNode::AstroTuple( AstroTuple{id:8,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false).unwrap() )),
-        _ => Some( AstroNode::AstroBool( AstroBool::new(true).unwrap()) )
+        AstroNode::AstroInteger( AstroInteger{id:0,value:0} ) => Some( AstroNode::AstroBool(AstroBool::new(false) )),
+        AstroNode::AstroReal( AstroReal{id:1,value} ) if *value == 0.0 => Some( AstroNode::AstroBool(AstroBool::new(false) )),
+        AstroNode::AstroNone(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroNil(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroBool( AstroBool{id:2,value:false} ) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroString( AstroString{id:3,value} ) if value == "" => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroList( AstroList{id:7,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroTuple( AstroTuple{id:8,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        _ => Some( AstroNode::AstroBool( AstroBool::new(true)) )
     }
 }
 /******************************************************************************/
@@ -183,7 +186,7 @@ pub fn term2string_function<'a>(node: &'a AstroNode) -> Option<String> {
 
     let mut out = String::new();
     out += "function{ ";
-    out += term2string(&AstroNode::AstroList(body_list.clone())).unwrap().as_str();
+    out += term2string(body_list).unwrap().as_str();
     out += " }";
     Some(out)
 }
@@ -233,14 +236,11 @@ pub fn term2string_object<'a>(node: &'a AstroNode) -> Option<String> {
     out += &struct_id.name;
     out += "( ";
 
-    let AstroNode::AstroList(AstroList{id:_,length:len,ref contents}) = **object_memory
-        else {panic!("term2string: expected list.")};
-
-    for i in 0..len {
+    for i in 0..object_memory.borrow().len() {
         if i != 0 {
             out += " , "
         }
-        out += &term2string(&contents[i]).unwrap();
+        out += &term2string(&object_memory.borrow()[i]).unwrap();
     }
     out += " )";
     Some(out)
@@ -331,7 +331,34 @@ pub fn term2string_deref<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 /******************************************************************************/
+pub fn data_only( memory: RefCell<Vec<Rc<AstroNode>>> ) -> Rc<Vec<Rc<AstroNode>>> {
+    // filter an object memory and return a memory with only data values.
 
+    let mut data_memory: Vec<Rc<AstroNode>> = vec![];
+    let mut _type = "";
+    for item in memory.borrow().iter() {
+        _type = peek( Rc::clone(item) );
+        if _type != "function-val" {
+            data_memory.push( Rc::clone(item));
+        }
+    };
+    Rc::new( data_memory )
+}
+/******************************************************************************/
+pub fn data_ix_list( memory: RefCell<Vec<Rc<AstroNode>>> ) -> Rc<Vec<usize>> {
+
+    let mut idx_list: Vec<usize> = vec![];
+    let mut counter = 0usize;
+    let mut _type = "";
+    for item in memory.borrow().iter() {
+        _type = peek( Rc::clone(item) );
+        if _type != "function-val" {
+            idx_list.push( counter );
+        }
+        counter += 1;
+    };
+    Rc::new( idx_list )
+}
 
 /******************************************************************************/
 /******************************************************************************/
