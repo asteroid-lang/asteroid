@@ -1,6 +1,10 @@
 [build-system]
 requires = [
     "setuptools>=42",
-    "wheel"
+    "wheel",
+    "pandas",
+    "numpy",
+    "matplotlib",
+    "pyreadline3"
 ]
 build-backend = "setuptools.build_meta"

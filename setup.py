@@ -25,7 +25,8 @@ setup(
     install_requires=[
         "pandas",
         "numpy",
-        "matplotlib"
+        "matplotlib",
+        "pyreadline3",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
