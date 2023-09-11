@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use symtab::*;   //Asteroid symbol table
 use ast::*;      //Asteroid AST representation
-use std::rc::Rc; //Used for astronodes: may have multiple owners
+use std::rc::Rc; 
 
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
@@ -17,19 +17,21 @@ const MODULES_HINT: usize = 8;
 pub struct State {
     pub symbol_table: symtab::Symtab,// Symbol table
     pub modules: Vec<String>,        // List of currently loaded modules
-    pub ast: AstroNode,           // Abstrat syntax tree
+    pub ast: AstroNode,              // Abstrat syntax tree
     pub ignore_quote: bool,          // flags when to ignore quoted vars
     pub constraint_lvl: usize,       // indicated current constraint bracket
                                      // depth level.
     pub cond_warning: bool,          // Flags when a conditional pattern warning
                                      // has already been displayed. Used to 
                                      // prevent repeating the same warning.
-    pub eval_redundancy: bool,       // Flags is we should evaluate overlapping
+    pub eval_redundancy: bool,       // Flag for evaluating overlapping
                                      // patterns. This turns the redundant 
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
     pub dispatch_table: HashMap<String, fn( node: Rc<AstroNode>, state: &mut State ) -> Result< Rc<AstroNode>, (&'static str,String)>>,
+                                     // Dispatch table for function calls. Maps 
+                                     // strings to functions. 
 }
 impl State {
     /**************************************************************************/

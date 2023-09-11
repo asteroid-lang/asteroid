@@ -121,7 +121,7 @@ pub fn term2string_list<'a>(node: &'a AstroNode) -> Option<String> {
     let mut out = String::new();
     out +="[ ";
     for i in 0..*length {
-        out += &term2string(&contents[i]).unwrap();
+        out += &term2string(&contents.borrow()[i]).unwrap();
         if i != (*length-1) {
             out +=" , ";
         }
@@ -136,7 +136,7 @@ pub fn term2string_tuple<'a>(node: &'a AstroNode) -> Option<String> {
     let mut out = String::new();
     out +="( ";
     for i in 0..*length {
-        out += &term2string(&contents[i]).unwrap();
+        out += &term2string(&contents.borrow()[i]).unwrap();
         if i != (*length-1) {
             out +=" , ";
         }

@@ -101,10 +101,10 @@ impl AstroNil {
 pub struct AstroList {
     pub id: u8,
     pub length: usize,
-    pub contents: Rc<Vec<Rc<AstroNode>>>,
+    pub contents: Rc<RefCell<Vec<Rc<AstroNode>>>>,
 }
 impl AstroList {
-    pub fn new(l: usize, c: Rc<Vec<Rc<AstroNode>>> ) -> Self {
+    pub fn new(l: usize, c: Rc<RefCell<Vec<Rc<AstroNode>>>>) -> Self {
         AstroList { id: 7, length: l, contents: c }
     }
 }
@@ -114,10 +114,10 @@ impl AstroList {
 pub struct AstroTuple {
     pub id: u8,
     pub length: usize,
-    pub contents: Vec<Rc<AstroNode>>,
+    pub contents: Rc<RefCell<Vec<Rc<AstroNode>>>>,
 }
 impl AstroTuple {
-    pub fn new(l: usize, c: Vec<Rc<AstroNode>> ) -> Self {
+    pub fn new(l: usize, c: Rc<RefCell<Vec<Rc<AstroNode>>>> ) -> Self {
         AstroTuple{ id: 8, length: l, contents: c }
     }
 }
