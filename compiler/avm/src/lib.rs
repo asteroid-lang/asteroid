@@ -485,7 +485,7 @@ pub fn walk<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroN
         AstroNode::AstroReal(_) => Ok(node),
         AstroNode::AstroBool(_) => Ok(node),
         AstroNode::AstroString(_) => Ok(node),
-        AstroNode::AstroLineInfo(_) => process_lineinfo(node, state),
+        AstroNode::AstroLineInfo(_) => set_lineinfo(node, state),
         AstroNode::AstroList(_) => list_exp(node, state),
         AstroNode::AstroTuple(_) => tuple_exp(node, state),
         AstroNode::AstroNone(_) => Ok(node),
@@ -516,7 +516,7 @@ pub fn walk<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroN
     }    
 }
 /******************************************************************************/
-pub fn process_lineinfo<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
+pub fn set_lineinfo<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
     match *node {
         AstroNode::AstroLineInfo(AstroLineInfo{id,ref module,line_number}) => state.lineinfo = (module.clone(),line_number),
         _ => panic!("lineinfo error."),
@@ -1262,8 +1262,7 @@ pub fn read_at_ix<'a>( structure_val: Rc<AstroNode>, ix: Rc<AstroNode>, state: &
             
             let AstroNode::AstroInteger(AstroInteger{id:_,value:ix_val}) = *ix
                 else {panic!("read_at_ix: expected integer.")};
-            // let AstroNode::AstroList( AstroList{id:_,length:len,contents:ref c}) = *structure_val
-            //     else {panic!("read_at_ix: expected list.")};
+
             let content = match *structure_val {
                 AstroNode::AstroList( AstroList{id:_,length:len,contents:ref c}) => c,
                 AstroNode::AstroTuple( AstroTuple{id:_,length:len,contents:ref c}) => c,
@@ -1308,6 +1307,20 @@ pub fn read_at_ix<'a>( structure_val: Rc<AstroNode>, ix: Rc<AstroNode>, state: &
         return Ok( Rc::clone( &mem.borrow_mut()[ found_idx ]) );
 
     
+    } else if struct_type == "string" {
+
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:ix_val}) = *ix
+                else {panic!("read_at_ix: expected integer.")};
+
+        let content = match *structure_val {
+            AstroNode::AstroString( AstroString{id:_,value:ref val}) => val,
+            _ => panic!("read_at_ix: expected string."),
+        };
+
+        match content.chars().nth( ix_val as usize) {
+            Some( character ) => return Ok(Rc::new(AstroNode::AstroString(AstroString::new(character.to_string())))),
+            _                 => return Err( ("ValueError",format!("String '{}' too short for index value {}",content,ix_val)) )
+        }
     }
     /**
 
@@ -1771,7 +1784,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('integer', 1)])))
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
@@ -1808,7 +1821,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // exp_val = walk(('apply', ('id', '__plus__'), ('tuple', [('integer', 1), ('real', 1.1)])))
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
@@ -1850,7 +1863,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // exp_val = walk(('apply', ('id', '__plus__'), ('tuple',  [('real', 1.35), ('integer', 1)])))
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
@@ -1892,7 +1905,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // exp_val = walk(('apply', ('id', '__plus__'), ('tuple',  [('real', 1.35), ('real', 2.15)])))
         let r1 = Rc::new( AstroNode::AstroReal( AstroReal::new(1.35)));
@@ -1930,7 +1943,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
@@ -1970,7 +1983,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string())));
@@ -1999,7 +2012,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string())));
@@ -2028,7 +2041,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let s1 = Rc::new( AstroNode::AstroString( AstroString::new("Hello ".to_string())));
@@ -2057,7 +2070,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let s1 = Rc::new( AstroNode::AstroString( AstroString::new(" Hello".to_string())));
@@ -2086,7 +2099,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         
         let s1 = Rc::new( AstroNode::AstroString( AstroString::new(" Hello".to_string())));
@@ -2129,7 +2142,7 @@ mod tests {
 
         // set_lineinfo('prog.ast',1)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
         
         //exp_val = walk(('quote', ('if-exp', ('apply', ('id', '__gt__'), ('tuple', [('id', 'x'), ('integer', 0)])), ('id', 'x'), ('null',))))
         let var1 = Rc::new(AstroNode::AstroID(AstroID::new("__gt__".to_string())));
@@ -2163,7 +2176,7 @@ mod tests {
 
         //set_lineinfo('prog.txt',2)
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:String::from("prog.ast"),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         //exp_val = walk(('integer', 2))
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2)));
@@ -2249,7 +2262,7 @@ mod tests {
         // declare_unifiers(unifiers)
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let var1 = Rc::new(AstroNode::AstroID(AstroID::new("__gt__".to_string())));
         let var2 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
@@ -2282,7 +2295,7 @@ mod tests {
         // declare_unifiers(unifiers)
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let id8 = Rc::new(AstroNode::AstroID(AstroID::new("_ast72".to_string())));
         let id9 = Rc::new(AstroNode::AstroID(AstroID::new("sum".to_string())));
@@ -2309,7 +2322,7 @@ mod tests {
         // declare_unifiers(unifiers)
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:8}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let id10 = Rc::new(AstroNode::AstroID(AstroID::new("sum".to_string())));
         let id11 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string())));
@@ -2376,7 +2389,7 @@ mod tests {
         let mut state = State::new().unwrap();
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // # structure def for A
         let id1 = Rc::new(AstroNode::AstroID(AstroID::new("a".to_string())));
@@ -2407,7 +2420,7 @@ mod tests {
         state.enter_sym( "A", Rc::clone(&struct_type)  );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:7}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2)));
@@ -2467,7 +2480,7 @@ mod tests {
         let mut state = State::new().unwrap();
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(0)));
         let id1 = Rc::new(AstroNode::AstroID(AstroID::new("ctr".to_string())));
@@ -2488,7 +2501,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);  
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(100)));
         let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
@@ -2502,7 +2515,7 @@ mod tests {
         while let Some(AstroNode::AstroBool(AstroBool{id:_,value:true})) = map2boolean( &walk(Rc::clone(&apply1), &mut state ).unwrap()) {
 
             let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:3}));
-            process_lineinfo(  new_lineinfo, &mut state );
+            set_lineinfo(  new_lineinfo, &mut state );
 
             let exp_val = walk( Rc::clone(&apply2), &mut state);
             let exp_val = match exp_val {
@@ -2524,7 +2537,7 @@ mod tests {
         }
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let check1 = state.lookup_sym("ctr",true);
         let AstroNode::AstroInteger(AstroInteger{id:_,value:100}) = *check1 
@@ -2596,7 +2609,7 @@ mod tests {
         fn _ast72<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result< Rc<AstroNode>, (&'static str,String)> {
             
             let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
-            process_lineinfo(  new_lineinfo, state );
+            set_lineinfo(  new_lineinfo, state );
 
             let id1 = Rc::new(AstroNode::AstroID(AstroID::new("radius".to_string())));
 
@@ -2611,7 +2624,7 @@ mod tests {
                 };
 
                 let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:5}));
-                process_lineinfo(  new_lineinfo, state );
+                set_lineinfo(  new_lineinfo, state );
 
                 let exp_val = walk( Rc::clone(&id1), state );
 
@@ -2635,7 +2648,7 @@ mod tests {
                 declare_unifiers( &unifiers, state);
 
                 let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:6}));
-                process_lineinfo(  new_lineinfo, state );
+                set_lineinfo(  new_lineinfo, state );
 
                 let id4 = Rc::new(AstroNode::AstroID(AstroID::new("__times__".to_string())));
                 let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2)));
@@ -2671,7 +2684,7 @@ mod tests {
         state.dispatch_table.insert( String::from("__init__") , _ast72 );
         
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         let id1 = Rc::new(AstroNode::AstroID(AstroID::new("radius".to_string())));
         let id2 = Rc::new(AstroNode::AstroID(AstroID::new("diameter".to_string())));
@@ -2713,7 +2726,7 @@ mod tests {
         state.enter_sym( "Circle", Rc::clone(&struct_type)  );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo(AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:10}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         // exp_val = walk(('apply', ('id', 'Circle'), ('integer', 2)))
         // unifiers = unify(exp_val,('id', 'a'))
@@ -2776,7 +2789,7 @@ mod tests {
         let mut state = State::new().unwrap();
         
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
         let i2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2)));
@@ -2801,7 +2814,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         let i4 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(4)));
         let id2 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
@@ -2857,7 +2870,7 @@ mod tests {
         let mut state = State::new().unwrap();
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
         let i2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2)));
@@ -2885,7 +2898,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );   
+        set_lineinfo(  new_lineinfo, &mut state );   
 
         let s1 = Rc::new(AstroNode::AstroString(AstroString::new("hello".to_string())));
         let i6 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
@@ -2974,7 +2987,7 @@ mod tests {
             println!("into function with {}!",peek(Rc::clone(&node)));
             
             let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:3}));
-            process_lineinfo(  new_lineinfo, state );
+            set_lineinfo(  new_lineinfo, state );
 
             let id1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
             let id2 = Rc::new(AstroNode::AstroID(AstroID::new("tail".to_string())));
@@ -2993,7 +3006,7 @@ mod tests {
                 let id3 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
 
                 let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
-                process_lineinfo(  new_lineinfo, state );
+                set_lineinfo(  new_lineinfo, state );
 
                 let exp_val = walk( Rc::clone(&id3), state );
 
@@ -3016,7 +3029,7 @@ mod tests {
         state.dispatch_table.insert( String::from("_ast72") , _ast72 );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );  
+        set_lineinfo(  new_lineinfo, &mut state );  
 
         let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
         let i2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2)));
@@ -3041,7 +3054,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let id2 = Rc::new(AstroNode::AstroID(AstroID::new("_ast72".to_string())));
         let func1 = Rc::new(AstroNode::AstroFunction(AstroFunction::new(Rc::clone(&id2))));
@@ -3063,10 +3076,10 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:5}));
-        process_lineinfo(  new_lineinfo, &mut state ); 
+        set_lineinfo(  new_lineinfo, &mut state ); 
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:6}));
-        process_lineinfo(  new_lineinfo, &mut state ); 
+        set_lineinfo(  new_lineinfo, &mut state ); 
 
         let id4 = Rc::new(AstroNode::AstroID(AstroID::new("f".to_string())));
         let id5 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
@@ -3153,7 +3166,7 @@ mod tests {
             println!("into function with {}!",peek(Rc::clone(&node)));
             
             let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:3}));
-            process_lineinfo(  new_lineinfo, state );
+            set_lineinfo(  new_lineinfo, state );
 
             let id1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
             let id2 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string())));
@@ -3179,7 +3192,7 @@ mod tests {
                 let apply1 = Rc::new(AstroNode::AstroApply(AstroApply::new(Rc::clone(&id6),Rc::clone(&tup1))));
 
                 let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:4}));
-                process_lineinfo(  new_lineinfo, state );
+                set_lineinfo(  new_lineinfo, state );
 
                 let exp_val = walk( Rc::clone(&apply1), state );
 
@@ -3202,7 +3215,7 @@ mod tests {
         state.dispatch_table.insert( String::from("_ast72") , _ast72 );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
-        process_lineinfo(  new_lineinfo, &mut state );  
+        set_lineinfo(  new_lineinfo, &mut state );  
 
         let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
         let i2 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(2)));
@@ -3227,7 +3240,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let id2 = Rc::new(AstroNode::AstroID(AstroID::new("_ast72".to_string())));
         let func1 = Rc::new(AstroNode::AstroFunction(AstroFunction::new(Rc::clone(&id2))));
@@ -3249,10 +3262,10 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:5}));
-        process_lineinfo(  new_lineinfo, &mut state ); 
+        set_lineinfo(  new_lineinfo, &mut state ); 
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:6}));
-        process_lineinfo(  new_lineinfo, &mut state ); 
+        set_lineinfo(  new_lineinfo, &mut state ); 
 
         let id4 = Rc::new(AstroNode::AstroID(AstroID::new("f".to_string())));
         let id5 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
@@ -3331,7 +3344,7 @@ mod tests {
         let mut state = State::new().unwrap();
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // # structure def for A
         let id1 = Rc::new(AstroNode::AstroID(AstroID::new("a".to_string())));
@@ -3362,7 +3375,7 @@ mod tests {
         state.enter_sym( "A", Rc::clone(&struct_type)  );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:7}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2)));
@@ -3387,7 +3400,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);  
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:8}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(4)));
         let id5 = Rc::new(AstroNode::AstroID(AstroID::new("obj".to_string())));
@@ -3469,7 +3482,7 @@ mod tests {
         let mut state = State::new().unwrap();
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         // # structure def for A
         let id1 = Rc::new(AstroNode::AstroID(AstroID::new("a".to_string())));
@@ -3500,7 +3513,7 @@ mod tests {
         state.enter_sym( "A", Rc::clone(&struct_type)  );
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:7}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i1 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(1)));
         let i2 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(2)));
@@ -3525,7 +3538,7 @@ mod tests {
         declare_unifiers( &unifiers, &mut state);  
 
         let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:8}));
-        process_lineinfo(  new_lineinfo, &mut state );
+        set_lineinfo(  new_lineinfo, &mut state );
 
         let i3 = Rc::new( AstroNode::AstroInteger( AstroInteger::new(4)));
         let id5 = Rc::new(AstroNode::AstroID(AstroID::new("obj".to_string())));
@@ -3551,5 +3564,71 @@ mod tests {
             else {panic!("test failed")}; 
         assert_eq!( v1,2 );
 
+    }
+    #[test]
+    fn test_unify_index_string() {
+        // Asteroid
+
+        // let x = "abcdefg".
+        // let y = x@1.
+
+        //Python
+
+        // set_lineinfo('prog.txt',1)
+        // exp_val = walk(('string', 'abcdefg'))
+        // unifiers = unify(exp_val,('id', 'x'))
+        // declare_unifiers(unifiers)
+     
+        // set_lineinfo('prog.txt',2)
+        // exp_val = walk(('index', ('id', 'x'), ('integer', 1)))
+        // unifiers = unify(exp_val,('id', 'y'))
+        // declare_unifiers(unifiers)
+
+        //Rust
+
+        let mut state = State::new().unwrap();
+
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:2}));
+        set_lineinfo(  new_lineinfo, &mut state );
+
+        // # structure def for A
+        let id1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
+        let s1 = Rc::new(AstroNode::AstroString(AstroString::new("abcdefg".to_string())));
+
+        let exp_val = match walk( Rc::clone(&s1), &mut state) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        let unifiers = match unify( exp_val, Rc::clone(&id1), &mut state, true) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        declare_unifiers( &unifiers, &mut state); 
+
+        let id2 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
+        let id3 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string())));
+        let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(1)));
+        let idx1 = Rc::new(AstroNode::AstroIndex(AstroIndex::new( Rc::clone(&id2), Rc::clone(&i1) )));
+
+        let exp_val = match walk( Rc::clone(&idx1), &mut state) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        let unifiers = match unify( exp_val, Rc::clone(&id3), &mut state, true) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        declare_unifiers( &unifiers, &mut state); 
+
+        /***********************************************************************************************/
+        let check1 = state.lookup_sym("y",true);
+
+        let AstroNode::AstroString(AstroString{id:_,value:ref v1}) = *check1
+            else {panic!("test failed")}; 
+        assert_eq!( v1,"b" );
     }
 }
