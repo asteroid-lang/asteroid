@@ -28,14 +28,14 @@ use std::cell::RefCell;
 *******************************************************************************/
 pub fn map2boolean<'a>(node: &'a AstroNode) -> Option<AstroNode> {
     match node {
-        AstroNode::AstroInteger( AstroInteger{id:0,value:0} ) => Some( AstroNode::AstroBool(AstroBool::new(false) )),
-        AstroNode::AstroReal( AstroReal{id:1,value} ) if *value == 0.0 => Some( AstroNode::AstroBool(AstroBool::new(false) )),
+        AstroNode::AstroInteger( AstroInteger{value:0} ) => Some( AstroNode::AstroBool(AstroBool::new(false) )),
+        AstroNode::AstroReal( AstroReal{value} ) if *value == 0.0 => Some( AstroNode::AstroBool(AstroBool::new(false) )),
         AstroNode::AstroNone(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
         AstroNode::AstroNil(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroBool( AstroBool{id:2,value:false} ) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroString( AstroString{id:3,value} ) if value == "" => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroList( AstroList{id:7,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroTuple( AstroTuple{id:8,length:0,contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroBool( AstroBool{value:false} ) => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroString( AstroString{value} ) if value == "" => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroList( AstroList{contents}) if contents.borrow().len() == 0 => Some( AstroNode::AstroBool(AstroBool::new(false))),
+        AstroNode::AstroTuple( AstroTuple{contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
         _ => Some( AstroNode::AstroBool( AstroBool::new(true)) )
     }
 }
@@ -72,11 +72,11 @@ pub fn promote<'a>(type1:&'a str,type2:&'a str) ->  &'a str {
 /******************************************************************************/
 pub fn term2string<'a>(node: &'a AstroNode) -> Option<String> {
     match node {
-        AstroNode::AstroInteger(AstroInteger{id,value}) => Some(value.to_string()),
-        AstroNode::AstroReal(AstroReal{id,value}) => Some(value.to_string()),
-        AstroNode::AstroBool(AstroBool{id,value}) => Some(value.to_string()),
-        AstroNode::AstroString(AstroString{id,value}) => Some(value.clone()),
-        AstroNode::AstroLineInfo(AstroLineInfo{id,module,line_number}) => term2string_lineinfo(module,*line_number),
+        AstroNode::AstroInteger(AstroInteger{value}) => Some(value.to_string()),
+        AstroNode::AstroReal(AstroReal{value}) => Some(value.to_string()),
+        AstroNode::AstroBool(AstroBool{value}) => Some(value.to_string()),
+        AstroNode::AstroString(AstroString{value}) => Some(value.clone()),
+        AstroNode::AstroLineInfo(AstroLineInfo{module,line_number}) => term2string_lineinfo(module,*line_number),
         AstroNode::AstroNone(_) => Some(String::from("None")),
         AstroNode::AstroNil(_) => Some(String::from("Nil")),
         AstroNode::AstroList(_) => term2string_list(node),
@@ -90,7 +90,7 @@ pub fn term2string<'a>(node: &'a AstroNode) -> Option<String> {
         AstroNode::AstroConstraint(_) => term2string_constraint(node),
         AstroNode::AstroTypeMatch(_) => term2string_typematch(node),
         AstroNode::AstroForeign(_) => Some(String::from("Foriegn Object")),
-        AstroNode::AstroID(AstroID{id,name}) => Some(name.clone()),
+        AstroNode::AstroID(AstroID{name}) => Some(name.clone()),
         AstroNode::AstroObject(_) => term2string_object(node),
         AstroNode::AstroApply(_) => term2string_apply(node),
         AstroNode::AstroIndex(_) => term2string_index(node),
@@ -115,14 +115,14 @@ pub fn term2string_lineinfo(module: &str,line_number: usize) -> Option<String> {
     Some(out)
 }
 pub fn term2string_list<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroList(AstroList{id,length,contents}) = node
+    let AstroNode::AstroList(AstroList{contents}) = node
         else {panic!("Expected list in term2string_list")};
     
     let mut out = String::new();
     out +="[ ";
-    for i in 0..*length {
+    for i in 0..contents.borrow().len() {
         out += &term2string(&contents.borrow()[i]).unwrap();
-        if i != (*length-1) {
+        if i != (contents.borrow().len()-1) {
             out +=" , ";
         }
     }
@@ -130,14 +130,14 @@ pub fn term2string_list<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_tuple<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroTuple(AstroTuple{id,length,contents}) = node
+    let AstroNode::AstroTuple(AstroTuple{contents}) = node
         else {panic!("Expected tuple in term2string_tuple")};
 
     let mut out = String::new();
     out +="( ";
-    for i in 0..*length {
+    for i in 0..contents.borrow().len() {
         out += &term2string(&contents.borrow()[i]).unwrap();
-        if i != (*length-1) {
+        if i != (contents.borrow().len()-1) {
             out +=" , ";
         }
     }
@@ -145,7 +145,7 @@ pub fn term2string_tuple<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_tolist<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroToList(AstroToList{id,start,stop,stride}) = node
+    let AstroNode::AstroToList(AstroToList{start,stop,stride}) = node
         else {panic!("Expected to-list in term2string_tolist")};
 
     let mut out = String::new();
@@ -158,7 +158,7 @@ pub fn term2string_tolist<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_headtail<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroHeadTail(AstroHeadTail{id,head,tail}) = node
+    let AstroNode::AstroHeadTail(AstroHeadTail{head,tail}) = node
         else {panic!("Expected head-tail in term2string_headtail")};
 
     let mut out = String::new();
@@ -170,7 +170,7 @@ pub fn term2string_headtail<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_sequence<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroSequence(AstroSequence{id,first,second}) = node
+    let AstroNode::AstroSequence(AstroSequence{first,second}) = node
         else {panic!("Expected sequence in term2string_sequence")};
 
     let mut out = String::new();
@@ -181,7 +181,7 @@ pub fn term2string_sequence<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_function<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroFunction(AstroFunction{id,body_list}) = node
+    let AstroNode::AstroFunction(AstroFunction{body_list}) = node
         else {panic!("Expected function in term2string_function")};
 
     let mut out = String::new();
@@ -191,7 +191,7 @@ pub fn term2string_function<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_eval<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroEval(AstroEval{id,expression}) = node
+    let AstroNode::AstroEval(AstroEval{expression}) = node
         else {panic!("Expected eval expression in term2string_eval")};
 
     let mut out = String::new();
@@ -201,7 +201,7 @@ pub fn term2string_eval<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_quote<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroQuote(AstroQuote{id,expression}) = node
+    let AstroNode::AstroQuote(AstroQuote{expression}) = node
         else {panic!("Expected quote expression in term2string_quote")};
 
     let mut out = String::new();
@@ -210,7 +210,7 @@ pub fn term2string_quote<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_constraint<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroConstraint(AstroConstraint{id,expression}) = node
+    let AstroNode::AstroConstraint(AstroConstraint{expression}) = node
         else {panic!("Expected constraint expression in term2string_constraint")};
 
     let mut out = String::new();
@@ -220,7 +220,7 @@ pub fn term2string_constraint<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_typematch<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroTypeMatch(AstroTypeMatch{id,expression}) = node
+    let AstroNode::AstroTypeMatch(AstroTypeMatch{expression}) = node
         else {panic!("Expected typematch expresssion in term2string_typematch")};
 
     let mut out = String::new();
@@ -229,7 +229,7 @@ pub fn term2string_typematch<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_object<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroObject(AstroObject{id,struct_id,object_memory}) = node
+    let AstroNode::AstroObject(AstroObject{struct_id,object_memory}) = node
         else {panic!("Expected object in term2string_object")};
 
     let mut out = String::new();
@@ -246,7 +246,7 @@ pub fn term2string_object<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_apply<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroApply(AstroApply{id,argument,function}) = node
+    let AstroNode::AstroApply(AstroApply{argument,function}) = node
         else {panic!("Expected apply expression in term2string_apply")};
 
     let mut out = String::new();
@@ -257,7 +257,7 @@ pub fn term2string_apply<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_index<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroIndex(AstroIndex{id,structure,index_exp}) = node
+    let AstroNode::AstroIndex(AstroIndex{structure,index_exp}) = node
         else {panic!("Expected index expression in term2string_index")};
 
     let mut out = String::new();
@@ -267,7 +267,7 @@ pub fn term2string_index<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_escape<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroEscape(AstroEscape{id,content}) = node
+    let AstroNode::AstroEscape(AstroEscape{content}) = node
         else {panic!("Expected escape in term2string_escape")};
 
     let mut out = String::new();
@@ -277,7 +277,7 @@ pub fn term2string_escape<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_is<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroIs(AstroIs{id,pattern,term}) = node
+    let AstroNode::AstroIs(AstroIs{pattern,term}) = node
         else {panic!("Expected is expression in term2string_is")};
 
     let mut out = String::new();
@@ -287,7 +287,7 @@ pub fn term2string_is<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_in<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroIn(AstroIn{id,expression,expression_list}) = node
+    let AstroNode::AstroIn(AstroIn{expression,expression_list}) = node
         else {panic!("Expected in expression in term2string_in")};
 
     let mut out = String::new();
@@ -297,7 +297,7 @@ pub fn term2string_in<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_if<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroIf(AstroIf{id,cond_exp,then_exp,else_exp}) = node
+    let AstroNode::AstroIf(AstroIf{cond_exp,then_exp,else_exp}) = node
         else {panic!("Expected if expression in term2string_if")};
 
     let mut out = String::new();
@@ -311,7 +311,7 @@ pub fn term2string_if<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_namedpattern<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroNamedPattern(AstroNamedPattern{id,name,pattern}) = node
+    let AstroNode::AstroNamedPattern(AstroNamedPattern{name,pattern}) = node
         else {panic!("Expected named pattern in term2string_namedpattern")};
 
     let mut out = String::new();
@@ -322,7 +322,7 @@ pub fn term2string_namedpattern<'a>(node: &'a AstroNode) -> Option<String> {
     Some(out)
 }
 pub fn term2string_deref<'a>(node: &'a AstroNode) -> Option<String> {
-    let AstroNode::AstroDeref(AstroDeref{id,expression}) = node
+    let AstroNode::AstroDeref(AstroDeref{expression}) = node
         else {panic!("Expected deref in term2string_deref")};
 
     let mut out = String::new();
