@@ -1014,7 +1014,7 @@ pub fn index_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<A
 
     // look at the semantics of 'structure'
     let structure_val = walk(Rc::clone(&structure),state).unwrap();
-    println!("STRUCT VAL IS {}",peek(Rc::clone(&structure_val)));
+
     // indexing/slicing
     let result = read_at_ix(structure_val,Rc::clone(&index_exp),state).unwrap();
 
@@ -1023,8 +1023,17 @@ pub fn index_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<A
 }
 /******************************************************************************/
 pub fn escape_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
-    //TODO
-    Ok( node )
+
+    let AstroNode::AstroEscape(AstroEscape{id:_,content:ref fname}) = *node
+        else {panic!("escape_exp(): expected ID.")};
+    
+    let old_lineinfo = state.lineinfo.clone();
+    let return_value = state.dispatch_table[ fname.as_str() ]( Rc::new(AstroNode::AstroNone(AstroNone::new())), state );
+
+    //  coming back from a function call - restore caller's lineinfo
+    state.lineinfo = old_lineinfo;
+
+    return_value
 }
 /******************************************************************************/
 pub fn is_exp<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result<Rc<AstroNode>, (&'static str,String)>{
@@ -3630,5 +3639,147 @@ mod tests {
         let AstroNode::AstroString(AstroString{id:_,value:ref v1}) = *check1
             else {panic!("test failed")}; 
         assert_eq!( v1,"b" );
+    }
+    #[test]
+    fn test_prog_escape_func() {
+        // Asteroid
+        // function times_two with x do return escape
+        // "
+        // let AstroNode::AstroInteger(AstroInteger{id:_,value:val}) = *state.lookup_sym( \"x\" ) 
+        //     else {return Err((\"ValueError\",\"times_two() expected a single integer.\"))};
+        
+        // return Rc::new(AstroNode::AstroInteger(AstroInteger::new(2*val)));
+        // "
+        // end
+        // let y = times_two( 15 ).
+
+
+        // Python
+        // def _ast72():
+            // let AstroNode::AstroInteger(AstroInteger{id:_,value:val}) = *state.lookup_sym( "x" )
+            //   else {return Err(("ValueError","times_two() expected a single integer."))};
+            // return Ok(Rc::new(AstroNode::AstroInteger(AstroInteger::new(2*val))));
+            // avm.avm.__retval__ = __retval__
+  
+        // def _ast73(arg):
+        //     set_lineinfo('prog.txt',1)
+        //     try:
+        //     unifiers = unify(arg,('id', 'x'))
+        //     state.symbol_table.push_scope({})
+        //     declare_formal_args(unifiers)
+        //     set_lineinfo('prog.txt',1)
+        //     val = walk(('escape', ('implementation', '_ast72')))
+        //     state.symbol_table.pop_scope()
+        //     return val
+    
+        //     state.symbol_table.pop_scope()
+        //     except PatternMatchFailed:
+        //     raise ValueError('none of the function bodies unified with actual parameters')
+
+        // set_lineinfo('prog.txt',1)
+        // exp_val = walk(('function-exp', ('implementation', '_ast73')))
+        // unifiers = unify(exp_val,('id', 'times_two'))
+        // declare_unifiers(unifiers)
+     
+        // set_lineinfo('prog.txt',9)
+        // exp_val = walk(('apply', ('id', 'times_two'), ('integer', 15)))
+        // unifiers = unify(exp_val,('id', 'y'))
+        // declare_unifiers(unifiers)
+     
+        // Rust
+
+        fn _ast72<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result< Rc<AstroNode>, (&'static str,String)> {
+            let AstroNode::AstroInteger(AstroInteger{id:_,value:val}) = *state.lookup_sym( "x", true )
+              else {return Err(("ValueError",format!("times_two() expected a single integer.")))};
+            return Ok(Rc::new(AstroNode::AstroInteger(AstroInteger::new(2*val))));
+        }
+        fn _ast73<'a>( node: Rc<AstroNode>, state: &'a mut State ) -> Result< Rc<AstroNode>, (&'static str,String)> {
+
+            let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(AstroNode::AstroID(AstroID::new("x".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                state.push_scope();
+
+                let out1 = declare_formal_args( &unifiers, state );
+                match out1 {
+                    Ok(_) => (),
+                    Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+                };
+
+                let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let id2 = Rc::new(AstroNode::AstroID(AstroID::new("_ast72".to_string())));
+                let esc1 = Rc::new(AstroNode::AstroEscape(AstroEscape::new( "_ast72".to_string() )));
+
+                let exp_val = match walk( Rc::clone(&esc1), state) {
+                    Ok( val ) => val,
+                    Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+                };
+
+                state.push_scope();
+
+                return Ok( exp_val )
+            } else {
+                return Err(("ValueError","none of the function bodies unified with actual parameters".to_string()))
+            }
+            
+        }
+
+        let mut state = State::new().unwrap();
+        state.dispatch_table.insert( String::from("_ast72") , _ast72 );
+        state.dispatch_table.insert( String::from("_ast73") , _ast73 );
+
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:1}));
+        set_lineinfo(  new_lineinfo, &mut state );
+
+        let id1 = Rc::new(AstroNode::AstroID(AstroID::new("_ast73".to_string())));
+        let id2 = Rc::new(AstroNode::AstroID(AstroID::new("times_two".to_string())));
+        let func1 = Rc::new(AstroNode::AstroFunction(AstroFunction::new( Rc::clone(&id1) )));
+        let exp_val = walk( Rc::clone(&func1), &mut state);
+
+        let exp_val = match exp_val {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        let unifiers = unify( exp_val, Rc::clone(&id2), &mut state, true);
+
+        let unifiers = match unifiers {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        declare_unifiers( &unifiers, &mut state);
+
+        let new_lineinfo = Rc::new(AstroNode::AstroLineInfo( AstroLineInfo{id:0,module:"prog.ast".to_string(),line_number:9}));
+        set_lineinfo(  new_lineinfo, &mut state );
+
+        let id3 = Rc::new(AstroNode::AstroID(AstroID::new("times_two".to_string())));
+        let id4 = Rc::new(AstroNode::AstroID(AstroID::new("y".to_string())));
+        let i1 = Rc::new(AstroNode::AstroInteger(AstroInteger::new(15)));
+        let apply1 = Rc::new(AstroNode::AstroApply(AstroApply::new( Rc::clone(&id3), Rc::clone(&i1) )));
+
+        let exp_val = match  walk( Rc::clone(&apply1), &mut state) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        let unifiers = match unify( exp_val, Rc::clone(&id4), &mut state, true) {
+            Ok( val ) => val,
+            Err((_type,msg)) => panic!("{}: {}: {}: {}",_type,state.lineinfo.0,state.lineinfo.1,msg),
+        };
+
+        declare_unifiers( &unifiers, &mut state);
+
+        let check1 = state.lookup_sym("y",true);
+
+        let AstroNode::AstroInteger(AstroInteger{id:_,value:v}) = *check1
+            else {panic!("test failed")}; 
+        assert_eq!(30,v);
     }
 }
