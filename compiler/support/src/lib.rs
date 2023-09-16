@@ -26,17 +26,17 @@ use std::cell::RefCell;
 #  All other values are considered true, in particular any object is considered
 #  to be a true value. 
 *******************************************************************************/
-pub fn map2boolean<'a>(node: &'a AstroNode) -> Option<AstroNode> {
+pub fn map2boolean<'a>(node: &'a AstroNode) -> AstroNode {
     match node {
-        AstroNode::AstroInteger( AstroInteger{value:0} ) => Some( AstroNode::AstroBool(AstroBool::new(false) )),
-        AstroNode::AstroReal( AstroReal{value} ) if *value == 0.0 => Some( AstroNode::AstroBool(AstroBool::new(false) )),
-        AstroNode::AstroNone(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroNil(_) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroBool( AstroBool{value:false} ) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroString( AstroString{value} ) if value == "" => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroList( AstroList{contents}) if contents.borrow().len() == 0 => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        AstroNode::AstroTuple( AstroTuple{contents}) => Some( AstroNode::AstroBool(AstroBool::new(false))),
-        _ => Some( AstroNode::AstroBool( AstroBool::new(true)) )
+        AstroNode::AstroInteger( AstroInteger{value:0} ) => AstroNode::AstroBool(AstroBool::new(false) ),
+        AstroNode::AstroReal( AstroReal{value} ) if *value == 0.0 => AstroNode::AstroBool(AstroBool::new(false) ),
+        AstroNode::AstroNone(_) => AstroNode::AstroBool(AstroBool::new(false)),
+        AstroNode::AstroNil(_) => AstroNode::AstroBool(AstroBool::new(false)),
+        AstroNode::AstroBool( AstroBool{value:false} ) => AstroNode::AstroBool(AstroBool::new(false)),
+        AstroNode::AstroString( AstroString{value} ) if value == "" => AstroNode::AstroBool(AstroBool::new(false)),
+        AstroNode::AstroList( AstroList{contents}) if contents.borrow().len() == 0 => AstroNode::AstroBool(AstroBool::new(false)),
+        AstroNode::AstroTuple( AstroTuple{contents}) => AstroNode::AstroBool(AstroBool::new(false)),
+        _ => AstroNode::AstroBool( AstroBool::new(true)) 
     }
 }
 /******************************************************************************/

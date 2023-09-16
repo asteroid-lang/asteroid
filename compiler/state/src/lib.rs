@@ -9,6 +9,16 @@ use std::collections::HashMap;
 use symtab::*;   //Asteroid symbol table
 use ast::*;      //Asteroid AST representation
 use std::rc::Rc; 
+/******************************************************************************/
+// All of the AVM error types 
+pub enum Error {
+    ValueError(String),
+    PatternMatchFailed(String),
+    OverlappingPattern(String),
+    NonLinearPattern(String),
+    ArithmeticError(String),
+    FileNotFound(String),
+}
 
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
@@ -29,7 +39,7 @@ pub struct State {
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
-    pub dispatch_table: HashMap<String, fn( node: Rc<AstroNode>, state: &mut State ) -> Result< Rc<AstroNode>, (&'static str,String)>>,
+    pub dispatch_table: HashMap<String, fn( node: Rc<AstroNode>, state: &mut State ) -> Result< Rc<AstroNode>, Error>>,
                                      // Dispatch table for function calls. Maps 
                                      // strings to functions. 
 }
