@@ -5,9 +5,9 @@
 /******************************************************************************/   
 #![allow(unused)]
 
-use std::rc::Rc;  // used for astronodes; an astronode may have up to two owners
+use std::rc::Rc;  // used for nodes; an node may have up to two owners
                   // at a time: The state object and whatever function(s) is/are 
-                  // processing the astronode
+                  // processing the node
 use std::cell::RefCell;
 use std::collections::HashMap;//Symbol Table
 
@@ -90,10 +90,10 @@ impl AstroNil {
 // Abstract Syntax Tree representation for a list type node
 #[derive( Clone,PartialEq)]
 pub struct AstroList {
-    pub contents: Rc<RefCell<Vec<Rc<AstroNode>>>>,
+    pub contents: Rc<RefCell<Vec<Rc<Node>>>>,
 }
 impl AstroList {
-    pub fn new( c: Rc<RefCell<Vec<Rc<AstroNode>>>>) -> Self {
+    pub fn new( c: Rc<RefCell<Vec<Rc<Node>>>>) -> Self {
         AstroList { contents: c }
     }
 }
@@ -101,10 +101,10 @@ impl AstroList {
 // Abstract Syntax Tree representation for a tuple type node
 #[derive( Clone,PartialEq)]
 pub struct AstroTuple {
-    pub contents: Rc<RefCell<Vec<Rc<AstroNode>>>>,
+    pub contents: Rc<RefCell<Vec<Rc<Node>>>>,
 }
 impl AstroTuple {
-    pub fn new( c: Rc<RefCell<Vec<Rc<AstroNode>>>> ) -> Self {
+    pub fn new( c: Rc<RefCell<Vec<Rc<Node>>>> ) -> Self {
         AstroTuple{ contents: c }
     }
 }
@@ -112,12 +112,12 @@ impl AstroTuple {
 // Abstract Syntax Tree representation for a to-list constructor type node
 #[derive( Clone,PartialEq)]
 pub struct AstroToList {
-    pub start: Rc<AstroNode>,
-    pub stop: Rc<AstroNode>,
-    pub stride: Rc<AstroNode>,
+    pub start: Rc<Node>,
+    pub stop: Rc<Node>,
+    pub stride: Rc<Node>,
 }
 impl AstroToList {
-    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Self {
+    pub fn new(start: Rc<Node>, stop: Rc<Node>, stride: Rc<Node>) -> Self {
         AstroToList { start: start, stop: stop, stride: stride }
     }
 }
@@ -125,11 +125,11 @@ impl AstroToList {
 // Abstract Syntax Tree representation for a head-tail type node
 #[derive( Clone,PartialEq)]
 pub struct AstroHeadTail {
-    pub head: Rc<AstroNode>,
-    pub tail: Rc<AstroNode>,
+    pub head: Rc<Node>,
+    pub tail: Rc<Node>,
 }
 impl AstroHeadTail {
-    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+    pub fn new(h: Rc<Node>, t: Rc<Node>) -> Self {
         AstroHeadTail { head: h, tail: t}
     }
 }
@@ -137,12 +137,12 @@ impl AstroHeadTail {
 // Abstract Syntax Tree representation for a taw to-list constructor type node
 #[derive( Clone,PartialEq)]
 pub struct AstroRawToList {
-    pub start: Rc<AstroNode>,
-    pub stop: Rc<AstroNode>,
-    pub stride: Rc<AstroNode>,
+    pub start: Rc<Node>,
+    pub stop: Rc<Node>,
+    pub stride: Rc<Node>,
 }
 impl AstroRawToList {
-    pub fn new(start: Rc<AstroNode>, stop: Rc<AstroNode>, stride: Rc<AstroNode>) -> Self {
+    pub fn new(start: Rc<Node>, stop: Rc<Node>, stride: Rc<Node>) -> Self {
         AstroRawToList { start: start, stop: stop, stride: stride }
     }
 }
@@ -150,11 +150,11 @@ impl AstroRawToList {
 // Abstract Syntax Tree representation for a raw head-tail type node
 #[derive( Clone,PartialEq)]
 pub struct AstroRawHeadTail {
-    pub head: Rc<AstroNode>,
-    pub tail: Rc<AstroNode>,
+    pub head: Rc<Node>,
+    pub tail: Rc<Node>,
 }
 impl AstroRawHeadTail {
-    pub fn new(h: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+    pub fn new(h: Rc<Node>, t: Rc<Node>) -> Self {
         AstroRawHeadTail { head: h, tail: t}
     }
 }
@@ -162,11 +162,11 @@ impl AstroRawHeadTail {
 // Abstract Syntax Tree representation for a sequence type node
 #[derive( Clone,PartialEq)]
 pub struct AstroSequence {
-    pub first: Rc<AstroNode>,
-    pub second: Rc<AstroNode>,
+    pub first: Rc<Node>,
+    pub second: Rc<Node>,
 }
 impl AstroSequence {
-    pub fn new(f: Rc<AstroNode>, s: Rc<AstroNode>) -> Self{
+    pub fn new(f: Rc<Node>, s: Rc<Node>) -> Self{
         AstroSequence { first: f, second: s}       
     }
 }
@@ -174,10 +174,10 @@ impl AstroSequence {
 // Abstract Syntax Tree representation for a function type node
 #[derive( Clone,PartialEq)]
 pub struct AstroFunction {
-    pub body_list: Rc<AstroNode>
+    pub body_list: Rc<Node>
 }
 impl AstroFunction {
-    pub fn new(body: Rc<AstroNode>) -> Self{
+    pub fn new(body: Rc<Node>) -> Self{
         AstroFunction { body_list: body}
     }
 }
@@ -185,14 +185,14 @@ impl AstroFunction {
 // Abstract Syntax Tree representation for a function type node
 #[derive( Clone,PartialEq)]
 pub struct AstroFunctionVal {
-    pub body_list: Rc<AstroNode>,
-    pub closure: Rc<(Vec<HashMap<String, Rc<AstroNode>>>,Vec<Vec<String>>,usize)>
+    pub body_list: Rc<Node>,
+    pub closure: Rc<(Vec<HashMap<String, Rc<Node>>>,Vec<Vec<String>>,usize)>
     // closure is a reference to a vector(scope levels; 0 is global) of 
-    // hashmaps(namespace) mapping strings(tag) to astronodes(value) along with a
+    // hashmaps(namespace) mapping strings(tag) to nodes(value) along with a
     // vector of strings(global vars) and a usize(current scope level)
 }
 impl AstroFunctionVal {
-    pub fn new(body_list: Rc<AstroNode>, closure: Rc<(Vec<HashMap<String, Rc<AstroNode>>>,Vec<Vec<String>>,usize)>) -> Self{
+    pub fn new(body_list: Rc<Node>, closure: Rc<(Vec<HashMap<String, Rc<Node>>>,Vec<Vec<String>>,usize)>) -> Self{
         AstroFunctionVal { body_list: body_list, closure: closure} 
     }
 }
@@ -200,10 +200,10 @@ impl AstroFunctionVal {
 // // Abstract Syntax Tree representation for a 'evaluate' type node
 #[derive( Clone,PartialEq)]
 pub struct AstroEval {
-    pub expression: Rc<AstroNode>,
+    pub expression: Rc<Node>,
 }
 impl AstroEval {
-    pub fn new(expr: Rc<AstroNode>) -> Self{
+    pub fn new(expr: Rc<Node>) -> Self{
         AstroEval { expression: expr}
     }
 }
@@ -211,10 +211,10 @@ impl AstroEval {
 // Abstract Syntax Tree representation for a quote type node
 #[derive( Clone,PartialEq)]
 pub struct AstroQuote {
-    pub expression: Rc<AstroNode>,
+    pub expression: Rc<Node>,
 }
 impl AstroQuote {
-    pub fn new(expr: Rc<AstroNode>) -> Self{
+    pub fn new(expr: Rc<Node>) -> Self{
         AstroQuote { expression: expr}
     }
 }
@@ -222,10 +222,10 @@ impl AstroQuote {
 // Abstract Syntax Tree representation for a constraint type node
 #[derive( Clone,PartialEq)]
 pub struct AstroConstraint {
-    pub expression: Rc<AstroNode>,
+    pub expression: Rc<Node>,
 }
 impl AstroConstraint {
-    pub fn new(expr: Rc<AstroNode>) -> Self{
+    pub fn new(expr: Rc<Node>) -> Self{
         AstroConstraint { expression: expr}
     }
 }
@@ -233,10 +233,10 @@ impl AstroConstraint {
 // Abstract Syntax Tree representation for a type-match type node
 #[derive( Clone,PartialEq)]
 pub struct AstroTypeMatch {
-    pub expression: Rc<AstroNode>,
+    pub expression: Rc<Node>,
 }
 impl AstroTypeMatch {
-    pub fn new(expr: Rc<AstroNode>) -> Self{
+    pub fn new(expr: Rc<Node>) -> Self{
         AstroTypeMatch { expression: expr}
     }
 }
@@ -267,10 +267,10 @@ impl AstroID {
 #[derive( Clone,PartialEq)]
 pub struct AstroObject {
     pub struct_id: AstroID,
-    pub object_memory: Rc<RefCell<Vec<Rc<AstroNode>>>>,
+    pub object_memory: Rc<RefCell<Vec<Rc<Node>>>>,
 }
 impl AstroObject {
-    pub fn new(name: AstroID, mem: Rc<RefCell<Vec<Rc<AstroNode>>>>) -> Self {
+    pub fn new(name: AstroID, mem: Rc<RefCell<Vec<Rc<Node>>>>) -> Self {
         AstroObject { struct_id: name, object_memory: mem}
     }
 }
@@ -278,11 +278,11 @@ impl AstroObject {
 // Abstract Syntax Tree representation for a apply type node
 #[derive( Clone,PartialEq)]
 pub struct AstroApply {
-    pub function: Rc<AstroNode>,
-    pub argument: Rc<AstroNode>,
+    pub function: Rc<Node>,
+    pub argument: Rc<Node>,
 }
 impl AstroApply {
-    pub fn new(f: Rc<AstroNode>, a: Rc<AstroNode>) -> Self{
+    pub fn new(f: Rc<Node>, a: Rc<Node>) -> Self{
         AstroApply { function: f, argument: a }
     }
 }
@@ -290,11 +290,11 @@ impl AstroApply {
 // Abstract Syntax Tree representation for a index type node
 #[derive( Clone,PartialEq)]
 pub struct AstroIndex {
-    pub structure: Rc<AstroNode>,
-    pub index_exp: Rc<AstroNode>,
+    pub structure: Rc<Node>,
+    pub index_exp: Rc<Node>,
 }
 impl AstroIndex {
-    pub fn new(s: Rc<AstroNode>, i: Rc<AstroNode>) -> Self {
+    pub fn new(s: Rc<Node>, i: Rc<Node>) -> Self {
         AstroIndex { structure: s, index_exp: i}
     }
 }
@@ -313,11 +313,11 @@ impl AstroEscape {
 // Abstract Syntax Tree representation for a 'is' type node
 #[derive( Clone,PartialEq)]
 pub struct AstroIs {
-    pub pattern: Rc<AstroNode>,
-    pub term: Rc<AstroNode>,
+    pub pattern: Rc<Node>,
+    pub term: Rc<Node>,
 }
 impl AstroIs {
-    pub fn new(p: Rc<AstroNode>, t: Rc<AstroNode>) -> Self {
+    pub fn new(p: Rc<Node>, t: Rc<Node>) -> Self {
         AstroIs { pattern: p, term: t} 
     }
 }
@@ -325,11 +325,11 @@ impl AstroIs {
 // Abstract Syntax Tree representation for a 'in' type node
 #[derive( Clone,PartialEq)]
 pub struct AstroIn {
-    pub expression: Rc<AstroNode>,
-    pub expression_list: Rc<AstroNode>,
+    pub expression: Rc<Node>,
+    pub expression_list: Rc<Node>,
 }
 impl AstroIn {
-    pub fn new(e: Rc<AstroNode>, l: Rc<AstroNode>) -> Self {
+    pub fn new(e: Rc<Node>, l: Rc<Node>) -> Self {
         AstroIn { expression: e, expression_list: l}
     }
 }
@@ -337,12 +337,12 @@ impl AstroIn {
 // Abstract Syntax Tree representation for a 'if' type node
 #[derive( Clone,PartialEq)]
 pub struct AstroIf {
-    pub cond_exp: Rc<AstroNode>,
-    pub then_exp: Rc<AstroNode>,
-    pub else_exp: Rc<AstroNode>,
+    pub cond_exp: Rc<Node>,
+    pub then_exp: Rc<Node>,
+    pub else_exp: Rc<Node>,
 }
 impl AstroIf {
-    pub fn new(c: Rc<AstroNode>, t: Rc<AstroNode>, e: Rc<AstroNode>) -> Self {
+    pub fn new(c: Rc<Node>, t: Rc<Node>, e: Rc<Node>) -> Self {
         AstroIf { cond_exp: c, then_exp: t, else_exp: e}
     }
 }
@@ -351,10 +351,10 @@ impl AstroIf {
 #[derive( Clone,PartialEq)]
 pub struct AstroNamedPattern {
     pub name: AstroID,
-    pub pattern: Rc<AstroNode>,
+    pub pattern: Rc<Node>,
 }
 impl AstroNamedPattern {
-    pub fn new(n: AstroID, p: Rc<AstroNode>) -> Self{
+    pub fn new(n: AstroID, p: Rc<Node>) -> Self{
         AstroNamedPattern { name: n, pattern: p}
     }
 }
@@ -362,53 +362,53 @@ impl AstroNamedPattern {
 // Abstract Syntax Tree representation for a dereference type node
 #[derive( Clone,PartialEq)]
 pub struct AstroDeref {
-    pub expression: Rc<AstroNode>,
+    pub expression: Rc<Node>,
 }
 impl AstroDeref {
-    pub fn new(e: Rc<AstroNode>) -> Self {
+    pub fn new(e: Rc<Node>) -> Self {
         AstroDeref { expression: e }
     }
 }
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct AstroStruct {
-    pub member_names: RefCell<Vec<Rc<AstroNode>>>,
-    pub struct_memory: RefCell<Vec<Rc<AstroNode>>>,
+    pub member_names: RefCell<Vec<Rc<Node>>>,
+    pub struct_memory: RefCell<Vec<Rc<Node>>>,
 }
 impl AstroStruct {
-    pub fn new(mn: RefCell<Vec<Rc<AstroNode>>>,sm: RefCell<Vec<Rc<AstroNode>>>) -> Self {
+    pub fn new(mn: RefCell<Vec<Rc<Node>>>,sm: RefCell<Vec<Rc<Node>>>) -> Self {
         AstroStruct { member_names: mn, struct_memory: sm}
     }
 }
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct AstroMemberFunctionVal {
-    pub argument: Rc<AstroNode>,
-    pub body: Rc<AstroNode>,
+    pub argument: Rc<Node>,
+    pub body: Rc<Node>,
 }
 impl AstroMemberFunctionVal {
-    pub fn new(arg: Rc<AstroNode>,body: Rc<AstroNode>) -> Self {
+    pub fn new(arg: Rc<Node>,body: Rc<Node>) -> Self {
         AstroMemberFunctionVal{argument:arg, body:body}
     }
 }
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct AstroData {
-    pub value: Rc<AstroNode>,
+    pub value: Rc<Node>,
 }
 impl AstroData {
-    pub fn new( value: Rc<AstroNode> ) -> Self {
+    pub fn new( value: Rc<Node> ) -> Self {
         AstroData{value:value}
     }
 }
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct AstroUnify {
-    pub term: Rc<AstroNode>,
-    pub pattern: Rc<AstroNode>,
+    pub term: Rc<Node>,
+    pub pattern: Rc<Node>,
 }
 impl AstroUnify {
-    pub fn new( term: Rc<AstroNode>, pattern: Rc<AstroNode> ) -> Self {
+    pub fn new( term: Rc<Node>, pattern: Rc<Node> ) -> Self {
         AstroUnify{term:term, pattern:pattern}
     }
 }
@@ -416,7 +416,7 @@ impl AstroUnify {
 /******************************************************************************/
 /******************************************************************************/
 #[derive( Clone,PartialEq )]
-pub enum AstroNode {
+pub enum Node {
     AstroInteger(AstroInteger),
     AstroReal(AstroReal),
     AstroBool(AstroBool),
@@ -454,43 +454,43 @@ pub enum AstroNode {
     AstroUnify(AstroUnify),
 }
 /******************************************************************************/
-pub fn peek<'a>(node: Rc<AstroNode> ) -> &'a str {
+pub fn peek<'a>(node: Rc<Node> ) -> &'a str {
     match *node {
-        AstroNode::AstroInteger(_) => "integer",
-        AstroNode::AstroReal(_) => "real",
-        AstroNode::AstroBool(_) => "bool",
-        AstroNode::AstroString(_) => "string",
-        AstroNode::AstroLineInfo(_) => "lineinfo",
-        AstroNode::AstroNone(_) => "none",
-        AstroNode::AstroNil(_) => "nil",
-        AstroNode::AstroList(_) => "list",
-        AstroNode::AstroTuple(_) => "tuple",
-        AstroNode::AstroToList(_) => "tolist",
-        AstroNode::AstroHeadTail(_) => "headtail",
-        AstroNode::AstroRawToList(_) => "rawtolist",
-        AstroNode::AstroRawHeadTail(_) => "rawheadtail",
-        AstroNode::AstroSequence(_) => "sequence",
-        AstroNode::AstroFunction(_) => "function",
-        AstroNode::AstroFunctionVal(_) => "functionval",
-        AstroNode::AstroEval(_) => "eval",
-        AstroNode::AstroQuote(_) => "quote",
-        AstroNode::AstroConstraint(_) => "constraint",
-        AstroNode::AstroTypeMatch(_) => "typematch",
-        AstroNode::AstroForeign(_) => "foreign",
-        AstroNode::AstroID(_) => "id",
-        AstroNode::AstroObject(_) => "object",
-        AstroNode::AstroApply(_) => "apply",
-        AstroNode::AstroIndex(_) => "index",
-        AstroNode::AstroEscape(_) => "escape",
-        AstroNode::AstroIs(_) => "is",
-        AstroNode::AstroIn(_) => "in",
-        AstroNode::AstroIf(_) => "if",
-        AstroNode::AstroNamedPattern(_) => "namedpattern",
-        AstroNode::AstroDeref(_) => "deref",
-        AstroNode::AstroStruct(_) => "struct",
-        AstroNode::AstroMemberFunctionVal(_) => "memberfunctionval",
-        AstroNode::AstroData(_) => "data",
-        AstroNode::AstroUnify(_) => "unify",
+        Node::AstroInteger(_) => "integer",
+        Node::AstroReal(_) => "real",
+        Node::AstroBool(_) => "bool",
+        Node::AstroString(_) => "string",
+        Node::AstroLineInfo(_) => "lineinfo",
+        Node::AstroNone(_) => "none",
+        Node::AstroNil(_) => "nil",
+        Node::AstroList(_) => "list",
+        Node::AstroTuple(_) => "tuple",
+        Node::AstroToList(_) => "tolist",
+        Node::AstroHeadTail(_) => "headtail",
+        Node::AstroRawToList(_) => "rawtolist",
+        Node::AstroRawHeadTail(_) => "rawheadtail",
+        Node::AstroSequence(_) => "sequence",
+        Node::AstroFunction(_) => "function",
+        Node::AstroFunctionVal(_) => "functionval",
+        Node::AstroEval(_) => "eval",
+        Node::AstroQuote(_) => "quote",
+        Node::AstroConstraint(_) => "constraint",
+        Node::AstroTypeMatch(_) => "typematch",
+        Node::AstroForeign(_) => "foreign",
+        Node::AstroID(_) => "id",
+        Node::AstroObject(_) => "object",
+        Node::AstroApply(_) => "apply",
+        Node::AstroIndex(_) => "index",
+        Node::AstroEscape(_) => "escape",
+        Node::AstroIs(_) => "is",
+        Node::AstroIn(_) => "in",
+        Node::AstroIf(_) => "if",
+        Node::AstroNamedPattern(_) => "namedpattern",
+        Node::AstroDeref(_) => "deref",
+        Node::AstroStruct(_) => "struct",
+        Node::AstroMemberFunctionVal(_) => "memberfunctionval",
+        Node::AstroData(_) => "data",
+        Node::AstroUnify(_) => "unify",
     }
 }
 /******************************************************************************/

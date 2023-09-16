@@ -27,7 +27,7 @@ const MODULES_HINT: usize = 8;
 pub struct State {
     pub symbol_table: symtab::Symtab,// Symbol table
     pub modules: Vec<String>,        // List of currently loaded modules
-    pub ast: AstroNode,              // Abstrat syntax tree
+    pub ast: Node,              // Abstrat syntax tree
     pub ignore_quote: bool,          // flags when to ignore quoted vars
     pub constraint_lvl: usize,       // indicated current constraint bracket
                                      // depth level.
@@ -39,7 +39,7 @@ pub struct State {
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
-    pub dispatch_table: HashMap<String, fn( node: Rc<AstroNode>, state: &mut State ) -> Result< Rc<AstroNode>, Error>>,
+    pub dispatch_table: HashMap<String, fn( node: Rc<Node>, state: &mut State ) -> Result< Rc<Node>, Error>>,
                                      // Dispatch table for function calls. Maps 
                                      // strings to functions. 
 }
@@ -49,7 +49,7 @@ impl State {
     pub fn new() -> Option<Self> {
         Some( State { symbol_table: symtab::Symtab::new().unwrap(),
                       modules: Vec::with_capacity(MODULES_HINT),
-                      ast: AstroNode::AstroNone(ast::AstroNone::new()),
+                      ast: Node::AstroNone(ast::AstroNone::new()),
                       ignore_quote: false,
                       constraint_lvl: 0,
                       cond_warning: false,
@@ -101,11 +101,11 @@ impl State {
         println!("Warning: {}: {}: {}",module,lineno,msg);
     }
     /**************************************************************************/
-    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<AstroNode> {
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<Node> {
         self.symbol_table.lookup_sym(id,strict)
     }
     /**************************************************************************/
-    pub fn enter_sym( &mut self, id: &str, value: Rc<AstroNode> ){
+    pub fn enter_sym( &mut self, id: &str, value: Rc<Node> ){
         self.symbol_table.enter_sym(id,value);
     }
     /**************************************************************************/
