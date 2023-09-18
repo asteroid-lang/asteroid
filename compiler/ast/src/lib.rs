@@ -2,7 +2,7 @@
 /* Asteroid                                                                   */ 
 /* Abstract Syntax Tree Representation Module                                 */
 /*                                                                            */
-/******************************************************************************/   
+/******************************************************************************/    
 #![allow(unused)]
 
 use std::rc::Rc;  // used for nodes; an node may have up to two owners

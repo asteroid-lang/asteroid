@@ -6,7 +6,9 @@
 #![allow(unused)]
 
 use std::collections::HashMap;
+extern crate symtab;
 use symtab::*;   //Asteroid symbol table
+extern crate ast;
 use ast::*;      //Asteroid AST representation
 use std::rc::Rc; 
 /******************************************************************************/
@@ -18,6 +20,7 @@ pub enum Error {
     NonLinearPattern(String),
     ArithmeticError(String),
     FileNotFound(String),
+    VMError(String),
 }
 
 // guesstimate for the number of modules an Asteroid program will have.

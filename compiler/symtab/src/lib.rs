@@ -2,16 +2,18 @@
 /* Asteroid                                                                   */ 
 /* Symtab Module                                                              */
 /*                                                                            */
-/******************************************************************************/   
+/******************************************************************************/    
 #![allow(unused)]
 
 use std::collections::HashMap;
 use std::rc::Rc;
+extern crate ast;
 use ast::*;                   //Asteroid AST representation
+
 /******************************************************************************/
 const SCOPES_HINT: usize = 10;
 const NAMESPACE_HINT: usize = 32;
-const GLOBAL_LVL: usize = 0;
+const GLOBAL_LVL: usize = 0; 
 /******************************************************************************/
 #[derive( Clone,PartialEq)]
 pub struct Symtab {
