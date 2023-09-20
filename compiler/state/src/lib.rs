@@ -12,11 +12,11 @@ extern crate ast;
 use ast::*;      //Asteroid AST representation
 use std::rc::Rc; 
 /******************************************************************************/
-// All of the AVM error types 
+// All of the AVM error and exception types 
 pub enum Error {
     ValueError(String),
     PatternMatchFailed(String),
-    OverlappingPattern(String),
+    RedundantPatternFound(String),
     NonLinearPattern(String),
     ArithmeticError(String),
     FileNotFound(String),

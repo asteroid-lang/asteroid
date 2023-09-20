@@ -913,11 +913,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new( Node::AstroString(AstroString::new(v1.to_owned()+&v2.to_string()))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
                 }
 
             } else {
-                return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
             }
 
         } else if builtin_type == "__minus__" {
@@ -928,7 +928,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 as f64 - v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -937,11 +937,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 - v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // We can only subtract real/integers
-                return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
             }
 
         } else if builtin_type == "__times__" {
@@ -952,7 +952,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 as f64 * v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -961,34 +961,50 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 * v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // We can only multiply real/integers
-                return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
             }    
         } else if builtin_type == "__divide__" {
 
             if let Node::AstroInteger( AstroInteger{value:v1}) = *val_a {
                 if let Node::AstroInteger( AstroInteger{value:v2}) = *val_b {
-                    return Ok( Rc::new(Node::AstroInteger( AstroInteger::new(v1 / v2))));
+                    if v2 == 0 { // Divison by 0 check
+                        return Err(Error::ArithmeticError("Division by zero".to_string()));
+                    } else {
+                        return Ok( Rc::new(Node::AstroInteger( AstroInteger::new(v1 / v2))));
+                    }
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
-                    return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 as f64 / v2))));
+                    if v2 == 0.0 { // Divison by 0 check
+                        return Err( Error::ArithmeticError("Division by zero".to_string()));
+                    } else {
+                        return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 as f64 / v2))));
+                    }
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in /", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
                 if let Node::AstroInteger( AstroInteger{value:v2}) = *val_b {
-                    return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 / v2 as f64))));
+                    if v2 == 0 { // Divison by 0 check
+                        return Err(Error::ArithmeticError("Division by zero".to_string()));
+                    } else {
+                        return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 / v2 as f64))));
+                    }
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
-                    return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 / v2))));
+                    if v2 == 0.0 { // Divison by 0 check
+                        return Err(Error::ArithmeticError("Division by zero".to_string()));
+                    } else {
+                        return Ok( Rc::new(Node::AstroReal( AstroReal::new(v1 / v2))));
+                    }
                 } else {
-                    return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in /", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // We can only divide real/integers
-                return Err( Error::ValueError( format!("Unsuppoted type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in /", peek(Rc::clone(&val_b)))));
             }    
         } else if builtin_type == "__or__" {
 
@@ -1018,7 +1034,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 as f64 > v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in >", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1027,11 +1043,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 > v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in >", peek(Rc::clone(&val_b)))));
                 }
 
-            } else { // We can only subtract real/integers
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+            } else { 
+                return Err( Error::ValueError( format!("Unsupported type {} in >", peek(Rc::clone(&val_b)))));
             }
 
         } else if builtin_type == "__lt__" {
@@ -1042,7 +1058,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new((v1 as f64) < v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in <", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1051,11 +1067,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 < v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in <", peek(Rc::clone(&val_b)))));
                 }
 
             } else { 
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in <", peek(Rc::clone(&val_b)))));
             }
 
         } else if builtin_type == "__le__" {
@@ -1066,7 +1082,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new((v1 as f64) <= v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in <=", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1075,11 +1091,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 <= v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in <=", peek(Rc::clone(&val_b)))));
                 }
 
             } else { 
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in <=", peek(Rc::clone(&val_b)))));
             }
 
         } else if builtin_type == "__ge__" {
@@ -1090,7 +1106,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 as f64 >= v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in >=", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1099,11 +1115,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 >= v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in >=", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // We can only subtract real/integers
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in >=", peek(Rc::clone(&val_b)))));
             }
         } else if builtin_type == "__eq__" {
 
@@ -1113,7 +1129,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 as f64 == v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in ==", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1122,11 +1138,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 == v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in ==", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // TODO
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in ==", peek(Rc::clone(&val_b)))));
             }
         } else if builtin_type == "__ne__" {
 
@@ -1136,7 +1152,7 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 as f64 != v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in =/=", peek(Rc::clone(&val_b)))));
                 }
 
             } else if let Node::AstroReal( AstroReal{value:v1}) = *val_a {
@@ -1145,11 +1161,11 @@ pub fn handle_builtins<'a>( node: Rc<Node>, state: &'a mut State ) -> Result<Rc<
                 } else if let Node::AstroReal( AstroReal{value:v2}) = *val_b {
                     return Ok( Rc::new(Node::AstroBool( AstroBool::new(v1 != v2))));
                 } else {
-                    return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                    return Err( Error::ValueError( format!("Unsupported type {} in =/=", peek(Rc::clone(&val_b)))));
                 }
 
             } else { // TODO
-                return Err( Error::ValueError( format!("Unsupported type {} in +", peek(Rc::clone(&val_b)))));
+                return Err( Error::ValueError( format!("Unsupported type {} in =/=", peek(Rc::clone(&val_b)))));
             }
         }
     
@@ -1528,7 +1544,7 @@ pub fn exit<'a>( error: Error , state: &'a mut State ) -> ! {
         Error::ValueError( msg ) => println!("Error Type: {}\nError Location:\n\tFile: {}\n\tLine: {}\nError Message: {}","Value Error",state.lineinfo.0,state.lineinfo.1,msg),
         Error::NonLinearPattern( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","Non-Linear Pattern",state.lineinfo.0,state.lineinfo.1,msg),
         Error::FileNotFound( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","File Not Found",state.lineinfo.0,state.lineinfo.1,msg),
-        Error::OverlappingPattern( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","Overlapping Pattern",state.lineinfo.0,state.lineinfo.1,msg),
+        Error::RedundantPatternFound( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","Overlapping Pattern",state.lineinfo.0,state.lineinfo.1,msg),
         Error::ArithmeticError( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","Arithmetic Error",state.lineinfo.0,state.lineinfo.1,msg),
         Error::PatternMatchFailed( msg ) => println!("Error Type: {}\nError Location: File: {} Line: {}\nError Message: {}","Pattern Match Failed",state.lineinfo.0,state.lineinfo.1,msg),
         Error::VMError( msg) => println!("An internal compiler error occurred.\nError Location: File: {} Line: {}\nError Message: {}",state.lineinfo.0,state.lineinfo.1,msg),
@@ -4237,8 +4253,8 @@ mod tests {
             Err( e ) => exit(e, &mut state),
         };
 
-        println!("DEBUG: {}",peek(Rc::clone(&exp_val)));
-        let Node::AstroBool(AstroBool{ value:v }) = *exp_val else {panic!("test failed")};
+ 
+        let Node::AstroBool(AstroBool{ value:true }) = *exp_val else {panic!("test failed")};
     }
     #[test]
     fn test_prog_factorial() {
@@ -4486,7 +4502,7 @@ mod tests {
         let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:13}));
         set_lineinfo(  new_lineinfo, &mut state );
 
-        let i5 = Rc::new( Node::AstroInteger( AstroInteger::new(-10)));
+        let i5 = Rc::new( Node::AstroInteger( AstroInteger::new(10)));
         let id10 = Rc::new(Node::AstroID(AstroID::new("fact".to_string())));
         let id11 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
         let apply2 = Rc::new( Node::AstroApply( AstroApply::new( Rc::clone(&id10), Rc::clone(&i5) )));
@@ -4511,5 +4527,463 @@ mod tests {
             Node::AstroInteger(AstroInteger{value:3628800}) => (),
             _ => panic!("test failed"),
         };
+    }
+    #[test]
+    fn test_prog_try_catch() {
+        // Asteroid
+        // try
+        //     let y = 1.
+        //     let x = 1/0.
+        //     let z = 2/2.
+        // catch Exception("ValueError", s) do
+        //     let x = 3.
+        // catch Exception("FileNotFound", s) do
+        //     let x = 4.
+        // catch Exception("ArithmeticError", s) do
+        //     let x = 5.
+        // catch Exception("PatternMatchFailed", s) do
+        //     let x = 6.
+        // catch Exception("RedundantPatternFound", s) do
+        //     let x = 7.
+        // catch Exception("NonLinearPattern", s) do
+        //     let x = 8.
+        // end
+
+        // Python
+        // set_lineinfo('prog.txt',1)
+        // try:
+        //    set_lineinfo('prog.txt',2)
+        //    exp_val = walk(('integer', 1))
+        //    unifiers = unify(exp_val,('id', 'y'))
+        //    declare_unifiers(unifiers)
+     
+        //    set_lineinfo('prog.txt',3)
+        //    exp_val = walk(('apply', ('id', '__divide__'), ('tuple', [('integer', 1), ('integer', 0)])))
+        //    unifiers = unify(exp_val,('id', 'x'))
+        //    declare_unifiers(unifiers)
+     
+        //    set_lineinfo('prog.txt',4)
+        //    exp_val = walk(('apply', ('id', '__divide__'), ('tuple', [('integer', 2), ('integer', 2)])))
+        //    unifiers = unify(exp_val,('id', 'z'))
+        //    declare_unifiers(unifiers)
+     
+        // except ThrowValue as inst:
+        //    except_val = inst.value
+        //    inst_val = inst
+        // except PatternMatchFailed as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'PatternMatchFailed'),('string', inst.value)])))
+        //    inst_val = inst
+        // except RedundantPatternFound as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'RedundantPatternFound'),('string', str(inst))])))
+        //    inst_val = inst
+        // except NonLinearPatternError as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'NonLinearPatternError'),('string', str(inst))])))
+        //    inst_val = inst
+        // except ArithmeticError as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'ArithmeticError'),('string', str(inst))])))
+        //    inst_val = inst
+        // except FileNotFoundError as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'FileNotFound'),('string', str(inst))])))
+        //    inst_val = inst
+        // except Exception as inst:
+        //    except_val = ('object',('struct-id', ('id', 'Exception')),('object-memory',('list',[('string', 'SystemError'),('string', str(inst))])))
+        //    inst_val = inst
+        // else:
+        //    except_val = None
+        // if except_val:
+        //    exception_handled = False
+        //    try:
+        //       unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'ValueError'), ('id', 's')])))
+        //    except PatternMatchFailed:
+        //       try:
+        //          unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'FileNotFound'), ('id', 's')])))
+        //       except PatternMatchFailed:
+        //          try:
+        //             unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'ArithmeticError'), ('id', 's')])))
+        //          except PatternMatchFailed:
+        //             try:
+        //                unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'PatternMatchFailed'), ('id', 's')])))
+        //             except PatternMatchFailed:
+        //                try:
+        //                   unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'RedundantPatternFound'), ('id', 's')])))
+        //                except PatternMatchFailed:
+        //                   try:
+        //                      unifiers = unify(except_val, ('apply', ('id', 'Exception'), ('tuple', [('string', 'NonLinearPattern'), ('id', 's')])))
+        //                   except PatternMatchFailed:
+        //                      pass
+        //                   else:
+        //                      declare_unifiers(unifiers)
+        //                      set_lineinfo('prog.txt',16)
+        //                      exp_val = walk(('integer', 8))
+        //                      unifiers = unify(exp_val,('id', 'x'))
+        //                      declare_unifiers(unifiers)
+     
+        //                      exception_handled = True
+        //                else:
+        //                   declare_unifiers(unifiers)
+        //                   set_lineinfo('prog.txt',14)
+        //                   exp_val = walk(('integer', 7))
+        //                   unifiers = unify(exp_val,('id', 'x'))
+        //                   declare_unifiers(unifiers)
+     
+        //                   exception_handled = True
+        //             else:
+        //                declare_unifiers(unifiers)
+        //                set_lineinfo('prog.txt',12)
+        //                exp_val = walk(('integer', 6))
+        //                unifiers = unify(exp_val,('id', 'x'))
+        //                declare_unifiers(unifiers)
+     
+        //                exception_handled = True
+        //          else:
+        //             declare_unifiers(unifiers)
+        //             set_lineinfo('prog.txt',10)
+        //             exp_val = walk(('integer', 5))
+        //             unifiers = unify(exp_val,('id', 'x'))
+        //             declare_unifiers(unifiers)
+     
+        //             exception_handled = True
+        //       else:
+        //          declare_unifiers(unifiers)
+        //          set_lineinfo('prog.txt',8)
+        //          exp_val = walk(('integer', 4))
+        //          unifiers = unify(exp_val,('id', 'x'))
+        //          declare_unifiers(unifiers)
+     
+        //          exception_handled = True
+        //    else:
+        //       declare_unifiers(unifiers)
+        //       set_lineinfo('prog.txt',6)
+        //       exp_val = walk(('integer', 3))
+        //       unifiers = unify(exp_val,('id', 'x'))
+        //       declare_unifiers(unifiers)
+     
+        //       exception_handled = True
+        //    if not exception_handled:
+        //       raise inst_val
+     
+        // Rust
+        fn _try1_catch1<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:5}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:6}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(3)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        }
+        fn _try1_catch2<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:7}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:8}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(4)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        };
+        fn _try1_catch3<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:9}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:10}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(5)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        };
+        fn _try1_catch4<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:11}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:12}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(6)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        };
+        fn _try1_catch5<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:13}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:14}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(7)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        };
+        fn _try1_catch6<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:15}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let id1 = Rc::new(Node::AstroID(AstroID::new("s".to_string())));
+
+            if let Ok( unifiers ) = unify( Rc::clone(&node), Rc::clone(&id1), state, true ) {
+
+                let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:16}));
+                set_lineinfo(  new_lineinfo, state );
+
+                let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(8)));
+                let id1 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+
+                let exp_val = match walk( Rc::clone(&i1), state) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+
+                let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                    Ok( val ) => val,
+                    Err( e ) => return Err(e),
+                };
+        
+                declare_unifiers( &unifiers, state);
+
+                return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+
+            } else {
+                return Err( Error::PatternMatchFailed("pattern match failed.".to_string()) );
+            }
+        };
+        fn _try1<'a>( node: Rc<Node>, state: &'a mut State ) -> Result< Rc<Node>, Error>{
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:2}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let i1 = Rc::new(Node::AstroInteger(AstroInteger::new(1)));
+            let id1 = Rc::new(Node::AstroID(AstroID::new("y".to_string())));
+
+            // check for exceptions/errors
+            let exp_val = match walk( Rc::clone(&i1), state) {
+                Ok( val ) => val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+
+
+            // check for exceptions/errors
+            let unifiers = match unify( exp_val, Rc::clone(&id1), state, true) {
+                Ok( val ) => val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+
+            declare_unifiers( &unifiers, state);
+
+            let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:3}));
+            set_lineinfo(  new_lineinfo, state );
+
+            let i2 = Rc::new(Node::AstroInteger(AstroInteger::new(1)));
+            let i3 = Rc::new(Node::AstroInteger(AstroInteger::new(0)));
+            let t1 = Rc::new(Node::AstroTuple(AstroTuple::new(Rc::new(RefCell::new(vec![Rc::clone(&i2),Rc::clone(&i3)])))));
+            let id2 = Rc::new(Node::AstroID(AstroID::new("x".to_string())));
+            let id3 = Rc::new(Node::AstroID(AstroID::new("__divide__".to_string())));
+            let apply1 = Rc::new(Node::AstroApply(AstroApply::new( Rc::clone(&id3), Rc::clone(&t1) )));
+
+            // check for exceptions/errors
+            let exp_val = match walk( Rc::clone(&apply1), state) {
+                Ok( val ) => val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+
+            // check for exceptions/errors
+            let unifiers = match unify( exp_val, Rc::clone(&id2), state, true) {
+                Ok( val ) =>  val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+    
+            declare_unifiers( &unifiers, state);
+
+            let i4 = Rc::new(Node::AstroInteger(AstroInteger::new(2)));
+            let i5 = Rc::new(Node::AstroInteger(AstroInteger::new(2)));
+            let t2 = Rc::new(Node::AstroTuple(AstroTuple::new(Rc::new(RefCell::new(vec![Rc::clone(&i4),Rc::clone(&i5)])))));
+            let id4 = Rc::new(Node::AstroID(AstroID::new("z".to_string())));
+            let id5 = Rc::new(Node::AstroID(AstroID::new("__divide__".to_string())));
+            let apply2 = Rc::new(Node::AstroApply(AstroApply::new( Rc::clone(&id3), Rc::clone(&t1) )));
+
+            // check for exceptions/errors
+            let exp_val = match walk( Rc::clone(&apply2), state) {
+                Ok( val ) => val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+
+            // check for exceptions/errors
+            let unifiers = match unify( exp_val, Rc::clone(&id2), state, true) {
+                Ok( val ) =>  val,
+                Err( Error::ValueError(e) ) => return _try1_catch1( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::FileNotFound(e) ) => return _try1_catch2( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::ArithmeticError(e) ) => return _try1_catch3( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::PatternMatchFailed(e) ) => return _try1_catch4( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::RedundantPatternFound(e) ) => return _try1_catch5( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( Error::NonLinearPattern(e) ) => return _try1_catch6( Rc::new(Node::AstroString(AstroString::new(e))), state),
+                Err( e ) => return Err(e),
+            };
+    
+            declare_unifiers( &unifiers, state);
+
+            return Ok(Rc::new(Node::AstroNone(AstroNone::new())));
+        }
+
+        let mut state = State::new().unwrap();
+        //state.dispatch_table.insert( String::from("_ast72") , _ast72 );
+
+        let new_lineinfo = Rc::new(Node::AstroLineInfo( AstroLineInfo{module:"prog.ast".to_string(),line_number:1}));
+        set_lineinfo(  new_lineinfo, &mut state );
+
+        match _try1( Rc::new(Node::AstroNone(AstroNone::new())), &mut state ) {
+            Ok(_) => (),
+            Err(e) => exit( e, &mut state),
+        };
+
+        let check1 = state.lookup_sym("x",true);
+
+        let Node::AstroInteger(AstroInteger{value:v}) = *check1
+            else {panic!("test failed")}; 
+        assert_eq!(5,v);
+
     }
 }
