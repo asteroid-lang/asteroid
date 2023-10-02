@@ -14,13 +14,13 @@ use std::rc::Rc;
 /******************************************************************************/
 // All of the AVM error and exception types 
 pub enum Error {
-    ValueError(String),
-    PatternMatchFailed(String),
-    RedundantPatternFound(String),
-    NonLinearPattern(String),
-    ArithmeticError(String),
-    FileNotFound(String),
-    VMError(String),
+    ValueError( Rc<Node> ),
+    PatternMatchFailed( Rc<Node> ),
+    RedundantPatternFound( Rc<Node> ),
+    NonLinearPattern( Rc<Node> ),
+    ArithmeticError( Rc<Node> ),
+    FileNotFound( Rc<Node> ),
+    VMError( Rc<Node> ),
 }
 
 // guesstimate for the number of modules an Asteroid program will have.
@@ -42,7 +42,7 @@ pub struct State {
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
-    pub dispatch_table: HashMap<String, fn( node: Rc<Node>, state: &mut State ) -> Result< Rc<Node>, Error>>,
+    pub dispatch_table: HashMap<String, fn( node: Rc<Node>, state: &mut State ) -> Result<Rc<Node>, Rc<Node>>>,
                                      // Dispatch table for function calls. Maps 
                                      // strings to functions. 
 }

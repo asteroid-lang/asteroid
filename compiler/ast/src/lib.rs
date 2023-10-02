@@ -186,13 +186,17 @@ impl AstroFunction {
 #[derive( Clone,PartialEq)]
 pub struct AstroFunctionVal {
     pub body_list: Rc<Node>,
-    pub closure: Rc<(Vec<HashMap<String, Rc<Node>>>,Vec<Vec<String>>,usize)>
+    pub closure: Rc< (Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,
+                      Rc<RefCell<Vec<Rc<RefCell<Vec<String>>>>>>,
+                      usize                                                   ) >
     // closure is a reference to a vector(scope levels; 0 is global) of 
     // hashmaps(namespace) mapping strings(tag) to nodes(value) along with a
     // vector of strings(global vars) and a usize(current scope level)
 }
 impl AstroFunctionVal {
-    pub fn new(body_list: Rc<Node>, closure: Rc<(Vec<HashMap<String, Rc<Node>>>,Vec<Vec<String>>,usize)>) -> Self{
+    pub fn new(body_list: Rc<Node>, closure: Rc<(Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,
+                                                Rc<RefCell<Vec<Rc<RefCell<Vec<String>>>>>>,
+                                                usize                                                   )>) -> Self{
         AstroFunctionVal { body_list: body_list, closure: closure} 
     }
 }
