@@ -695,7 +695,7 @@ list **@length** ()
       Returns the number of elements within the list.
 
 list **@map** f:%function
-      Applies the function f to each element of the list in place. The modified list is returned.
+      Returns a new list formed by applying the function f to each element of the list. The original list is unchanged.
 
 list **@member** item
       Returns true only if item exists on the list.
