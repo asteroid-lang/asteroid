@@ -11,7 +11,6 @@ use std::rc::Rc;
 use std::cell::RefCell;
 extern crate ast;
 use ast::*;                   //Asteroid AST representation
-//use refpool::*;
 use shared_arena::*;
 use fnv::FnvHasher;
 

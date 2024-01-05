@@ -7,6 +7,5 @@ edition = "2021"
 
 [dependencies]
 ast = { path = "../ast" }
-refpool = { path = "../refpool" }
 shared_arena = { path = "../arena" }
 fnv = "1.0"
