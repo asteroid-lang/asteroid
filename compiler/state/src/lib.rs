@@ -11,20 +11,14 @@ use symtab::*;   //Asteroid symbol table
 extern crate ast;
 use ast::*;      //Asteroid AST representation
 use std::rc::Rc; 
+use shared_arena::*;
+use fnv::FnvHasher;
+
 /******************************************************************************/
-// All of the AVM error and exception types 
-pub enum Error {
-    ValueError( Rc<Node> ),
-    PatternMatchFailed( Rc<Node> ),
-    RedundantPatternFound( Rc<Node> ),
-    NonLinearPattern( Rc<Node> ),
-    ArithmeticError( Rc<Node> ),
-    FileNotFound( Rc<Node> ),
-    VMError( Rc<Node> ),
-}
 
 // guesstimate for the number of modules an Asteroid program will have.
 const MODULES_HINT: usize = 8; 
+
 /******************************************************************************/  
 #[derive( Clone )]                         
 pub struct State {
@@ -42,7 +36,7 @@ pub struct State {
                                      // pattern detector on or off.
     pub lineinfo: (String,usize),    // Used to know what module/line number is
                                      // currently being executed.
-    pub dispatch_table: HashMap<String, fn( node: Rc<Node>, state: &mut State ) -> Result<Rc<Node>, Rc<Node>>>,
+    pub dispatch_table: HashMap<String, fn( node: ArenaRc<Node>, state: &mut State, pool: &mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>>,
                                      // Dispatch table for function calls. Maps 
                                      // strings to functions. 
 }
@@ -104,11 +98,11 @@ impl State {
         println!("Warning: {}: {}: {}",module,lineno,msg);
     }
     /**************************************************************************/
-    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<Node> {
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> ArenaRc<Node> {
         self.symbol_table.lookup_sym(id,strict)
     }
     /**************************************************************************/
-    pub fn enter_sym( &mut self, id: &str, value: Rc<Node> ){
+    pub fn enter_sym( &mut self, id: &str, value: ArenaRc<Node> ){
         self.symbol_table.enter_sym(id,value);
     }
     /**************************************************************************/

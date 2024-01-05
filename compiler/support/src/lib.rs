@@ -8,6 +8,7 @@
 use ast::*;
 use std::rc::Rc;  
 use std::cell::RefCell;
+use shared_arena::*;
 
 /*******************************************************************************
 # Asteroid uses truth values similar to Python's Pythonic truth values:
@@ -331,27 +332,27 @@ pub fn term2string_deref<'a>(node: &'a Node) -> Option<String> {
     Some(out)
 }
 /******************************************************************************/
-pub fn data_only( memory: RefCell<Vec<Rc<Node>>> ) -> Rc<Vec<Rc<Node>>> {
+pub fn data_only( memory: RefCell<Vec<ArenaRc<Node>>> ) -> Rc<Vec<ArenaRc<Node>>> {
     // filter an object memory and return a memory with only data values.
 
-    let mut data_memory: Vec<Rc<Node>> = vec![];
+    let mut data_memory: Vec<ArenaRc<Node>> = vec![];
     let mut _type = "";
     for item in memory.borrow().iter() {
-        _type = peek( Rc::clone(item) );
+        _type = peek( ArenaRc::clone(item) );
         if _type != "function-val" {
-            data_memory.push( Rc::clone(item));
+            data_memory.push( ArenaRc::clone(item));
         }
     };
     Rc::new( data_memory )
 }
 /******************************************************************************/
-pub fn data_ix_list( memory: RefCell<Vec<Rc<Node>>> ) -> Rc<Vec<usize>> {
+pub fn data_ix_list( memory: RefCell<Vec<ArenaRc<Node>>> ) -> Rc<Vec<usize>> {
 
     let mut idx_list: Vec<usize> = vec![];
     let mut counter = 0usize;
     let mut _type = "";
     for item in memory.borrow().iter() {
-        _type = peek( Rc::clone(item) );
+        _type = peek( ArenaRc::clone(item) );
         if _type != "function-val" {
             idx_list.push( counter );
         }

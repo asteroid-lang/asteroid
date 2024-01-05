@@ -6,4 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ast = { path = "C:/Users/Timothy/Desktop/avmb/ast" }
+ast = { path = "../ast" }
+refpool = { path = "../refpool" }
+shared_arena = { path = "../arena" }
+fnv = "1.0"

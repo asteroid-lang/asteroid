@@ -6,19 +6,23 @@
 #![allow(unused)]
 
 use std::collections::HashMap;
+use std::hash::{BuildHasherDefault, Hasher};
 use std::rc::Rc;
 use std::cell::RefCell;
 extern crate ast;
 use ast::*;                   //Asteroid AST representation
+//use refpool::*;
+use shared_arena::*;
+use fnv::FnvHasher;
 
 /******************************************************************************/
 const SCOPES_HINT: usize = 10;
 const NAMESPACE_HINT: usize = 32;
 const GLOBAL_LVL: usize = 0; 
 /******************************************************************************/
-#[derive( Clone,PartialEq)]
+#[derive( Clone)]
 pub struct Symtab {
-    pub scoped_symtab: Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,//A Vector of hashmaps,
+    pub scoped_symtab: Rc<RefCell<Vec<Rc<RefCell<HashMap<String, ArenaRc<Node>, BuildHasherDefault<FnvHasher>>>>>>>,//A Vector of hashmaps,
                                 // each hashmap represents a namespace/scope.
                                 // Keys are strings which represent variable
                                 // names and values are Nodes.
@@ -40,13 +44,13 @@ impl Symtab {
         let mut x: Symtab= Symtab {scoped_symtab: Rc::new( RefCell::new( Vec::with_capacity(SCOPES_HINT))),
                                    globals:       Rc::new( RefCell::new( Vec::with_capacity(SCOPES_HINT))),
                                    curr_scope: GLOBAL_LVL                        };
-        x.scoped_symtab.borrow_mut().push(Rc::new(RefCell::new( HashMap::with_capacity(NAMESPACE_HINT))));
+        x.scoped_symtab.borrow_mut().push(Rc::new(RefCell::new( HashMap::default())));
         x.globals.borrow_mut().push(Rc::new(RefCell::new( Vec::with_capacity(NAMESPACE_HINT))));
         Some(x)
     }
     /**************************************************************************/
     // Function enter_sym enters a id-value pair into the symbol table
-    pub fn enter_sym( &mut self, id: &str, value: Rc<Node> ){
+    pub fn enter_sym( &mut self, id: &str, value: ArenaRc<Node> ){
 
         // Check if it already exists in the global table If it does, update 
         // the variable in the global scope; else enter into std scope
@@ -64,11 +68,9 @@ impl Symtab {
     // function will return the HIGHEST level that an instance of the variable
     //  is stored at.
     pub fn find_sym( &self, id: &str) -> Option<usize> {
-        let n_scopes = &self.scoped_symtab.borrow().len();
-        for x in (0..*n_scopes).rev() {    
-            match self.scoped_symtab.borrow()[x].borrow().get(id) {
-                None => (),
-                _ => return Some(x),
+        for (index, scope) in self.scoped_symtab.borrow().iter().enumerate().rev() {
+            if scope.borrow().contains_key(id) {
+                return Some(index);
             }
         }
         None
@@ -77,7 +79,7 @@ impl Symtab {
     // Function lookup_sym returns the value paired with the passed in id in
     // the symbol table. The strict parameter is used to evaluate if this 
     // operation should be able to fail or if it should panic.
-    pub fn lookup_sym( &self, id: &str, strict: bool) -> Rc<Node> {
+    pub fn lookup_sym( &self, id: &str, strict: bool) -> ArenaRc<Node> {
         let scope = self.find_sym(id);
         if let None = scope {
             if strict {
@@ -92,7 +94,7 @@ impl Symtab {
     pub fn push_scope( &mut self) {
 
         // push a new dictionary and globals lookup onto the stacks
-        self.scoped_symtab.borrow_mut().push( Rc::new( RefCell::new( HashMap::with_capacity(NAMESPACE_HINT))));
+        self.scoped_symtab.borrow_mut().push( Rc::new( RefCell::new( HashMap::default())));
         self.globals.borrow_mut().push( Rc::new( RefCell::new( Vec::with_capacity(NAMESPACE_HINT))));
         self.curr_scope += 1;
     }
@@ -112,7 +114,7 @@ impl Symtab {
     // Function update_sym updates a previously stored id-value entry with a 
     // new value to be paired with the id. It is an error to update a non-
     // existant key.
-    pub fn update_sym( &mut self, id: &str, value: Rc<Node>) {
+    pub fn update_sym( &mut self, id: &str, value: ArenaRc<Node>) {
         let scope = self.find_sym(id);
         match scope {
             None => panic!("'{}' is not defined.",id),
@@ -147,7 +149,7 @@ impl Symtab {
         for i in (0..n_scopes).rev() {
             println!("SCOPE LEVEL: {}",i);
             for (key, value) in &*(self.scoped_symtab.borrow())[i].borrow() {
-                println!("Found ID: {}: {}", key, peek(Rc::clone(&value)));
+                println!("Found ID: {}: {}", key, peek(value.clone()));
                 match **value {
                     Node::AstroInteger(AstroInteger{value:a}) => println!("value is {}",a),
                     _ => (),
@@ -164,7 +166,7 @@ impl Symtab {
     /**************************************************************************/
     // Function set_config is used to update a symbol table with a new set of
     // stacks and current scope flag.
-    pub fn set_config(&mut self, local: Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,
+    pub fn set_config(&mut self, local: Rc<RefCell<Vec<Rc<RefCell<HashMap<String, ArenaRc<Node>, BuildHasherDefault<FnvHasher>>>>>>>,
                                  global:Rc<RefCell<Vec<Rc<RefCell<Vec<String>>>>>>,
                                  curr:  usize                                                   ) {
         self.scoped_symtab = local;
@@ -174,7 +176,7 @@ impl Symtab {
     /**************************************************************************/
     // Function get_config returns a copy of the symbol tables stacks and 
     // current scope flag.
-    pub fn get_config( &self)  -> (Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,
+    pub fn get_config( &self)  -> (Rc<RefCell<Vec<Rc<RefCell<HashMap<String, ArenaRc<Node>, BuildHasherDefault<FnvHasher>>>>>>>,
                                    Rc<RefCell<Vec<Rc<RefCell<Vec<String>>>>>>,
                                    usize                                                   ) {
         (Rc::clone(&self.scoped_symtab),Rc::clone(&self.globals),self.curr_scope)
@@ -197,7 +199,7 @@ impl Symtab {
         self.curr_scope -= 1;
     }
     /**************************************************************************/
-    pub fn get_closure( &self)  -> (Rc<RefCell<Vec<Rc<RefCell<HashMap<String, Rc<Node>>>>>>>,
+    pub fn get_closure( &self)  -> (Rc<RefCell<Vec<Rc<RefCell<HashMap<String, ArenaRc<Node>, BuildHasherDefault<FnvHasher>>>>>>>,
                                     Rc<RefCell<Vec<Rc<RefCell<Vec<String>>>>>>,
                                     usize                                                   ) {
 
