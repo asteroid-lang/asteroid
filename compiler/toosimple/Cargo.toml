@@ -1,0 +1,20 @@
+[package]
+name = "toosimple"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+state = { path = "../state" }
+support = { path = "../support" }
+symtab = { path = "../symtab" }
+ast = { path = "../ast" }
+avm = { path = "../avm" }
+shared_arena = { path = "../arena" }
+
+[target.'cfg(not(target_env = "msvc"))'.dependencies]
+tikv-jemallocator = "0.5"
+
+[profile.release]
+lto = true
