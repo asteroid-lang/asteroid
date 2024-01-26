@@ -1,0 +1,32 @@
+------------------------------------------------------------------
+-- compiler.ast
+--
+-- Asteroid compiler
+--
+-- (c) University of Rhode Island
+------------------------------------------------------------------
+
+------------------------------------------------------------------
+function compile
+------------------------------------------------------------------
+with module:%string do
+    -- code to compile module
+end
+
+------------------------------------------------------------------
+function run
+------------------------------------------------------------------
+with module:%string do
+    -- code to run module without parameters
+with (module:%string, params:%list) do
+    -- code to run module with parameters
+end
+
+------------------------------------------------------------------
+function __assert_compiler
+------------------------------------------------------------------
+with _ do
+    -- code to assert that the compiler is present
+end
+
+__assert_compiler(). -- call to assert function at end of module
