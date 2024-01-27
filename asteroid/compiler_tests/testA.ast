@@ -1,5 +1,5 @@
-load compiler.
-load io.
+load system compiler.
+load system io.
 
 io @print "Compiler successfuly loaded"
 
