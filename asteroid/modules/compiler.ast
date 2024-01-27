@@ -6,27 +6,47 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
+-- todo!
 ------------------------------------------------------------------
-function compile
+-- function compile
 ------------------------------------------------------------------
-with module:%string do
+-- with module:%string do
     -- code to compile module
-end
+-- end
+-- end todo!
 
+-- will be uncommented on once previous features are finished
+
+-- todo!
 ------------------------------------------------------------------
-function run
+-- function run
 ------------------------------------------------------------------
-with module:%string do
+-- with module:%string do
     -- code to run module without parameters
-with (module:%string, params:%list) do
+-- with (module:%string, params:%list) do
     -- code to run module with parameters
-end
+-- end
+--end todo!
 
 ------------------------------------------------------------------
 function __assert_compiler
 ------------------------------------------------------------------
-with _ do
-    -- code to assert that the compiler is present
+with _ do return escape
+    "
+    import subprocess
+
+    def check_compiler():
+        # list for the future if we want to specifiy rust versions
+        valid_compiler_list = []
+
+        compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
+        compiler_version = rust_check.stdout
+
+        assert compiler_version != \"\n\"
+
+        #once the list of compiler versions is made we assert
+        # if it is in the list
+    "
 end
 
 __assert_compiler(). -- call to assert function at end of module
