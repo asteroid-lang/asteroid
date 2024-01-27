@@ -6,27 +6,21 @@
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
 
--- todo!
 ------------------------------------------------------------------
 -- function compile
 ------------------------------------------------------------------
--- with module:%string do
+with module:%string do
     -- code to compile module
--- end
--- end todo!
+end
 
--- will be uncommented on once previous features are finished
-
--- todo!
 ------------------------------------------------------------------
 -- function run
 ------------------------------------------------------------------
--- with module:%string do
+with module:%string do
     -- code to run module without parameters
--- with (module:%string, params:%list) do
+with (module:%string, params:%list) do
     -- code to run module with parameters
--- end
---end todo!
+end
 
 ------------------------------------------------------------------
 function __assert_compiler
