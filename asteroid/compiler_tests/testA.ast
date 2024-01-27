@@ -1,0 +1,8 @@
+load compiler.
+load io.
+
+io @print "Compiler successfuly loaded"
+
+--compiler@compile
+
+--compiler@run
