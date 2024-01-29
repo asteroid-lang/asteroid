@@ -33,7 +33,7 @@ import subprocess
 valid_compiler_list = []
 
 compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
-compiler_version = rust_check.stdout
+compiler_version = compiler_check_command.stdout
 
 # assert compiler_version != \"\n\"
 assert True
