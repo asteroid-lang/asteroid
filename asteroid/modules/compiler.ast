@@ -25,25 +25,25 @@
 ------------------------------------------------------------------
 function __assert_compiler
 ------------------------------------------------------------------
-with _ do return escape
-    "
-    import subprocess
+with none do return escape
+"
+import subprocess
 
-    def check_compiler():
-        # list for the future if we want to specifiy rust versions
-        valid_compiler_list = []
+def check_compiler():
+    # list for the future if we want to specifiy rust versions
+    valid_compiler_list = []
 
-        compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
-        compiler_version = rust_check.stdout
+    compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
+    compiler_version = rust_check.stdout
 
-        # assert compiler_version != \"\n\"
-        assert True
+    # assert compiler_version != \"\n\"
+    assert True
 
-        #once the list of compiler versions is made we assert
-        # if it is in the list
+    #once the list of compiler versions is made we assert
+    # if it is in the list
     
-    check_compiler()
-    "
+check_compiler()
+"
 end
 
 __assert_compiler(). -- call to assert function at end of module
