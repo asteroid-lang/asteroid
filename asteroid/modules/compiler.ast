@@ -41,6 +41,8 @@ with _ do return escape
 
         #once the list of compiler versions is made we assert
         # if it is in the list
+    
+    check_compiler()
     "
 end
 
