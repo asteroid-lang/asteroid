@@ -1,7 +1,4 @@
-load system io.
 load system compiler.
-
-io @print "Compiler successfuly loaded"
 
 --compiler@compile
 
