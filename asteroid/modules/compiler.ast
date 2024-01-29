@@ -27,7 +27,7 @@ function __assert_compiler
 ------------------------------------------------------------------
 with none do return escape
 "
-import subprocess
+import subprocess as subprocess
 
 def check_compiler():
     # list for the future if we want to specifiy rust versions
