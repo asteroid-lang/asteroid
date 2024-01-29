@@ -30,13 +30,16 @@ with none do return escape
 import subprocess
 
 # list for the future if we want to specifiy rust versions
-valid_compiler_list = []
+valid_compiler_list = ['rustc 1.75.0 (82e1608df 2023-12-21)\n']
 
 compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
 compiler_version = compiler_check_command.stdout
 
-assert compiler_version != \"\n\"
+assert compiler_version != '\n'
 # assert True
+
+#version verification
+assert compiler_version in valid_compiler_list
 
 #once the list of compiler versions is made we assert
 # if it is in the list
