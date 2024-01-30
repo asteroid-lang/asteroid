@@ -37,7 +37,7 @@ compiler_string = compiler_check_command.stdout
 compiler_error = compiler_check_command.stderr
 
 # fails if no compiler is installed
-assert compiler_error == '\n' 
+assert compiler_error == ''
 
 # version verification
 compiler_version = compiler_string.split(' ')[1]
