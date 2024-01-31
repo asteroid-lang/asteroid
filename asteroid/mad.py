@@ -292,12 +292,26 @@ class MAD:
       print()
       return START_DEBUGGER
 
-   def _handle_list(self, _):
+   def _handle_list(self, args):
       (file,lineno) = self.interp_state.lineinfo
       self._load_program_text(file)
       pt = self.program_text[file]
       # Length around the current line to display
       length = 4
+      
+      if len(args) > 1:                                  # Too many arguments, reject with an error message
+         print("error: too many arguments")
+         return START_DEBUGGER
+      elif len(args) == 0:                               # No arguments, assume default length and fall through
+         length = length
+      elif args[0] == '*':                               # '*' argument, set length to length of the file and lineno to 0
+         lineno, length = 0, len(pt)
+      elif args[0].isnumeric() and int(args[0]) > 0: # Number greater than 0, cast it and set length to it
+         length = int(args[0])
+      else:                                              # Any other input should be rejected with an error message
+         print("error: expected a number greater than 0 or '*', found '{}'".format(args[0]))
+         return START_DEBUGGER
+      
       # Compute the start and end of listing
       start = (lineno - length) if lineno >= length else 0
       end = lineno + length if lineno < len(pt) - 2 else len(pt)
