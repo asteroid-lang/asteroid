@@ -34,6 +34,8 @@ rustc --crate-name regex --edition=2021 $lib_r_directory --error-format=json --j
 rustc --crate-name avm --edition=2021 $vm_avm_directory --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type lib --emit=dep-info,metadata,link -C opt-level=3 -C linker-plugin-lto -C metadata=1 -C extra-filename=-1 --out-dir $bin_directory -L dependency=$bin_directory --extern ast=$bin_directory/libast-1.rmeta --extern regex=$bin_directory/libregex-1.rmeta --extern shared_arena=$bin_directory/libshared_arena.rmeta --extern state=$bin_directory/libstate-1.rmeta --extern support=$bin_directory/libsupport-1.rmeta --extern symtab=$bin_directory/libsymtab-1.rmeta
 
 # compile the final executable
-rustc --crate-name astroid_executable --edition=2021 $1 --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C opt-level=3 -C lto -C metadata=1 --out-dir $bin_directory -L dependency=$bin_directory --extern ast=$bin_directory/libast-1.rlib --extern avm=$bin_directory/libavm-1.rlib --extern shared_arena=$bin_directory/libshared_arena.rlib --extern state=C:$bin_directory/libstate-1.rlib --extern support=$bin_directory/libsupport-1.rlib --extern symtab=$bin_directory/libsymtab-1.rlib
+rustc --crate-name $1 --edition=2021 $2 --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --crate-type bin --emit=dep-info,link -C opt-level=3 -C lto -C metadata=1 --out-dir $bin_directory -L dependency=$bin_directory --extern ast=$bin_directory/libast-1.rlib --extern avm=$bin_directory/libavm-1.rlib --extern shared_arena=$bin_directory/libshared_arena.rlib --extern state=$bin_directory/libstate-1.rlib --extern support=$bin_directory/libsupport-1.rlib --extern symtab=$bin_directory/libsymtab-1.rlib
+
+mv $current_directory/bin/$1 $current_directory/exe
 
 read -p "Press any key to continue" x

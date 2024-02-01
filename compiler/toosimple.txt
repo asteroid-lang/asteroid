@@ -1,0 +1,10 @@
+let n = 100.
+let sum = 0.0.
+let flip = -1.0.
+
+for i in 1 to n do
+  let flip = flip * -1.0.
+  let sum = sum + flip / (2.0 * i - 1.0).
+end
+
+let sum = sum * 4.0.
