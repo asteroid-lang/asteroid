@@ -120,7 +120,7 @@ Here is a table of the available commands in the the debugger,
     down ........................... move down one stack frame
     frame .......................... display current stack frame number
     help ........................... display help
-    list ........................... display source code
+    list [<num>|*].................. display <num> (default 4) lines of source code, * displays all lines in file
     next ........................... step execution across a nested scope
     print <name>|* ................. print contents of <name>, * lists all vars in scope
     quit ........................... quit debugger
