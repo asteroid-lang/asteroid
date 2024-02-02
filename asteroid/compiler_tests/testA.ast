@@ -1,8 +1,0 @@
-load system compiler.
-load system io.
-
-io @println "Compiler loaded sucessfully!"
-
---compiler@compile
-
---compiler@run
