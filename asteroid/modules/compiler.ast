@@ -29,8 +29,6 @@ with none do return escape
 "
 import subprocess
 
-# list for the future if we want to specifiy rust versions
-valid_compiler_list = ['1.75.0']
 # lowest acceptable version of the compiler
 minimum_version = '1.75.0'
 
@@ -57,7 +55,6 @@ else:
         elif int(current_val) > int(min_val):
             break
 # fails if the compiler is not the correct version
-# assert compiler_version in valid_compiler_list
 "
 end
 
