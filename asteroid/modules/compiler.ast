@@ -31,18 +31,33 @@ import subprocess
 
 # list for the future if we want to specifiy rust versions
 valid_compiler_list = ['1.75.0']
+# lowest acceptable version of the compiler
+minimum_version = '1.75.0'
 
 compiler_check_command = subprocess.run('rustc --version', shell=True, capture_output=True, text=True)
 compiler_string = compiler_check_command.stdout
 compiler_error = compiler_check_command.stderr
 
 # fails if no compiler is installed
-assert compiler_error == ''
+# assert compiler_error == ''
+if compiler_error != '':
+    raise ImportError('Rust Compiler not installed try visiting: \'https://www.rust-lang.org/tools/install\'')
 
 # version verification
 compiler_version = compiler_string.split(' ')[1]
+
+min_list = minimum_version.split('.')
+current_list = current_version.split('.')
+if(len(min_list) != len(current_list)):
+    raise ValueError('Version comparison strings dont match')
+else:
+    for (min_val, current_val) in zip(min_list, current_list):
+        if int(current_val) < int(min_val):
+            raise ImportError('Rust Compiler not up to date, try updating by running \'rustup update\'')
+        elif int(current_val) > int(min_val):
+            break
 # fails if the compiler is not the correct version
-assert compiler_version in valid_compiler_list
+# assert compiler_version in valid_compiler_list
 "
 end
 
