@@ -5,3 +5,4 @@ dist/
 asteroid_lang.egg-info/
 action-test68.png
 .vscode/
+asteroid/repl_test.py
