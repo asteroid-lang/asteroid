@@ -11,6 +11,7 @@ function compile
 ------------------------------------------------------------------
 with module:%string do return escape
 "
+import subprocess
 print('compilation stub')
 "
     -- code to compile module
