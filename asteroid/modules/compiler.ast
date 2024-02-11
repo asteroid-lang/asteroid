@@ -9,12 +9,14 @@
 ------------------------------------------------------------------
 function compile
 ------------------------------------------------------------------
-with module:%string do return escape
-"
-import subprocess
-print('compilation stub')
-"
+with module:%string do return 
+let file_name = module.
+let front = "print('".
+let back = "')".
+let final = front + file_name + back.
+escape
     -- code to compile module
+    "print('I am compiling')"
 end
 
 -- ------------------------------------------------------------------
