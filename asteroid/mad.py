@@ -344,16 +344,16 @@ class MAD:
       elif len(args) == 0:
          print("error: no argument given")
          return False
+      var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
       if args[0] == '*':
-         var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
          for (name,val) in var_list:
             print("{}: {}".format(name,term2string(val)))
       else:
-         val = self.interp_state.symbol_table.lookup_sym(args[0],strict=False)
-         if not val:
-            print("error: variable {} not found".format(args[0]))
-         else:
-            print("{}: {}".format(args[0],term2string(val)))
+         for (name,val) in var_list:
+            if name == args[0]:
+               print("{}: {}".format(args[0],term2string(val)))
+               return START_DEBUGGER
+         print("error: variable {} not found".format(args[0]))
       return START_DEBUGGER
 
    def _handle_quit(self,_):
