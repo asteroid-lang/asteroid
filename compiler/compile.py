@@ -45,11 +45,14 @@ def compile(input_stream,
         begin_code += "/*** (c) University of Rhode Island ***/ \n"
         begin_code += "/**************************************/ \n"
         begin_code += "#![allow(unused)]\n\n"
-        begin_code += "#[cfg(not(target_env = \"msvc\"))]\n" 
-        begin_code += "use tikv_jemallocator::Jemalloc;\n\n"
-        begin_code += "#[cfg(not(target_env = \"msvc\"))]\n"
-        begin_code += "#[global_allocator]\n"
-        begin_code += "static GLOBAL: Jemalloc = Jemalloc;\n\n"
+
+        # alternate MALLOC implementation
+        #begin_code += "#[cfg(not(target_env = \"msvc\"))]\n" 
+        #begin_code += "use tikv_jemallocator::Jemalloc;\n\n"
+        #begin_code += "#[cfg(not(target_env = \"msvc\"))]\n"
+        #begin_code += "#[global_allocator]\n"
+        #begin_code += "static GLOBAL: Jemalloc = Jemalloc;\n\n"
+        
         begin_code += "use std::rc::Rc;\n"
         begin_code += "use std::cell::RefCell;\n"
         begin_code += "use std::collections::HashMap;\n"
