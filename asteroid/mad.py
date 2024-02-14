@@ -345,22 +345,28 @@ class MAD:
          print("error: no argument given")
          return False
       
+      # Split any arguments by the '@' character when necessary
       syms = args[0].split('@')
+      # '@' occurs at beginning or end of argument, or multiple `@`s occur next to each other is rejected with an error message
       if '' in syms:
          print("error: any @s must exist between keywords or integers, not adjacent or next to each other")
          return START_DEBUGGER
       
       var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
+      # If '*' is the only argument, handle output as normal
       if syms[0] == '*' and len(syms) == 1:
          for (name,val) in var_list:
             print("{}: {}".format(name,term2string(val)))
       else:
+         # Loop through scope and check if any symbols in the scope are the first symbol in the list
          term = None
          for (name, val) in var_list:
             if name == syms[0]:
                term = val
                break
+         # Iterate over remaining terms to find the final symbol
          val = get_tail_term(syms[0], term, syms[1:])
+         # Print the entire argument along with its current symbol if it is found
          if val:
             print("{}: {}".format(args[0], term2string(val)))
       return START_DEBUGGER
