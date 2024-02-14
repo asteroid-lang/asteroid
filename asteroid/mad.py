@@ -48,7 +48,7 @@
 ###########################################################################################
 
 from os.path import exists, split, basename
-from asteroid.support import term2string
+from asteroid.support import term2string, get_tail_term
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -344,16 +344,25 @@ class MAD:
       elif len(args) == 0:
          print("error: no argument given")
          return False
+      
+      syms = args[0].split('@')
+      if '' in syms:
+         print("error: any @s must exist between keywords or integers, not adjacent or next to each other")
+         return START_DEBUGGER
+      
       var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
-      if args[0] == '*':
+      if syms[0] == '*' and len(syms) == 1:
          for (name,val) in var_list:
             print("{}: {}".format(name,term2string(val)))
       else:
-         for (name,val) in var_list:
-            if name == args[0]:
-               print("{}: {}".format(args[0],term2string(val)))
-               return START_DEBUGGER
-         print("error: variable {} not found".format(args[0]))
+         term = None
+         for (name, val) in var_list:
+            if name == syms[0]:
+               term = val
+               break
+         val = get_tail_term(syms[0], term, syms[1:])
+         if val:
+            print("{}: {}".format(args[0], term2string(val)))
       return START_DEBUGGER
 
    def _handle_quit(self,_):

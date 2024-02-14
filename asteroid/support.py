@@ -297,3 +297,62 @@ def term2string(term):
     else:
         return '('+TYPE+'...)'
 
+def get_tail_term(sym, term, attrs):
+    # sym was None: print error message and return None
+    if not sym:
+        print("error: variable {} not found".format('@'.join(sym + attrs)))
+        return None
+    
+    # Loop over all of the attributes, get the type and check if the attribute is an integer or number
+    for a in attrs:
+        TYPE = term[0]
+        is_index = a.lstrip('-+').isnumeric()
+        is_member = not a.isnumeric()
+        
+        # Indexing a list or tuple: if the index is at least 0, set the term to the value of that index.
+        # Otherwise, print an error message and return None
+        if TYPE in ['list', 'tuple'] and is_index:
+            val = term[1]
+            if 0 <= int(a) < len(val):
+                term = val[int(a)]
+            else:
+                print("error: invalid index value {}".format(a))
+                return None
+        # Indexing a string: if the index is at least 0, set the term to a string equal to a single character.
+        # Otherwise, error and return None
+        elif TYPE in ['string'] and is_index:
+            val = term[1]
+            if 0 <= int(a) < len(val):
+                term = ('string', val[int(a)])
+            else:
+                print("error: invalid index value {}".format(a))
+                return None
+        # Accessing structure member: if the member exists, set the term to the object data of that member
+        # Otherwise, error and return None
+        elif TYPE in ['object'] and is_member:
+            (OBJECT,
+            (STRUCT_ID, (ID, struct_id)),
+            (MEMBER_NAMES, (LIST, member_names)),
+            (OBJECT_MEMORY, (LIST, object_memory))) = term
+            if a in member_names:
+                member_ix = member_names.index(a)
+                term = object_memory[member_ix]
+            else:
+                print("error: instance of struct {} has no member '{}'".format(struct_id, a))
+                return None
+        
+        # Accessing member on list, tuple, or string, or indexing a structure, or attempting to access attributes on any type that
+        # does not include those types: error and return None.
+        elif TYPE in ['list', 'tuple', 'string'] and is_member:
+            print("error: instance of {} has no data members".format(TYPE))
+            return None
+        elif TYPE in ['object'] and is_index:
+            print("error: structures are not indexable")
+            return None
+        elif TYPE not in ['list', 'tuple', 'string', 'object']:
+            print("error: instance of {} has no accessible attributes".format(TYPE))
+            return None
+        
+        # Used for error handling: attach the next attribute to the existing symbol
+        sym += "@{}".format(a)
+    return term
