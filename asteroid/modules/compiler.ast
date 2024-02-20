@@ -9,18 +9,20 @@
 ------------------------------------------------------------------
 function compile
 ------------------------------------------------------------------
-with module:%string do return 
+with module:%string do
 -- let file_name = module.
 let front = "print('".
 let back = "')".
--- let final = front + file_name + back.
+let file_name = module.
+let final = front + file_name + back.
 escape
     -- code to compile module
-"
-import subprocess
-subprocess.run('rustc --version')
-print('I am compiling')
-"
+    final
+-- "
+-- import subprocess
+-- subprocess.run('rustc --version')
+-- print('I am compiling')
+-- "
 end
 
 -- ------------------------------------------------------------------
