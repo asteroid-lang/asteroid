@@ -11,16 +11,22 @@ function compile
 ------------------------------------------------------------------
 with module:%string do
 -- let file_name = module.
-let front = "print('".
-let back = "')".
-let file_name = module.
-let final = front + file_name + back.
+let front = 
+"
+import subprocess
+rust_output = subprocess.run('".
+let back = "', shell=True, capture_output=True, text=True)".
+let compile_cmd_front = "python3 compiler/ac.py ".
+let compile_cmd_back = " > compiler/toosimple.rs".
+let compile_cmd = compile_cmd_front + module + compile_cmd_back.
+let final = front + compile_cmd + back.
 escape
     -- code to compile module
     final
 -- "
 -- import subprocess
 -- subprocess.run('rustc --version')
+-- subprocess.run('pwd')
 -- print('I am compiling')
 -- "
 end
