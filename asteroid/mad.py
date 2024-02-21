@@ -281,7 +281,7 @@ class MAD:
       print("help\t\t\t- display help")
       print("list [<num>|*]\t\t\t- display <num> (default 4) lines of source code, * displays all lines in file")
       print("next\t\t\t- step execution across a nested scope")
-      print("print <name>[@<num>|<name>]|*\t\t- print contents of <name>, * lists all vars in scope, specify indices or attributes with @")
+      print("print <name>[@<num>|<name>]+|*\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
       print("stack\t\t\t- display runtime stack")
