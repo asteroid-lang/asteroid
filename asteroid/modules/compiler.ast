@@ -5,12 +5,14 @@
 --
 -- (c) University of Rhode Island
 ------------------------------------------------------------------
-
+load system os.
+load system io.
 ------------------------------------------------------------------
 function compile
 ------------------------------------------------------------------
 with module:%string do
 -- let file_name = module.
+let dir_str = os@getdir.
 let front = 
 "
 import subprocess
@@ -29,6 +31,7 @@ let compile_cmd_back = " > compiler/toosimple.rs".
 let ast_file_path = "local_path" + "/" + module
 let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
 let final = front + compile_cmd + back.
+let restore = "subprocess.run('cd " + dir_str + "' shell=True)"
 escape
     -- code to compile module
     final
