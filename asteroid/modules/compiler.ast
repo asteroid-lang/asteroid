@@ -24,7 +24,8 @@ with module:%string do
 -- let file_name = module.
 let file_name = os@basename(module).
 let (lone_name, extension) = os@splitext(file_name).
-assert(extension == ".ast")
+assert(extension == ".ast").
+assert(os@isfile(module)).
 let dir_str = os@getdir().
 let comp_path = __get_path().
 let (rootpath, my_base) = os@split(comp_path).
@@ -40,9 +41,13 @@ let (rootpath, my_base) = os@split(comp_path).
 let ast_file_path = module.
 -- let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
 -- let final = front + compile_cmd + back.
-io@println(rootpath).
+-- io@println(rootpath).
 os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
+-- I hard coded two sample version for testing to turn rust into an executable and could not get it working, they are commented out below
+------------------------------------------------------------------------------------------------------
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + "C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
+-- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
+------------------------------------------------------------------------------------------------------
 -- os@syscmd("./compiler/compile.sh toosimple compiler/toosimple.rs")
 end
 
