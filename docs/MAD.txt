@@ -132,8 +132,8 @@ Here is a table of the available commands in the the debugger,
     where .......................... print current program line
 
 The or bar ``|`` means different options as arguments to the commands. Anything between
-square brackets is optional.  Anything appearing in angle brackets are actual values. 
-For example, ``print <name>`` means we want to examine the value of an actual variable, e.g.
+square brackets is optional. The plus symbol ``+`` means at least one of the preceding symbols must be present.
+Anything appearing in angle brackets are actual values. For example, ``print <name>`` means we want to examine the value of an actual variable, e.g.
 ::
     print n
 
