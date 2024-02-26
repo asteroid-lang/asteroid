@@ -22,78 +22,28 @@ function compile
 ------------------------------------------------------------------
 with module:%string do
 -- let file_name = module.
+let file_name = os@basename(module).
+let (lone_name, extension) = os@splitext(file_name).
+assert(extension == ".ast")
 let dir_str = os@getdir().
 let comp_path = __get_path().
 let (rootpath, my_base) = os@split(comp_path).
-io@println(comp_path).
+-- io@println(comp_path).
 -- let my_base = os@basename(dir_str).
-io@println("hello world").
-io@println(dir_str).
-io@println(my_base).
+-- io@println("hello world").
+-- io@println(dir_str).
+-- io@println(my_base).
 -- let test_dir = "C:/Users/mjk84/Documents/CSC-499/tests".
--- let mod_dir = dir_str@replace ("/", "@").
-let file_name = os@basename(module).
-let (lone_name, extension) = os@splitext(file_name).
-io@println(lone_name).
-io@println(extension).
--- io@println file_name.
--- let ext = module@split ".".
--- let my_ext = ext@1.
--- io@println my_ext.
--- io@println(mod_dir).
--- let test_a = "import subprocess; my_process = subprocess.run('cd ".
--- let test_b = "' shell=True, capture_output=True, text=True)".
--- let test_ab = test_a + test_dir + test_b.
-let front = 
-"
-import subprocess
-import sys
-print(sys.path[0])
-ab_path = sys.path[0][:len(sys.path[0]) - len('asteroid')]
-ab_path += 'compiler'
-my_cmd = 'cd ' + ab_path
-subprocess.run(my_cmd, shell=True, text=True, capture_output=True)
-local_path_cmd = subprocess.run('pwd', shell=True, capture_output=True, text=True)
-local_path = local_path_cmd.stdout
-print(ab_path)
-rust_output = subprocess.run('".
-let back = "', shell=True, capture_output=True, text=True)".
-let compile_cmd_front = "python3 C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/ac.py ".
-let compile_cmd_back = " > C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs".
-let ast_file_path =  module
-let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
-let final = front + compile_cmd + back.
+
+-- io@println(lone_name).
+-- io@println(extension).
+let ast_file_path = module.
+-- let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
+-- let final = front + compile_cmd + back.
 io@println(rootpath).
 os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + "C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
 -- os@syscmd("./compiler/compile.sh toosimple compiler/toosimple.rs")
--- os@syscmd("ls ..")
--- os@syscmd("pwd").
--- os@syscmd("cd ..").
--- os@syscmd("pwd").
--- let restore = "subprocess.run('cd " + dir_str + "' shell=True)"
--- let my_test_text = 
--- "
--- import subprocess
--- import sys
--- print(sys.path[0])
--- ab_path = sys.path[0][:len(sys.path[0]) - len('asteroid')]
--- ab_path += 'compiler'
--- print(ab_path)
--- my_cmd = 'cd ' + ab_path
--- subprocess.run(my_cmd, shell=True, capture_output)
--- subprocess.run('pwd', shell=True, text=True)
--- ".
--- escape
---     -- code to compile module
---     final.
-
--- "
--- import subprocess
--- subprocess.run('rustc --version')
--- subprocess.run('pwd')
--- print('I am compiling')
--- "
 end
 
 -- ------------------------------------------------------------------
