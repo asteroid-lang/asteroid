@@ -24,8 +24,9 @@ with module:%string do
 -- let file_name = module.
 let dir_str = os@getdir().
 let comp_path = __get_path().
+let (rootpath, my_base) = os@split(comp_path).
 io@println(comp_path).
-let my_base = os@basename(dir_str).
+-- let my_base = os@basename(dir_str).
 io@println("hello world").
 io@println(dir_str).
 io@println(my_base).
@@ -62,10 +63,11 @@ let compile_cmd_back = " > C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" 
 let ast_file_path =  module
 let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
 let final = front + compile_cmd + back.
-os@syscmd("python3 C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/ac.py " + ast_file_path + " > C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
+io@println(rootpath).
+os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + "C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
 -- os@syscmd("./compiler/compile.sh toosimple compiler/toosimple.rs")
-os@syscmd("ls ..")
+-- os@syscmd("ls ..")
 -- os@syscmd("pwd").
 -- os@syscmd("cd ..").
 -- os@syscmd("pwd").
