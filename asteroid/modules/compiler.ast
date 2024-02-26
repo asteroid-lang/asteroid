@@ -57,16 +57,15 @@ local_path = local_path_cmd.stdout
 print(ab_path)
 rust_output = subprocess.run('".
 let back = "', shell=True, capture_output=True, text=True)".
--- let string_creation = 
--- "
-
--- str_a = 
--- ".
 let compile_cmd_front = "python3 C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/ac.py ".
 let compile_cmd_back = " > C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs".
 let ast_file_path =  module
 let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
 let final = front + compile_cmd + back.
+os@syscmd("python3 C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/ac.py " + ast_file_path + " > C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
+-- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + "C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
+-- os@syscmd("./compiler/compile.sh toosimple compiler/toosimple.rs")
+os@syscmd("ls ..")
 -- os@syscmd("pwd").
 -- os@syscmd("cd ..").
 -- os@syscmd("pwd").
@@ -83,9 +82,9 @@ let final = front + compile_cmd + back.
 -- subprocess.run(my_cmd, shell=True, capture_output)
 -- subprocess.run('pwd', shell=True, text=True)
 -- ".
-escape
-    -- code to compile module
-    final.
+-- escape
+--     -- code to compile module
+--     final.
 
 -- "
 -- import subprocess
