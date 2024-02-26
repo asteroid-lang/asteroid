@@ -13,6 +13,11 @@ function compile
 with module:%string do
 -- let file_name = module.
 let dir_str = os@getdir.
+let file_name = os@basename(module).
+let [name, extension] = file_name@split(".").
+io@println(name).
+io@println(extension).
+io@println file_name.
 let ext = module@split ".".
 let my_ext = ext@1.
 io@println my_ext.
