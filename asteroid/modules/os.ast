@@ -369,7 +369,7 @@ with cmd:%string do return escape
 global __retval__
 from os import system
 (STRING, cmd_val) = state.symbol_table.lookup_sym('cmd')
-status = sytem(cmd_val)
+status = system(cmd_val)
 __retval__ = ('integer', status)
 "
 end -- syscmd
