@@ -122,9 +122,9 @@ Here is a table of the available commands in the the debugger,
     down ........................... move down one stack frame
     frame .......................... display current stack frame number
     help ........................... display help
-    list ........................... display source code
+    list [<num>|*].................. display <num> (default 4) lines of source code, * displays all lines in file
     next ........................... step execution across a nested scope
-    print <name>|* ................. print contents of <name>, * lists all vars in scope
+    print <name>[@<num>|<name>]+|* . print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @
     quit ........................... quit debugger
     stack .......................... display runtime stack
     set [<func>|<line#> [<file>]] .. set a breakpoint
@@ -134,8 +134,8 @@ Here is a table of the available commands in the the debugger,
     where .......................... print current program line
 
 The or bar ``|`` means different options as arguments to the commands. Anything between
-square brackets is optional.  Anything appearing in angle brackets are actual values.
-For example, ``print <name>`` means we want to examine the value of an actual variable, e.g.
+square brackets is optional. The plus symbol ``+`` means at least one of the preceding symbols must be present.
+Anything appearing in angle brackets are actual values. For example, ``print <name>`` means we want to examine the value of an actual variable, e.g.
 ::
     print n
 
