@@ -21,34 +21,27 @@ end
 function compile
 ------------------------------------------------------------------
 with module:%string do
--- let file_name = module.
+-- gets the name of the file
 let file_name = os@basename(module).
+-- separates the file_name from the extension
 let (lone_name, extension) = os@splitext(file_name).
+--checks that the file is an asteroid file
 assert(extension == ".ast").
+--checks that the file is a file
 assert(os@isfile(module)).
 let dir_str = os@getdir().
+--gets the path to where the python script is being run from
 let comp_path = __get_path().
 let (rootpath, my_base) = os@split(comp_path).
--- io@println(comp_path).
--- let my_base = os@basename(dir_str).
--- io@println("hello world").
--- io@println(dir_str).
--- io@println(my_base).
--- let test_dir = "C:/Users/mjk84/Documents/CSC-499/tests".
-
--- io@println(lone_name).
--- io@println(extension).
 let ast_file_path = module.
--- let compile_cmd = compile_cmd_front + ast_file_path + compile_cmd_back.
--- let final = front + compile_cmd + back.
--- io@println(rootpath).
 os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
 -- I hard coded two sample version for testing to turn rust into an executable and could not get it working, they are commented out below
 ------------------------------------------------------------------------------------------------------
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + "C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
 ------------------------------------------------------------------------------------------------------
--- os@syscmd("./compiler/compile.sh toosimple compiler/toosimple.rs")
+-- rust compiler command, using variables and proposed final version of command, awaiting completion of the compile.sh script
+-- os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs")
 end
 
 -- ------------------------------------------------------------------
