@@ -1,3 +1,15 @@
+import sys
+import os
+
+#Code from run-tests.py
+file_path = os.path.dirname(os.path.abspath( __file__ ))
+os.chdir(file_path)
+(parent_dir,_) = os.path.split(file_path)
+#We need the granparent dir, since we're 2 layers down from asteroid
+(grandparent_dir,_) = os.path.split(parent_dir)
+sys.path.append(grandparent_dir)
+
+
 from asteroid.interp import interp
 import lex
 from state import state
@@ -25,6 +37,7 @@ def test_get_identifiers_by_prefix():
     print(lex.get_indentifiers())
     print(lex.get_indentifiers_by_prefix("a"))
     print(lex.get_indentifiers_by_prefix("aa"))
+    print(lex.get_indentifiers_by_prefix("__"))
     
 
 if __name__ == "__main__":
