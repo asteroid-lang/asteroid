@@ -356,3 +356,46 @@ def get_tail_term(sym, term, attrs):
         # Used for error handling: attach the next attribute to the existing symbol
         sym += "@{}".format(a)
     return term
+
+def term2verbose(term, indent_size=0, initial_indent=True):
+    TYPE = term[0]
+    # Type does not contain nested data: call term2string and return the value
+    if TYPE not in ['list', 'tuple', 'object']:
+        return term2string(term)
+    
+    curr_indent, next_indent = ' '*4*indent_size, ' '*4*(indent_size+1)
+    term_string = curr_indent if initial_indent else ''
+    
+    # Type is an object: build string with struct name, and data members and corresponding types on separate lines
+    # Make sure indent is not applied twice
+    if TYPE == 'object':
+        (OBJECT,
+        (STRUCT_ID, (ID, struct_id)),
+        (MEMBER_NAMES, (LIST, member_names)),
+        (OBJECT_MEMORY, (LIST, object_memory))) = term
+        
+        term_string += (struct_id + '(\n')
+        l = len(member_names)
+        for ix in range(l):
+            term_string += "{}{}: {}".format(next_indent,
+                                           member_names[ix],
+                                           term2verbose(object_memory[ix], indent_size=indent_size+1, initial_indent=False))
+            term_string += ',\n' if ix < l-1 else '\n'
+        term_string += curr_indent + ')'
+    # Type is list or tuple: build string with brackets, and stored data on each new line, making sure to indent new data when not nested.
+    else:
+        val = term[1]
+        term_string += '[\n' if TYPE == 'list' else '(\n'
+        l = len(val)
+        for i in range(l):
+            if val[i][0] not in ['list', 'tuple', 'object']:
+                term_string += next_indent
+            term_string += term2verbose(val[i], indent_size=indent_size+1)
+            if i != l-1:
+                term_string += ','
+            if l > 1 or TYPE == 'list':
+                term_string += '\n'
+        if l == 1 and TYPE == 'tuple':
+            term_string += ',\n'
+        term_string += curr_indent + (']' if TYPE == 'list' else ')')
+    return term_string
