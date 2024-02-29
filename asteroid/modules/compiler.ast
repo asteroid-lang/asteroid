@@ -32,6 +32,7 @@ assert(os@isfile(module)).
 let dir_str = os@getdir().
 --gets the path to where the python script is being run from
 let comp_path = __get_path().
+-- io@println(comp_path).
 let (rootpath, my_base) = os@split(comp_path).
 let ast_file_path = module.
 os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
@@ -41,7 +42,7 @@ os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + r
 -- os@syscmd("C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/compile.sh " + lone_name + " C:/Users/mjk84/Documents/CSC-499/asteroid/compiler/" + lone_name + ".rs").
 ------------------------------------------------------------------------------------------------------
 -- rust compiler command, using variables and proposed final version of command, awaiting completion of the compile.sh script
--- os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs")
+os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs")
 end
 
 -- ------------------------------------------------------------------
