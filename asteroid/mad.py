@@ -48,7 +48,7 @@
 ###########################################################################################
 
 from os.path import exists, split, basename
-from asteroid.support import term2string
+from asteroid.support import term2string, get_tail_term
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -281,7 +281,7 @@ class MAD:
       print("help\t\t\t- display help")
       print("list [<num>|*]\t\t\t- display <num> (default 4) lines of source code, * displays all lines in file")
       print("next\t\t\t- step execution across a nested scope")
-      print("print <name>|*\t\t- print contents of <name>, * lists all vars in scope")
+      print("print <name>[@<num>|<name>]+|*\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
       print("stack\t\t\t- display runtime stack")
@@ -344,16 +344,31 @@ class MAD:
       elif len(args) == 0:
          print("error: no argument given")
          return False
+      
+      # Split any arguments by the '@' character when necessary
+      syms = args[0].split('@')
+      # '@' occurs at beginning or end of argument, or multiple `@`s occur next to each other is rejected with an error message
+      if '' in syms:
+         print("error: any @s must exist between keywords or integers, not adjacent or next to each other")
+         return START_DEBUGGER
+      
       var_list = self.interp_state.symbol_table.get_curr_scope(scope=self.frame_ix, option="items")
-      if args[0] == '*':
+      # If '*' is the only argument, handle output as normal
+      if syms[0] == '*' and len(syms) == 1:
          for (name,val) in var_list:
             print("{}: {}".format(name,term2string(val)))
       else:
-         for (name,val) in var_list:
-            if name == args[0]:
-               print("{}: {}".format(args[0],term2string(val)))
-               return START_DEBUGGER
-         print("error: variable {} not found".format(args[0]))
+         # Loop through scope and check if any symbols in the scope are the first symbol in the list
+         term = None
+         for (name, val) in var_list:
+            if name == syms[0]:
+               term = val
+               break
+         # Iterate over remaining terms to find the final symbol
+         val = get_tail_term(syms[0], term, syms[1:])
+         # Print the entire argument along with its current symbol if it is found
+         if val:
+            print("{}: {}".format(args[0], term2string(val)))
       return START_DEBUGGER
 
    def _handle_quit(self,_):

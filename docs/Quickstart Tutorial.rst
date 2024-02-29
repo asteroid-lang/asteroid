@@ -1,12 +1,12 @@
 ..
    /******************************************************************
    This is the source file from which the reference guide is
-   generated.  We use cpp to insert live code snippets into the
+   generated.  We use pcpp to insert live code snippets into the
    document. In order to generate the reference guide run the
    following command on a Unix-like system in the directory of
    this doc:
 
-   bash generate_docs
+   python generate_docs.py
 
    ******************************************************************/
 ..

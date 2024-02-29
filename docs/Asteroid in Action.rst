@@ -1,11 +1,11 @@
 ..
     /******************************************************************
     This is the source file from which the action doc is generated.
-    We use cpp to insert live code snippets into the document.
+    We use pcpp to insert live code snippets into the document.
     In order to generate the action doc run the following command
     on a Unix-like system:
 
-    cpp -w -P "Asteroid in Action.txt" > "Asteroid in Action.rst"
+    python generate_docs.py
 
     ******************************************************************/
 ..
