@@ -48,7 +48,7 @@
 ###########################################################################################
 
 from os.path import exists, split, basename
-from asteroid.support import term2string, get_tail_term
+from asteroid.support import term2string, get_tail_term, term2verbose
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -281,7 +281,7 @@ class MAD:
       print("help\t\t\t- display help")
       print("list [<num>|*]\t\t\t- display <num> (default 4) lines of source code, * displays all lines in file")
       print("next\t\t\t- step execution across a nested scope")
-      print("print <name>[@<num>|<name>]+|*\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @")
+      print("print <name>[@<num>|<name>]+|* [-v]\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
       print("stack\t\t\t- display runtime stack")
@@ -338,11 +338,19 @@ class MAD:
       return RETURN_TO_INTERP
 
    def _handle_print(self,args):
-      if len(args) > 1:
+      if len(args) > 2:
          print("error: too many arguments")
          return False
       elif len(args) == 0:
          print("error: no argument given")
+         return False
+      
+      if len(args) == 2 and args[1] == '-v':
+         verbose = True
+      elif len(args) == 1:
+         verbose = False
+      else:
+         print("error: unknown option '{}'".format(args[1]))
          return False
       
       # Split any arguments by the '@' character when necessary
@@ -356,7 +364,7 @@ class MAD:
       # If '*' is the only argument, handle output as normal
       if syms[0] == '*' and len(syms) == 1:
          for (name,val) in var_list:
-            print("{}: {}".format(name,term2string(val)))
+            print("{}: {}".format(name, term2verbose(val) if verbose else term2string(val)))
       else:
          # Loop through scope and check if any symbols in the scope are the first symbol in the list
          term = None
@@ -368,7 +376,7 @@ class MAD:
          val = get_tail_term(syms[0], term, syms[1:])
          # Print the entire argument along with its current symbol if it is found
          if val:
-            print("{}: {}".format(args[0], term2string(val)))
+            print("{}: {}".format(args[0], term2verbose(val) if verbose else term2string(val)))
       return START_DEBUGGER
 
    def _handle_quit(self,_):

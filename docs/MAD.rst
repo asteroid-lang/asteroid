@@ -116,22 +116,22 @@ Commands
 ========
 Here is a table of the available commands in the the debugger,
 ::
-    breakpoints .................... show all breakpoints
-    clear .......................... clear all breakpoints
-    continue ....................... continue execution to next breakpoint
-    down ........................... move down one stack frame
-    frame .......................... display current stack frame number
-    help ........................... display help
-    list [<num>|*].................. display <num> (default 4) lines of source code, * displays all lines in file
-    next ........................... step execution across a nested scope
-    print <name>[@<num>|<name>]+|* . print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @
-    quit ........................... quit debugger
-    stack .......................... display runtime stack
-    set [<func>|<line#> [<file>]] .. set a breakpoint
-    step ........................... step to next executable statement
-    trace .......................... display runtime stack
-    up ............................. move up one stack frame
-    where .......................... print current program line
+    breakpoints ........................ show all breakpoints
+    clear .............................. clear all breakpoints
+    continue ........................... continue execution to next breakpoint
+    down ............................... move down one stack frame
+    frame .............................. display current stack frame number
+    help ............................... display help
+    list [<num>|*]...................... display <num> (default 4) lines of source code, * displays all lines in file
+    next ............................... step execution across a nested scope
+    print <name>[@<num>|<name>]+|* [-v]. print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data
+    quit ............................... quit debugger
+    stack .............................. display runtime stack
+    set [<func>|<line#> [<file>]] ...... set a breakpoint
+    step ............................... step to next executable statement
+    trace .............................. display runtime stack
+    up ................................. move up one stack frame
+    where .............................. print current program line
 
 The or bar ``|`` means different options as arguments to the commands. Anything between
 square brackets is optional. The plus symbol ``+`` means at least one of the preceding symbols must be present.
