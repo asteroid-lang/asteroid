@@ -99,7 +99,7 @@ function chdir
 -- Change the current working directory to path.
 with path:%string do escape
 "
-from os.path import chdir
+from os import chdir
 (STRING, path_val) = state.symbol_table.lookup_sym('path')
 chdir(path_val)
 "
