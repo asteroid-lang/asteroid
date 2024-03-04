@@ -1,11 +1,7 @@
 #!/bin/bash
 
-current_directory=$(pwd)
+current_directory=$(dirname "$(realpath "$0")")
 
-# Ensure the directory ends with "/compiler/"
-if [[ $current_directory != */compiler/ ]]; then
-    current_directory="$current_directory/compiler"
-fi
 
 lib_sa_directory=$current_directory"/deps/static_assertions-1.1.0/src/lib.rs"
 lib_fnv_directory=$current_directory"/deps/fnv-1.0.7/lib.rs"
