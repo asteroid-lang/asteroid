@@ -51,14 +51,17 @@ os@chdir(dir_str).
 -- io@println(os@getdir()).
 end
 
--- ------------------------------------------------------------------
--- function run
--- ------------------------------------------------------------------
--- with module:%string do
---     -- code to run module without parameters
+------------------------------------------------------------------
+function run
+------------------------------------------------------------------
+with module:%string do
+    -- code to run module without parameters
+    let rootpath = __get_path().
+    let exe_path = rootpath + "/compiler/exe/" + module.
+    io@println(exe_path).
 -- with (module:%string, params:%list) do
 --     -- code to run module with parameters
--- end
+end
 
 ------------------------------------------------------------------
 function __assert_compiler
