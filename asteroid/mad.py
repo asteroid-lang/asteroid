@@ -284,9 +284,9 @@ class MAD:
       print("print <name>[@<num>|<name>]+|* [-v]\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data")
       print("quit\t\t\t- quit debugger")
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
-      print("stack\t\t\t- display runtime stack")
+      print("stack [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
       print("step\t\t\t- step to next executable statement")
-      print("trace\t\t\t- display runtime stack")
+      print("trace [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
       print("up\t\t\t- move up one stack frame")
       print("where\t\t\t- print current program line")
       print()
@@ -413,13 +413,46 @@ class MAD:
       self.frame_ix = 0
       return RETURN_TO_INTERP
 
-   def _handle_stack(self,_):
+   def _handle_stack(self, args):
       trace = copy.copy(self.interp_state.trace_stack)
       trace.reverse()
-      print("Runtime stack (most recent call first):")
-      for i in range(self.frame_ix,len(trace)):
-         (module,lineno,fname) = trace[i]
-         print("frame #{}: {} @{}".format(i,module,fname))
+      
+      # Determine if the verbose flag has been provided
+      verbose = len(args) == 2 and args[1] == '-v'
+      if len(args) > 2:
+         print("error: too many arguments")
+      elif len(args) == 2 and args[1] != '-v':
+         print("error: unknown argument '{}'".format(args[1]))
+      # Stack may only recieve either a positive integer or '*'
+      elif len(args) >= 1 and not (args[0].isnumeric() or args[0] == '*'):
+         print("error: invalid argument '{}', must be either an integer or '*'".format(args[0]))
+      # Print all symbols in a specific stack frame
+      elif len(args) >= 1 and args[0].isnumeric():
+         prev_frame = self.frame_ix
+         self.frame_ix = int(args[0])
+         if len(trace) <= self.frame_ix:
+            print("error: invalid index {}".format(self.frame_ix))
+         else:
+            (module, lineno, fname) = trace[self.frame_ix]
+            print("frame #{}: {} @{}".format(self.frame_ix, module, fname))
+            self._handle_print(['*', '-v'] if verbose else ['*'])
+         self.frame_ix = prev_frame
+      # Print all symbols in all stack frames
+      elif len(args) >= 1 and args[0] == '*':
+         prev_frame = self.frame_ix
+         print("Runtime stack (most recent call first):")
+         for i in range(prev_frame, len(trace)):
+            self.frame_ix = i
+            (module,lineno,fname) = trace[i]
+            print("frame #{}: {} @{}".format(i,module,fname))
+            self._handle_print(['*', '-v'] if verbose else ['*'])
+         self.frame_ix = prev_frame
+      else:
+         print("Runtime stack (most recent call first):")
+         for i in range(self.frame_ix,len(trace)):
+            (module,lineno,fname) = trace[i]
+            print("frame #{}: {} @{}".format(i,module,fname))
+      
       return START_DEBUGGER
 
    def _handle_up(self, args):

@@ -124,10 +124,10 @@ Here is a table of the available commands in the the debugger,
     next ............................... step execution across a nested scope
     print <name>[@<num>|<name>]+|* [-v]. print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data
     quit ............................... quit debugger
-    stack .............................. display runtime stack
+    stack [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
     set [<func>|<line#> [<file>]] ...... set a breakpoint
     step ............................... step to next executable statement
-    trace .............................. display runtime stack
+    trace [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
     up ................................. move up one stack frame
     where .............................. print current program line
 
