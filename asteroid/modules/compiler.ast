@@ -56,9 +56,30 @@ function run
 ------------------------------------------------------------------
 with module:%string do
     -- code to run module without parameters
-    let rootpath = __get_path().
-    let exe_path = rootpath + "/compiler/exe/" + module.
-    io@println(exe_path).
+    let comp_path = __get_path().
+    let (rootpath, my_base) = os@split(comp_path).
+    -- io@println(os@platform).
+    if os@platform is "win32" do
+        let exe_name = module + ".exe".
+    else
+        let exe_name = module.
+    end.
+    --     (lone_name, extension) = os@splitext(module).
+    let original_directory = os@getdir().
+    let file_status = os@isfile(rootpath + "/compiler/exe/" + exe_name).
+    -- assert file_status.
+    if not file_status do
+        -- throw Exception("FileNotFound", "input module was not found, file name must not include extension").
+        try
+            throw Exception("FileNotFound", "Module was not found").
+        catch Exception("FileNotFound", message) do
+            io@println(message).
+        end
+    end
+    os@chdir(rootpath + "/compiler/exe").
+    -- io@println(os@getdir()).
+    os@syscmd(exe_name).
+    os@chdir(original_directory).
 -- with (module:%string, params:%list) do
 --     -- code to run module with parameters
 end
