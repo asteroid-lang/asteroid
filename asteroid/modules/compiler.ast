@@ -58,27 +58,27 @@ with module:%string do
     -- code to run module without parameters
     let comp_path = __get_path().
     let (rootpath, my_base) = os@split(comp_path).
-    -- io@println(os@platform).
+    --checks if the os is a windows platform and append a '.exe' if it is
     if os@platform is "win32" do
         let exe_name = module + ".exe".
     else
         let exe_name = module.
     end.
-    --     (lone_name, extension) = os@splitext(module).
     let original_directory = os@getdir().
+    -- checks if the specified file exists and thows an error if it doesn't
     let file_status = os@isfile(rootpath + "/compiler/exe/" + exe_name).
-    -- assert file_status.
     if not file_status do
-        -- throw Exception("FileNotFound", "input module was not found, file name must not include extension").
         try
             throw Exception("FileNotFound", "Module was not found").
         catch Exception("FileNotFound", message) do
             io@println(message).
         end
     end
+    -- changes the working directory to the one that holds the executables
     os@chdir(rootpath + "/compiler/exe").
-    -- io@println(os@getdir()).
+    -- runs the executable (without arguments)
     os@syscmd(exe_name).
+    -- changes the directory back to normal
     os@chdir(original_directory).
 -- with (module:%string, params:%list) do
 --     -- code to run module with parameters
