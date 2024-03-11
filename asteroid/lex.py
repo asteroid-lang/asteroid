@@ -126,6 +126,49 @@ def init_token_values():
 def token_lookup(type):
     return token_values[type]
 
+#This returns all of the token identifiers currently defined.
+#The pool of identifiers includes both user-defined data
+#and keywords defined by the language. The list of identifiers
+#does not contain duplicates and is sorted alphanumerically.
+def get_indentifiers() -> list[str]:
+    #A set is used to only have unique elements
+    ids = set()
+    for name in keywords:
+        ids.add(name)
+    
+    for table in state.symbol_table.scoped_symtab:
+        for name in table:
+            ids.add(name)
+    
+    #We want a list so we can index into it
+    ids = list(ids)
+    ids.sort()
+    
+    return ids
+
+#This returns all of the token identifiers currently defined which
+#are prefixed by the input string (i.e. it begins with the string).
+#The pool of identifiers includes both user-defined data
+#and keywords defined by the language. The list of identifiers
+#does not contain duplicates and is sorted alphanumerically.
+def get_indentifiers_by_prefix(prefix: str) -> list[str]:
+    #A set is used to only have unique elements
+    ids = set()
+    for name in keywords:
+        if name.startswith(prefix):
+            ids.add(name)
+    
+    for table in state.symbol_table.scoped_symtab:
+        for name in table:
+            if name.startswith(prefix):
+                ids.add(name)
+    
+    #We want a list so we can index into it
+    ids = list(ids)
+    ids.sort()
+    
+    return ids
+
 class Token:
     def __init__(self,type,value,module,lineno):
         self.type = type
