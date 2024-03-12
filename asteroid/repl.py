@@ -10,11 +10,11 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from lex import get_indentifiers_by_prefix
+from asteroid.lex import get_indentifiers_by_prefix
 from sys import stdin,exit
 
 import readline
-
+    
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
     if new:
@@ -37,7 +37,7 @@ def print_repl_menu():
 #allow for autocompletion. Text is the token currently highlighted
 #by the user, while state is the number of times the function was called before
 #a valid completion was returned. The function will be called again if a string is
-#returned, and will stop being called if None is returned.
+#returned, and will stop being called if a non string object is returned.
 def completion_func(text, state):
     #Get the valid autocompletions
     autocompletions = get_indentifiers_by_prefix(text)
@@ -63,7 +63,7 @@ def completion_func(text, state):
 
 def run_repl(redundancy, functional_mode):
     #Setup the autocompleter
-    readline.parse_and_bind("tab: complete")
+    readline.parse_and_bind("Tab: complete")
     readline.set_completer(completion_func)
     
     # The two different prompt types either > for a new statement
