@@ -50,7 +50,7 @@ def completion_func(text, state):
         interp("",
                    initialize_state=False,
                    redundancy=False,
-                   prologue=False, # prologue is managed by repl above
+                   prologue=False,
                    functional_mode=False,
                    exceptions=True)
     
