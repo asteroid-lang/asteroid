@@ -86,7 +86,7 @@ class MAD:
                   'set'     : self._handle_set,
                   'sta'     : self._handle_stack,
                   'ste'     : self._handle_step,
-                  'tra'     : self._handle_stack,
+                  'tra'     : self._handle_trace,
                   'up '     : self._handle_up,
                   'whe'     : self._handle_where,
                }
@@ -286,7 +286,7 @@ class MAD:
       print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
       print("stack [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
       print("step\t\t\t- step to next executable statement")
-      print("trace [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
+      print("trace [<num> [<num>]]\t\t\t- display runtime stack trace , display runtime stack trace, can specify either the first n frames or all of the frames between the start and end")
       print("up\t\t\t- move up one stack frame")
       print("where\t\t\t- print current program line")
       print()
@@ -453,6 +453,39 @@ class MAD:
             (module,lineno,fname) = trace[i]
             print("frame #{}: {} @{}".format(i,module,fname))
       
+      return START_DEBUGGER
+
+   def _handle_trace(self, args):
+      trace = copy.copy(self.interp_state.trace_stack)
+      trace.reverse()
+      
+      if len(args) > 2:
+         print("error: too many arguments")
+         return START_DEBUGGER
+      elif len(args) == 2:
+         if not args[0].isnumeric():
+            print("error: invalid first argument '{}', must be some positive integer".format(args[0]))
+            return START_DEBUGGER
+         elif not args[1].isnumeric():
+            print("error: invalid second argument '{}', must be some positive integer".format(args[1]))
+            return START_DEBUGGER
+         start, end = int(args[0]), int(args[1])
+      elif len(args) == 1:
+         if not args[0].isnumeric():
+            print("error: invalid argument '{}', must be some positive integer".format(args[0]))
+            return START_DEBUGGER
+         start, end = 0, int(args[0])
+      else:
+         start, end = 0, len(trace)
+      
+      if end > len(trace):
+         print("error: range of stack frames ({}, {}) must not exceed number of existing frames ({})".format(start, end, len(trace)))
+         return START_DEBUGGER
+      
+      print("Runtime stack trace (most recent call first):")
+      for i in range(self.frame_ix + start, end):
+         (module, lineno, fname) = trace[i]
+         print("frame #{}: {} @{}".format(i, module, fname))
       return START_DEBUGGER
 
    def _handle_up(self, args):

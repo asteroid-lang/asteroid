@@ -129,7 +129,7 @@ Here is a table of the available commands in the the debugger,
     stack [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
     set [<func>|<line#> [<file>]] ...... set a breakpoint
     step ............................... step to next executable statement
-    trace [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
+    trace [<num> [<num>]]............... display runtime stack trace, can specify either the first n frames or all of the frames between the start and end
     up ................................. move up one stack frame
     where .............................. print current program line
 
