@@ -54,14 +54,14 @@ end
 ------------------------------------------------------------------
 function run
 ------------------------------------------------------------------
-with module:%string do
+with (module:%string, arguments:%string) do
     -- code to run module without parameters
     -- takes the name of the executable (no extensions) and runs it without parameters
     let comp_path = __get_path().
     let (rootpath, my_base) = os@split(comp_path).
     --checks if the os is a windows platform and append a '.exe' if it is
     if os@platform is "win32" do
-        let exe_name = module + ".exe".
+        let exe_name = module + ".exe" + " " + arguments.
     else
         let exe_name = module.
     end.
