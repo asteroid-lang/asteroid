@@ -18,6 +18,24 @@ __retval__ = ('string', sys.path[0])
 "
 end
 
+------------------------------------------------------------------
+function __list_to_string
+------------------------------------------------------------------
+-- Returns the sum of a list or tuple
+with params:%list do return escape
+"
+global __retval__
+
+param_list = state.symbol_table.lookup_sym('params')
+param_str = ''
+for p in param_list[1]:
+    param_str += ' '
+    param_str += str(p[1])
+
+__retval__ = ('string', param_str)
+"
+end
+
 -- ------------------------------------------------------------------
 -- function __convert_tuple
 -- ------------------------------------------------------------------
@@ -90,6 +108,10 @@ with module:%string do
     -- changes the directory back to normal
     os@chdir(original_directory).
 with (module:%string, params:%list) do
+
+    let param_str = __list_to_string(params).
+    -- io@println(param_str).
+    -- io@println("two args").
 -- code to run module without parameters
     -- takes the name of the executable (no extensions) and runs it without parameters
     let comp_path = __get_path().
@@ -113,7 +135,7 @@ with (module:%string, params:%list) do
     -- changes the working directory to the one that holds the executables
     os@chdir(rootpath + "/compiler/exe").
     -- runs the executable (without arguments)
-    os@syscmd(exe_name).
+    os@syscmd(exe_name + param_str).
     -- changes the directory back to normal
     os@chdir(original_directory).
 --     -- code to run module with parameters
