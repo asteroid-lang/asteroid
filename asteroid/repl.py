@@ -10,15 +10,11 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-
+from asteroid.lex import get_indentifiers_by_prefix
 from sys import stdin,exit
-import platform
 
-if platform.system() == 'Windows':
-    import pyreadline3
-else:
-    import readline
-
+import readline
+    
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
     if new:
@@ -37,8 +33,39 @@ def print_repl_menu():
     print("(c) University of Rhode Island")
     print("Type \"help\" for additional information")
 
-def run_repl(redundancy, functional_mode):
+#This is the function that will be passed into readline to
+#allow for autocompletion. Text is the token currently highlighted
+#by the user, while state is the number of times the function was called before
+#a valid completion was returned. The function will be called again if a string is
+#returned, and will stop being called if a non string object is returned.
+def completion_func(text, state):
+    #Get the valid autocompletions
+    autocompletions = get_indentifiers_by_prefix(text)
 
+    #If nothing has been initialized yet, we need to interpret
+    #something to initialize the asteroid state.
+    #We interpret nothing so that it has no impact on the lines
+    #interpreted later.
+    if autocompletions == []:
+        interp("",
+                   initialize_state=False,
+                   redundancy=False,
+                   prologue=False,
+                   functional_mode=False,
+                   exceptions=True)
+    
+    if state < len(autocompletions):
+        autocompletion = autocompletions[state]
+        if autocompletion.startswith(text):
+            return autocompletion
+    else:
+        return None
+
+def run_repl(redundancy, functional_mode):
+    #Setup the autocompleter
+    readline.parse_and_bind("Tab: complete")
+    readline.set_completer(completion_func)
+    
     # The two different prompt types either > for a new statement
     # or . for continuing one
     # lhh: changed the prompt since replit.com uses the > as their console prompt
@@ -126,3 +153,6 @@ def run_repl(redundancy, functional_mode):
             current_prompt = arrow_prompt
         else:
             current_prompt = arrow_prompt
+
+if __name__ == "__main__":
+    run_repl(False, False)
