@@ -474,16 +474,16 @@ class MAD:
          if not args[0].isnumeric():
             print("error: invalid argument '{}', must be some positive integer".format(args[0]))
             return START_DEBUGGER
-         start, end = 0, int(args[0])
+         start, end = self.frame_ix, self.frame_ix + int(args[0])
       else:
-         start, end = 0, len(trace)
+         start, end = self.frame_ix, len(trace)
       
       if end > len(trace):
          print("error: range of stack frames ({}, {}) must not exceed number of existing frames ({})".format(start, end, len(trace)))
          return START_DEBUGGER
       
       print("Runtime stack trace (most recent call first):")
-      for i in range(self.frame_ix + start, end):
+      for i in range(start, end):
          (module, lineno, fname) = trace[i]
          print("frame #{}: {} @{}".format(i, module, fname))
       return START_DEBUGGER
