@@ -30,18 +30,74 @@ param_list = state.symbol_table.lookup_sym('params')
 param_str = ''
 for p in param_list[1]:
     param_str += ' '
-    param_str += str(p[1])
+    if p[0] == 'string':
+        param_str += str(p[1])
+    else:
+        print('found_str')
+        param_str += ('\"' + str(p[1]) + '\"')
 
 __retval__ = ('string', param_str)
 "
 end
 
--- ------------------------------------------------------------------
--- function __convert_tuple
--- ------------------------------------------------------------------
--- with tuple:%string do 
---     if tuple@0 != '('
--- end
+------------------------------------------------------------------
+function __unpack_tuples
+------------------------------------------------------------------
+with params:%tuple do
+    let out_str = "".
+    for p in params do
+        if __is_tuple(p) do
+            let out_str = out_str + __unpack_tuples(p).
+        else do
+            let out_str = out_str + " \"" + tostring(p) + "\"".
+        end
+    end
+    return out_str.
+
+end
+
+------------------------------------------------------------------
+function __is_tuple
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+
+item_val = state.symbol_table.lookup_sym('item')
+
+if item_val[0] == 'tuple':
+    __retval__ = ('boolean', True)
+else:
+    __retval__ = ('boolean', False)
+
+"
+end
+
+------------------------------------------------------------------
+function __make_param_str
+------------------------------------------------------------------
+with params:%list do 
+    let param_str = "".
+    let odd_str = "".
+    let count = 0.
+    for p in params do
+        -- if count % 2 == 0 do
+        --     let param_str = odd_str + "\"" + toString(p) + "\"".
+        -- else do
+        --     let odd_str = param_str + "\"" + toString(p) + "\"".
+        -- end
+        -- let count += 1.
+        if __is_tuple(p) do
+            let param_str = param_str + __unpack_tuples(p).
+        else do
+            let param_str = param_str + " \"" + tostring(p) + "\"".
+        end
+    end
+    return param_str
+    -- for p in params do
+    --     io@println(p)
+    -- end
+end
 
 ------------------------------------------------------------------
 function compile
@@ -107,9 +163,11 @@ with module:%string do
     os@syscmd(exe_name).
     -- changes the directory back to normal
     os@chdir(original_directory).
+
+-- if parameters are provided
 with (module:%string, params:%list) do
 
-    let param_str = __list_to_string(params).
+    let param_str = __make_param_str(params).
     -- io@println(param_str).
     -- io@println("two args").
 -- code to run module without parameters
@@ -134,7 +192,7 @@ with (module:%string, params:%list) do
     end
     -- changes the working directory to the one that holds the executables
     os@chdir(rootpath + "/compiler/exe").
-    -- runs the executable (without arguments)
+    -- runs the executable (with arguments)
     os@syscmd(exe_name + param_str).
     -- changes the directory back to normal
     os@chdir(original_directory).
