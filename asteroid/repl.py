@@ -10,10 +10,15 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from asteroid.lex import get_indentifiers_by_prefix
+from asteroid.lex import get_indentifiers
 from sys import stdin,exit
 
 import readline
+
+#Variables needed for autocomplete cycling
+prefix = ""
+last_completion = ""
+last_index = 0
     
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
@@ -39,25 +44,60 @@ def print_repl_menu():
 #a valid completion was returned. The function will be called again if a string is
 #returned, and will stop being called if a non string object is returned.
 def completion_func(text, state):
-    #Get the valid autocompletions
-    autocompletions = get_indentifiers_by_prefix(text)
-
-    #If nothing has been initialized yet, we need to interpret
-    #something to initialize the asteroid state.
-    #We interpret nothing so that it has no impact on the lines
-    #interpreted later.
-    if autocompletions == []:
-        interp("",
-                   initialize_state=False,
-                   redundancy=False,
-                   prologue=False,
-                   functional_mode=False,
-                   exceptions=True)
-    
-    if state < len(autocompletions):
-        autocompletion = autocompletions[state]
-        if autocompletion.startswith(text):
-            return autocompletion
+    #Here we "hijack" the iteration with readlines calling of the function by
+    #iterating on our own only on the first call, returning None on
+    #all other calls of the function
+    if state == 0:
+        #Get the identifiers
+        identifiers = get_indentifiers()
+        
+        #If nothing has been initialized yet, we need to interpret
+        #something to initialize the asteroid state.
+        #We interpret nothing so that it has no impact on the lines
+        #interpreted later.
+        if identifiers == []:
+            interp("",
+                    initialize_state=False,
+                    redundancy=False,
+                    prologue=False,
+                    functional_mode=False,
+                    exceptions=True)
+        
+        global last_completion
+        global last_index
+        global prefix
+        
+        start = 0 #Start at the first identifier
+        #This flag allows for the autocompleter to start over
+        #if no autcompletions are available
+        allow_cycle = False
+        
+        if text == "": #This otherwise causes weird behavior
+            start = 0
+            last_index = 0
+            prefix = ""
+            last_completion = ""
+        elif text == last_completion: #Check if this is a repeat tab hit
+            allow_cycle = True
+            start = last_index + 1 #Jump ahead to avoid redundancy
+            if start == len(identifiers):
+                start = 0
+            text = prefix
+        else:
+            prefix = text #Set a new prefix for future cycles
+        
+        i = start
+        while i < len(identifiers):
+            token = identifiers[i]
+            if token.startswith(text) and token != last_completion:
+                last_index = i
+                last_completion = token
+                return token
+            i += 1
+            
+            if i == len(identifiers) and allow_cycle:
+                allow_cycle = False
+                i = 0
     else:
         return None
 
