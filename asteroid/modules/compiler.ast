@@ -18,6 +18,57 @@ __retval__ = ('string', sys.path[0])
 "
 end
 
+------------------------------------------------------------------
+function __unpack_tuples
+------------------------------------------------------------------
+with params:%tuple do
+    let out_str = "".
+    for p in params do
+        if __is_tuple(p) do
+            let out_str = out_str + __unpack_tuples(p).
+        else do
+            let out_str = out_str + " \"" + tostring(p) + "\"".
+        end
+    end
+    return out_str.
+
+end
+
+------------------------------------------------------------------
+function __is_tuple
+------------------------------------------------------------------
+with item do return escape
+"
+global __retval__
+
+item_val = state.symbol_table.lookup_sym('item')
+
+if item_val[0] == 'tuple':
+    __retval__ = ('boolean', True)
+else:
+    __retval__ = ('boolean', False)
+
+"
+end
+
+------------------------------------------------------------------
+function __make_param_str
+------------------------------------------------------------------
+with params:%list do 
+    let param_str = "".
+    let odd_str = "".
+    let count = 0.
+    for p in params do
+        if __is_tuple(p) do
+            let param_str = param_str + __unpack_tuples(p).
+        else do
+            let param_str = param_str + " \"" + tostring(p) + "\"".
+        end
+    end
+    return param_str
+end
+
+------------------------------------------------------------------
 function compile
 ------------------------------------------------------------------
 with module:%string do
@@ -81,7 +132,39 @@ with module:%string do
     os@syscmd(exe_name).
     -- changes the directory back to normal
     os@chdir(original_directory).
--- with (module:%string, params:%list) do
+
+-- if parameters are provided
+with (module:%string, params:%list) do
+
+    let param_str = __make_param_str(params).
+    -- io@println(param_str).
+    -- io@println("two args").
+-- code to run module without parameters
+    -- takes the name of the executable (no extensions) and runs it without parameters
+    let comp_path = __get_path().
+    let (rootpath, my_base) = os@split(comp_path).
+    --checks if the os is a windows platform and append a '.exe' if it is
+    if os@platform is "win32" do
+        let exe_name = module + ".exe".
+    else
+        let exe_name = module.
+    end.
+    let original_directory = os@getdir().
+    -- checks if the specified file exists and thows an error if it doesn't
+    let file_status = os@isfile(rootpath + "/compiler/exe/" + exe_name).
+    if not file_status do
+        try
+            throw Exception("FileNotFound", "Module was not found").
+        catch Exception("FileNotFound", message) do
+            io@println(message).
+        end
+    end
+    -- changes the working directory to the one that holds the executables
+    os@chdir(rootpath + "/compiler/exe").
+    -- runs the executable (with arguments)
+    os@syscmd(exe_name + param_str).
+    -- changes the directory back to normal
+    os@chdir(original_directory).
 --     -- code to run module with parameters
 end
 
