@@ -19,28 +19,6 @@ __retval__ = ('string', sys.path[0])
 end
 
 ------------------------------------------------------------------
-function __list_to_string
-------------------------------------------------------------------
--- Returns the sum of a list or tuple
-with params:%list do return escape
-"
-global __retval__
-
-param_list = state.symbol_table.lookup_sym('params')
-param_str = ''
-for p in param_list[1]:
-    param_str += ' '
-    if p[0] == 'string':
-        param_str += str(p[1])
-    else:
-        print('found_str')
-        param_str += ('\"' + str(p[1]) + '\"')
-
-__retval__ = ('string', param_str)
-"
-end
-
-------------------------------------------------------------------
 function __unpack_tuples
 ------------------------------------------------------------------
 with params:%tuple do
@@ -81,12 +59,6 @@ with params:%list do
     let odd_str = "".
     let count = 0.
     for p in params do
-        -- if count % 2 == 0 do
-        --     let param_str = odd_str + "\"" + toString(p) + "\"".
-        -- else do
-        --     let odd_str = param_str + "\"" + toString(p) + "\"".
-        -- end
-        -- let count += 1.
         if __is_tuple(p) do
             let param_str = param_str + __unpack_tuples(p).
         else do
@@ -94,9 +66,6 @@ with params:%list do
         end
     end
     return param_str
-    -- for p in params do
-    --     io@println(p)
-    -- end
 end
 
 ------------------------------------------------------------------
