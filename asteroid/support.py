@@ -399,3 +399,35 @@ def term2verbose(term, indent_size=0, initial_indent=True):
             term_string += ',\n'
         term_string += curr_indent + (']' if TYPE == 'list' else ')')
     return term_string
+
+def find_function(sym, val, fname, func_name):
+    # If the function has already been found, check if it is in the correct file
+    if sym == func_name and val[0] == 'function-val':
+        if _check_lineinfo_function(val, fname): return True
+    # If we are looking at a struct, check if the function is one of its members and if it lies in the correct file
+    if val[0] == 'struct':
+        (STRUCT,
+        (MEMBER_NAMES, (LIST, member_names)),
+        (STRUCT_MEMORY, (LIST, struct_memory))) = val
+        if func_name in member_names and struct_memory[member_names.index(func_name)][0] == 'function-val':
+            if _check_lineinfo_function(struct_memory[member_names.index(func_name)], fname): return True
+    # If we are looking at a loaded module, recurse on everything that is not another module and return True if the function was found
+    if val[0] == 'module':
+        (MODULE,
+        (ID, id),
+        (SCOPE, scope)) = val
+        for s in scope[0]:
+            for (new_sym, new_val) in s.items():
+                if new_val[0] != 'module' and find_function(new_sym, new_val, fname, func_name):
+                    return True
+    return False
+    
+def _check_lineinfo_function(val, fname):
+    # Extract the lineinfo field and compare it to the provided filename
+    (FUNCTION_VAL,
+    (BODY_LIST,
+    (LIST, body_list)),
+    (scopes, globals, global_scope)) = val
+    (LINEINFO,
+    (filename, lineno)) = body_list[0]
+    return filename == fname

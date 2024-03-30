@@ -48,7 +48,7 @@
 ###########################################################################################
 
 from os.path import exists, split, basename
-from asteroid.support import term2string, get_tail_term, term2verbose
+from asteroid.support import term2string, get_tail_term, term2verbose, find_function
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -283,10 +283,10 @@ class MAD:
       print("next\t\t\t- step execution across a nested scope")
       print("print <name>[@<num>|<name>]+|* [-v]\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data")
       print("quit\t\t\t- quit debugger")
-      print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
+      print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint, breakpoints may only be set on valid statements on already loaded files")
       print("stack [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
       print("step\t\t\t- step to next executable statement")
-      print("trace [<num> [<num>]]\t\t\t- display runtime stack trace , display runtime stack trace, can specify either the first n frames or all of the frames between the start and end")
+      print("trace [<num> [<num>]]\t\t\t- display runtime stack trace, display runtime stack trace, can specify either the first n frames or all of the frames between the start and end")
       print("up\t\t\t- move up one stack frame")
       print("where\t\t\t- print current program line")
       print()
@@ -383,27 +383,80 @@ class MAD:
       raise SystemExit()
    
    def _handle_set(self,args):
+      (file,lineno) = self.interp_state.lineinfo
       if len(args) == 0:
          # set a breakpoint at the current line
-         (file,lineno) = self.interp_state.lineinfo
          self.line_breakpoints.append((lineno,file))
          return START_DEBUGGER
       elif len(args) == 1:
-         (file,_) = self.interp_state.lineinfo
-         if args[0].isnumeric(): 
-            self.line_breakpoints.append((int(args[0]),file))
+         self._load_program_text(file)
+         if args[0].isnumeric():
+            if self._validate_breakpoint_line(file, int(args[0])):
+               self.line_breakpoints.append((int(args[0]),file))
          else:
-            self.function_breakpoints.append((args[0],file))
+            if self._validate_breakpoint_function(file, args[0]):
+               self.function_breakpoints.append((args[0],file))
          return START_DEBUGGER
       elif len(args) == 2:
-         if args[0].isnumeric(): 
-            self.line_breakpoints.append((int(args[0]),args[1]))
+         self._load_program_text(args[1])
+         if args[0].isnumeric():
+            if self._validate_breakpoint_line(args[1], int(args[0])):
+               self.line_breakpoints.append((int(args[0]),args[1]))
          else:
-            self.function_breakpoints.append((args[0],args[1]))
+            if self._validate_breakpoint_function(args[1], args[0]):
+               self.function_breakpoints.append((args[0],args[1]))
          return START_DEBUGGER
       else:
          print("error: too many arguments to set")
          return START_DEBUGGER
+   
+   def _validate_breakpoint_line(self, fname, lineno):
+      # Load the correct file
+      file_text = self.program_text[fname]
+      # If the line is outside the current file, produce an error message and return
+      if lineno > len(file_text):
+         print("error: cannot place breakpoint on invalid lines")
+         return False
+      # Check if the line is empty
+      line = file_text[lineno-1].strip()
+      if len(line) == 0:
+         print("error: cannot place breakpoints on blank lines")
+         return False
+      # If the line starts with any of these tokens, it is a valid statement and can accept a breakpoint
+      for start in ['load', 'global', 'structure', 'let', 'loop', 'for', 'while', 'repeat', 'match', 'if', 'try', 'throw', 'break', 'return', 'function']:
+         if len(line) >= len(start) and line[:len(start)] == start:
+            return True
+      # Get the lines above and below the current if they exist
+      prev = file_text[lineno-2].strip() if lineno > 1 else None
+      next = file_text[lineno].strip() if lineno < len(file_text) else None
+      # If the line starts with any of these tokens, the line is in the middle of a statement or expression and cannot accept a breakpoint
+      for start in ['system', 'as', 'with', 'end', 'do', 'in', 'until', 'elif', 'else', 'catch', '@', ',', '[', ']', '(', ')', '"', "'"]:
+         if len(line) >= len(start) and line[:len(start)] == start:
+            print("error: cannot place breakpoint inside a statement")
+            return False
+      # If the previous or next lines begins with any of these symbols, the current line is in the middle of a statement
+      if prev:
+         for start in ['@', ',', '[', '(', '"', "'"]:
+            if len(prev) >= len(start) and prev[:len(start)] == start:
+               print("error: cannot place breakpoint inside a statement")
+               return False
+      if next:
+         for start in ['@', ',', ']', ')', '"', "'"]:
+            if len(next) >= len(start) and next[:len(start)] ==  start:
+               print("error: cannot place breakpoint inside a statement")
+               return False
+      # If it cannot be determined, assume the breakpoint is valid
+      return True
+      
+   
+   def _validate_breakpoint_function(self, fname, func_name):
+      # Loop through every scope and check if the function was found
+      loaded_syms = self.interp_state.symbol_table.scoped_symtab
+      for scope in loaded_syms:
+         for (sym, val) in scope.items():
+            if find_function(sym, val, fname, func_name): return True
+      print("error: unable to find function '{}' in file '{}'".format(func_name, fname))
+      return False
 
    def _handle_frame(self,_):
       print("you are looking at frame #{}".format(self.frame_ix))
