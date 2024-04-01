@@ -10,8 +10,8 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from asteroid.lex import get_indentifiers
-from asteroid.lex import get_member_identifiers
+from lex import get_indentifiers
+from lex import get_member_identifiers
 from sys import stdin,exit
 
 import readline
@@ -60,7 +60,7 @@ def completion_function(text, state):
             interp("",
                     initialize_state=False,
                     redundancy=False,
-                    prologue=False,
+                    prologue=True,
                     functional_mode=False,
                     exceptions=True)
             identifiers = get_indentifiers()
@@ -243,4 +243,4 @@ def run_repl(redundancy, functional_mode):
             current_prompt = arrow_prompt
 
 if __name__ == "__main__":
-    run_repl(False, False)
+    repl(True, redundancy=False, prologue=True, functional_mode=False)
