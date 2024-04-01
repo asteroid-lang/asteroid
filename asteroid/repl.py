@@ -10,8 +10,8 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from lex import get_indentifiers
-from lex import get_member_identifiers
+from asteroid.lex import get_indentifiers
+from asteroid.lex import get_member_identifiers
 from sys import stdin,exit
 
 import readline
@@ -63,6 +63,7 @@ def completion_function(text, state):
                     prologue=False,
                     functional_mode=False,
                     exceptions=True)
+            identifiers = get_indentifiers()
         
         #Here we start checking if we are doing a completion for accessing a member
         user_in = readline.get_line_buffer()
