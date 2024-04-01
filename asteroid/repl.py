@@ -10,16 +10,18 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from asteroid.lex import get_indentifiers
+from lex import get_indentifiers
+from lex import get_member_identifiers
 from sys import stdin,exit
 
 import readline
+import re
 
 #Variables needed for autocomplete cycling
 prefix = ""
 last_completion = ""
 last_index = 0
-    
+
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
 
     if new:
@@ -44,11 +46,11 @@ def print_repl_menu():
 #a valid completion was returned. The function will be called again if a string is
 #returned, and will stop being called if a non string object is returned.
 def completion_func(text, state):
-    #Here we "hijack" the iteration with readlines calling of the function by
+    #Here we "hijack" the iteration with readline's calling of the function by
     #iterating on our own only on the first call, returning None on
     #all other calls of the function
     if state == 0:
-        #Get the identifiers
+        #identifiers is the default pool of completions
         identifiers = get_indentifiers()
         
         #If nothing has been initialized yet, we need to interpret
@@ -62,6 +64,54 @@ def completion_func(text, state):
                     prologue=False,
                     functional_mode=False,
                     exceptions=True)
+        
+        #Here we start checking if we are doing a completion for accessing a member
+        user_in = readline.get_line_buffer()
+        #The index of the beginning of the substring that the user has highlighted
+        i = readline.get_begidx()
+        
+        get_members = False
+        #Check if there's an @ before or at the autocompletion index
+        if i < len(user_in) and user_in[i] == '@':
+            get_members = True
+        else:
+            i -= 1
+            while i > 0:
+                if user_in[i] == ' ':
+                    pass
+                elif user_in[i] == '@':
+                    get_members = True
+                    i -= 1
+                    break
+                else:
+                    break
+                i -= 1
+            
+        #If there was a preceding @, try to use members as the completion pool
+        if get_members:
+            parent_id = ""
+            
+            #Find where the parent begins
+            while i >= 0 and user_in[i] == " ":
+                i -= 1
+            
+            #Get the parent
+            while i >= 0:
+                if re.match(r'[a-zA-Z_0-9]',user_in[i]):
+                    parent_id = user_in[i] + parent_id
+                else:
+                    break
+                
+                i -= 1
+
+            #Only try to set identifiers to member_list if the
+            #parent identifier is valid
+            if len(parent_id) > 0 and re.match(r'[a-zA-Z_]',parent_id[0]):
+                member_list = get_member_identifiers(parent_id)
+                #Make sure the parent is actually a parent
+                if member_list:
+                    identifiers = list(member_list)
+        
         
         global last_completion
         global last_index

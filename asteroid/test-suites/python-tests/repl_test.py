@@ -38,6 +38,13 @@ def test_get_identifiers_by_prefix():
     print(lex.get_indentifiers_by_prefix("aa"))
     print(lex.get_indentifiers_by_prefix("__"))
     
+def test_get_member_identifiers():
+    interp("load io.")
+    interp('structure A with\n\tdata a.\n\tdata b.\nend.', initialize_state=False)
+    interp('let foo = A(1,2).', initialize_state=False)
+    print(lex.get_member_identifiers("io"))
+    print(lex.get_member_identifiers("A"))
+    print(lex.get_member_identifiers("foo"))
 
 if __name__ == "__main__":
     print("Testing get_identifiers:")
@@ -45,3 +52,8 @@ if __name__ == "__main__":
     print("\n\n\n")
     print("Testing get_identifiers_by_prefix")
     test_get_identifiers_by_prefix()
+    print("\n\n\n")
+    print("Testing get_member_identifiers")
+    test_get_member_identifiers()
+    print("\n\nTesting complete.")
+    

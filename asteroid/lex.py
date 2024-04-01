@@ -169,6 +169,24 @@ def get_indentifiers_by_prefix(prefix: str) -> list[str]:
     
     return ids
 
+#Given an identifier, it will return a list of identifiers indentifying members of
+#the associated data type, which can be either an object, module or struct. If
+#the identifier given is not for one of the mentioned data types, it will return
+#None
+def get_member_identifiers(identifier: str) -> list[str]|None:
+    if identifier in state.symbol_table.global_scope.keys():
+        id_type = state.symbol_table.global_scope[identifier][0]
+        if id_type == 'object':
+            return state.symbol_table.global_scope[identifier][2][1][1]
+        elif id_type == 'module':
+            return state.symbol_table.global_scope[identifier][-1][-1][0][0].keys()
+        elif id_type == 'struct':
+            return state.symbol_table.global_scope[identifier][1][1][1]
+        else:
+            return None
+    else:
+        return None
+
 class Token:
     def __init__(self,type,value,module,lineno):
         self.type = type
