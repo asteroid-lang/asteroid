@@ -7,7 +7,7 @@
 import re
 
 from asteroid.state import state, warning
-from asteroid.globals import ExpectationError
+from asteroid.globals import ExpectationError, builtins
 
 # table that specifies the token value and type for keywords
 keywords = {
@@ -132,7 +132,7 @@ def token_lookup(type):
 #does not contain duplicates and is sorted alphanumerically.
 def get_indentifiers() -> list[str]:
     #A set is used to only have unique elements
-    ids = set()
+    ids = builtins
     for name in keywords:
         ids.add(name)
     
@@ -154,6 +154,11 @@ def get_indentifiers() -> list[str]:
 def get_indentifiers_by_prefix(prefix: str) -> list[str]:
     #A set is used to only have unique elements
     ids = set()
+    
+    for name in builtins:
+        if name.startswith(prefix):
+            ids.add(name)
+            
     for name in keywords:
         if name.startswith(prefix):
             ids.add(name)
