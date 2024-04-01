@@ -10,7 +10,7 @@ os.chdir(file_path)
 sys.path.append(grandparent_dir)
 
 from asteroid.interp import interp
-import asteroid.lex as lex
+import lex as lex
 from asteroid.state import state
 
 def test_get_identifiers():
@@ -18,10 +18,10 @@ def test_get_identifiers():
     interp("load io.", "test")
     print(lex.get_indentifiers())
     interp("let aaa = 1.", "test")
-    interp("let aab = 2.", "test", initialize_state=False)
-    interp("let abc = 3.", "test", initialize_state=False)
-    interp("let bc = 4.", "test", initialize_state=False)
-    interp("let baa = 5.", "test", initialize_state=False)
+    interp("let aab = 2.", "test", initialize_state=False, prologue=False)
+    interp("let abc = 3.", "test", initialize_state=False, prologue=False)
+    interp("let bc = 4.", "test", initialize_state=False, prologue=False)
+    interp("let baa = 5.", "test", initialize_state=False, prologue=False)
     print(lex.get_indentifiers())
     
 def test_get_identifiers_by_prefix():
@@ -29,10 +29,10 @@ def test_get_identifiers_by_prefix():
     interp("load io.", "test")
     print(lex.get_indentifiers())
     interp("let aaa = 1.", "test")
-    interp("let aab = 2.", "test", initialize_state=False)
-    interp("let abc = 3.", "test", initialize_state=False)
-    interp("let bc = 4.", "test", initialize_state=False)
-    interp("let baa = 5.", "test", initialize_state=False)
+    interp("let aab = 2.", "test", initialize_state=False, prologue=False)
+    interp("let abc = 3.", "test", initialize_state=False, prologue=False)
+    interp("let bc = 4.", "test", initialize_state=False, prologue=False)
+    interp("let baa = 5.", "test", initialize_state=False, prologue=False)
     print(lex.get_indentifiers())
     print(lex.get_indentifiers_by_prefix("a"))
     print(lex.get_indentifiers_by_prefix("aa"))
@@ -40,20 +40,20 @@ def test_get_identifiers_by_prefix():
     
 def test_get_member_identifiers():
     interp("load io.")
-    interp('structure A with\n\tdata a.\n\tdata b.\nend.', initialize_state=False)
-    interp('let foo = A(1,2).', initialize_state=False)
+    interp('structure A with\n\tdata a.\n\tdata b.\nend.', initialize_state=False, prologue=False)
+    interp('let foo = A(1,2).', initialize_state=False, prologue=False)
     print(lex.get_member_identifiers("io"))
     print(lex.get_member_identifiers("A"))
     print(lex.get_member_identifiers("foo"))
 
 if __name__ == "__main__":
-    print("Testing get_identifiers:")
+    print("Testing get_identifiers:\n")
     test_get_identifiers()
     print("\n\n\n")
-    print("Testing get_identifiers_by_prefix")
+    print("Testing get_identifiers_by_prefix:\n")
     test_get_identifiers_by_prefix()
     print("\n\n\n")
-    print("Testing get_member_identifiers")
+    print("Testing get_member_identifiers:\n")
     test_get_member_identifiers()
     print("\n\nTesting complete.")
     
