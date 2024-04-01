@@ -9,10 +9,9 @@ os.chdir(file_path)
 (grandparent_dir,_) = os.path.split(parent_dir)
 sys.path.append(grandparent_dir)
 
-
 from asteroid.interp import interp
-import lex
-from state import state
+import asteroid.lex as lex
+from asteroid.state import state
 
 def test_get_identifiers():
     print(lex.get_indentifiers())
