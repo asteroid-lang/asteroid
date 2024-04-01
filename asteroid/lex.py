@@ -184,7 +184,7 @@ def get_member_identifiers(identifier: str) -> list[str]|None:
         if id_type == 'object':
             return state.symbol_table.global_scope[identifier][2][1][1]
         elif id_type == 'module':
-            return state.symbol_table.global_scope[identifier][-1][-1][0][0].keys()
+            return list(state.symbol_table.global_scope[identifier][-1][-1][0][0].keys())
         elif id_type == 'struct':
             return state.symbol_table.global_scope[identifier][1][1][1]
         else:
