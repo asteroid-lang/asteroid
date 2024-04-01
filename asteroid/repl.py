@@ -23,7 +23,6 @@ last_completion = ""
 last_index = 0
 
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
-
     if new:
         state.initialize()
         if prologue:
@@ -101,7 +100,6 @@ def completion_func(text, state):
                     parent_id = user_in[i] + parent_id
                 else:
                     break
-                
                 i -= 1
 
             #Only try to set identifiers to member_list if the
@@ -111,7 +109,6 @@ def completion_func(text, state):
                 #Make sure the parent is actually a parent
                 if member_list:
                     identifiers = list(member_list)
-        
         
         global last_completion
         global last_index
