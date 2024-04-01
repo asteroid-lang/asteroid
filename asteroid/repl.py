@@ -44,7 +44,7 @@ def print_repl_menu():
 #by the user, while state is the number of times the function was called before
 #a valid completion was returned. The function will be called again if a string is
 #returned, and will stop being called if a non string object is returned.
-def completion_func(text, state):
+def completion_function(text, state):
     #Here we "hijack" the iteration with readline's calling of the function by
     #iterating on our own only on the first call, returning None on
     #all other calls of the function
@@ -151,7 +151,7 @@ def completion_func(text, state):
 def run_repl(redundancy, functional_mode):
     #Setup the autocompleter
     readline.parse_and_bind("Tab: complete")
-    readline.set_completer(completion_func)
+    readline.set_completer(completion_function)
     
     # The two different prompt types either > for a new statement
     # or . for continuing one
