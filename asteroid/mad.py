@@ -49,8 +49,7 @@
 
 from os.path import exists, split, basename
 from asteroid.support import term2string, get_tail_term, term2verbose, find_function
-from asteroid.frontend import stmt_lookahead, exp_lookahead
-from asteroid.lex import token_specs, keywords
+from asteroid.frontend import Parser
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -413,59 +412,34 @@ class MAD:
          return START_DEBUGGER
    
    def _validate_breakpoint_line(self, fname, lineno):
-      # Extract only statement specific keywords
-      stmts = stmt_lookahead - exp_lookahead
-      stmt_kws, non_stmt_tks = set(), set()
-      prev_exceptions, next_exceptions = set(), set()
-      # Separate the statement and non statement keywords
-      for (val, ty) in keywords.items():
-         if ty in stmts:
-            stmt_kws.add(val)
-         else:
-            non_stmt_tks.add(val)
-      # Add operators and symbol characters, adding exceptions to lines where needed.
-      for (val, display, ty) in token_specs:
-         if ty == 'DOT':
-            prev_exceptions.add(display.strip("'"))
-         elif not display[0] == "'" and display[-1] == "'":
-            non_stmt_tks.add(display.strip("'"))
-      next_exceptions.update(['end', '[EOF]'])
-      # Load the correct file
-      file_text = self.program_text[fname]
-      # If the line is outside the current file, produce an error message and return
-      if lineno > len(file_text):
-         print("error: cannot place breakpoint on invalid lines")
+      # Create a temporary Parser and reset the lineinfo
+      (module, line) = self.interp_state.lineinfo
+      temp_parser = Parser()
+      self.interp_state.lineinfo = (module, line)
+      # Read the file contents and get the current line
+      curr_file = self.program_text[fname]
+      if lineno <= 0 or lineno >= len(curr_file):
+         print("error: cannot place breakpoints outside of file")
          return False
-      # Check if the line is empty
-      line = file_text[lineno-1].strip()
-      if len(line) == 0:
+      line_data = curr_file[lineno-1]
+      # Reject blank lines and '[EOF]'
+      if line_data.strip() == '':
          print("error: cannot place breakpoints on blank lines")
          return False
-      # If the line starts with any of these tokens, it is a valid statement and can accept a breakpoint
-      for start in stmt_kws:
-         if len(line) >= len(start) and line[:len(start)] == start:
+      elif line_data == '[EOF]':
+         print("error: cannot place breakpoints at end of file")
+         return False
+      # Incrementally add lines to line_data until either a valid statement is generated or every following line has been checked
+      for l in range(lineno, len(curr_file)):
+         try:
+            stmts = temp_parser.parse(line_data)
+            self.interp_state.lineinfo = (module, line)
             return True
-      # Get the lines above and below the current if they exist
-      prev = file_text[lineno-2].strip() if lineno > 1 else None
-      next = file_text[lineno].strip() if lineno < len(file_text) else None
-      # If the line starts with any of these tokens, the line is in the middle of a statement or expression and cannot accept a breakpoint
-      for start in non_stmt_tks:
-         if len(line) >= len(start) and line.split(' ')[0] == start:
-            print("error: cannot place breakpoint inside a statement")
-            return False
-      # If the previous line ends or next lines begins with any of these symbols, the current line is in the middle of a statement
-      if prev:
-         for start in non_stmt_tks:
-            if len(prev) >= len(start) and prev.split(' ')[-1] == start and start not in prev_exceptions:
-               print("error: cannot place breakpoint inside a statement")
-               return False
-      if next:
-         for start in non_stmt_tks:
-            if len(next) >= len(start) and next.split(' ')[0] == start and start not in next_exceptions:
-               print("error: cannot place breakpoint inside a statement")
-               return False
-      # If it cannot be determined, assume the breakpoint is valid
-      return True
+         except:
+            line_data += ("\n" + curr_file[l])
+      print("error: line {} in file '{}' cannot accept a breakpoint".format(lineno, fname))
+      self.interp_state.lineinfo = (module, line)
+      return False
       
    
    def _validate_breakpoint_function(self, fname, func_name):
