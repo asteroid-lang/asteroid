@@ -18,6 +18,7 @@ __retval__ = ('string', sys.path[0])
 "
 end
 
+------------------------------------------------------------------
 function compile
 ------------------------------------------------------------------
 with module:%string do
@@ -81,7 +82,36 @@ with module:%string do
     os@syscmd(exe_name).
     -- changes the directory back to normal
     os@chdir(original_directory).
--- with (module:%string, params:%list) do
+
+-- if parameters are provided
+with (module:%string, params:%list) do
+-- code to run module without parameters
+    -- takes the name of the executable (no extensions) and runs it without parameters
+    let param_str = tostring(params). --creates a string from the paramter list to pass to the executable
+    let comp_path = __get_path().
+    let (rootpath, my_base) = os@split(comp_path).
+    --checks if the os is a windows platform and append a '.exe' if it is
+    if os@platform is "win32" do
+        let exe_name = module + ".exe".
+    else
+        let exe_name = module.
+    end.
+    let original_directory = os@getdir().
+    -- checks if the specified file exists and thows an error if it doesn't
+    let file_status = os@isfile(rootpath + "/compiler/exe/" + exe_name).
+    if not file_status do
+        try
+            throw Exception("FileNotFound", "Module was not found").
+        catch Exception("FileNotFound", message) do
+            io@println(message).
+        end
+    end
+    -- changes the working directory to the one that holds the executables
+    os@chdir(rootpath + "/compiler/exe").
+    -- runs the executable (with arguments)
+    os@syscmd(exe_name + " " + param_str).
+    -- changes the directory back to normal
+    os@chdir(original_directory).
 --     -- code to run module with parameters
 end
 
