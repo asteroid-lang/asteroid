@@ -69,8 +69,8 @@ def compile(input_stream,
         begin_code += "   let mut state = State::new().unwrap();\n"
 
         compiled_code = generate_code(state.AST)
-        mem_code = gen_memory()
         flist_code = gen_function_list()
+        mem_code = gen_memory()
         dispatch_code = gen_dispatch()
     
         end_code = "   return ();\n"

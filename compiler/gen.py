@@ -192,7 +192,7 @@ def return_stmt(node):
     code += indent()+"   Err( e ) => exit(e, "+state_and_mem()+"),\n"
     code += indent()+"};\n"
     code += indent()+"state.symbol_table.pop_scope();\n"
-    code += indent()+"return val;\n"
+    code += indent()+"return Ok( val );\n"
 
     code += newline()
 
@@ -471,7 +471,48 @@ def for_stmt(node):
     #code += newline()
 
     return code
+#########################################################################
+def match_stmt(node):
 
+    (MATCH,var,clauses) = node
+    assert_match(MATCH, 'match')
+    (UNIFY,temp,var) = var
+    assert_match(UNIFY, 'unify')
+    (IF,(LIST,clauses)) = clauses
+    assert_match(IF, 'if')
+    assert_match(LIST, 'list')
+    first_pass = True
+    code = ""
+    
+    code += indent()+"let exp_val = match walk( ArenaRc::clone(&data[{}]), {}) {{ \n".format( python_to_rust(var), state_and_mem() )
+    code += indent()+"   Ok( val ) => val,\n"
+    code += indent()+"   Err( e ) => exit(e, {}),\n".format( state_and_mem() )
+    code += indent()+"};\n"
+    
+    for i in range(0, len(clauses) - 1, 2):
+        line_info = clauses[i]
+        code += process_lineinfo(line_info)
+        if_stmt = clauses[i+1]
+        (IF_CLAUSE,(COND,is_stmt),stmt) = if_stmt
+        
+        (IS,temp,ptrn) = is_stmt
+        is_stmt = (IS,var,ptrn)
+
+        if first_pass:
+            code += indent()+"if let Ok( unifiers ) = unify( ArenaRc::clone(&exp_val), ArenaRc::clone(&data[{}]), &mut state, &mut memory, true) {{\n".format( python_to_rust(ptrn) )
+        else:
+            code += indent()+"}} else if let Ok( unifiers ) = unify( ArenaRc::clone(&exp_val), ArenaRc::clone(&data[{}]), &mut state, &mut memory, true) {{\n".format( python_to_rust(ptrn) )
+        inc_indent()
+ 
+        (STMT_LIST,(LIST,stmts)) = stmt
+        for stmt in stmts:
+            code += walk(stmt)
+        dec_indent()
+
+        if first_pass:
+            first_pass = False
+    code += "}\n"
+    return code
 #########################################################################
 def if_stmt(node):
 
@@ -480,24 +521,25 @@ def if_stmt(node):
     assert_match(LIST, 'list')
     code = ""
 
-    for i in range(0,len(if_list),2):
+    code += indent()+delimiter()
+    code += indent()+ "// IF statement \n"
 
-        #lineinfo = if_list[ i ]
-        #code += process_lineinfo(lineinfo)
+    for i in range(0,len(if_list),2):
 
         (IF_CLAUSE,
          (COND, cond),
          (STMT_LIST, stmts)) = if_list[ i + 1 ]
 
-        if i == 0:
-            code += indent()+"if "
-        else:
-            code += indent()+"elif "
-
-        code += "map2boolean(walk({}))[1]:\n".format(cond)
+        code += indent()+"let result = match walk( ArenaRc::clone(&data[{}]), {}) {{ \n".format( python_to_rust(cond), state_and_mem() )
+        code += indent()+"   Ok( val ) => val,\n"
+        code += indent()+"   Err( e ) => exit(e, {}),\n".format( state_and_mem() )
+        code += indent()+"};\n"
+    
+        code += indent()+"if let Node::AstroBool(AstroBool{value:true}) = map2boolean( &ArenaRc::clone(&result) ) {\n"
         inc_indent()
         code += walk(stmts)
         dec_indent()
+        code += indent()+"}\n"
 
     code += newline()
 
@@ -515,7 +557,7 @@ def struct_def_stmt(node):
 
     code = indent()+"// structure def for {}\n".format(struct_id)
 
-    code += indent()+"member_list = vec![ "
+    code += indent()+"let member_list = vec![ "
     code += ", ".join("ArenaRc::clone(&data[{}])".format( python_to_rust( member)) for member in member_list)
     code += " ];\n".format(member_list)
 
@@ -543,7 +585,7 @@ def struct_def_stmt(node):
     code += indent()+"}\n"
 
     code += indent()+"let struct_type = memory.alloc_rc(Node::AstroStruct(AstroStruct::new(RefCell::clone(&member_names),RefCell::clone(&struct_memory))));\n"
-    code += indent()+"state.enter_sym( {}, ArenaRc::clone(&struct_type));\n".format(struct_id)
+    code += indent()+"state.enter_sym( \"{}\", ArenaRc::clone(&struct_type));\n".format(struct_id)
     code += newline()
 
     return code
@@ -621,6 +663,7 @@ dispatch_dict = {
     'list'          : list_stmt,
     'apply'         : apply_stmt,
     'escape'        : escape_stmt,
+    'match'         : match_stmt,
 }
 
 #########################################################################
@@ -638,6 +681,8 @@ def gen_function(def_pair):
         inc_scope()
         orig_indent = get_indent()
 
+        code += indent()+"let mut data; unsafe{data = &mut *POOL;}\n"
+
         # iterate over the bodies to find one that unifies with the actual parameters
         (BODY_LIST, (LIST, body_list_val)) = implementation
 
@@ -654,6 +699,7 @@ def gen_function(def_pair):
 
             code += indent()+delimiter()
             code += indent()+"// clause {} \n".format(i)
+            
             if i == 0:
                 code += indent()+"if"
             else:
@@ -665,11 +711,12 @@ def gen_function(def_pair):
             code += indent()+"declare_formal_args( &unifiers, state, memory);\n"
             code += walk(stmts)
             code += indent()+"state.symbol_table.pop_scope();\n"
+            code += indent()+"return Ok(memory.alloc_rc(Node::AstroNone(AstroNone::new())));\n"
             dec_indent()
             
         code += indent()+"} else {\n"
         inc_indent()
-        code += indent()+"return( Err(new_exception(\"PatternMatchFailed\".to_string(), \"None of the function bodies unified with actual parameters.\".to_string(), state, memory ))));\n"
+        code += indent()+"return( Err(new_exception(\"PatternMatchFailed\".to_string(), \"None of the function bodies unified with actual parameters.\".to_string(), state, memory )));\n"
         dec_indent()
         code += indent()+"};\n"
         set_indent(orig_indent)
@@ -775,9 +822,17 @@ def python_to_rust(node):
         elif node[0] == "tuple":
             if len(node[1]) == 2:
                 _ASTs.append( "memory.alloc_rc( Node::AstroPair(AstroPair::new(ArenaRc::clone(&data[{}]),ArenaRc::clone(&data[{}]))))".format( python_to_rust(node[1][0]), python_to_rust(node[1][1]) ))
+            else:
+                code = "memory.alloc_rc( Node::AstroTuple(AstroTuple::new(Rc::new(RefCell::new(vec![ "
+                (TUPLE,items) = node
+                for item in items:
+                    code += "ArenaRc::clone(&data[{}]),".format( python_to_rust(item) )
+                code = code[:-1]# get rid of last comma
+                code += "])))))"
+                _ASTs.append( code )
             return len(_ASTs) - 1
         elif node[0] == "function-exp":
-            _ASTs.append( "memory.alloc_rc( Node::AstroFunction(AstroFunction::new( \"{}\".to_string() ))".format( node[1][1] ))
+            _ASTs.append( "memory.alloc_rc( Node::AstroFunction(AstroFunction::new(  memory.alloc_rc(Node::AstroID(AstroID::new( \"{}\".to_string()))))))".format( node[1][1] ))
             return len(_ASTs) - 1
         elif node[0] == "index":
             _ASTs.append( "memory.alloc_rc( Node::AstroIndex(AstroIndex::new( ArenaRc::clone(&data[{}]), ArenaRc::clone(&data[{}]))))".format( python_to_rust(node[1]), python_to_rust(node[2])))
@@ -785,8 +840,36 @@ def python_to_rust(node):
         elif node[0] == "unify":
             _ASTs.append( "memory.alloc_rc( Node::AstroUnify(AstroUnify::new( ArenaRc::clone(&data[{}]), ArenaRc::clone(&data[{}]))))".format( python_to_rust(node[1]), python_to_rust(node[2])))
             return len(_ASTs) - 1
+        elif node[0] == "named-pattern":
+            _ASTs.append( "memory.alloc_rc( Node::AstroNamedPattern(AstroNamedPattern::new( AstroID::new(\"{}\".to_string()), ArenaRc::clone(&data[{}]))))".format( node[1][1], python_to_rust(node[2])))
+            return len(_ASTs) - 1
+        elif node[0] == "typematch":
+            _ASTs.append( "memory.alloc_rc(Node::AstroTypeMatch(AstroTypeMatch::new( memory.alloc_rc(Node::AstroString(AstroString::new(\"{}\".to_string())) ))))".format(node[1]) )
+            return len(_ASTs) - 1
+        elif node[0] == "string":
+            _ASTs.append( "memory.alloc_rc(Node::AstroString(AstroString::new(\"{}\".to_string())))".format( node[1] ))
+            return len(_ASTs) - 1
+        elif node[0] == "none":
+            _ASTs.append( "memory.alloc_rc(Node::AstroNone(AstroNone::new()))" )
+            return len(_ASTs) - 1
+        elif node[0] == "list":
+            code = "memory.alloc_rc(Node::AstroList(AstroList::new(Rc::new(RefCell::new(vec![ "
+            (TUPLE,items) = node
+            for item in items:
+                code += "ArenaRc::clone(&data[{}]),".format( python_to_rust(item) )
+            code = code[:-1]# get rid of last comma
+            code += "])))))"
+            _ASTs.append( code )
+            return len(_ASTs) - 1
+        elif node[0] == "to-list":
+            _ASTs.append( "memory.alloc_rc( Node::AstroToList(AstroToList::new(ArenaRc::clone(&data[{}]),ArenaRc::clone(&data[{}]),ArenaRc::clone(&data[{}]))))".format(python_to_rust(node[1][1]),python_to_rust(node[2][1]),python_to_rust(node[3][1])))
+            return len(_ASTs) - 1
+        elif node[0] == "is":
+            _ASTs.append( "memory.alloc_rc( Node::AstroIs(AstroIs::new(ArenaRc::clone(&data[{}]),ArenaRc::clone(&data[{}]))))".format(python_to_rust(node[1]),python_to_rust(node[2])))
+            return len(_ASTs) - 1
         else:
             print(node)
+            exit(1)
 
     else: # string format
         return python_to_rust(ast.literal_eval(node))

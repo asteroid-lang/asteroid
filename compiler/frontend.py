@@ -81,6 +81,7 @@ stmt_lookahead = {
     'THROW',
     'TRY',
     'WHILE',
+    'MATCH',
     #'WITH',
     } | primary_lookahead
 
@@ -153,6 +154,32 @@ class Parser:
         if tt == 'DOT':
             self.lexer.match('DOT')
             return ('noop',)
+
+        elif tt == 'MATCH':
+
+            # we implement the match statement as a cascade of if-clauses
+            if_list = []
+            dbg_print("parsing MATCH")
+            self.lexer.match('MATCH')
+            temp = ('id', gettemp())
+            exp = self.exp()
+            while self.lexer.peek().type == 'WITH':
+                dbg_print("parsing WITH")
+                old_lineinfo = state.lineinfo
+                self.lexer.match('WITH')
+                pattern = self.pattern()
+                self.lexer.match('DO')
+                stmts = self.stmt_list()
+                if_list.append(('lineinfo',old_lineinfo))
+                if_list.append(
+                    ('if-clause', 
+                      ('cond', ('is', temp, pattern)), 
+                      ('stmt-list', stmts)))
+            self.lexer.match('END')
+            return ('match',
+                     ('unify', temp, exp), 
+                     ('if', ('list', if_list)))     
+            exit(123456)
 
         elif tt == 'LOAD':
             # expand the AST from the file into our current AST
@@ -654,18 +681,18 @@ class Parser:
         elif tt == 'TO':
             self.lexer.match('TO')
             v2 = self.exp()
-            if self.lexer.peek().type == 'STRIDE':
-                self.lexer.match('STRIDE')
+            if self.lexer.peek().type == 'STEP':
+                self.lexer.match('STEP')
                 v3 = self.exp()
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', v3))
+                        ('step', v3))
             else:
                 return ('raw-to-list',
                         ('start', v),
                         ('stop', v2),
-                        ('stride', ('integer', '1')))
+                        ('step', ('integer', '1')))
 
         else:
             return v
@@ -962,3 +989,14 @@ class Parser:
         func_impl_list.append((name,body_list))
 
         return ('function-exp', ('implementation',name))
+
+###########################################################################################
+_temp_prefix = "__AST__TEMP"
+_temp_postfix = "__"
+_tempval = 0
+
+def gettemp():
+    global _tempval
+    new_name = _temp_prefix + str(_tempval) + _temp_postfix
+    _tempval += 1
+    return new_name

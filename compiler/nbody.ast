@@ -1,0 +1,145 @@
+-- Planet structure
+-- represents a planet body.
+
+------------------------------------------------------------------
+structure Error
+------------------------------------------------------------------
+-- convenient user level exceptions
+with
+  data err_val.
+  function __init__
+    with val do
+      let this @err_val = val.
+    end
+  end
+
+------------------------------------------------------------------
+structure Exception
+------------------------------------------------------------------
+-- asteroid's standard exception structure.
+-- note: both the kind and the val fields have to be given
+with
+  data kind.
+  data val.
+  function __init__
+    with (kind:%string,val) do
+      let this @kind = kind.
+      let this @val = val.
+    end
+  end
+
+------------------------------------------------------------------
+structure Math_Module
+------------------------------------------------------------------
+with
+  data name.
+  data pi.
+end
+let math = Math_Module( "math", 3.14159 ).
+
+
+
+
+let PI = math@pi.
+let SOLAR_MASS = 4.0 * PI * PI.
+let DAYS_PER_YEAR = 365.24.
+
+structure Planet with
+
+    data name. -- planet's name
+    data x.    -- planet's x-coordinate
+    data y.    -- planet's y-coordinate
+    data z.    -- planet's z-coordinate
+    data vx.   -- planet's velocity in the x-direction
+    data vy.   -- planet's velocity in the y-direction
+    data vz.   -- planet's velocity in the z-direction
+    data mass. -- planet's mass
+
+    function __init__ with (name:%string, x:%real, y:%real,
+                            z:%real, vx:%real, vy:%real, 
+                            vz:%real, mass:%real) do
+       let this@name = name.
+       let this@x = x.
+       let this@y = y.
+       let this@z = z.
+       let this@vx = vx.
+       let this@vy = vy.
+       let this@vz = vz.
+       let this@mass = mass.
+    end
+end
+
+-- function to advance the positions and velocities of a list of planets.
+-- *n* is the number of intervals to advance
+-- *bodies* is the list of planet objects
+-- *dt* is the time interval size
+function advance
+  with (n:%integer,bodies:%list,dt:%real) do
+    for _ in 1 to n do
+      for i in 0 to bodies@length()-1 do
+        for j in i+1 to bodies@length()-1 do
+          let dx = bodies@i@x - bodies@j@x.
+          let dy = bodies@i@y - bodies@j@y.
+          let dz = bodies@i@z - bodies@j@z.
+          let mag = dt * real_pow(dx * dx + dy * dy + dz * dz, -1.5).
+          let bodies@i@vx = bodies@i@vx - dx * bodies@j@mass * mag.
+          let bodies@i@vy = bodies@i@vy - dy * bodies@j@mass * mag.
+          let bodies@i@vz = bodies@i@vz - dz * bodies@j@mass * mag.
+          let bodies@j@vx = bodies@j@vx + dx * bodies@i@mass * mag.
+          let bodies@j@vy = bodies@j@vy + dy * bodies@i@mass * mag.
+          let bodies@j@vz = bodies@j@vz + dz * bodies@i@mass * mag.
+        end.
+      end.
+      for planet in bodies do
+        let planet@x = planet@x + dt * planet@vx.
+        let planet@y = planet@y + dt * planet@vy.
+        let planet@z = planet@z + dt * planet@vz.
+      end.
+    end.
+end
+
+let sun = Planet("Sun",0.0,0.0,0.0,0.0,0.0,0.0,SOLAR_MASS).
+
+let jupiter = Planet( "Jupiter",
+  4.84143144246472090e+00,
+  -1.16032004402742839e+00,
+  -1.03622044471123109e-01,
+  1.66007664274403694e-03 * DAYS_PER_YEAR,
+  7.69901118419740425e-03 * DAYS_PER_YEAR,
+  -6.90460016972063023e-05 * DAYS_PER_YEAR,
+  9.54791938424326609e-04 * SOLAR_MASS
+).
+
+let saturn = Planet( "Saturn",
+  8.34336671824457987e+00,
+  4.12479856412430479e+00,
+  -4.03523417114321381e-01,
+  -2.76742510726862411e-03 * DAYS_PER_YEAR,
+  4.99852801234917238e-03 * DAYS_PER_YEAR,
+  2.30417297573763929e-05 * DAYS_PER_YEAR,
+  2.85885980666130812e-04 * SOLAR_MASS
+).
+
+let uranus = Planet( "Uranus",
+  1.28943695621391310e+01,
+  -1.51111514016986312e+01,
+  -2.23307578892655734e-01,
+  2.96460137564761618e-03 * DAYS_PER_YEAR,
+  2.37847173959480950e-03 * DAYS_PER_YEAR,
+  -2.96589568540237556e-05 * DAYS_PER_YEAR,
+  4.36624404335156298e-05 * SOLAR_MASS
+).
+
+let neptune = Planet( "Neptune",
+  1.53796971148509165e+01,
+  -2.59193146099879641e+01,
+  1.79258772950371181e-01,
+  2.68067772490389322e-03 * DAYS_PER_YEAR,
+  1.62824170038242295e-03 * DAYS_PER_YEAR,
+  -9.51592254519715870e-05 * DAYS_PER_YEAR,
+  5.15138902046611451e-05 * SOLAR_MASS
+).
+
+let bodies = [ sun, jupiter, saturn, uranus, neptune ].
+
+let jupiter@x = 7.

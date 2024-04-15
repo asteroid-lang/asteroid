@@ -200,7 +200,7 @@ pub fn unify_typematch<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: 
     let Node::AstroString(AstroString{value:ref p_type}) = **p_exp
         else {return( Err(new_exception("VMError".to_string(), "unify: expected string.".to_string(), state, memory )) )};
 
-    let term_type = peek( ArenaRc::clone(&term) );
+    let mut term_type = peek( ArenaRc::clone(&term) );
     let pattern_type = peek( ArenaRc::clone(&pattern) );
 
     if ["string","real","integer","list","tuple","boolean","none"].contains( &p_type.as_str() ) {
@@ -213,6 +213,18 @@ pub fn unify_typematch<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: 
         } 
         if p_type == term_type {
             return Ok( vec![] )
+        } else if "id" == term_type || "index" == term_type {
+            println!("YUP!!");
+            let _temp = match walk(ArenaRc::clone(&term),state,memory) {
+                Ok(val) => val,
+                Err(e) => return Err(e),
+            };
+            term_type = peek( ArenaRc::clone(&_temp) );
+            if p_type == term_type {
+                return Ok( vec![] )
+            } else {
+                Err( new_exception("PatternMatchFailed".to_string(), format!("Expected typematch: {}, got a term of type {}",p_type,term_type), state, memory ))
+            }
         } else {
             Err( new_exception("PatternMatchFailed".to_string(), format!("Expected typematch: {}, got a term of type {}",p_type,term_type), state, memory ))
         }
@@ -337,6 +349,14 @@ pub fn unify_object_to_apply<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, s
 }
 /******************************************************************************/
 pub fn unify_index<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
+
+    let p = match walk(ArenaRc::clone(&pattern),state,memory) {
+        Ok( val ) => val,
+        Err( e ) => return Err(e),
+    };
+    //let Node::AstroIndex(AstroIndex{ref structure,ref index_exp}) = *p else{panic!("problem!")};
+    //let Node::AstroIndex(AstroIndex{ref structure,ref index_exp}) = *index_exp1 else{panic!("problem!")};
+
     Ok( vec![(ArenaRc::clone(&pattern),ArenaRc::clone(&term))] )
 }
 /******************************************************************************/
@@ -385,13 +405,14 @@ pub fn unify_headtail<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &
 /******************************************************************************/
 pub fn unify_list<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
     
-    let term_type = peek( ArenaRc::clone(&term) );
+    let mut term_type = peek( ArenaRc::clone(&term) );
     let pattern_type = peek( ArenaRc::clone(&pattern) );
+
 
     if term_type != "list" || pattern_type != "list" {
         Err( new_exception("PatternMatchFailed".to_string(), format!("term and pattern do not agree on list/tuple constructor"),state,memory))
     } else {
-
+        
         let Node::AstroList(AstroList{contents:ref t_contents}) = *term
             else {return( Err(new_exception("VMError".to_string(), "unify: expected list.".to_string(), state, memory )))};
         let Node::AstroList(AstroList{contents:ref p_contents}) = *pattern
@@ -488,1627 +509,42 @@ pub fn unify_tuple<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a 
     }
 }
 /******************************************************************************/
-// pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
-    
-//     let term_type = encode_node( &term ) as u16;
-//     let pattern_type = encode_node( &pattern)  as u16;
-//     let unify_type = {if unifying { 1 } else { 0 }};
-//     let match_type = ((( 0u16 | unify_type ) | (pattern_type << 1)) | (term_type << 6));
+pub fn unify_pairs<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
 
-//     //println!("Unifying: {} and {}",term_type,pattern_type);
+    // unpack nodes
+    let Node::AstroPair(AstroPair{first:ref term_first,second:ref term_second}) = *term else {
+        return Err( new_exception("PatternMatchFailed".to_string(), format!("nodes '{}' and '{}' are not the same",peek(ArenaRc::clone(&term)),peek(ArenaRc::clone(&pattern))), state, memory ))
+    };
+    let Node::AstroPair(AstroPair{first:ref pattern_first,second:ref pattern_second}) = *pattern else {
+        return Err( new_exception("PatternMatchFailed".to_string(), format!("nodes '{}' and '{}' are not the same",peek(ArenaRc::clone(&term)),peek(ArenaRc::clone(&pattern))), state, memory ))
+    };
 
-//     return match match_type {
-//         41 => unify_id(term,pattern,state,memory,unifying),
-//         105 => unify_id(term,pattern,state,memory,unifying),
-//         169 => unify_id(term,pattern,state,memory,unifying),
-//         233 => unify_id(term,pattern,state,memory,unifying),
-//         297 => unify_id(term,pattern,state,memory,unifying),
-//         361 => unify_id(term,pattern,state,memory,unifying),
-//         425 => unify_id(term,pattern,state,memory,unifying),
-//         489 => unify_id(term,pattern,state,memory,unifying),
-//         553 => unify_id(term,pattern,state,memory,unifying),
-//         617 => unify_id(term,pattern,state,memory,unifying),
-//         681 => unify_id(term,pattern,state,memory,unifying),
-//         745 => unify_id(term,pattern,state,memory,unifying),
-//         809 => unify_id(term,pattern,state,memory,unifying),
-//         873 => unify_id(term,pattern,state,memory,unifying),
-//         937 => unify_id(term,pattern,state,memory,unifying),
-//         937 => unify_id(term,pattern,state,memory,unifying),
-//         1001 => unify_id(term,pattern,state,memory,unifying),
-//         1065 => unify_id(term,pattern,state,memory,unifying),
-//         1129 => unify_id(term,pattern,state,memory,unifying),
-//         1193 => unify_id(term,pattern,state,memory,unifying),
-//         1257 => unify_id(term,pattern,state,memory,unifying),
-//         1321 => unify_id(term,pattern,state,memory,unifying),
-//         1385 => unify_id(term,pattern,state,memory,unifying),
-//         1449 => unify_id(term,pattern,state,memory,unifying),
-//         1513 => unify_id(term,pattern,state,memory,unifying),
-//         1577 => unify_id(term,pattern,state,memory,unifying),
-//         1641 => unify_id(term,pattern,state,memory,unifying),
-//         1705 => unify_id(term,pattern,state,memory,unifying),
-//         1769 => unify_id(term,pattern,state,memory,unifying),
-//         1833 => unify_id(term,pattern,state,memory,unifying),
-//         1897 => unify_id(term,pattern,state,memory,unifying),
-//         1961 => unify_id(term,pattern,state,memory,unifying),
-//         2025 => unify_id(term,pattern,state,memory,unifying),
-//         2089 => unify_id(term,pattern,state,memory,unifying),
-//         2153 => unify_id(term,pattern,state,memory,unifying),
-//         2217 => unify_id(term,pattern,state,memory,unifying),
-//         40 => unify_id(term,pattern,state,memory,unifying),
-//         104 => unify_id(term,pattern,state,memory,unifying),
-//         168 => unify_id(term,pattern,state,memory,unifying),
-//         232 => unify_id(term,pattern,state,memory,unifying),
-//         296 => unify_id(term,pattern,state,memory,unifying),
-//         360 => unify_id(term,pattern,state,memory,unifying),
-//         424 => unify_id(term,pattern,state,memory,unifying),
-//         488 => unify_id(term,pattern,state,memory,unifying),
-//         552 => unify_id(term,pattern,state,memory,unifying),
-//         616 => unify_id(term,pattern,state,memory,unifying),
-//         680 => unify_id(term,pattern,state,memory,unifying),
-//         744 => unify_id(term,pattern,state,memory,unifying),
-//         808 => unify_id(term,pattern,state,memory,unifying),
-//         872 => unify_id(term,pattern,state,memory,unifying),
-//         936 => unify_id(term,pattern,state,memory,unifying),
-//         936 => unify_id(term,pattern,state,memory,unifying),
-//         1000 => unify_id(term,pattern,state,memory,unifying),
-//         1064 => unify_id(term,pattern,state,memory,unifying),
-//         1128 => unify_id(term,pattern,state,memory,unifying),
-//         1192 => unify_id(term,pattern,state,memory,unifying),
-//         1256 => unify_id(term,pattern,state,memory,unifying),
-//         1320 => unify_id(term,pattern,state,memory,unifying),
-//         1384 => unify_id(term,pattern,state,memory,unifying),
-//         1448 => unify_id(term,pattern,state,memory,unifying),
-//         1512 => unify_id(term,pattern,state,memory,unifying),
-//         1576 => unify_id(term,pattern,state,memory,unifying),
-//         1640 => unify_id(term,pattern,state,memory,unifying),
-//         1704 => unify_id(term,pattern,state,memory,unifying),
-//         1768 => unify_id(term,pattern,state,memory,unifying),
-//         1832 => unify_id(term,pattern,state,memory,unifying),
-//         1896 => unify_id(term,pattern,state,memory,unifying),
-//         1960 => unify_id(term,pattern,state,memory,unifying),
-//         2024 => unify_id(term,pattern,state,memory,unifying),
-//         2088 => unify_id(term,pattern,state,memory,unifying),
-//         2152 => unify_id(term,pattern,state,memory,unifying),
-//         2216 => unify_id(term,pattern,state,memory,unifying),
+    // construct unifier list
+    let mut unifiers = vec![];
+    let mut unifier = match unify( ArenaRc::clone(&term_first),ArenaRc::clone(&pattern_first),state,memory,unifying) {
+        Ok( val ) => val,
+        Err( e ) => return Err(e),
+    };
 
-//         // (_,"id",_) =>               unify_id(term,pattern,state,memory,unifying),
+    unifiers.append( &mut unifier );
 
-//         1792 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1794 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1796 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1798 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1800 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1802 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1804 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1806 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1808 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1810 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1812 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1814 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1816 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1818 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1820 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1820 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1822 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1824 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1826 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1828 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1830 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1832 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1834 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1836 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1838 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1840 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1842 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1844 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1846 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1848 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1850 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1852 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1854 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1856 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1858 => subsume_namedpattern(term,pattern,state,memory,unifying),
-//         1860 => subsume_namedpattern(term,pattern,state,memory,unifying),
+    let mut unifier = match unify( ArenaRc::clone(&term_second),ArenaRc::clone(&pattern_second),state,memory,unifying) {
+        Ok( val ) => val,
+        Err( e ) => return Err(e),
+    };
 
-//         // ("namedpattern",_,false) => subsume_namedpattern(term,pattern,state,memory,unifying),
+    unifiers.append( &mut unifier );
 
-//         1856 => subsume_deref(term,pattern,state,memory,unifying),
-//         1858 => subsume_deref(term,pattern,state,memory,unifying),
-//         1860 => subsume_deref(term,pattern,state,memory,unifying),
-//         1862 => subsume_deref(term,pattern,state,memory,unifying),
-//         1864 => subsume_deref(term,pattern,state,memory,unifying),
-//         1866 => subsume_deref(term,pattern,state,memory,unifying),
-//         1868 => subsume_deref(term,pattern,state,memory,unifying),
-//         1870 => subsume_deref(term,pattern,state,memory,unifying),
-//         1872 => subsume_deref(term,pattern,state,memory,unifying),
-//         1874 => subsume_deref(term,pattern,state,memory,unifying),
-//         1876 => subsume_deref(term,pattern,state,memory,unifying),
-//         1878 => subsume_deref(term,pattern,state,memory,unifying),
-//         1880 => subsume_deref(term,pattern,state,memory,unifying),
-//         1882 => subsume_deref(term,pattern,state,memory,unifying),
-//         1884 => subsume_deref(term,pattern,state,memory,unifying),
-//         1884 => subsume_deref(term,pattern,state,memory,unifying),
-//         1886 => subsume_deref(term,pattern,state,memory,unifying),
-//         1888 => subsume_deref(term,pattern,state,memory,unifying),
-//         1890 => subsume_deref(term,pattern,state,memory,unifying),
-//         1892 => subsume_deref(term,pattern,state,memory,unifying),
-//         1894 => subsume_deref(term,pattern,state,memory,unifying),
-//         1896 => subsume_deref(term,pattern,state,memory,unifying),
-//         1898 => subsume_deref(term,pattern,state,memory,unifying),
-//         1900 => subsume_deref(term,pattern,state,memory,unifying),
-//         1902 => subsume_deref(term,pattern,state,memory,unifying),
-//         1904 => subsume_deref(term,pattern,state,memory,unifying),
-//         1906 => subsume_deref(term,pattern,state,memory,unifying),
-//         1908 => subsume_deref(term,pattern,state,memory,unifying),
-//         1910 => subsume_deref(term,pattern,state,memory,unifying),
-//         1912 => subsume_deref(term,pattern,state,memory,unifying),
-//         1914 => subsume_deref(term,pattern,state,memory,unifying),
-//         1916 => subsume_deref(term,pattern,state,memory,unifying),
-//         1918 => subsume_deref(term,pattern,state,memory,unifying),
-//         1856 => subsume_deref(term,pattern,state,memory,unifying),
-//         1858 => subsume_deref(term,pattern,state,memory,unifying),
-//         1860 => subsume_deref(term,pattern,state,memory,unifying),
-
-//         // ("deref",_,false) =>        subsume_deref(term,pattern,state,memory,unifying),
-
-//         1387 => unify_object_to_object(term,pattern,state,memory,unifying),
-//         1386 => unify_object_to_object(term,pattern,state,memory,unifying),
-
-//         // ("object","object",_) =>    unify_object_to_object(term,pattern,state,memory,unifying),
-
-//         199 => unify_string_to_string(term,pattern,state,memory,unifying),
-//         198 => unify_string_to_string(term,pattern,state,memory,unifying),
-
-//         // ("string","string",_) =>    unify_string_to_string(term,pattern,state,memory,unifying),
-
-//         239 => unify_index(term,pattern,state,memory,unifying),
-//         238 => unify_index(term,pattern,state,memory,unifying),
-
-//         // ("string","index",_) =>     unify_index(term,pattern,state,memory,unifying),
-
-//         57 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         121 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         185 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         249 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         313 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         377 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         441 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         505 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         569 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         633 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         697 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         761 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         825 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         889 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         953 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         953 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1017 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1081 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1145 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1209 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1273 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1337 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1401 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1465 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1529 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1593 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1657 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1721 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1785 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1849 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1913 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1977 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2041 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2105 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2169 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2233 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         56 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         120 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         184 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         248 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         312 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         376 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         440 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         504 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         568 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         632 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         696 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         760 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         824 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         888 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         952 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         952 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1016 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1080 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1144 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1208 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1272 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1336 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1400 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1464 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1528 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1592 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1656 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1720 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1784 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1848 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1912 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1976 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2040 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2104 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2168 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2232 => unify_namedpattern(term,pattern,state,memory,unifying),
-
-//         // (_,"namedpattern",_) =>     unify_namedpattern(term,pattern,state,memory,unifying),
-
-//         193 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         195 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         197 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         199 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         201 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         203 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         205 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         207 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         209 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         211 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         213 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         215 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         217 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         219 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         221 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         221 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         223 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         225 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         227 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         229 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         231 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         233 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         235 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         237 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         239 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         241 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         243 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         245 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         247 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         249 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         251 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         253 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         255 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         193 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         195 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         197 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         192 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         194 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         196 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         198 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         200 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         202 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         204 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         206 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         208 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         210 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         212 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         214 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         216 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         218 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         220 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         220 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         222 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         224 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         226 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         228 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         230 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         232 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         234 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         236 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         238 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         240 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         242 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         244 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         246 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         248 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         250 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         252 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         254 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         192 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         194 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-//         196 => Err( new_exception("PatternMatchFailed".to_string(), format!( "term of type '{}' not allowed in pattern matching" , term_type), state, memory )),
-
-
-//         // ("string",_,_) =>            new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-        
-//         7 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         71 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         135 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         199 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         263 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         327 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         391 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         455 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         519 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         583 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         647 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         711 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         775 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         839 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         903 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         903 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         967 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1031 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1095 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1159 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1223 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1287 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1351 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1415 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1479 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1543 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1607 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1671 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1735 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1799 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1863 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1927 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1991 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2055 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2119 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2183 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         6 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         70 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         134 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         198 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         262 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         326 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         390 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         454 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         518 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         582 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         646 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         710 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         774 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         838 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         902 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         902 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         966 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1030 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1094 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1158 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1222 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1286 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1350 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1414 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1478 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1542 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1606 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1670 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1734 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1798 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1862 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1926 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         1990 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2054 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2118 => unify_string_to_other(term,pattern,state,memory,unifying),
-//         2182 => unify_string_to_other(term,pattern,state,memory,unifying),
-
-//         // (_,"string",_) =>           unify_string_to_other(term,pattern,state,memory,unifying),
-
-//         55 => unify_if(term,pattern,state,memory,unifying),
-//         119 => unify_if(term,pattern,state,memory,unifying),
-//         183 => unify_if(term,pattern,state,memory,unifying),
-//         247 => unify_if(term,pattern,state,memory,unifying),
-//         311 => unify_if(term,pattern,state,memory,unifying),
-//         375 => unify_if(term,pattern,state,memory,unifying),
-//         439 => unify_if(term,pattern,state,memory,unifying),
-//         503 => unify_if(term,pattern,state,memory,unifying),
-//         567 => unify_if(term,pattern,state,memory,unifying),
-//         631 => unify_if(term,pattern,state,memory,unifying),
-//         695 => unify_if(term,pattern,state,memory,unifying),
-//         759 => unify_if(term,pattern,state,memory,unifying),
-//         823 => unify_if(term,pattern,state,memory,unifying),
-//         887 => unify_if(term,pattern,state,memory,unifying),
-//         951 => unify_if(term,pattern,state,memory,unifying),
-//         951 => unify_if(term,pattern,state,memory,unifying),
-//         1015 => unify_if(term,pattern,state,memory,unifying),
-//         1079 => unify_if(term,pattern,state,memory,unifying),
-//         1143 => unify_if(term,pattern,state,memory,unifying),
-//         1207 => unify_if(term,pattern,state,memory,unifying),
-//         1271 => unify_if(term,pattern,state,memory,unifying),
-//         1335 => unify_if(term,pattern,state,memory,unifying),
-//         1399 => unify_if(term,pattern,state,memory,unifying),
-//         1463 => unify_if(term,pattern,state,memory,unifying),
-//         1527 => unify_if(term,pattern,state,memory,unifying),
-//         1591 => unify_if(term,pattern,state,memory,unifying),
-//         1655 => unify_if(term,pattern,state,memory,unifying),
-//         1719 => unify_if(term,pattern,state,memory,unifying),
-//         1783 => unify_if(term,pattern,state,memory,unifying),
-//         1847 => unify_if(term,pattern,state,memory,unifying),
-//         1911 => unify_if(term,pattern,state,memory,unifying),
-//         1975 => unify_if(term,pattern,state,memory,unifying),
-//         2039 => unify_if(term,pattern,state,memory,unifying),
-//         2103 => unify_if(term,pattern,state,memory,unifying),
-//         2167 => unify_if(term,pattern,state,memory,unifying),
-//         2231 => unify_if(term,pattern,state,memory,unifying),
-
-//         // (_,"if",true) =>            unify_if(term,pattern,state,memory,unifying),
-
-//         54 => subsume_if(term,pattern,state,memory,unifying),
-//         118 => subsume_if(term,pattern,state,memory,unifying),
-//         182 => subsume_if(term,pattern,state,memory,unifying),
-//         246 => subsume_if(term,pattern,state,memory,unifying),
-//         310 => subsume_if(term,pattern,state,memory,unifying),
-//         374 => subsume_if(term,pattern,state,memory,unifying),
-//         438 => subsume_if(term,pattern,state,memory,unifying),
-//         502 => subsume_if(term,pattern,state,memory,unifying),
-//         566 => subsume_if(term,pattern,state,memory,unifying),
-//         630 => subsume_if(term,pattern,state,memory,unifying),
-//         694 => subsume_if(term,pattern,state,memory,unifying),
-//         758 => subsume_if(term,pattern,state,memory,unifying),
-//         822 => subsume_if(term,pattern,state,memory,unifying),
-//         886 => subsume_if(term,pattern,state,memory,unifying),
-//         950 => subsume_if(term,pattern,state,memory,unifying),
-//         950 => subsume_if(term,pattern,state,memory,unifying),
-//         1014 => subsume_if(term,pattern,state,memory,unifying),
-//         1078 => subsume_if(term,pattern,state,memory,unifying),
-//         1142 => subsume_if(term,pattern,state,memory,unifying),
-//         1206 => subsume_if(term,pattern,state,memory,unifying),
-//         1270 => subsume_if(term,pattern,state,memory,unifying),
-//         1334 => subsume_if(term,pattern,state,memory,unifying),
-//         1398 => subsume_if(term,pattern,state,memory,unifying),
-//         1462 => subsume_if(term,pattern,state,memory,unifying),
-//         1526 => subsume_if(term,pattern,state,memory,unifying),
-//         1590 => subsume_if(term,pattern,state,memory,unifying),
-//         1654 => subsume_if(term,pattern,state,memory,unifying),
-//         1718 => subsume_if(term,pattern,state,memory,unifying),
-//         1782 => subsume_if(term,pattern,state,memory,unifying),
-//         1846 => subsume_if(term,pattern,state,memory,unifying),
-//         1910 => subsume_if(term,pattern,state,memory,unifying),
-//         1974 => subsume_if(term,pattern,state,memory,unifying),
-//         2038 => subsume_if(term,pattern,state,memory,unifying),
-//         2102 => subsume_if(term,pattern,state,memory,unifying),
-//         2166 => subsume_if(term,pattern,state,memory,unifying),
-//         2230 => subsume_if(term,pattern,state,memory,unifying),
-
-//         // (_,"if",false) =>           subsume_if(term,pattern,state,memory,unifying),
-
-//         1 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         0 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-
-//         // ("integer","integer",_) =>  unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         3 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         2 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         //("integer","real",_) =>     unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         4 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         5 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-
-//         //("integer","bool",_) =>     unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         64 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         65 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         //("real","integer",_) =>     unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         66 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         67 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         // ("real","real",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         68 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         69 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         // ("real","bool",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         128 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         129 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         // ("bool","integer",_) =>     unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         130 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         131 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         // ("bool","real",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         132 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-//         133 => unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         //("bool","bool",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
-        
-//         1729 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1731 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1733 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1735 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1737 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1739 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1741 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1743 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1745 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1747 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1749 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1751 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1753 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1755 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1757 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1757 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1759 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1761 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1763 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1765 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1767 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1769 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1771 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1773 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1775 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1777 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1779 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1781 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1783 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1785 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1787 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1789 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1791 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1729 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1731 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1733 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1728 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1730 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1732 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1734 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1736 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1738 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1740 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1742 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1744 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1746 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1748 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1750 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1752 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1754 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1756 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1756 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1758 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1760 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1762 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1764 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1766 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1768 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1770 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1772 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1774 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1776 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1778 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1780 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1782 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1784 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1786 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1788 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1790 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1728 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1730 => subsume_conditional(term,pattern,state,memory,unifying),
-//         1732 => subsume_conditional(term,pattern,state,memory,unifying),
-
-        
-//         // ("if",_,_) =>               subsume_conditional(term,pattern,state,memory,unifying),
-        
-//         37 => unify_typematch(term,pattern,state,memory,unifying),
-//         101 => unify_typematch(term,pattern,state,memory,unifying),
-//         165 => unify_typematch(term,pattern,state,memory,unifying),
-//         229 => unify_typematch(term,pattern,state,memory,unifying),
-//         293 => unify_typematch(term,pattern,state,memory,unifying),
-//         357 => unify_typematch(term,pattern,state,memory,unifying),
-//         421 => unify_typematch(term,pattern,state,memory,unifying),
-//         485 => unify_typematch(term,pattern,state,memory,unifying),
-//         549 => unify_typematch(term,pattern,state,memory,unifying),
-//         613 => unify_typematch(term,pattern,state,memory,unifying),
-//         677 => unify_typematch(term,pattern,state,memory,unifying),
-//         741 => unify_typematch(term,pattern,state,memory,unifying),
-//         805 => unify_typematch(term,pattern,state,memory,unifying),
-//         869 => unify_typematch(term,pattern,state,memory,unifying),
-//         933 => unify_typematch(term,pattern,state,memory,unifying),
-//         933 => unify_typematch(term,pattern,state,memory,unifying),
-//         997 => unify_typematch(term,pattern,state,memory,unifying),
-//         1061 => unify_typematch(term,pattern,state,memory,unifying),
-//         1125 => unify_typematch(term,pattern,state,memory,unifying),
-//         1189 => unify_typematch(term,pattern,state,memory,unifying),
-//         1253 => unify_typematch(term,pattern,state,memory,unifying),
-//         1317 => unify_typematch(term,pattern,state,memory,unifying),
-//         1381 => unify_typematch(term,pattern,state,memory,unifying),
-//         1445 => unify_typematch(term,pattern,state,memory,unifying),
-//         1509 => unify_typematch(term,pattern,state,memory,unifying),
-//         1573 => unify_typematch(term,pattern,state,memory,unifying),
-//         1637 => unify_typematch(term,pattern,state,memory,unifying),
-//         1701 => unify_typematch(term,pattern,state,memory,unifying),
-//         1765 => unify_typematch(term,pattern,state,memory,unifying),
-//         1829 => unify_typematch(term,pattern,state,memory,unifying),
-//         1893 => unify_typematch(term,pattern,state,memory,unifying),
-//         1957 => unify_typematch(term,pattern,state,memory,unifying),
-//         2021 => unify_typematch(term,pattern,state,memory,unifying),
-//         2085 => unify_typematch(term,pattern,state,memory,unifying),
-//         2149 => unify_typematch(term,pattern,state,memory,unifying),
-//         2213 => unify_typematch(term,pattern,state,memory,unifying),
-//         36 => unify_typematch(term,pattern,state,memory,unifying),
-//         100 => unify_typematch(term,pattern,state,memory,unifying),
-//         164 => unify_typematch(term,pattern,state,memory,unifying),
-//         228 => unify_typematch(term,pattern,state,memory,unifying),
-//         292 => unify_typematch(term,pattern,state,memory,unifying),
-//         356 => unify_typematch(term,pattern,state,memory,unifying),
-//         420 => unify_typematch(term,pattern,state,memory,unifying),
-//         484 => unify_typematch(term,pattern,state,memory,unifying),
-//         548 => unify_typematch(term,pattern,state,memory,unifying),
-//         612 => unify_typematch(term,pattern,state,memory,unifying),
-//         676 => unify_typematch(term,pattern,state,memory,unifying),
-//         740 => unify_typematch(term,pattern,state,memory,unifying),
-//         804 => unify_typematch(term,pattern,state,memory,unifying),
-//         868 => unify_typematch(term,pattern,state,memory,unifying),
-//         932 => unify_typematch(term,pattern,state,memory,unifying),
-//         932 => unify_typematch(term,pattern,state,memory,unifying),
-//         996 => unify_typematch(term,pattern,state,memory,unifying),
-//         1060 => unify_typematch(term,pattern,state,memory,unifying),
-//         1124 => unify_typematch(term,pattern,state,memory,unifying),
-//         1188 => unify_typematch(term,pattern,state,memory,unifying),
-//         1252 => unify_typematch(term,pattern,state,memory,unifying),
-//         1316 => unify_typematch(term,pattern,state,memory,unifying),
-//         1380 => unify_typematch(term,pattern,state,memory,unifying),
-//         1444 => unify_typematch(term,pattern,state,memory,unifying),
-//         1508 => unify_typematch(term,pattern,state,memory,unifying),
-//         1572 => unify_typematch(term,pattern,state,memory,unifying),
-//         1636 => unify_typematch(term,pattern,state,memory,unifying),
-//         1700 => unify_typematch(term,pattern,state,memory,unifying),
-//         1764 => unify_typematch(term,pattern,state,memory,unifying),
-//         1828 => unify_typematch(term,pattern,state,memory,unifying),
-//         1892 => unify_typematch(term,pattern,state,memory,unifying),
-//         1956 => unify_typematch(term,pattern,state,memory,unifying),
-//         2020 => unify_typematch(term,pattern,state,memory,unifying),
-//         2084 => unify_typematch(term,pattern,state,memory,unifying),
-//         2148 => unify_typematch(term,pattern,state,memory,unifying),
-//         2212 => unify_typematch(term,pattern,state,memory,unifying),
-
-//         // (_,"typematch",_) =>        unify_typematch(term,pattern,state,memory,unifying),
-        
-//         57 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         121 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         185 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         249 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         313 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         377 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         441 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         505 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         569 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         633 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         697 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         761 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         825 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         889 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         953 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         953 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1017 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1081 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1145 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1209 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1273 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1337 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1401 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1465 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1529 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1593 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1657 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1721 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1785 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1849 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1913 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1977 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2041 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2105 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2169 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2233 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         56 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         120 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         184 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         248 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         312 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         376 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         440 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         504 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         568 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         632 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         696 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         760 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         824 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         888 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         952 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         952 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1016 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1080 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1144 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1208 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1272 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1336 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1400 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1464 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1528 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1592 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1656 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1720 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1784 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1848 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1912 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         1976 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2040 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2104 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2168 => unify_namedpattern(term,pattern,state,memory,unifying),
-//         2232 => unify_namedpattern(term,pattern,state,memory,unifying),
-
-//         // (_,"namedpattern",_) =>     unify_namedpattern(term,pattern,state,memory,unifying),
-        
-//         11 => unify_none(term,pattern,state,memory,unifying),
-//         75 => unify_none(term,pattern,state,memory,unifying),
-//         139 => unify_none(term,pattern,state,memory,unifying),
-//         203 => unify_none(term,pattern,state,memory,unifying),
-//         267 => unify_none(term,pattern,state,memory,unifying),
-//         331 => unify_none(term,pattern,state,memory,unifying),
-//         395 => unify_none(term,pattern,state,memory,unifying),
-//         459 => unify_none(term,pattern,state,memory,unifying),
-//         523 => unify_none(term,pattern,state,memory,unifying),
-//         587 => unify_none(term,pattern,state,memory,unifying),
-//         651 => unify_none(term,pattern,state,memory,unifying),
-//         715 => unify_none(term,pattern,state,memory,unifying),
-//         779 => unify_none(term,pattern,state,memory,unifying),
-//         843 => unify_none(term,pattern,state,memory,unifying),
-//         907 => unify_none(term,pattern,state,memory,unifying),
-//         907 => unify_none(term,pattern,state,memory,unifying),
-//         971 => unify_none(term,pattern,state,memory,unifying),
-//         1035 => unify_none(term,pattern,state,memory,unifying),
-//         1099 => unify_none(term,pattern,state,memory,unifying),
-//         1163 => unify_none(term,pattern,state,memory,unifying),
-//         1227 => unify_none(term,pattern,state,memory,unifying),
-//         1291 => unify_none(term,pattern,state,memory,unifying),
-//         1355 => unify_none(term,pattern,state,memory,unifying),
-//         1419 => unify_none(term,pattern,state,memory,unifying),
-//         1483 => unify_none(term,pattern,state,memory,unifying),
-//         1547 => unify_none(term,pattern,state,memory,unifying),
-//         1611 => unify_none(term,pattern,state,memory,unifying),
-//         1675 => unify_none(term,pattern,state,memory,unifying),
-//         1739 => unify_none(term,pattern,state,memory,unifying),
-//         1803 => unify_none(term,pattern,state,memory,unifying),
-//         1867 => unify_none(term,pattern,state,memory,unifying),
-//         1931 => unify_none(term,pattern,state,memory,unifying),
-//         1995 => unify_none(term,pattern,state,memory,unifying),
-//         2059 => unify_none(term,pattern,state,memory,unifying),
-//         2123 => unify_none(term,pattern,state,memory,unifying),
-//         2187 => unify_none(term,pattern,state,memory,unifying),
-//         10 => unify_none(term,pattern,state,memory,unifying),
-//         74 => unify_none(term,pattern,state,memory,unifying),
-//         138 => unify_none(term,pattern,state,memory,unifying),
-//         202 => unify_none(term,pattern,state,memory,unifying),
-//         266 => unify_none(term,pattern,state,memory,unifying),
-//         330 => unify_none(term,pattern,state,memory,unifying),
-//         394 => unify_none(term,pattern,state,memory,unifying),
-//         458 => unify_none(term,pattern,state,memory,unifying),
-//         522 => unify_none(term,pattern,state,memory,unifying),
-//         586 => unify_none(term,pattern,state,memory,unifying),
-//         650 => unify_none(term,pattern,state,memory,unifying),
-//         714 => unify_none(term,pattern,state,memory,unifying),
-//         778 => unify_none(term,pattern,state,memory,unifying),
-//         842 => unify_none(term,pattern,state,memory,unifying),
-//         906 => unify_none(term,pattern,state,memory,unifying),
-//         906 => unify_none(term,pattern,state,memory,unifying),
-//         970 => unify_none(term,pattern,state,memory,unifying),
-//         1034 => unify_none(term,pattern,state,memory,unifying),
-//         1098 => unify_none(term,pattern,state,memory,unifying),
-//         1162 => unify_none(term,pattern,state,memory,unifying),
-//         1226 => unify_none(term,pattern,state,memory,unifying),
-//         1290 => unify_none(term,pattern,state,memory,unifying),
-//         1354 => unify_none(term,pattern,state,memory,unifying),
-//         1418 => unify_none(term,pattern,state,memory,unifying),
-//         1482 => unify_none(term,pattern,state,memory,unifying),
-//         1546 => unify_none(term,pattern,state,memory,unifying),
-//         1610 => unify_none(term,pattern,state,memory,unifying),
-//         1674 => unify_none(term,pattern,state,memory,unifying),
-//         1738 => unify_none(term,pattern,state,memory,unifying),
-//         1802 => unify_none(term,pattern,state,memory,unifying),
-//         1866 => unify_none(term,pattern,state,memory,unifying),
-//         1930 => unify_none(term,pattern,state,memory,unifying),
-//         1994 => unify_none(term,pattern,state,memory,unifying),
-//         2058 => unify_none(term,pattern,state,memory,unifying),
-//         2122 => unify_none(term,pattern,state,memory,unifying),
-//         2186 => unify_none(term,pattern,state,memory,unifying),
-        
-//         // (_,"none",_) =>             unify_none(term,pattern,state,memory,unifying),
-
-//         // TODO 
-//         // ("tolist",_,_) =>            new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("rawtolist",_,_) =>         new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("wherelist",_,_) =>         new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("rawwherelist",_,_) =>      new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("escape",_,_) =>            new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("is",_,_) =>                new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // ("in",_,_) =>                new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type)),
-//         // (_,"tolist",_) =>            new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"rawtolist",_) =>         new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"wherelist",_) =>         new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"rawwherelist",_) =>      new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"escape",_) =>            new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"is",_) =>                new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"in",_) =>                new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"foreign",_) =>           new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-//         // (_,"function",_) =>          new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type)),
-        
-//         //(_,"quote",_) =>            unify_quote(term,pattern,state,memory,unifying),
-
-//         33 => unify_quote(term,pattern,state,memory,unifying),
-//         97 => unify_quote(term,pattern,state,memory,unifying),
-//         161 => unify_quote(term,pattern,state,memory,unifying),
-//         225 => unify_quote(term,pattern,state,memory,unifying),
-//         289 => unify_quote(term,pattern,state,memory,unifying),
-//         353 => unify_quote(term,pattern,state,memory,unifying),
-//         417 => unify_quote(term,pattern,state,memory,unifying),
-//         481 => unify_quote(term,pattern,state,memory,unifying),
-//         545 => unify_quote(term,pattern,state,memory,unifying),
-//         609 => unify_quote(term,pattern,state,memory,unifying),
-//         673 => unify_quote(term,pattern,state,memory,unifying),
-//         737 => unify_quote(term,pattern,state,memory,unifying),
-//         801 => unify_quote(term,pattern,state,memory,unifying),
-//         865 => unify_quote(term,pattern,state,memory,unifying),
-//         929 => unify_quote(term,pattern,state,memory,unifying),
-//         929 => unify_quote(term,pattern,state,memory,unifying),
-//         993 => unify_quote(term,pattern,state,memory,unifying),
-//         1057 => unify_quote(term,pattern,state,memory,unifying),
-//         1121 => unify_quote(term,pattern,state,memory,unifying),
-//         1185 => unify_quote(term,pattern,state,memory,unifying),
-//         1249 => unify_quote(term,pattern,state,memory,unifying),
-//         1313 => unify_quote(term,pattern,state,memory,unifying),
-//         1377 => unify_quote(term,pattern,state,memory,unifying),
-//         1441 => unify_quote(term,pattern,state,memory,unifying),
-//         1505 => unify_quote(term,pattern,state,memory,unifying),
-//         1569 => unify_quote(term,pattern,state,memory,unifying),
-//         1633 => unify_quote(term,pattern,state,memory,unifying),
-//         1697 => unify_quote(term,pattern,state,memory,unifying),
-//         1761 => unify_quote(term,pattern,state,memory,unifying),
-//         1825 => unify_quote(term,pattern,state,memory,unifying),
-//         1889 => unify_quote(term,pattern,state,memory,unifying),
-//         1953 => unify_quote(term,pattern,state,memory,unifying),
-//         2017 => unify_quote(term,pattern,state,memory,unifying),
-//         2081 => unify_quote(term,pattern,state,memory,unifying),
-//         2145 => unify_quote(term,pattern,state,memory,unifying),
-//         2209 => unify_quote(term,pattern,state,memory,unifying),
-//         32 => unify_quote(term,pattern,state,memory,unifying),
-//         96 => unify_quote(term,pattern,state,memory,unifying),
-//         160 => unify_quote(term,pattern,state,memory,unifying),
-//         224 => unify_quote(term,pattern,state,memory,unifying),
-//         288 => unify_quote(term,pattern,state,memory,unifying),
-//         352 => unify_quote(term,pattern,state,memory,unifying),
-//         416 => unify_quote(term,pattern,state,memory,unifying),
-//         480 => unify_quote(term,pattern,state,memory,unifying),
-//         544 => unify_quote(term,pattern,state,memory,unifying),
-//         608 => unify_quote(term,pattern,state,memory,unifying),
-//         672 => unify_quote(term,pattern,state,memory,unifying),
-//         736 => unify_quote(term,pattern,state,memory,unifying),
-//         800 => unify_quote(term,pattern,state,memory,unifying),
-//         864 => unify_quote(term,pattern,state,memory,unifying),
-//         928 => unify_quote(term,pattern,state,memory,unifying),
-//         928 => unify_quote(term,pattern,state,memory,unifying),
-//         992 => unify_quote(term,pattern,state,memory,unifying),
-//         1056 => unify_quote(term,pattern,state,memory,unifying),
-//         1120 => unify_quote(term,pattern,state,memory,unifying),
-//         1184 => unify_quote(term,pattern,state,memory,unifying),
-//         1248 => unify_quote(term,pattern,state,memory,unifying),
-//         1312 => unify_quote(term,pattern,state,memory,unifying),
-//         1376 => unify_quote(term,pattern,state,memory,unifying),
-//         1440 => unify_quote(term,pattern,state,memory,unifying),
-//         1504 => unify_quote(term,pattern,state,memory,unifying),
-//         1568 => unify_quote(term,pattern,state,memory,unifying),
-//         1632 => unify_quote(term,pattern,state,memory,unifying),
-//         1696 => unify_quote(term,pattern,state,memory,unifying),
-//         1760 => unify_quote(term,pattern,state,memory,unifying),
-//         1824 => unify_quote(term,pattern,state,memory,unifying),
-//         1888 => unify_quote(term,pattern,state,memory,unifying),
-//         1952 => unify_quote(term,pattern,state,memory,unifying),
-//         2016 => unify_quote(term,pattern,state,memory,unifying),
-//         2080 => unify_quote(term,pattern,state,memory,unifying),
-//         2144 => unify_quote(term,pattern,state,memory,unifying),
-//         2208 => unify_quote(term,pattern,state,memory,unifying),
-
-//         // ("quote","id",_) =>          new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' cannot be matched againt '{}'",pattern_type,term_type)),
-//         // ("quote","index",_) =>       new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' cannot be matched againt '{}'",pattern_type,term_type)),
-        
-//         1025 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1027 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1029 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1031 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1033 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1035 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1037 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1039 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1041 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1043 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1045 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1047 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1049 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1051 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1053 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1053 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1055 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1057 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1059 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1061 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1063 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1065 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1067 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1069 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1071 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1073 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1075 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1077 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1079 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1081 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1083 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1085 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1087 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1089 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1091 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1093 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1024 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1026 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1028 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1030 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1032 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1034 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1036 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1038 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1040 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1042 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1044 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1046 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1048 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1050 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1052 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1052 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1054 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1056 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1058 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1060 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1062 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1064 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1066 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1068 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1070 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1072 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1074 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1076 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1078 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1080 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1082 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1084 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1086 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1088 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1090 => unify_term_quote(term,pattern,state,memory,unifying),
-//         1092 => unify_term_quote(term,pattern,state,memory,unifying),
-
-//         // ("quote",_,_) =>            unify_term_quote(term,pattern,state,memory,unifying),
-
-//         1389 => unify_object_to_apply(term,pattern,state,memory,unifying),
-//         1388 => unify_object_to_apply(term,pattern,state,memory,unifying),
-
-//         //("object","apply",_) =>     unify_object_to_apply(term,pattern,state,memory,unifying),
-        
-//         47 => unify_index(term,pattern,state,memory,unifying),
-//         111 => unify_index(term,pattern,state,memory,unifying),
-//         175 => unify_index(term,pattern,state,memory,unifying),
-//         239 => unify_index(term,pattern,state,memory,unifying),
-//         303 => unify_index(term,pattern,state,memory,unifying),
-//         367 => unify_index(term,pattern,state,memory,unifying),
-//         431 => unify_index(term,pattern,state,memory,unifying),
-//         495 => unify_index(term,pattern,state,memory,unifying),
-//         559 => unify_index(term,pattern,state,memory,unifying),
-//         623 => unify_index(term,pattern,state,memory,unifying),
-//         687 => unify_index(term,pattern,state,memory,unifying),
-//         751 => unify_index(term,pattern,state,memory,unifying),
-//         815 => unify_index(term,pattern,state,memory,unifying),
-//         879 => unify_index(term,pattern,state,memory,unifying),
-//         943 => unify_index(term,pattern,state,memory,unifying),
-//         943 => unify_index(term,pattern,state,memory,unifying),
-//         1007 => unify_index(term,pattern,state,memory,unifying),
-//         1071 => unify_index(term,pattern,state,memory,unifying),
-//         1135 => unify_index(term,pattern,state,memory,unifying),
-//         1199 => unify_index(term,pattern,state,memory,unifying),
-//         1263 => unify_index(term,pattern,state,memory,unifying),
-//         1327 => unify_index(term,pattern,state,memory,unifying),
-//         1391 => unify_index(term,pattern,state,memory,unifying),
-//         1455 => unify_index(term,pattern,state,memory,unifying),
-//         1519 => unify_index(term,pattern,state,memory,unifying),
-//         1583 => unify_index(term,pattern,state,memory,unifying),
-//         1647 => unify_index(term,pattern,state,memory,unifying),
-//         1711 => unify_index(term,pattern,state,memory,unifying),
-//         1775 => unify_index(term,pattern,state,memory,unifying),
-//         1839 => unify_index(term,pattern,state,memory,unifying),
-//         1903 => unify_index(term,pattern,state,memory,unifying),
-//         1967 => unify_index(term,pattern,state,memory,unifying),
-//         2031 => unify_index(term,pattern,state,memory,unifying),
-//         2095 => unify_index(term,pattern,state,memory,unifying),
-//         2159 => unify_index(term,pattern,state,memory,unifying),
-//         2223 => unify_index(term,pattern,state,memory,unifying),
-//         46 => unify_index(term,pattern,state,memory,unifying),
-//         110 => unify_index(term,pattern,state,memory,unifying),
-//         174 => unify_index(term,pattern,state,memory,unifying),
-//         238 => unify_index(term,pattern,state,memory,unifying),
-//         302 => unify_index(term,pattern,state,memory,unifying),
-//         366 => unify_index(term,pattern,state,memory,unifying),
-//         430 => unify_index(term,pattern,state,memory,unifying),
-//         494 => unify_index(term,pattern,state,memory,unifying),
-//         558 => unify_index(term,pattern,state,memory,unifying),
-//         622 => unify_index(term,pattern,state,memory,unifying),
-//         686 => unify_index(term,pattern,state,memory,unifying),
-//         750 => unify_index(term,pattern,state,memory,unifying),
-//         814 => unify_index(term,pattern,state,memory,unifying),
-//         878 => unify_index(term,pattern,state,memory,unifying),
-//         942 => unify_index(term,pattern,state,memory,unifying),
-//         942 => unify_index(term,pattern,state,memory,unifying),
-//         1006 => unify_index(term,pattern,state,memory,unifying),
-//         1070 => unify_index(term,pattern,state,memory,unifying),
-//         1134 => unify_index(term,pattern,state,memory,unifying),
-//         1198 => unify_index(term,pattern,state,memory,unifying),
-//         1262 => unify_index(term,pattern,state,memory,unifying),
-//         1326 => unify_index(term,pattern,state,memory,unifying),
-//         1390 => unify_index(term,pattern,state,memory,unifying),
-//         1454 => unify_index(term,pattern,state,memory,unifying),
-//         1518 => unify_index(term,pattern,state,memory,unifying),
-//         1582 => unify_index(term,pattern,state,memory,unifying),
-//         1646 => unify_index(term,pattern,state,memory,unifying),
-//         1710 => unify_index(term,pattern,state,memory,unifying),
-//         1774 => unify_index(term,pattern,state,memory,unifying),
-//         1838 => unify_index(term,pattern,state,memory,unifying),
-//         1902 => unify_index(term,pattern,state,memory,unifying),
-//         1966 => unify_index(term,pattern,state,memory,unifying),
-//         2030 => unify_index(term,pattern,state,memory,unifying),
-//         2094 => unify_index(term,pattern,state,memory,unifying),
-//         2158 => unify_index(term,pattern,state,memory,unifying),
-//         2222 => unify_index(term,pattern,state,memory,unifying),
-        
-//         // (_,"index",_) =>            unify_index(term,pattern,state,memory,unifying),
-
-//         21 => unify_headtail(term,pattern,state,memory,unifying),
-//         85 => unify_headtail(term,pattern,state,memory,unifying),
-//         149 => unify_headtail(term,pattern,state,memory,unifying),
-//         213 => unify_headtail(term,pattern,state,memory,unifying),
-//         277 => unify_headtail(term,pattern,state,memory,unifying),
-//         341 => unify_headtail(term,pattern,state,memory,unifying),
-//         405 => unify_headtail(term,pattern,state,memory,unifying),
-//         469 => unify_headtail(term,pattern,state,memory,unifying),
-//         533 => unify_headtail(term,pattern,state,memory,unifying),
-//         597 => unify_headtail(term,pattern,state,memory,unifying),
-//         661 => unify_headtail(term,pattern,state,memory,unifying),
-//         725 => unify_headtail(term,pattern,state,memory,unifying),
-//         789 => unify_headtail(term,pattern,state,memory,unifying),
-//         853 => unify_headtail(term,pattern,state,memory,unifying),
-//         917 => unify_headtail(term,pattern,state,memory,unifying),
-//         917 => unify_headtail(term,pattern,state,memory,unifying),
-//         981 => unify_headtail(term,pattern,state,memory,unifying),
-//         1045 => unify_headtail(term,pattern,state,memory,unifying),
-//         1109 => unify_headtail(term,pattern,state,memory,unifying),
-//         1173 => unify_headtail(term,pattern,state,memory,unifying),
-//         1237 => unify_headtail(term,pattern,state,memory,unifying),
-//         1301 => unify_headtail(term,pattern,state,memory,unifying),
-//         1365 => unify_headtail(term,pattern,state,memory,unifying),
-//         1429 => unify_headtail(term,pattern,state,memory,unifying),
-//         1493 => unify_headtail(term,pattern,state,memory,unifying),
-//         1557 => unify_headtail(term,pattern,state,memory,unifying),
-//         1621 => unify_headtail(term,pattern,state,memory,unifying),
-//         1685 => unify_headtail(term,pattern,state,memory,unifying),
-//         1749 => unify_headtail(term,pattern,state,memory,unifying),
-//         1813 => unify_headtail(term,pattern,state,memory,unifying),
-//         1877 => unify_headtail(term,pattern,state,memory,unifying),
-//         1941 => unify_headtail(term,pattern,state,memory,unifying),
-//         2005 => unify_headtail(term,pattern,state,memory,unifying),
-//         2069 => unify_headtail(term,pattern,state,memory,unifying),
-//         2133 => unify_headtail(term,pattern,state,memory,unifying),
-//         2197 => unify_headtail(term,pattern,state,memory,unifying),
-//         20 => unify_headtail(term,pattern,state,memory,unifying),
-//         84 => unify_headtail(term,pattern,state,memory,unifying),
-//         148 => unify_headtail(term,pattern,state,memory,unifying),
-//         212 => unify_headtail(term,pattern,state,memory,unifying),
-//         276 => unify_headtail(term,pattern,state,memory,unifying),
-//         340 => unify_headtail(term,pattern,state,memory,unifying),
-//         404 => unify_headtail(term,pattern,state,memory,unifying),
-//         468 => unify_headtail(term,pattern,state,memory,unifying),
-//         532 => unify_headtail(term,pattern,state,memory,unifying),
-//         596 => unify_headtail(term,pattern,state,memory,unifying),
-//         660 => unify_headtail(term,pattern,state,memory,unifying),
-//         724 => unify_headtail(term,pattern,state,memory,unifying),
-//         788 => unify_headtail(term,pattern,state,memory,unifying),
-//         852 => unify_headtail(term,pattern,state,memory,unifying),
-//         916 => unify_headtail(term,pattern,state,memory,unifying),
-//         916 => unify_headtail(term,pattern,state,memory,unifying),
-//         980 => unify_headtail(term,pattern,state,memory,unifying),
-//         1044 => unify_headtail(term,pattern,state,memory,unifying),
-//         1108 => unify_headtail(term,pattern,state,memory,unifying),
-//         1172 => unify_headtail(term,pattern,state,memory,unifying),
-//         1236 => unify_headtail(term,pattern,state,memory,unifying),
-//         1300 => unify_headtail(term,pattern,state,memory,unifying),
-//         1364 => unify_headtail(term,pattern,state,memory,unifying),
-//         1428 => unify_headtail(term,pattern,state,memory,unifying),
-//         1492 => unify_headtail(term,pattern,state,memory,unifying),
-//         1556 => unify_headtail(term,pattern,state,memory,unifying),
-//         1620 => unify_headtail(term,pattern,state,memory,unifying),
-//         1684 => unify_headtail(term,pattern,state,memory,unifying),
-//         1748 => unify_headtail(term,pattern,state,memory,unifying),
-//         1812 => unify_headtail(term,pattern,state,memory,unifying),
-//         1876 => unify_headtail(term,pattern,state,memory,unifying),
-//         1940 => unify_headtail(term,pattern,state,memory,unifying),
-//         2004 => unify_headtail(term,pattern,state,memory,unifying),
-//         2068 => unify_headtail(term,pattern,state,memory,unifying),
-//         2132 => unify_headtail(term,pattern,state,memory,unifying),
-//         2196 => unify_headtail(term,pattern,state,memory,unifying),
-
-//         // (_,"headtail",_) =>         unify_headtail(term,pattern,state,memory,unifying),
-
-//         25 => unify_headtail(term,pattern,state,memory,unifying),
-//         89 => unify_headtail(term,pattern,state,memory,unifying),
-//         153 => unify_headtail(term,pattern,state,memory,unifying),
-//         217 => unify_headtail(term,pattern,state,memory,unifying),
-//         281 => unify_headtail(term,pattern,state,memory,unifying),
-//         345 => unify_headtail(term,pattern,state,memory,unifying),
-//         409 => unify_headtail(term,pattern,state,memory,unifying),
-//         473 => unify_headtail(term,pattern,state,memory,unifying),
-//         537 => unify_headtail(term,pattern,state,memory,unifying),
-//         601 => unify_headtail(term,pattern,state,memory,unifying),
-//         665 => unify_headtail(term,pattern,state,memory,unifying),
-//         729 => unify_headtail(term,pattern,state,memory,unifying),
-//         793 => unify_headtail(term,pattern,state,memory,unifying),
-//         857 => unify_headtail(term,pattern,state,memory,unifying),
-//         921 => unify_headtail(term,pattern,state,memory,unifying),
-//         921 => unify_headtail(term,pattern,state,memory,unifying),
-//         985 => unify_headtail(term,pattern,state,memory,unifying),
-//         1049 => unify_headtail(term,pattern,state,memory,unifying),
-//         1113 => unify_headtail(term,pattern,state,memory,unifying),
-//         1177 => unify_headtail(term,pattern,state,memory,unifying),
-//         1241 => unify_headtail(term,pattern,state,memory,unifying),
-//         1305 => unify_headtail(term,pattern,state,memory,unifying),
-//         1369 => unify_headtail(term,pattern,state,memory,unifying),
-//         1433 => unify_headtail(term,pattern,state,memory,unifying),
-//         1497 => unify_headtail(term,pattern,state,memory,unifying),
-//         1561 => unify_headtail(term,pattern,state,memory,unifying),
-//         1625 => unify_headtail(term,pattern,state,memory,unifying),
-//         1689 => unify_headtail(term,pattern,state,memory,unifying),
-//         1753 => unify_headtail(term,pattern,state,memory,unifying),
-//         1817 => unify_headtail(term,pattern,state,memory,unifying),
-//         1881 => unify_headtail(term,pattern,state,memory,unifying),
-//         1945 => unify_headtail(term,pattern,state,memory,unifying),
-//         2009 => unify_headtail(term,pattern,state,memory,unifying),
-//         2073 => unify_headtail(term,pattern,state,memory,unifying),
-//         2137 => unify_headtail(term,pattern,state,memory,unifying),
-//         2201 => unify_headtail(term,pattern,state,memory,unifying),
-//         24 => unify_headtail(term,pattern,state,memory,unifying),
-//         88 => unify_headtail(term,pattern,state,memory,unifying),
-//         152 => unify_headtail(term,pattern,state,memory,unifying),
-//         216 => unify_headtail(term,pattern,state,memory,unifying),
-//         280 => unify_headtail(term,pattern,state,memory,unifying),
-//         344 => unify_headtail(term,pattern,state,memory,unifying),
-//         408 => unify_headtail(term,pattern,state,memory,unifying),
-//         472 => unify_headtail(term,pattern,state,memory,unifying),
-//         536 => unify_headtail(term,pattern,state,memory,unifying),
-//         600 => unify_headtail(term,pattern,state,memory,unifying),
-//         664 => unify_headtail(term,pattern,state,memory,unifying),
-//         728 => unify_headtail(term,pattern,state,memory,unifying),
-//         792 => unify_headtail(term,pattern,state,memory,unifying),
-//         856 => unify_headtail(term,pattern,state,memory,unifying),
-//         920 => unify_headtail(term,pattern,state,memory,unifying),
-//         920 => unify_headtail(term,pattern,state,memory,unifying),
-//         984 => unify_headtail(term,pattern,state,memory,unifying),
-//         1048 => unify_headtail(term,pattern,state,memory,unifying),
-//         1112 => unify_headtail(term,pattern,state,memory,unifying),
-//         1176 => unify_headtail(term,pattern,state,memory,unifying),
-//         1240 => unify_headtail(term,pattern,state,memory,unifying),
-//         1304 => unify_headtail(term,pattern,state,memory,unifying),
-//         1368 => unify_headtail(term,pattern,state,memory,unifying),
-//         1432 => unify_headtail(term,pattern,state,memory,unifying),
-//         1496 => unify_headtail(term,pattern,state,memory,unifying),
-//         1560 => unify_headtail(term,pattern,state,memory,unifying),
-//         1624 => unify_headtail(term,pattern,state,memory,unifying),
-//         1688 => unify_headtail(term,pattern,state,memory,unifying),
-//         1752 => unify_headtail(term,pattern,state,memory,unifying),
-//         1816 => unify_headtail(term,pattern,state,memory,unifying),
-//         1880 => unify_headtail(term,pattern,state,memory,unifying),
-//         1944 => unify_headtail(term,pattern,state,memory,unifying),
-//         2008 => unify_headtail(term,pattern,state,memory,unifying),
-//         2072 => unify_headtail(term,pattern,state,memory,unifying),
-//         2136 => unify_headtail(term,pattern,state,memory,unifying),
-//         2200 => unify_headtail(term,pattern,state,memory,unifying),
-
-//         // (_,"rawheadtail",_) =>      unify_headtail(term,pattern,state,memory,unifying),
-        
-//         15 => unify_list(term,pattern,state,memory,unifying),
-//         79 => unify_list(term,pattern,state,memory,unifying),
-//         143 => unify_list(term,pattern,state,memory,unifying),
-//         207 => unify_list(term,pattern,state,memory,unifying),
-//         271 => unify_list(term,pattern,state,memory,unifying),
-//         335 => unify_list(term,pattern,state,memory,unifying),
-//         399 => unify_list(term,pattern,state,memory,unifying),
-//         463 => unify_list(term,pattern,state,memory,unifying),
-//         527 => unify_list(term,pattern,state,memory,unifying),
-//         591 => unify_list(term,pattern,state,memory,unifying),
-//         655 => unify_list(term,pattern,state,memory,unifying),
-//         719 => unify_list(term,pattern,state,memory,unifying),
-//         783 => unify_list(term,pattern,state,memory,unifying),
-//         847 => unify_list(term,pattern,state,memory,unifying),
-//         911 => unify_list(term,pattern,state,memory,unifying),
-//         911 => unify_list(term,pattern,state,memory,unifying),
-//         975 => unify_list(term,pattern,state,memory,unifying),
-//         1039 => unify_list(term,pattern,state,memory,unifying),
-//         1103 => unify_list(term,pattern,state,memory,unifying),
-//         1167 => unify_list(term,pattern,state,memory,unifying),
-//         1231 => unify_list(term,pattern,state,memory,unifying),
-//         1295 => unify_list(term,pattern,state,memory,unifying),
-//         1359 => unify_list(term,pattern,state,memory,unifying),
-//         1423 => unify_list(term,pattern,state,memory,unifying),
-//         1487 => unify_list(term,pattern,state,memory,unifying),
-//         1551 => unify_list(term,pattern,state,memory,unifying),
-//         1615 => unify_list(term,pattern,state,memory,unifying),
-//         1679 => unify_list(term,pattern,state,memory,unifying),
-//         1743 => unify_list(term,pattern,state,memory,unifying),
-//         1807 => unify_list(term,pattern,state,memory,unifying),
-//         1871 => unify_list(term,pattern,state,memory,unifying),
-//         1935 => unify_list(term,pattern,state,memory,unifying),
-//         1999 => unify_list(term,pattern,state,memory,unifying),
-//         2063 => unify_list(term,pattern,state,memory,unifying),
-//         2127 => unify_list(term,pattern,state,memory,unifying),
-//         2191 => unify_list(term,pattern,state,memory,unifying),
-//         14 => unify_list(term,pattern,state,memory,unifying),
-//         78 => unify_list(term,pattern,state,memory,unifying),
-//         142 => unify_list(term,pattern,state,memory,unifying),
-//         206 => unify_list(term,pattern,state,memory,unifying),
-//         270 => unify_list(term,pattern,state,memory,unifying),
-//         334 => unify_list(term,pattern,state,memory,unifying),
-//         398 => unify_list(term,pattern,state,memory,unifying),
-//         462 => unify_list(term,pattern,state,memory,unifying),
-//         526 => unify_list(term,pattern,state,memory,unifying),
-//         590 => unify_list(term,pattern,state,memory,unifying),
-//         654 => unify_list(term,pattern,state,memory,unifying),
-//         718 => unify_list(term,pattern,state,memory,unifying),
-//         782 => unify_list(term,pattern,state,memory,unifying),
-//         846 => unify_list(term,pattern,state,memory,unifying),
-//         910 => unify_list(term,pattern,state,memory,unifying),
-//         910 => unify_list(term,pattern,state,memory,unifying),
-//         974 => unify_list(term,pattern,state,memory,unifying),
-//         1038 => unify_list(term,pattern,state,memory,unifying),
-//         1102 => unify_list(term,pattern,state,memory,unifying),
-//         1166 => unify_list(term,pattern,state,memory,unifying),
-//         1230 => unify_list(term,pattern,state,memory,unifying),
-//         1294 => unify_list(term,pattern,state,memory,unifying),
-//         1358 => unify_list(term,pattern,state,memory,unifying),
-//         1422 => unify_list(term,pattern,state,memory,unifying),
-//         1486 => unify_list(term,pattern,state,memory,unifying),
-//         1550 => unify_list(term,pattern,state,memory,unifying),
-//         1614 => unify_list(term,pattern,state,memory,unifying),
-//         1678 => unify_list(term,pattern,state,memory,unifying),
-//         1742 => unify_list(term,pattern,state,memory,unifying),
-//         1806 => unify_list(term,pattern,state,memory,unifying),
-//         1870 => unify_list(term,pattern,state,memory,unifying),
-//         1934 => unify_list(term,pattern,state,memory,unifying),
-//         1998 => unify_list(term,pattern,state,memory,unifying),
-//         2062 => unify_list(term,pattern,state,memory,unifying),
-//         2126 => unify_list(term,pattern,state,memory,unifying),
-//         2190 => unify_list(term,pattern,state,memory,unifying),
-
-//         // (_,"list",_) =>             unify_list(term,pattern,state,memory,unifying),
-        
-//         449 => unify_list(term,pattern,state,memory,unifying),
-//         451 => unify_list(term,pattern,state,memory,unifying),
-//         453 => unify_list(term,pattern,state,memory,unifying),
-//         455 => unify_list(term,pattern,state,memory,unifying),
-//         457 => unify_list(term,pattern,state,memory,unifying),
-//         459 => unify_list(term,pattern,state,memory,unifying),
-//         461 => unify_list(term,pattern,state,memory,unifying),
-//         463 => unify_list(term,pattern,state,memory,unifying),
-//         465 => unify_list(term,pattern,state,memory,unifying),
-//         467 => unify_list(term,pattern,state,memory,unifying),
-//         469 => unify_list(term,pattern,state,memory,unifying),
-//         471 => unify_list(term,pattern,state,memory,unifying),
-//         473 => unify_list(term,pattern,state,memory,unifying),
-//         475 => unify_list(term,pattern,state,memory,unifying),
-//         477 => unify_list(term,pattern,state,memory,unifying),
-//         477 => unify_list(term,pattern,state,memory,unifying),
-//         479 => unify_list(term,pattern,state,memory,unifying),
-//         481 => unify_list(term,pattern,state,memory,unifying),
-//         483 => unify_list(term,pattern,state,memory,unifying),
-//         485 => unify_list(term,pattern,state,memory,unifying),
-//         487 => unify_list(term,pattern,state,memory,unifying),
-//         489 => unify_list(term,pattern,state,memory,unifying),
-//         491 => unify_list(term,pattern,state,memory,unifying),
-//         493 => unify_list(term,pattern,state,memory,unifying),
-//         495 => unify_list(term,pattern,state,memory,unifying),
-//         497 => unify_list(term,pattern,state,memory,unifying),
-//         499 => unify_list(term,pattern,state,memory,unifying),
-//         501 => unify_list(term,pattern,state,memory,unifying),
-//         503 => unify_list(term,pattern,state,memory,unifying),
-//         505 => unify_list(term,pattern,state,memory,unifying),
-//         507 => unify_list(term,pattern,state,memory,unifying),
-//         509 => unify_list(term,pattern,state,memory,unifying),
-//         511 => unify_list(term,pattern,state,memory,unifying),
-//         449 => unify_list(term,pattern,state,memory,unifying),
-//         451 => unify_list(term,pattern,state,memory,unifying),
-//         453 => unify_list(term,pattern,state,memory,unifying),
-//         448 => unify_list(term,pattern,state,memory,unifying),
-//         450 => unify_list(term,pattern,state,memory,unifying),
-//         452 => unify_list(term,pattern,state,memory,unifying),
-//         454 => unify_list(term,pattern,state,memory,unifying),
-//         456 => unify_list(term,pattern,state,memory,unifying),
-//         458 => unify_list(term,pattern,state,memory,unifying),
-//         460 => unify_list(term,pattern,state,memory,unifying),
-//         462 => unify_list(term,pattern,state,memory,unifying),
-//         464 => unify_list(term,pattern,state,memory,unifying),
-//         466 => unify_list(term,pattern,state,memory,unifying),
-//         468 => unify_list(term,pattern,state,memory,unifying),
-//         470 => unify_list(term,pattern,state,memory,unifying),
-//         472 => unify_list(term,pattern,state,memory,unifying),
-//         474 => unify_list(term,pattern,state,memory,unifying),
-//         476 => unify_list(term,pattern,state,memory,unifying),
-//         476 => unify_list(term,pattern,state,memory,unifying),
-//         478 => unify_list(term,pattern,state,memory,unifying),
-//         480 => unify_list(term,pattern,state,memory,unifying),
-//         482 => unify_list(term,pattern,state,memory,unifying),
-//         484 => unify_list(term,pattern,state,memory,unifying),
-//         486 => unify_list(term,pattern,state,memory,unifying),
-//         488 => unify_list(term,pattern,state,memory,unifying),
-//         490 => unify_list(term,pattern,state,memory,unifying),
-//         492 => unify_list(term,pattern,state,memory,unifying),
-//         494 => unify_list(term,pattern,state,memory,unifying),
-//         496 => unify_list(term,pattern,state,memory,unifying),
-//         498 => unify_list(term,pattern,state,memory,unifying),
-//         500 => unify_list(term,pattern,state,memory,unifying),
-//         502 => unify_list(term,pattern,state,memory,unifying),
-//         504 => unify_list(term,pattern,state,memory,unifying),
-//         506 => unify_list(term,pattern,state,memory,unifying),
-//         508 => unify_list(term,pattern,state,memory,unifying),
-//         510 => unify_list(term,pattern,state,memory,unifying),
-//         448 => unify_list(term,pattern,state,memory,unifying),
-//         450 => unify_list(term,pattern,state,memory,unifying),
-//         452 => unify_list(term,pattern,state,memory,unifying),
-        
-//         // ("list",_,_) =>             unify_list(term,pattern,state,memory,unifying),
-
-//         59 => unify_deref(term,pattern,state,memory,unifying),
-//         123 => unify_deref(term,pattern,state,memory,unifying),
-//         187 => unify_deref(term,pattern,state,memory,unifying),
-//         251 => unify_deref(term,pattern,state,memory,unifying),
-//         315 => unify_deref(term,pattern,state,memory,unifying),
-//         379 => unify_deref(term,pattern,state,memory,unifying),
-//         443 => unify_deref(term,pattern,state,memory,unifying),
-//         507 => unify_deref(term,pattern,state,memory,unifying),
-//         571 => unify_deref(term,pattern,state,memory,unifying),
-//         635 => unify_deref(term,pattern,state,memory,unifying),
-//         699 => unify_deref(term,pattern,state,memory,unifying),
-//         763 => unify_deref(term,pattern,state,memory,unifying),
-//         827 => unify_deref(term,pattern,state,memory,unifying),
-//         891 => unify_deref(term,pattern,state,memory,unifying),
-//         955 => unify_deref(term,pattern,state,memory,unifying),
-//         955 => unify_deref(term,pattern,state,memory,unifying),
-//         1019 => unify_deref(term,pattern,state,memory,unifying),
-//         1083 => unify_deref(term,pattern,state,memory,unifying),
-//         1147 => unify_deref(term,pattern,state,memory,unifying),
-//         1211 => unify_deref(term,pattern,state,memory,unifying),
-//         1275 => unify_deref(term,pattern,state,memory,unifying),
-//         1339 => unify_deref(term,pattern,state,memory,unifying),
-//         1403 => unify_deref(term,pattern,state,memory,unifying),
-//         1467 => unify_deref(term,pattern,state,memory,unifying),
-//         1531 => unify_deref(term,pattern,state,memory,unifying),
-//         1595 => unify_deref(term,pattern,state,memory,unifying),
-//         1659 => unify_deref(term,pattern,state,memory,unifying),
-//         1723 => unify_deref(term,pattern,state,memory,unifying),
-//         1787 => unify_deref(term,pattern,state,memory,unifying),
-//         1851 => unify_deref(term,pattern,state,memory,unifying),
-//         1915 => unify_deref(term,pattern,state,memory,unifying),
-//         1979 => unify_deref(term,pattern,state,memory,unifying),
-//         2043 => unify_deref(term,pattern,state,memory,unifying),
-//         2107 => unify_deref(term,pattern,state,memory,unifying),
-//         2171 => unify_deref(term,pattern,state,memory,unifying),
-//         2235 => unify_deref(term,pattern,state,memory,unifying),
-//         58 => unify_deref(term,pattern,state,memory,unifying),
-//         122 => unify_deref(term,pattern,state,memory,unifying),
-//         186 => unify_deref(term,pattern,state,memory,unifying),
-//         250 => unify_deref(term,pattern,state,memory,unifying),
-//         314 => unify_deref(term,pattern,state,memory,unifying),
-//         378 => unify_deref(term,pattern,state,memory,unifying),
-//         442 => unify_deref(term,pattern,state,memory,unifying),
-//         506 => unify_deref(term,pattern,state,memory,unifying),
-//         570 => unify_deref(term,pattern,state,memory,unifying),
-//         634 => unify_deref(term,pattern,state,memory,unifying),
-//         698 => unify_deref(term,pattern,state,memory,unifying),
-//         762 => unify_deref(term,pattern,state,memory,unifying),
-//         826 => unify_deref(term,pattern,state,memory,unifying),
-//         890 => unify_deref(term,pattern,state,memory,unifying),
-//         954 => unify_deref(term,pattern,state,memory,unifying),
-//         954 => unify_deref(term,pattern,state,memory,unifying),
-//         1018 => unify_deref(term,pattern,state,memory,unifying),
-//         1082 => unify_deref(term,pattern,state,memory,unifying),
-//         1146 => unify_deref(term,pattern,state,memory,unifying),
-//         1210 => unify_deref(term,pattern,state,memory,unifying),
-//         1274 => unify_deref(term,pattern,state,memory,unifying),
-//         1338 => unify_deref(term,pattern,state,memory,unifying),
-//         1402 => unify_deref(term,pattern,state,memory,unifying),
-//         1466 => unify_deref(term,pattern,state,memory,unifying),
-//         1530 => unify_deref(term,pattern,state,memory,unifying),
-//         1594 => unify_deref(term,pattern,state,memory,unifying),
-//         1658 => unify_deref(term,pattern,state,memory,unifying),
-//         1722 => unify_deref(term,pattern,state,memory,unifying),
-//         1786 => unify_deref(term,pattern,state,memory,unifying),
-//         1850 => unify_deref(term,pattern,state,memory,unifying),
-//         1914 => unify_deref(term,pattern,state,memory,unifying),
-//         1978 => unify_deref(term,pattern,state,memory,unifying),
-//         2042 => unify_deref(term,pattern,state,memory,unifying),
-//         2106 => unify_deref(term,pattern,state,memory,unifying),
-//         2170 => unify_deref(term,pattern,state,memory,unifying),
-//         2234 => unify_deref(term,pattern,state,memory,unifying),
-
-//         // (_,"deref",_) =>            unify_deref(term,pattern,state,memory,unifying),
-
-//         45 => unify_apply(term,pattern,state,memory,unifying),
-//         109 => unify_apply(term,pattern,state,memory,unifying),
-//         173 => unify_apply(term,pattern,state,memory,unifying),
-//         237 => unify_apply(term,pattern,state,memory,unifying),
-//         301 => unify_apply(term,pattern,state,memory,unifying),
-//         365 => unify_apply(term,pattern,state,memory,unifying),
-//         429 => unify_apply(term,pattern,state,memory,unifying),
-//         493 => unify_apply(term,pattern,state,memory,unifying),
-//         557 => unify_apply(term,pattern,state,memory,unifying),
-//         621 => unify_apply(term,pattern,state,memory,unifying),
-//         685 => unify_apply(term,pattern,state,memory,unifying),
-//         749 => unify_apply(term,pattern,state,memory,unifying),
-//         813 => unify_apply(term,pattern,state,memory,unifying),
-//         877 => unify_apply(term,pattern,state,memory,unifying),
-//         941 => unify_apply(term,pattern,state,memory,unifying),
-//         941 => unify_apply(term,pattern,state,memory,unifying),
-//         1005 => unify_apply(term,pattern,state,memory,unifying),
-//         1069 => unify_apply(term,pattern,state,memory,unifying),
-//         1133 => unify_apply(term,pattern,state,memory,unifying),
-//         1197 => unify_apply(term,pattern,state,memory,unifying),
-//         1261 => unify_apply(term,pattern,state,memory,unifying),
-//         1325 => unify_apply(term,pattern,state,memory,unifying),
-//         1389 => unify_apply(term,pattern,state,memory,unifying),
-//         1453 => unify_apply(term,pattern,state,memory,unifying),
-//         1517 => unify_apply(term,pattern,state,memory,unifying),
-//         1581 => unify_apply(term,pattern,state,memory,unifying),
-//         1645 => unify_apply(term,pattern,state,memory,unifying),
-//         1709 => unify_apply(term,pattern,state,memory,unifying),
-//         1773 => unify_apply(term,pattern,state,memory,unifying),
-//         1837 => unify_apply(term,pattern,state,memory,unifying),
-//         1901 => unify_apply(term,pattern,state,memory,unifying),
-//         1965 => unify_apply(term,pattern,state,memory,unifying),
-//         2029 => unify_apply(term,pattern,state,memory,unifying),
-//         2093 => unify_apply(term,pattern,state,memory,unifying),
-//         2157 => unify_apply(term,pattern,state,memory,unifying),
-//         2221 => unify_apply(term,pattern,state,memory,unifying),
-//         44 => unify_apply(term,pattern,state,memory,unifying),
-//         108 => unify_apply(term,pattern,state,memory,unifying),
-//         172 => unify_apply(term,pattern,state,memory,unifying),
-//         236 => unify_apply(term,pattern,state,memory,unifying),
-//         300 => unify_apply(term,pattern,state,memory,unifying),
-//         364 => unify_apply(term,pattern,state,memory,unifying),
-//         428 => unify_apply(term,pattern,state,memory,unifying),
-//         492 => unify_apply(term,pattern,state,memory,unifying),
-//         556 => unify_apply(term,pattern,state,memory,unifying),
-//         620 => unify_apply(term,pattern,state,memory,unifying),
-//         684 => unify_apply(term,pattern,state,memory,unifying),
-//         748 => unify_apply(term,pattern,state,memory,unifying),
-//         812 => unify_apply(term,pattern,state,memory,unifying),
-//         876 => unify_apply(term,pattern,state,memory,unifying),
-//         940 => unify_apply(term,pattern,state,memory,unifying),
-//         940 => unify_apply(term,pattern,state,memory,unifying),
-//         1004 => unify_apply(term,pattern,state,memory,unifying),
-//         1068 => unify_apply(term,pattern,state,memory,unifying),
-//         1132 => unify_apply(term,pattern,state,memory,unifying),
-//         1196 => unify_apply(term,pattern,state,memory,unifying),
-//         1260 => unify_apply(term,pattern,state,memory,unifying),
-//         1324 => unify_apply(term,pattern,state,memory,unifying),
-//         1388 => unify_apply(term,pattern,state,memory,unifying),
-//         1452 => unify_apply(term,pattern,state,memory,unifying),
-//         1516 => unify_apply(term,pattern,state,memory,unifying),
-//         1580 => unify_apply(term,pattern,state,memory,unifying),
-//         1644 => unify_apply(term,pattern,state,memory,unifying),
-//         1708 => unify_apply(term,pattern,state,memory,unifying),
-//         1772 => unify_apply(term,pattern,state,memory,unifying),
-//         1836 => unify_apply(term,pattern,state,memory,unifying),
-//         1900 => unify_apply(term,pattern,state,memory,unifying),
-//         1964 => unify_apply(term,pattern,state,memory,unifying),
-//         2028 => unify_apply(term,pattern,state,memory,unifying),
-//         2092 => unify_apply(term,pattern,state,memory,unifying),
-//         2156 => unify_apply(term,pattern,state,memory,unifying),
-//         2220 => unify_apply(term,pattern,state,memory,unifying),
-
-//         // (_,"apply",_) =>            unify_apply(term,pattern,state,memory,unifying),
-
-//         35 => unify_constraint(term,pattern,state,memory,unifying),
-//         99 => unify_constraint(term,pattern,state,memory,unifying),
-//         163 => unify_constraint(term,pattern,state,memory,unifying),
-//         227 => unify_constraint(term,pattern,state,memory,unifying),
-//         291 => unify_constraint(term,pattern,state,memory,unifying),
-//         355 => unify_constraint(term,pattern,state,memory,unifying),
-//         419 => unify_constraint(term,pattern,state,memory,unifying),
-//         483 => unify_constraint(term,pattern,state,memory,unifying),
-//         547 => unify_constraint(term,pattern,state,memory,unifying),
-//         611 => unify_constraint(term,pattern,state,memory,unifying),
-//         675 => unify_constraint(term,pattern,state,memory,unifying),
-//         739 => unify_constraint(term,pattern,state,memory,unifying),
-//         803 => unify_constraint(term,pattern,state,memory,unifying),
-//         867 => unify_constraint(term,pattern,state,memory,unifying),
-//         931 => unify_constraint(term,pattern,state,memory,unifying),
-//         931 => unify_constraint(term,pattern,state,memory,unifying),
-//         995 => unify_constraint(term,pattern,state,memory,unifying),
-//         1059 => unify_constraint(term,pattern,state,memory,unifying),
-//         1123 => unify_constraint(term,pattern,state,memory,unifying),
-//         1187 => unify_constraint(term,pattern,state,memory,unifying),
-//         1251 => unify_constraint(term,pattern,state,memory,unifying),
-//         1315 => unify_constraint(term,pattern,state,memory,unifying),
-//         1379 => unify_constraint(term,pattern,state,memory,unifying),
-//         1443 => unify_constraint(term,pattern,state,memory,unifying),
-//         1507 => unify_constraint(term,pattern,state,memory,unifying),
-//         1571 => unify_constraint(term,pattern,state,memory,unifying),
-//         1635 => unify_constraint(term,pattern,state,memory,unifying),
-//         1699 => unify_constraint(term,pattern,state,memory,unifying),
-//         1763 => unify_constraint(term,pattern,state,memory,unifying),
-//         1827 => unify_constraint(term,pattern,state,memory,unifying),
-//         1891 => unify_constraint(term,pattern,state,memory,unifying),
-//         1955 => unify_constraint(term,pattern,state,memory,unifying),
-//         2019 => unify_constraint(term,pattern,state,memory,unifying),
-//         2083 => unify_constraint(term,pattern,state,memory,unifying),
-//         2147 => unify_constraint(term,pattern,state,memory,unifying),
-//         2211 => unify_constraint(term,pattern,state,memory,unifying),
-//         34 => unify_constraint(term,pattern,state,memory,unifying),
-//         98 => unify_constraint(term,pattern,state,memory,unifying),
-//         162 => unify_constraint(term,pattern,state,memory,unifying),
-//         226 => unify_constraint(term,pattern,state,memory,unifying),
-//         290 => unify_constraint(term,pattern,state,memory,unifying),
-//         354 => unify_constraint(term,pattern,state,memory,unifying),
-//         418 => unify_constraint(term,pattern,state,memory,unifying),
-//         482 => unify_constraint(term,pattern,state,memory,unifying),
-//         546 => unify_constraint(term,pattern,state,memory,unifying),
-//         610 => unify_constraint(term,pattern,state,memory,unifying),
-//         674 => unify_constraint(term,pattern,state,memory,unifying),
-//         738 => unify_constraint(term,pattern,state,memory,unifying),
-//         802 => unify_constraint(term,pattern,state,memory,unifying),
-//         866 => unify_constraint(term,pattern,state,memory,unifying),
-//         930 => unify_constraint(term,pattern,state,memory,unifying),
-//         930 => unify_constraint(term,pattern,state,memory,unifying),
-//         994 => unify_constraint(term,pattern,state,memory,unifying),
-//         1058 => unify_constraint(term,pattern,state,memory,unifying),
-//         1122 => unify_constraint(term,pattern,state,memory,unifying),
-//         1186 => unify_constraint(term,pattern,state,memory,unifying),
-//         1250 => unify_constraint(term,pattern,state,memory,unifying),
-//         1314 => unify_constraint(term,pattern,state,memory,unifying),
-//         1378 => unify_constraint(term,pattern,state,memory,unifying),
-//         1442 => unify_constraint(term,pattern,state,memory,unifying),
-//         1506 => unify_constraint(term,pattern,state,memory,unifying),
-//         1570 => unify_constraint(term,pattern,state,memory,unifying),
-//         1634 => unify_constraint(term,pattern,state,memory,unifying),
-//         1698 => unify_constraint(term,pattern,state,memory,unifying),
-//         1762 => unify_constraint(term,pattern,state,memory,unifying),
-//         1826 => unify_constraint(term,pattern,state,memory,unifying),
-//         1890 => unify_constraint(term,pattern,state,memory,unifying),
-//         1954 => unify_constraint(term,pattern,state,memory,unifying),
-//         2018 => unify_constraint(term,pattern,state,memory,unifying),
-//         2082 => unify_constraint(term,pattern,state,memory,unifying),
-//         2146 => unify_constraint(term,pattern,state,memory,unifying),
-//         2210 => unify_constraint(term,pattern,state,memory,unifying),
-
-//         //(_,"constraint",_) =>       unify_constraint(term,pattern,state,memory,unifying),
-
-//         529 => unify_tuple(term,pattern,state,memory,unifying),
-//         528 => unify_tuple(term,pattern,state,memory,unifying),
-
-
-//         // (_,_,_) =>                  unify_tuple(term,pattern,state,memory,unifying),
-
-        
-//         _ => panic!("Unify: unrecognized pattern match."),
-//     };
-//}
+    Ok( unifiers ) 
+}
+/******************************************************************************/
 
 pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
     
     let term_type = peek( ArenaRc::clone(&term) );
     let pattern_type = peek( ArenaRc::clone(&pattern) );
 
-    //println!("Unifying: {} and {}",term_type,pattern_type);
+    //println!("Unifying: term: {} to pattern: {}",term_type,pattern_type);
 
     return match (term_type,pattern_type,unifying) {
 
@@ -2119,6 +555,8 @@ pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut St
         ("string","string",_) =>    unify_string_to_string(term,pattern,state,memory,unifying),
         ("string","index",_) =>     unify_index(term,pattern,state,memory,unifying),
         (_,"namedpattern",_) =>     unify_namedpattern(term,pattern,state,memory,unifying),
+        ("pair","pair",_) =>        unify_pairs(term,pattern,state,memory,unifying),
+        (_,"typematch",_) =>        unify_typematch(term,pattern,state,memory,unifying),
         ("string",_,_) =>           Err( new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type),state,memory)),
         (_,"string",_) =>           unify_string_to_other(term,pattern,state,memory,unifying),
         (_,"if",true) =>            unify_if(term,pattern,state,memory,unifying),
@@ -2133,7 +571,6 @@ pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut St
         ("bool","real",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
         ("bool","bool",_) =>        unify_primitive_to_primitive(term,pattern,state,memory,unifying),
         ("if",_,_) =>               subsume_conditional(term,pattern,state,memory,unifying),
-        (_,"typematch",_) =>        unify_typematch(term,pattern,state,memory,unifying),
         (_,"namedpattern",_) =>     unify_namedpattern(term,pattern,state,memory,unifying),
         (_,"none",_) =>             unify_none(term,pattern,state,memory,unifying),
         ("tolist",_,_) =>           Err( new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type),state,memory)),
@@ -2168,123 +605,6 @@ pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut St
         (_,_,_) =>                  unify_tuple(term,pattern,state,memory,unifying)
     };
 }
-/******************************************************************************/
-// pub fn unify<'a>( term: ArenaRc<Node>, pattern: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node>, unifying: bool) -> Result<Vec<(ArenaRc<Node>,ArenaRc<Node>)>, ArenaRc<Node>>{
-    
-//     let term_type = peek( ArenaRc::clone(&term) );
-//     let pattern_type = peek( ArenaRc::clone(&pattern) );
-
-//     println!("Unifying: {} and {}",term_type,pattern_type);
-
-//     if term_type == "string" && (pattern_type != "id" && pattern_type != "index" && pattern_type != "namedpattern" && pattern_type != "typematch") { // Apply regular expression pattern match
-        
-//         if pattern_type == "string" {
-//             // Note: a pattern needs to match the whole term.
-//             return unify_string_to_string(term,pattern,state,memory,unifying);
-//         } else {
-//              new_exception("PatternMatchFailed".to_string(), format!("regular expression {} did not match {}",term2string(&pattern).unwrap(),term2string(&term).unwrap()))
-//         }
-//     } else if (term_type == "integer" || term_type == "bool" || term_type == "real") && (pattern_type == "integer" || pattern_type == "bool" || pattern_type == "real")  {
-
-//         return unify_primitive_to_primitive(term,pattern,state,memory,unifying);
-
-//     } else if !unifying && term_type == "namedpattern" {
-
-//         return subsume_namedpattern(term,pattern,state,memory,unifying);
-
-//     } else if !unifying && term_type == "deref" {
-
-//         return subsume_deref(term,pattern,state,memory,unifying);
-    
-//     /* ** Asteroid value level matching ** */
-//     } else if term_type == "object" && pattern_type == "object" {
-//         return unify_object_to_object(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "string" && term_type != "string" {
-
-//         return unify_string_to_other(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "if" {
-
-//         // If we are evaluating subsumption
-//         if !unifying {
-//             return subsume_if(term,pattern,state,memory,unifying);
-//         } else {
-//             return unify_if(term,pattern,state,memory,unifying);
-//         }
-
-//     } else if term_type == "if" {
-//         return subsume_conditional(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "typematch" {
-//         return unify_typematch(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "namedpattern" {
-//         return unify_namedpattern(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "none" {
-//         return unify_none(term,pattern,state,memory,unifying);
-//     // NOTE: functions/foreign are allowed in terms as long as they are matched
-//     // by a variable in the pattern - anything else will fail
-//     } else if ["tolist","rawtolist","wherelist","rawwherelist","if","escape","is","in"].contains( &term_type ) {
-//          new_exception("PatternMatchFailed".to_string(), format!("term of type '{}' not allowed in pattern matching",term_type))
-
-//     } else if ["tolist","rawtolist","wherelist","rawwherelist","if","escape","is","in","foreign","function"].contains( &pattern_type ) {
-//          new_exception("PatternMatchFailed".to_string(), format!("pattern of type '{}' not allowed in pattern matching",pattern_type))
-
-//     } else if pattern_type == "quote" {
-//         return unify_quote(term,pattern,state,memory,unifying);
-
-//     } else if term_type == "quote" && !(["id","index"].contains( &pattern_type))  {
-//         // ignore quote on the term if we are not trying to unify term with
-//         // a variable or other kind of lval
-//         return unify_term_quote(term,pattern,state,memory,unifying);
-
-//     } else if term_type == "object" && pattern_type == "apply" {
-
-//         return unify_object_to_apply(term,pattern,state,memory,unifying);
-        
-//     } else if pattern_type == "index" {
-//         // list element lval access
-//         return unify_index(term,pattern,state,memory,unifying);
-    
-
-//     } else if pattern_type == "id" {
-
-//         return unify_id(term,pattern,state,memory,unifying);
-
-//     } else if ["headtail","rawheadtail"].contains(&pattern_type) {
-
-
-//         return unify_headtail(term,pattern,state,memory,unifying);
-    
-//     } else if term_type == "list" || pattern_type == "list" {
-
-//         return unify_list(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "deref" {
-//         // can be an AST representing any computation
-//         // that produces a pattern.
-//         return unify_deref(term,pattern,state,memory,unifying);
-
-        
-//     // builtin operators look like apply lists with operator names
-//     } else if pattern_type == "apply" {
-
-//         return unify_apply(term,pattern,state,memory,unifying);
-
-//     } else if pattern_type == "constraint" {
-//         return unify_constraint(term,pattern,state,memory,unifying);
-
-//     } else if peek(ArenaRc::clone(&term)) != peek(ArenaRc::clone(&pattern)) {
-//          new_exception("PatternMatchFailed".to_string(), format!("nodes '{}' and '{}' are not the same",peek(ArenaRc::clone(&term)),peek(ArenaRc::clone(&pattern))))))) ]))))))))))
-
-//     } else { 
-
-//         return unify_tuple(term,pattern,state,memory,unifying);
-//     }
-// }
-
 
 /******************************************************************************/
 pub fn walk<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{ 
@@ -2323,6 +643,7 @@ pub fn walk<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Aren
         Node::AstroNamedPattern(_) => named_pattern_exp(node,state, memory),
         Node::AstroMemberFunctionVal(_) => Ok(node),
         Node::AstroDeref(_) => deref_exp(node,state, memory),
+        Node::AstroPair(_) => pair_exp(node,state, memory),
         _ => return ( Err( new_exception("VMError".to_string(), "walk: unknown node type".to_string(), state, memory ))),
     }    
 }
@@ -2351,8 +672,9 @@ pub fn list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut 
 }
 /******************************************************************************/
 pub fn tuple_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroTuple( AstroTuple{ref contents} ) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected tuple in tuple_exp()".to_string(), state, memory )))};
+    let Node::AstroTuple( AstroTuple{ref contents} ) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected tuple in tuple_exp()".to_string(), state, memory )))
+    };
 
     let len = contents.borrow().len();
     for i in 0..len {
@@ -2365,9 +687,27 @@ pub fn tuple_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut
     Ok( node ) 
 }
 /******************************************************************************/
+pub fn pair_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
+    let Node::AstroPair( AstroPair{ ref first, ref second } ) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected pair in pair_exp()".to_string(), state, memory )))
+    };
+
+    let first = match walk( ArenaRc::clone(first),state,memory) {
+        Ok( val ) => val,
+        Err( e ) => return Err(e),
+    };
+    let second = match walk( ArenaRc::clone(second),state,memory) {
+        Ok( val ) => val,
+        Err( e ) => return Err(e),
+    };
+
+    Ok( memory.alloc_rc( Node::AstroPair(AstroPair::new( ArenaRc::clone(&first), ArenaRc::clone(&second) )) ) ) 
+}
+/******************************************************************************/
 pub fn to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroToList(AstroToList{ref start,ref stop,ref stride}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected to_list in to_list_exp()".to_string(), state, memory )))};
+    let Node::AstroToList(AstroToList{ref start,ref stop,ref stride}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected to_list in to_list_exp()".to_string(), state, memory )))
+    };
 
     let mut start_val;
     let mut stop_val;
@@ -2378,8 +718,10 @@ pub fn to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a m
             Ok( val ) => val,
             Err( e ) => return Err(e),
         };
-        let Node::AstroInteger(AstroInteger{value}) = *start 
-            else {return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))};
+
+        let Node::AstroInteger(AstroInteger{value}) = *start else {
+            return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))
+        };
         start_val= value;
     }
 
@@ -2388,8 +730,10 @@ pub fn to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a m
             Ok( val ) => val,
             Err( e ) => return Err(e),
         };
-        let Node::AstroInteger(AstroInteger{value}) = *stop
-            else {return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))};
+
+        let Node::AstroInteger(AstroInteger{value}) = *stop else {
+            return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))
+        };
         stop_val = value;
     }
 
@@ -2398,8 +742,10 @@ pub fn to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a m
             Ok( val ) => val,
             Err( e ) => return Err(e),
         };
-        let Node::AstroInteger(AstroInteger{value}) = *stride
-           else {return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))};
+
+        let Node::AstroInteger(AstroInteger{value}) = *stride else {
+            return( Err(new_exception("VMError".to_string(), "walk: expected integer in to_list_exp()".to_string(), state, memory )))
+        };
         stride_val = value;
     }
 
@@ -2420,25 +766,29 @@ pub fn to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a m
 }
 /******************************************************************************/
 pub fn function_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroFunction(AstroFunction{ref body_list}) = *node
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected function in function_exp()".to_string(), state, memory )))};
+    let Node::AstroFunction(AstroFunction{ref body_list}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected function in function_exp()".to_string(), state, memory )))
+    };
 
     Ok( memory.alloc_rc(Node::AstroFunctionVal(AstroFunctionVal::new(ArenaRc::clone(body_list), Rc::new( state.symbol_table.get_closure()) ))))
 }
 /******************************************************************************/
 pub fn raw_to_list_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroRawToList(AstroRawToList{ref start,ref stop,ref stride}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected to_list in to_list_exp()".to_string(), state, memory )))};
+    let Node::AstroRawToList(AstroRawToList{ref start,ref stop,ref stride}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected to_list in to_list_exp()".to_string(), state, memory )))
+    };
 
     walk( memory.alloc_rc(  Node::AstroToList( AstroToList{start:(*start).clone(),stop:(*stop).clone(),stride:(*stride).clone()} )), state, memory)
 }
 /******************************************************************************/
 pub fn head_tail_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroHeadTail(AstroHeadTail{ref head,ref tail}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected head-tail exp in head_tail_exp().".to_string(), state, memory )))};
+    let Node::AstroHeadTail(AstroHeadTail{ref head,ref tail}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected head-tail exp in head_tail_exp().".to_string(), state, memory )))
+    };
 
-    let Node::AstroList( AstroList{ref contents} ) = **tail
-        else {return( Err(new_exception("VMError".to_string(), "unsupported tail type in head-tail operator.".to_string(), state, memory )))};
+    let Node::AstroList( AstroList{ref contents} ) = **tail else {
+        return( Err(new_exception("VMError".to_string(), "unsupported tail type in head-tail operator.".to_string(), state, memory )))
+    };
 
     let mut new_contents = Vec::with_capacity(contents.borrow().len());
     new_contents.push(head.to_owned());
@@ -2450,15 +800,17 @@ pub fn head_tail_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a
 }
 /******************************************************************************/
 pub fn raw_head_tail_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroRawHeadTail(AstroRawHeadTail{ref head,ref tail}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected raw head-tail exp in raw_head_tail_exp().".to_string(), state, memory )))};
+    let Node::AstroRawHeadTail(AstroRawHeadTail{ref head,ref tail}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected raw head-tail exp in raw_head_tail_exp().".to_string(), state, memory )))
+    };
 
     walk( memory.alloc_rc(  Node::AstroHeadTail( AstroHeadTail{head:head.to_owned(),tail:tail.to_owned()})), state, memory)
 }
 /******************************************************************************/
 pub fn sequence_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroSequence(AstroSequence{ref first,ref second}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected sequence expression in sequence_exp().".to_string(), state, memory )))};
+    let Node::AstroSequence(AstroSequence{ref first,ref second}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected sequence expression in sequence_exp().".to_string(), state, memory )))
+    };
 
     let first = match walk( ArenaRc::clone(&first),state,memory) {
         Ok( val ) => val,
@@ -2524,17 +876,17 @@ pub fn id_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Ar
 }
 /******************************************************************************/
 pub fn apply_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroApply(AstroApply{ref function,ref argument}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected apply expression in apply_exp().".to_string(), state, memory )))};
-
+    let Node::AstroApply(AstroApply{ref function,ref argument}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected apply expression in apply_exp().".to_string(), state, memory )))
+    };
+    
     // handle builtin operators that look like apply lists.
     if let Node::AstroID( AstroID{name:ref tag}) = **function {
-    
-        if OPERATOR_SYMBOLS.contains( &(tag.as_str()) ) {
-            handle_builtins( ArenaRc::clone(&node), state, memory)
 
+        if OPERATOR_SYMBOLS.contains( &tag.as_str() ) {
+            handle_builtins( ArenaRc::clone(&node), state, memory)
         } else{
-            
+            //println!("APPLYING {}!",tag);
             // handle function application
             let f_val = match walk( ArenaRc::clone(&function), state,memory) {
                 Ok( val ) => val,
@@ -2549,14 +901,14 @@ pub fn apply_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut
             let _type = peek( ArenaRc::clone(&f_val));
 
             if _type == "functionval" {
-
                 return handle_call( memory.alloc_rc(Node::AstroNone(AstroNone::new())), ArenaRc::clone(&f_val), ArenaRc::clone(&arg_val), state, memory );
 
             } else if _type == "struct" {
-                // object constructor call
 
-                let Node::AstroStruct(AstroStruct{member_names:ref mnames,struct_memory:ref struct_mem}) = *f_val
-                    else {return( Err(new_exception("VMError".to_string(), "apply exp: expected struct.".to_string(), state, memory )))};
+                // object constructor call
+                let Node::AstroStruct(AstroStruct{member_names:ref mnames,struct_memory:ref struct_mem}) = *f_val else {
+                    return( Err(new_exception("VMError".to_string(), "apply exp: expected struct.".to_string(), state, memory )))
+                };
 
                 // create our object memory - memory cells now have initial values
                 // we use structure memory as an init template
@@ -2582,20 +934,34 @@ pub fn apply_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut
                 // try to apply a default constructor by copying the
                 // values from the arg list to the data slots of the object
 
-                let Node::AstroTuple(AstroTuple{contents:ref content}) = *arg_val
-                    else {return( Err(new_exception("VMError".to_string(), "apply exp: expected tuple.".to_string(), state, memory )))};
+                if let Node::AstroTuple(AstroTuple{contents:ref content}) = *arg_val {
                 
-                let data_memory = data_only( RefCell::clone(&obj_memory) );
+                    let data_memory = data_only( RefCell::clone(&obj_memory) );
 
-                if content.borrow().len() != data_memory.len() {
-                    return Err( new_exception("ValueError".to_string(), format!("default constructor expected {} arguments got {}",content.borrow().len(),data_memory.len()), state, memory ));
-                } else {
-                    let data_ix = data_ix_list( RefCell::clone(&obj_memory) );
-                    for i in 0..content.borrow().len() {
-                        obj_memory.borrow_mut()[ data_ix[i] ] = ArenaRc::clone( &content.borrow()[ i ] );
+                    if content.borrow().len() != data_memory.len() {
+                        return Err( new_exception("ValueError".to_string(), format!("default constructor expected {} arguments got {}",content.borrow().len(),data_memory.len()), state, memory ));
+                    } else {
+                        let data_ix = data_ix_list( RefCell::clone(&obj_memory) );
+                        for i in 0..content.borrow().len() {
+                            obj_memory.borrow_mut()[ data_ix[i] ] = ArenaRc::clone( &content.borrow()[ i ] );
+                        }
                     }
-                }
-                return Ok(ArenaRc::clone(&obj_ref)); 
+                    return Ok(ArenaRc::clone(&obj_ref)); 
+                } else if let Node::AstroPair(AstroPair{ref first,ref second}) = *arg_val {
+
+                    let data_memory = data_only( RefCell::clone(&obj_memory) );
+
+                    if 2 != data_memory.len() {
+                        return Err( new_exception("ValueError".to_string(), format!("default constructor expected {} arguments got {}",2,data_memory.len()), state, memory ));
+                    } else {
+                        let data_ix = data_ix_list( RefCell::clone(&obj_memory) );
+                        obj_memory.borrow_mut()[ data_ix[0] ] = ArenaRc::clone( &first );
+                        obj_memory.borrow_mut()[ data_ix[1] ] = ArenaRc::clone( &second );
+                    }
+                    return Ok(ArenaRc::clone(&obj_ref));
+                } else {
+                    return( Err(new_exception("VMError".to_string(), "apply exp: expected tuple.".to_string(), state, memory )))
+                };
             }
             Ok(node) 
         }
@@ -2619,28 +985,37 @@ pub fn apply_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut
 
 
         Ok(node)
+    } else if let Node::AstroApply(AstroApply{function:ref s,argument:ref idx}) = **function {
+
+        let result = match walk( ArenaRc::clone(function), state, memory) {
+            Ok( val ) => val,
+            Err( e ) => return Err(e),
+        };
+        
+
+        apply_exp(result,state,memory)
     } else {
         // Error?
-        Ok(node)
+        Ok( node )
     }
 }
 /******************************************************************************/
 pub fn handle_call<'a>( obj_ref: ArenaRc<Node>, node: ArenaRc<Node>, args: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-
-    let Node::AstroFunctionVal(AstroFunctionVal{body_list:ref fpointer,ref closure}) = *node
-        else {return( Err(new_exception("VMError".to_string(), "handle call: expected function value.".to_string(), state, memory )))};
-
-    let Node::AstroID(AstroID{name:ref fname}) = **fpointer
-        else {return( Err(new_exception("VMError".to_string(), "handle_call: expected id for function name.".to_string(), state, memory )))};
+    // unpack
+    let Node::AstroFunctionVal(AstroFunctionVal{body_list:ref fpointer,ref closure}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "handle call: expected function value.".to_string(), state, memory )))
+    };
+    let Node::AstroID(AstroID{name:ref fname}) = **fpointer else {
+        return( Err(new_exception("VMError".to_string(), "handle_call: expected id for function name.".to_string(), state, memory )))
+    };
 
     // static scoping for functions
     // Note: we have to do this here because unifying
     // over the body patterns can introduce variable declarations,
     // think conditional pattern matching.
-
     let save_symtab = state.symbol_table.get_config();
     state.symbol_table.set_config( Rc::clone( &closure.0 ),Rc::clone( &closure.1 ), closure.2 );
-    state.push_scope();
+    // state.push_scope(); 
 
     if let Node::AstroNone(AstroNone{}) = *obj_ref {
         ;
@@ -2665,15 +1040,18 @@ pub fn handle_call<'a>( obj_ref: ArenaRc<Node>, node: ArenaRc<Node>, args: Arena
 /******************************************************************************/
 pub fn handle_builtins<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
 
-    let Node::AstroApply(AstroApply{ref function,ref argument}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "handle_builtins: expected apply expression.".to_string(), state, memory )))};
-    let Node::AstroID( AstroID{name:ref builtin_type} ) = **function
-        else {return( Err(new_exception("VMError".to_string(), "handle_builtins: expected id.".to_string(), state, memory )))};
+    let Node::AstroApply(AstroApply{ref function,ref argument}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "handle_builtins: expected apply expression.".to_string(), state, memory )))
+    };
+    let Node::AstroID( AstroID{name:ref builtin_type} ) = **function else {
+        return( Err(new_exception("VMError".to_string(), "handle_builtins: expected id.".to_string(), state, memory )))
+    };
 
     if BINARY_OPERATORS.contains( &builtin_type.as_str() ) {
         
-        let Node::AstroPair( AstroPair{ref first,ref second}) = **argument
-            else {return( Err(new_exception("VMError".to_string(), "handle_builtins: expected tuple for args.".to_string(), state, memory )))};
+        let Node::AstroPair( AstroPair{ref first,ref second}) = **argument else {
+            return( Err(new_exception("VMError".to_string(), "handle_builtins: expected tuple for args.".to_string(), state, memory )))
+        };
 
         let val_a = match walk( ArenaRc::clone(&first), state, memory ) {
             Ok( val ) => val,
@@ -2952,7 +1330,10 @@ pub fn handle_builtins<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &
                 }
 
             } else { // TODO
-                return Err( new_exception("ValueError".to_string(), format!("Unsupported type {} in ==", peek(ArenaRc::clone(&val_b))), state, memory ));
+                // false??
+                return Ok( memory.alloc_rc(Node::AstroBool( AstroBool::new( false ))));
+                //println!("PEEK: {}",peek(val_a.clone()));
+                //return Err( new_exception("ValueError".to_string(), format!("Unsupported type {} in ==", peek(ArenaRc::clone(&val_b))), state, memory ));
             }
         } else if builtin_type == "__ne__" {
 
@@ -2985,8 +1366,9 @@ pub fn handle_builtins<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &
 }
 /******************************************************************************/
 pub fn index_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroIndex(AstroIndex{ref structure,ref index_exp}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected index expression in index_exp().".to_string(), state, memory )))};
+    let Node::AstroIndex(AstroIndex{ref structure,ref index_exp}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected index expression in index_exp().".to_string(), state, memory )))
+    };
 
     // look at the semantics of 'structure'
     let structure_val =  match walk(ArenaRc::clone(&structure),state,memory) {
@@ -2999,6 +1381,7 @@ pub fn index_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut
         Ok( val ) => val,
         Err( e ) => return Err(e),
     };
+
 
     Ok(result)
 }
@@ -3018,8 +1401,10 @@ pub fn escape_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mu
 }
 /******************************************************************************/
 pub fn is_exp<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-    let Node::AstroIs(AstroIs{ref pattern,ref term}) = *node 
-        else {return( Err(new_exception("VMError".to_string(), "walk: expected is expression in is_exp().".to_string(), state, memory )))};
+    // unpack node
+    let Node::AstroIs(AstroIs{ref pattern,ref term}) = *node else {
+        return( Err(new_exception("VMError".to_string(), "walk: expected is expression in is_exp().".to_string(), state, memory )))
+    };
 
     let term_val = match walk((*term).clone(), state, memory) {
         Ok( val ) => val,
@@ -3176,42 +1561,133 @@ pub fn store_at_ix<'a>( structure: ArenaRc<Node>, ix: ArenaRc<Node>, value: Aren
 
     let mut structure_val = memory.alloc_rc(Node::AstroNone(AstroNone::new()));
     
-    // Handle recurive application iteratively here.
+     
+    // Handle recurive application 
     if let Node::AstroIndex(AstroIndex{structure:ref s,index_exp:ref idx}) = *structure {
 
-        let mut inner_mem = ArenaRc::clone(s);
-
-        // Construct a list of all of the indices
-        let ix_val = match walk(ArenaRc::clone(&ix), state, memory) {
+        let mut inner_mem = match read_at_ix(ArenaRc::clone(&s),ArenaRc::clone(&idx),state,memory) {
             Ok( val ) => val,
             Err( e ) => return Err(e),
         };
-        let Node::AstroInteger(AstroInteger{value:v}) = *ix_val
-            else {return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer index.".to_string(), state, memory )))};
-        let mut idx_list = vec![ v ];
-        while let Node::AstroIndex(AstroIndex{structure:ref s,index_exp:ref idx}) = **s {
-            let Node::AstroInteger(AstroInteger{value:v}) = *ix_val
-                else {return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer index.".to_string(), state, memory )))};
-            idx_list.push(v);
-            inner_mem = ArenaRc::clone(s);
-        }
 
-        // Walk through the index list accessing memory until we reach the intended interior memory.
-        let mut local_memory = match walk(ArenaRc::clone(&inner_mem),state,memory) {
-            Ok( val ) => val,
-            Err( e ) => return Err(e),
+        inner_mem = match *inner_mem {
+            Node::AstroID( AstroID{name:ref id_tag} ) => state.symbol_table.lookup_sym(id_tag,true),
+            _ => inner_mem,
         };
-        for val in idx_list {
-            local_memory = match *local_memory {
-                Node::AstroList( AstroList{contents:ref mem} ) => ArenaRc::clone(&(**mem).borrow()[ val as usize ]),
-                Node::AstroTuple( AstroTuple{contents:ref mem} ) => ArenaRc::clone(&(**mem).borrow()[ val as usize ]),
-                _ => return( Err(new_exception("VMError".to_string(), "store_at_ix: expected list or tuple.".to_string(), state, memory ))),
+
+        if let Node::AstroList(AstroList{ref contents}) = *inner_mem {
+
+            let ix_val = match walk(ArenaRc::clone(&ix), state, memory) {
+                Ok( val ) => val,
+                Err( e ) => return Err(e),
             };
+            let Node::AstroInteger(AstroInteger{value:int_val}) = *ix_val else {
+                return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer.".to_string(), state, memory )))
+            };
+    
+            contents.borrow_mut()[int_val as usize] = ArenaRc::clone(&value);
+            return Ok(());
+        } else if let Node::AstroTuple(AstroTuple{ref contents}) = *inner_mem {
+
+            let ix_val = match walk(ArenaRc::clone(&ix), state, memory) {
+                Ok( val ) => val,
+                Err( e ) => return Err(e),
+            };
+            let Node::AstroInteger(AstroInteger{value:int_val}) = *ix_val else {
+                return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer.".to_string(), state, memory )))
+            };
+    
+            contents.borrow_mut()[int_val as usize] = ArenaRc::clone(&value);
+            return Ok(());
+        } else if let Node::AstroObject(AstroObject{ref struct_id, ref object_memory}) = *inner_mem {
+
+            let Node::AstroID(AstroID{name:ref tag}) = *ix else {
+                return( Err(new_exception("VMError".to_string(), "store_at_ix: expected id.".to_string(), state, memory )))
+            };
+
+            let AstroID{name:ref obj_type} = *struct_id;
+            let object_data = match walk( memory.alloc_rc(Node::AstroID(struct_id.clone())), state, memory ) {
+                Ok( val ) => val,
+                Err( error ) => return Err( error ),
+            };
+
+            let Node::AstroStruct(AstroStruct{member_names:ref struct_tags, struct_memory:ref struct_mem}) = *object_data else {
+                return( Err(new_exception("VMError".to_string(), "store_at_ix: expected struct.".to_string(), state, memory )))
+            };
+
+            // find the location in the structs memory where we want to place the new value.
+            let mut found_idx = 0usize;
+            let mut found = false;
+            let mut curr_idx = 0usize;
+            for struct_member in (*struct_tags).borrow().iter() {
+                if let Node::AstroID(AstroID{name:ref mem_tag}) = **struct_member {
+                    if mem_tag == tag {
+                        found_idx = curr_idx;
+                        found = true;
+
+                    }
+                }
+                curr_idx = curr_idx + 1;
+            }
+
+            (object_memory.borrow_mut())[ found_idx ] = ArenaRc::clone( &value );
+            return Ok(());
         }
-        structure_val = match walk(ArenaRc::clone(&local_memory),state,memory) {
-            Ok( val ) => val,
-            Err( e ) => return Err(e),
-        };
+        
+
+
+        return Ok(()); 
+        // println!("yoz! {}",peek(idx.clone()));
+
+        // if let Node::AstroID(AstroID{ref name}) = **s {
+        //     println!("yo! {}",name);
+        //     let s = match walk(ArenaRc::clone(&s), state, memory) {
+        //         Ok( val ) => val,
+        //         Err( e ) => return Err(e),
+        //     };
+        //     println!("yo! {}",peek(s.clone()));
+
+        //     if let Node::AstroStruct(AstroStruct{ref member_names,ref struct_memory}) = *s {
+        //         println!("BO!");
+        //     }
+        // }
+        
+        // // Construct a list of all of the indices
+        // let ix_val = match walk(ArenaRc::clone(&ix), state, memory) {
+        //     Ok( val ) => val,
+        //     Err( e ) => return Err(e),
+        // };
+        
+        // let Node::AstroInteger(AstroInteger{value:v}) = *ix_val else {
+        //     return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer index.".to_string(), state, memory )))
+        // };
+        // println!("yo!");
+        // let mut idx_list = vec![ v ];
+        // while let Node::AstroIndex(AstroIndex{structure:ref s,index_exp:ref idx}) = **s {
+        //     let Node::AstroInteger(AstroInteger{value:v}) = *ix_val else {
+        //         return( Err(new_exception("VMError".to_string(), "store_at_ix: expected integer index.".to_string(), state, memory )))
+        //     };
+        //     idx_list.push(v);
+        //     inner_mem = ArenaRc::clone(s);
+        // }
+
+        // // Walk through the index list accessing memory until we reach the intended interior memory.
+        // let mut local_memory = match walk(ArenaRc::clone(&inner_mem),state,memory) {
+        //     Ok( val ) => val,
+        //     Err( e ) => return Err(e),
+        // };
+        
+        // for val in idx_list {
+        //     local_memory = match *local_memory {
+        //         Node::AstroList( AstroList{contents:ref mem} ) => ArenaRc::clone(&(**mem).borrow()[ val as usize ]),
+        //         Node::AstroTuple( AstroTuple{contents:ref mem} ) => ArenaRc::clone(&(**mem).borrow()[ val as usize ]),
+        //         _ => return( Err(new_exception("VMError".to_string(), "store_at_ix: expected list or tuple.".to_string(), state, memory ))),
+        //     };
+        // }
+        // structure_val = match walk(ArenaRc::clone(&local_memory),state,memory) {
+        //     Ok( val ) => val,
+        //     Err( e ) => return Err(e),
+        // };
         
     } else {
 
@@ -3273,11 +1749,17 @@ pub fn store_at_ix<'a>( structure: ArenaRc<Node>, ix: ArenaRc<Node>, value: Aren
     }
 }
 /******************************************************************************/
-pub fn read_at_ix<'a>( structure_val: ArenaRc<Node>, mut ix: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
-
+pub fn read_at_ix<'a>( mut structure_val: ArenaRc<Node>, mut ix: ArenaRc<Node>, state: &'a mut State, memory: &'a mut Arena<Node> ) -> Result<ArenaRc<Node>, ArenaRc<Node>>{
 
     // find the actual memory we need to access
-    let struct_type = peek(ArenaRc::clone(&structure_val));
+    let mut struct_type = peek(ArenaRc::clone(&structure_val));
+    if struct_type == "id" {
+        structure_val = match walk( ArenaRc::clone(&structure_val), state, memory) {
+            Ok( val ) => val,
+            Err( e ) => return Err(e),
+        };
+        struct_type = peek(ArenaRc::clone(&structure_val));
+    }
     if struct_type != "object" {
         ix = match walk( ArenaRc::clone(&ix), state, memory) {
             Ok( val ) => val,
@@ -3289,8 +1771,10 @@ pub fn read_at_ix<'a>( structure_val: ArenaRc<Node>, mut ix: ArenaRc<Node>, stat
     if ["list","tuple"].contains( &struct_type ) {
 
         if ix_type == "integer" {
-            let Node::AstroInteger(AstroInteger{value:ix_val}) = *ix
-                else {return( Err(new_exception("VMError".to_string(), "read_at_ix: expected integer.".to_string(), state, memory )))};
+
+            let Node::AstroInteger(AstroInteger{value:ix_val}) = *ix else {
+                return( Err(new_exception("VMError".to_string(), "read_at_ix: expected integer.".to_string(), state, memory )))
+            };
 
             let content = match *structure_val {
                 Node::AstroList( AstroList{contents:ref c}) => c,
@@ -3302,11 +1786,13 @@ pub fn read_at_ix<'a>( structure_val: ArenaRc<Node>, mut ix: ArenaRc<Node>, stat
         }
     } else if struct_type == "object" {
 
-        let Node::AstroObject(AstroObject{struct_id:ref id,object_memory:ref mem}) = *structure_val
-            else {return( Err(new_exception("VMError".to_string(), "read_at_ix: expected object.".to_string(), state, memory )))};
+        let Node::AstroObject(AstroObject{struct_id:ref id,object_memory:ref mem}) = *structure_val else {
+            return( Err(new_exception("VMError".to_string(), "read_at_ix: expected object.".to_string(), state, memory )))
+        };
 
-        let Node::AstroID(AstroID{name:ref tag}) = *ix
-            else {return( Err(new_exception("VMError".to_string(), "read_at_ix: expected id.".to_string(), state, memory )))};
+        let Node::AstroID(AstroID{name:ref tag}) = *ix else {
+            return( Err(new_exception("VMError".to_string(), "read_at_ix: expected id.".to_string(), state, memory )))
+        };
 
         let AstroID{name:ref obj_type} = *id;
         let object_data = match walk( memory.alloc_rc(Node::AstroID(id.clone())), state, memory ) {
@@ -3314,8 +1800,9 @@ pub fn read_at_ix<'a>( structure_val: ArenaRc<Node>, mut ix: ArenaRc<Node>, stat
             Err( error ) => return Err( error ),
         };
 
-        let Node::AstroStruct(AstroStruct{member_names:ref struct_tags,struct_memory:ref struct_mem}) = *object_data
-            else {return( Err(new_exception("VMError".to_string(), "read_at_ix: expected struct.".to_string(), state, memory) ))};
+        let Node::AstroStruct(AstroStruct{member_names:ref struct_tags,struct_memory:ref struct_mem}) = *object_data else {
+            return( Err(new_exception("VMError".to_string(), "read_at_ix: expected struct.".to_string(), state, memory) ))
+        };
 
         // find the location in the structs memory where we want to place the new value.
         let mut found_idx = 0usize;
@@ -3908,8 +2395,8 @@ mod tests {
         declare_unifiers( &unifiers, &mut state, &mut memory );
         let check1 = state.lookup_sym("x",true);
 
-        let Node::AstroList(AstroList{contents:ref c}) = *check1
-            else {panic!("test failed")};
+        let Node::AstroList(AstroList{contents:ref c}) = *check1 else {
+            panic!("test failed")};
         
         if let Node::AstroInteger(AstroInteger{value:2}) = *c.borrow()[1] {
             ();

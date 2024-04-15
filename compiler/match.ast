@@ -1,0 +1,34 @@
+function mod
+  with (x,y) do
+    return x.
+  end
+
+let data1 = [1,2,3].
+let data2 = (1.0,2.0,3.0).
+let data3 = "Hello World!".
+let data4 = 1.
+let data5 = 1.123.
+
+let data_list = [data1,data2,data3,data4,data5].
+
+for i in 0 to 10 do
+
+  let idx = mod( i, 5 ).
+  
+  match data_list@idx 
+    with [x,y,z] do
+      -- assert( x == 1 ).
+      -- assert( y == 2 ).
+      -- assert( z == 3 ).
+    with (x,y,z) do
+      -- assert( x == 1.0 ).
+      -- assert( y == 2.0 ).
+      -- assert( z == 3.0 ).
+    with (x:%integer) do
+      -- assert( x == 1).
+    with (x:%real) do
+      -- assert( x == 1.123).
+    with (x:%string) do
+      -- assert(x == "Hello World!").
+  end
+end

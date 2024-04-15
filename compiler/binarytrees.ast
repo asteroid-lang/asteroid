@@ -1,0 +1,121 @@
+-- The Computer Language Benchmarks Game
+-- https://salsa.debian.org/benchmarksgame-team/benchmarksgame/
+--
+-- binarytrees.ast in asteroid
+-- Translated from Corentin Risselin's Python program by Timothy Colaneri
+
+------------------------------------------------------------------
+structure Error
+------------------------------------------------------------------
+-- convenient user level exceptions
+with
+  data err_val.
+  function __init__
+    with val do
+      let this @err_val = val.
+    end
+  end
+
+------------------------------------------------------------------
+structure Exception
+------------------------------------------------------------------
+-- asteroid's standard exception structure.
+-- note: both the kind and the val fields have to be given
+with
+  data kind.
+  data val.
+  function __init__
+    with (kind:%string,val) do
+      let this @kind = kind.
+      let this @val = val.
+    end
+  end
+
+
+
+function set_depth
+  with _ do
+    return test_depth.
+  end.
+
+function int_pow
+  with (x,y) do
+    return x*y.
+end
+
+function map
+  with(struct,func,length) do
+    for i in 0 to length do
+      let struct@i = func ( struct@i ).
+    end
+  end
+
+function sum
+  with (l,length) do
+    let total = 0.
+    for i in 0 to length do
+      let total = total + l@i
+    end
+    return total.
+  end
+
+  
+function make_tree
+  -- Trees are tuples, final leaves have 0 as values.
+  with 0 do
+    return (0,0).
+  with depth do
+    return ( make_tree(depth-1), make_tree(depth-1) ).
+end
+
+  
+function check_node
+  -- Count 1 for each node found. 
+  with (left,right) do
+    if left == 0 do
+        return 1.
+    end
+    let total = check_node(left).
+    let total = total + check_node(right).
+    let total = total + 1.
+    return total.
+end
+
+function run
+  -- Makes a tree then checks it (parse all nodes and count).
+  with depth:%integer do
+    return check_node(make_tree(depth)).
+end
+
+let min_depth = 4.
+let max_depth = 6.
+let stretch_depth = max_depth + 1.
+let mmd = max_depth + min_depth.
+
+let long_lived_tree = make_tree(max_depth).
+
+-- io@print ("stretch tree of depth "+tostring(stretch_depth)).
+-- io@println ("\t  check: "+tostring(run(stretch_depth))).
+
+for test_depth in min_depth to stretch_depth step 2 do
+  let tree_count = int_pow( 2, mmd - test_depth).
+  let check_sum = [ 1 to tree_count ].
+
+  -- map( check_sum, set_depth, tree_count - 1 ).
+  for i in 0 to tree_count - 1 do
+    let check_sum@i = set_depth ( check_sum@i ).
+  end
+
+  --map( check_sum, run, tree_count - 1 ).
+  for i in 0 to tree_count - 1 do
+    let check_sum@i = run ( check_sum@i ).
+  end
+
+  let check_sum = sum(check_sum, tree_count - 1).
+  -- io@print (tostring(tree_count) + "\t trees of depth " + tostring(test_depth)).
+  -- io@println ("\tcheck: " + tostring(check_sum)).
+end
+
+-- io@print ("long lived tree of depth " + tostring(max_depth)).
+let max = run(max_depth).
+-- io@println ("\tcheck " + tostring(run(max_depth))).
