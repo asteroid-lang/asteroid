@@ -29,10 +29,13 @@ def compile(input_stream,
         #print("path[0]: {}".format(sys.path[0]))
         #print("path[1]: {}".format(sys.path[1]))
 
-        # read in prologue
-
         # build the AST
         parser = Parser(input_name)
+        
+        # prologue is placed here
+        prologue = open("prologue.ast", "r")
+        input_stream = prologue.read() + input_stream
+        
         (LIST, istmts) = parser.parse(input_stream)
         state.AST = ('list', istmts)
 
@@ -66,8 +69,12 @@ def compile(input_stream,
         begin_code += "static mut POOL: *mut Vec<ArenaRc<Node>> = ptr::null_mut();\n\n"
         begin_code += "fn main() {\n"
         begin_code += "   let mut memory: Arena<Node> = Arena::new();\n"
-        begin_code += "   let mut state = State::new().unwrap();\n"
+        begin_code += "   let mut state = State::new().unwrap();\n\n"
 
+        
+        internal_functions = open("prologue_rust.ast", "r").read()
+        internal_dispatch = open("prologue_rust2.ast", "r").read()
+        
         compiled_code = generate_code(state.AST)
         flist_code = gen_function_list()
         mem_code = gen_memory()
@@ -80,7 +87,9 @@ def compile(input_stream,
         code = ""
         code += begin_code
         code += flist_code
+        code += internal_functions
         code += dispatch_code
+        code += internal_dispatch
         code += mem_code
         code += compiled_code
         code += end_code

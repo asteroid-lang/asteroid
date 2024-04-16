@@ -1,0 +1,36 @@
+state.dispatch_table.insert( "_print".to_string(), _print);
+let id8 = memory.alloc_rc(Node::AstroID(AstroID::new("_print".to_string())));
+let id9 = memory.alloc_rc(Node::AstroID(AstroID::new("_print".to_string())));
+let func1 = memory.alloc_rc(Node::AstroFunction(AstroFunction::new( ArenaRc::clone(&id8) )));
+let exp_val = walk( ArenaRc::clone(&func1), &mut state, &mut memory);
+
+let exp_val = match exp_val {
+   Ok( val ) => val,
+   Err( e ) => exit(e, &mut state, &mut memory),
+};
+
+let unifiers = unify( exp_val, ArenaRc::clone(&id9), &mut state, &mut memory, true);
+
+let unifiers = match unifiers {
+   Ok( val ) => val,
+   Err( e ) => exit(e, &mut state, &mut memory),
+};
+declare_unifiers(&unifiers,&mut state, &mut memory);
+state.dispatch_table.insert( "_pow".to_string(), _pow);
+let id8 = memory.alloc_rc(Node::AstroID(AstroID::new("_pow".to_string())));
+let id9 = memory.alloc_rc(Node::AstroID(AstroID::new("_pow".to_string())));
+let func1 = memory.alloc_rc(Node::AstroFunction(AstroFunction::new( ArenaRc::clone(&id8) )));
+let exp_val = walk( ArenaRc::clone(&func1), &mut state, &mut memory);
+
+let exp_val = match exp_val {
+   Ok( val ) => val,
+   Err( e ) => exit(e, &mut state, &mut memory),
+};
+
+let unifiers = unify( exp_val, ArenaRc::clone(&id9), &mut state, &mut memory, true);
+
+let unifiers = match unifiers {
+   Ok( val ) => val,
+   Err( e ) => exit(e, &mut state, &mut memory),
+};
+declare_unifiers(&unifiers,&mut state, &mut memory);

@@ -1,0 +1,15 @@
+   fn _print<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &mut Arena<Node> ) -> Result< ArenaRc<Node>,  ArenaRc<Node>> {
+      //let Node::AstroString(AstroString{ref value}) = *node else {panic!{"println error"}};
+      //let check1 = state.lookup_sym("e",true);
+      let Node::AstroReal(AstroReal{value:v1}) = *node else {panic!("test failed")};
+      println!("Total Energy: {}",v1);
+      return Ok( memory.alloc_rc( Node::AstroNone(AstroNone::new())) );
+   };
+   fn _pow<'a>( node: ArenaRc<Node>, state: &'a mut State, memory: &mut Arena<Node> ) -> Result< ArenaRc<Node>,  ArenaRc<Node>> {
+      //let Node::AstroString(AstroString{ref value}) = *node else {panic!{"println error"}};
+      //let check1 = state.lookup_sym("e",true);
+      let Node::AstroPair(AstroPair{ref first,ref second}) = *node else {panic!("test failed")};
+      let Node::AstroReal(AstroReal{value:v1}) = **first else {panic!("test failed")};
+      let Node::AstroReal(AstroReal{value:v2}) = **second else {panic!("test failed")};
+      return Ok( memory.alloc_rc( Node::AstroReal(AstroReal::new( v1.powf(v2) ))) );
+   };

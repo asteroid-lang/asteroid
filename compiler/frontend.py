@@ -179,7 +179,7 @@ class Parser:
             return ('match',
                      ('unify', temp, exp), 
                      ('if', ('list', if_list)))     
-            exit(123456)
+  
 
         elif tt == 'LOAD':
             # expand the AST from the file into our current AST

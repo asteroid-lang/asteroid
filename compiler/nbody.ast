@@ -1,49 +1,10 @@
--- Planet structure
--- represents a planet body.
 
-------------------------------------------------------------------
-structure Error
-------------------------------------------------------------------
--- convenient user level exceptions
-with
-  data err_val.
-  function __init__
-    with val do
-      let this @err_val = val.
-    end
-  end
-
-------------------------------------------------------------------
-structure Exception
-------------------------------------------------------------------
--- asteroid's standard exception structure.
--- note: both the kind and the val fields have to be given
-with
-  data kind.
-  data val.
-  function __init__
-    with (kind:%string,val) do
-      let this @kind = kind.
-      let this @val = val.
-    end
-  end
-
-------------------------------------------------------------------
-structure Math_Module
-------------------------------------------------------------------
-with
-  data name.
-  data pi.
-end
-let math = Math_Module( "math", 3.14159 ).
-
-
-
-
-let PI = math@pi.
+let PI =  3.14159.
 let SOLAR_MASS = 4.0 * PI * PI.
 let DAYS_PER_YEAR = 365.24.
 
+-- Planet structure
+-- represents a planet body.
 structure Planet with
 
     data name. -- planet's name
@@ -76,12 +37,12 @@ end
 function advance
   with (n:%integer,bodies:%list,dt:%real) do
     for _ in 1 to n do
-      for i in 0 to bodies@length()-1 do
-        for j in i+1 to bodies@length()-1 do
+      for i in 0 to 4 do
+        for j in i+1 to 4 do
           let dx = bodies@i@x - bodies@j@x.
           let dy = bodies@i@y - bodies@j@y.
           let dz = bodies@i@z - bodies@j@z.
-          let mag = dt * real_pow(dx * dx + dy * dy + dz * dz, -1.5).
+          let mag = dt * _pow(dx * dx + dy * dy + dz * dz, -1.5).
           let bodies@i@vx = bodies@i@vx - dx * bodies@j@mass * mag.
           let bodies@i@vy = bodies@i@vy - dy * bodies@j@mass * mag.
           let bodies@i@vz = bodies@i@vz - dz * bodies@j@mass * mag.
@@ -90,13 +51,50 @@ function advance
           let bodies@j@vz = bodies@j@vz + dz * bodies@i@mass * mag.
         end.
       end.
-      for planet in bodies do
-        let planet@x = planet@x + dt * planet@vx.
-        let planet@y = planet@y + dt * planet@vy.
-        let planet@z = planet@z + dt * planet@vz.
+      for i in 0 to 4 do
+        let bodies@i@x = bodies@i@x + dt * bodies@i@vx.
+        let bodies@i@y = bodies@i@y + dt * bodies@i@vy.
+        let bodies@i@z = bodies@i@z + dt * bodies@i@vz.
       end.
     end.
 end
+
+-- function to report the total energy of a list of 
+-- planet bodies by printing the value to console. 
+-- * assumes io module is loaded.
+function report_energy
+  with bodies:%list do
+    let e = 0.0.
+    for i in 0 to 4 do
+      for j in i+1 to 4 do
+        let dx = bodies@i@x - bodies@j@x.
+        let dy = bodies@i@y - bodies@j@y.
+        let dz = bodies@i@z - bodies@j@z.
+        let e = e - (bodies@i@mass * bodies@j@mass) / _pow( dx*dx + dy*dy + dz*dz, 0.5).
+      end
+    end
+    for i in 0 to 4 do
+      let e = e + ( bodies@i@mass * ( bodies@i@vx * bodies@i@vx + bodies@i@vy * bodies@i@vy + bodies@i@vz * bodies@i@vz)) / 2.0.
+    end
+    _print(e).
+end
+
+function offset_momentum
+  with (reference:%integer, bodies:%list) do
+    let px = 0.0.
+    let py = 0.0.
+    let pz = 0.0.
+    for i in 0 to 4 do
+      let px = px - bodies@i@vx * bodies@i@mass.
+      let py = py - bodies@i@vy * bodies@i@mass.
+      let pz = pz - bodies@i@vz * bodies@i@mass.
+    end
+    let bodies@reference@vx = px / bodies@reference@mass.
+    let bodies@reference@vy = py / bodies@reference@mass.
+    let bodies@reference@vz = pz / bodies@reference@mass.
+end
+
+----------------------------------------------------------
 
 let sun = Planet("Sun",0.0,0.0,0.0,0.0,0.0,0.0,SOLAR_MASS).
 
@@ -140,6 +138,10 @@ let neptune = Planet( "Neptune",
   5.15138902046611451e-05 * SOLAR_MASS
 ).
 
+
 let bodies = [ sun, jupiter, saturn, uranus, neptune ].
 
-let jupiter@x = 7.
+offset_momentum(0,bodies).
+report_energy( bodies ).
+advance( 10, bodies, 0.01 ).
+report_energy( bodies ).
