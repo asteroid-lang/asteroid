@@ -59,9 +59,11 @@ RETURN_TO_INTERP = True  # return control to interpreter
 class MAD:
 
    ###########################################################################################
-   def __init__(self):
+   def __init__(self, functional_mode=False):
       # a reference to the interpreter state object
       self.interp_state = None
+      # the command line argument indicating functional mode
+      self.functional_mode = functional_mode
       # a lookup table for the program texts used during debugging
       self.program_text = {}
       # continue mode is used in the implementation of the continue cmd
@@ -414,7 +416,7 @@ class MAD:
    def _validate_breakpoint_line(self, fname, lineno):
       # Create a temporary Parser and reset the lineinfo
       (module, line) = self.interp_state.lineinfo
-      temp_parser = Parser()
+      temp_parser = Parser(functional_mode=self.functional_mode)
       self.interp_state.lineinfo = (module, line)
       # Read the file contents and get the current line
       curr_file = self.program_text[fname]
