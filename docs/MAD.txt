@@ -125,7 +125,7 @@ Here is a table of the available commands in the the debugger,
     print <name>[@<num>|<name>]+|* [-v]. print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data
     quit ............................... quit debugger
     stack [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
-    set [<func>|<line#> [<file>]] ...... set a breakpoint
+    set [<func>|<line#> [<file>]] ...... set a breakpoint, breakpoints may only be set on valid statements on already loaded files
     step ............................... step to next executable statement
     trace [<num> [<num>]]............... display runtime stack trace, can specify either the first n frames or all of the frames between the start and end
     up ................................. move up one stack frame

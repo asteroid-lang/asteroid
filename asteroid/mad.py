@@ -48,7 +48,8 @@
 ###########################################################################################
 
 from os.path import exists, split, basename
-from asteroid.support import term2string, get_tail_term, term2verbose
+from asteroid.support import term2string, get_tail_term, term2verbose, find_function
+from asteroid.frontend import Parser
 from asteroid.version import MAD_VERSION
 import copy 
 
@@ -58,9 +59,11 @@ RETURN_TO_INTERP = True  # return control to interpreter
 class MAD:
 
    ###########################################################################################
-   def __init__(self):
+   def __init__(self, functional_mode=False):
       # a reference to the interpreter state object
       self.interp_state = None
+      # the command line argument indicating functional mode
+      self.functional_mode = functional_mode
       # a lookup table for the program texts used during debugging
       self.program_text = {}
       # continue mode is used in the implementation of the continue cmd
@@ -283,10 +286,10 @@ class MAD:
       print("next\t\t\t- step execution across a nested scope")
       print("print <name>[@<num>|<name>]+|* [-v]\t\t- print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data")
       print("quit\t\t\t- quit debugger")
-      print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint")
+      print("set [<func>|<line#> [<file>]]\n\t\t\t- set a breakpoint, breakpoints may only be set on valid statements on already loaded files")
       print("stack [<num>|* [-v]]\t\t\t- display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing")
       print("step\t\t\t- step to next executable statement")
-      print("trace [<num> [<num>]]\t\t\t- display runtime stack trace , display runtime stack trace, can specify either the first n frames or all of the frames between the start and end")
+      print("trace [<num> [<num>]]\t\t\t- display runtime stack trace, display runtime stack trace, can specify either the first n frames or all of the frames between the start and end")
       print("up\t\t\t- move up one stack frame")
       print("where\t\t\t- print current program line")
       print()
@@ -383,27 +386,72 @@ class MAD:
       raise SystemExit()
    
    def _handle_set(self,args):
+      (file,lineno) = self.interp_state.lineinfo
       if len(args) == 0:
          # set a breakpoint at the current line
-         (file,lineno) = self.interp_state.lineinfo
          self.line_breakpoints.append((lineno,file))
          return START_DEBUGGER
       elif len(args) == 1:
-         (file,_) = self.interp_state.lineinfo
-         if args[0].isnumeric(): 
-            self.line_breakpoints.append((int(args[0]),file))
+         self._load_program_text(file)
+         if args[0].isnumeric():
+            if self._validate_breakpoint_line(file, int(args[0])):
+               self.line_breakpoints.append((int(args[0]),file))
          else:
-            self.function_breakpoints.append((args[0],file))
+            if self._validate_breakpoint_function(file, args[0]):
+               self.function_breakpoints.append((args[0],file))
          return START_DEBUGGER
       elif len(args) == 2:
-         if args[0].isnumeric(): 
-            self.line_breakpoints.append((int(args[0]),args[1]))
+         self._load_program_text(args[1])
+         if args[0].isnumeric():
+            if self._validate_breakpoint_line(args[1], int(args[0])):
+               self.line_breakpoints.append((int(args[0]),args[1]))
          else:
-            self.function_breakpoints.append((args[0],args[1]))
+            if self._validate_breakpoint_function(args[1], args[0]):
+               self.function_breakpoints.append((args[0],args[1]))
          return START_DEBUGGER
       else:
          print("error: too many arguments to set")
          return START_DEBUGGER
+   
+   def _validate_breakpoint_line(self, fname, lineno):
+      # Create a temporary Parser and reset the lineinfo
+      (module, line) = self.interp_state.lineinfo
+      temp_parser = Parser(functional_mode=self.functional_mode)
+      self.interp_state.lineinfo = (module, line)
+      # Read the file contents and get the current line
+      curr_file = self.program_text[fname]
+      if lineno <= 0 or lineno >= len(curr_file):
+         print("error: cannot place breakpoints outside of file")
+         return False
+      line_data = curr_file[lineno-1]
+      # Reject blank lines and '[EOF]'
+      if line_data.strip() == '':
+         print("error: cannot place breakpoints on blank lines")
+         return False
+      elif line_data == '[EOF]':
+         print("error: cannot place breakpoints at end of file")
+         return False
+      # Incrementally add lines to line_data until either a valid statement is generated or every following line has been checked
+      for l in range(lineno, len(curr_file)):
+         try:
+            stmts = temp_parser.parse(line_data)
+            self.interp_state.lineinfo = (module, line)
+            return True
+         except:
+            line_data += ("\n" + curr_file[l])
+      print("error: line {} in file '{}' cannot accept a breakpoint".format(lineno, fname))
+      self.interp_state.lineinfo = (module, line)
+      return False
+      
+   
+   def _validate_breakpoint_function(self, fname, func_name):
+      # Loop through every scope and check if the function was found
+      loaded_syms = self.interp_state.symbol_table.scoped_symtab
+      for scope in loaded_syms:
+         for (sym, val) in scope.items():
+            if find_function(sym, val, fname, func_name): return True
+      print("error: unable to find function '{}' in file '{}'".format(func_name, fname))
+      return False
 
    def _handle_frame(self,_):
       print("you are looking at frame #{}".format(self.frame_ix))
