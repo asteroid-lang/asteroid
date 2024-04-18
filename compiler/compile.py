@@ -71,9 +71,9 @@ def compile(input_stream,
         begin_code += "   let mut memory: Arena<Node> = Arena::new();\n"
         begin_code += "   let mut state = State::new().unwrap();\n\n"
 
-        
-        internal_functions = open("prologue_rust.ast", "r").read()
-        internal_dispatch = open("prologue_rust2.ast", "r").read()
+        import os
+        internal_functions = open(os.getcwd()+"\prologue_rust.ast", "r").read()
+        internal_dispatch = open(os.getcwd()+"\prologue_rust2.ast", "r").read()
         
         compiled_code = generate_code(state.AST)
         flist_code = gen_function_list()
