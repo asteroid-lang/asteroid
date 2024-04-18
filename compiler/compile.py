@@ -32,8 +32,9 @@ def compile(input_stream,
         # build the AST
         parser = Parser(input_name)
         
-        # prologue is placed here
-        prologue = open("prologue.ast", "r")
+        # asteroid code prologue is placed here
+        import os
+        prologue = open(os.getcwd()+"\prologue.ast", "r")
         input_stream = prologue.read() + input_stream
         
         (LIST, istmts) = parser.parse(input_stream)
@@ -71,7 +72,6 @@ def compile(input_stream,
         begin_code += "   let mut memory: Arena<Node> = Arena::new();\n"
         begin_code += "   let mut state = State::new().unwrap();\n\n"
 
-        import os
         internal_functions = open(os.getcwd()+"\prologue_rust.ast", "r").read()
         internal_dispatch = open(os.getcwd()+"\prologue_rust2.ast", "r").read()
         
