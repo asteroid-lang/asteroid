@@ -34,7 +34,7 @@ def compile(input_stream,
         
         # asteroid code prologue is placed here
         import os
-        prologue = open(os.getcwd()+"\prologue.ast", "r")
+        prologue = open(os.getcwd()+"\compiler\prologue.ast", "r")
         input_stream = prologue.read() + input_stream
         
         (LIST, istmts) = parser.parse(input_stream)
@@ -72,8 +72,8 @@ def compile(input_stream,
         begin_code += "   let mut memory: Arena<Node> = Arena::new();\n"
         begin_code += "   let mut state = State::new().unwrap();\n\n"
 
-        internal_functions = open(os.getcwd()+"\prologue_rust.ast", "r").read()
-        internal_dispatch = open(os.getcwd()+"\prologue_rust2.ast", "r").read()
+        internal_functions = open(os.getcwd()+"\compiler\prologue_rust.ast", "r").read()
+        internal_dispatch = open(os.getcwd()+"\compiler\prologue_rust2.ast", "r").read()
         
         compiled_code = generate_code(state.AST)
         flist_code = gen_function_list()
