@@ -34,12 +34,175 @@ This will start a debugging session of the file ``<FILENAME>``.
 Here is an example where ``<FILENAME>`` is ``list.ast``,
 ::
     $ asteroid -d list.ast   
-    Minimal Asteroid Debugger -- Version 0.1
+    Minimal Asteroid Debugger 0.0.1
     (c) University of Rhode Island
     type 'help' for additional information
     mad>
 
-Debugging sessions
+The ``help`` command will display all available commands with a short description of each.
+Here is a table of the available commands in the the debugger,
+::
+    breakpoints ........................ show all breakpoints
+    clear .............................. clear all breakpoints
+    continue ........................... continue execution to next breakpoint
+    down ............................... move down one stack frame
+    frame .............................. display current stack frame number
+    help ............................... display help
+    list [<num>|*]...................... display <num> (default 4) lines of source code, * displays all lines in file
+    next ............................... step execution across a nested scope
+    print <name>[@<num>|<name>]+|* [-v]. print contents of <name>, * lists all vars in scope, recursively access (nested) objects with @, '-v' enables verbose printing of nested data
+    quit ............................... quit debugger
+    stack [<num>|* [-v]]................ display runtime stack, list all items in specific frame with an index or all frames with '*', '-v' toggles verbose printing
+    set [<func>|<line#> [<file>]] ...... set a breakpoint, breakpoints may only be set on valid statements on already loaded files
+    step ............................... step to next executable statement
+    trace [<num> [<num>]]............... display runtime stack trace, can specify either the first n frames or all of the frames between the start and end
+    up ................................. move up one stack frame
+    where .............................. print current program line
+
+The ``|`` means that either the item to the left or to the right of it may be used. Any items enclosed in square brackets
+``[]`` are considered optional, meaning that they are not required to be provided in order to the command to be valid.
+The ``+`` means that any number of the item to its left may be supplied to the command. Items enclosed in angle brackets
+``<>`` represent placeholders, indicating that an actual value must be used when executing the command. The text between
+the brackets indicates what should be used.
+
+All debugging sessions can be stopped at any time by using the ``quit`` command.
+
+Source Code
+===========
+When running a debugging session, the ``list`` command will display some of the source
+code for the current file. In the output, the ``>`` character at the beginning of a line
+indicates the current line to be executed. Any lines beginning with a ``*`` are lines with
+a breakpoint.
+
+The ``list`` command may also be executed with an optional parameter, either some positive integer
+or ``*``. When called with a positive integer, ``list`` will output the current line and that many
+lines above and below that line, or until the beginning or the end of the file. By default,
+``list`` will display 4 lines above and below the current line. To display every line in the current file,
+use the ``*`` argument.
+
+To get only the current line, the ``where`` command will display the current file and line number, alongside
+the contents of that line. Here are those commands in action,
+::
+    $ asteroid -d list.ast
+    Minimal Asteroid Debugger 0.0.1
+    (c) University of Rhode Island
+    type "help" for additional information
+    mad> list
+    >  1 load system io.
+       2
+       3 for i in 1 to 5 do
+       4     let x = i.
+       5     io @println x.
+    mad> list 2
+    >  1 load system io.
+       2
+       3 for i in 1 to 5 do
+    mad> list *
+       1 load system io.
+       2
+       3 for i in 1 to 5 do
+       4     let x = i.
+       5     io @println x.
+       6 end
+       7 [EOF]
+    mad> where
+    list.ast:1:load system io.
+    mad> quit
+    $
+
+Breakpoints
+===========
+For breakpoints, we can use the ``set`` command to set a breakpoint on either a line or
+a function definition. When setting breakpoints, only lines containing valid statements or
+already loaded functions are allowed to be set. Blank lines and incomplete statements will
+be rejected.
+
+To examine all of the set breakpoints, the command ``breakpoints`` will display every breakpoint
+in the order that it was set in. The ``clear`` command will remove all of the breakpoints. Here is
+an example of this behavior,
+::
+    $ asteroid -d list.ast
+    Minimal Asteroid Debugger 0.0.1
+    (c) University of Rhode Island
+    type "help" for additional information
+    mad> list
+    >  1 load system io.
+       2
+       3 for i in 1 to 5 do
+       4     let x = i.
+       5     io @println x.
+    mad> set 4
+    mad> set 2
+    error: cannot place breakpoints on blank lines
+    mad> breakpoints
+    breakpoints:
+    list.ast:4
+    mad> list
+    >  1 load system io.
+       2
+       3 for i in 1 to 5 do
+    *  4     let x = i.
+       5     io @println x.
+    mad> clear
+    mad> breakpoints
+    breakpoints:
+    mad> list
+    >  1 load system io.
+       2
+       3 for i in 1 to 5 do
+       4     let x = i.
+       5     io @println x.
+    mad> quit
+    $
+
+Execution
+=========
+The Minimal Asteroid Debugger provides multiple commands to allow for a developer to resume and gradually
+execute their debugging sessions. The ``continue`` command will resume the session until either a breakpoint
+is encountered or the session executes the final line of the program. To gradually step through a session,
+the ``next`` and ``step`` commands allow a developer to walk through their program one statement at a time.
+When executing ``step``, the debugging session with enter a nested scope and set the next statement to be
+executed as the first statement in the new scope. By contrast, ``next`` will step over nested scopes and will
+set the next statement to be after that scope ends.
+
+Data
+====
+During the execution of an Asteroid program, all defined data within a given scope may be displayed using
+the ``print`` command. This command accepts either the name of a structure, a function, a variable, or ``*``,
+which will output every defined item within the currently viewed scope.
+
+When displaying a variable that holds a list, a tuple, a string, or an instance of some structure, ``print`` will
+allow the display of specific data at a given index or data member. Like in Asteroid, this would be accomplished
+by adding ``@`` after the name, followed by either an integer of at least 0 (for lists, tuples, and strings) or some
+other name (for instances of structures). For highly nested data, these access patterns may be infinitely added,
+provided that the pattern is both valid and accesses a list, tuple, string, or structure instance.
+
+Additionally, the ``-v`` option may be added to ``print`` commands. When called on lists, tuples, or instances of structures,
+every data member will be printed on an individual line with the depth of a specific item indicated by the amount of whitespace
+to the left of the line. Structure instances will display every unique data member and method on a new line, with the corresponding
+value separated by a colon on the same line.
+
+Stack Traces
+============
+The Minimal Asteroid Debugger allows developers to switch between any currently loaded scope. To determine
+which scope is currently viewed, the ``frame`` command will display the number of the current stack frame.
+The ``up`` and ``down`` commands allow developers to move to a higher or lower scope respectively, or until
+hitting either the toplevel scope or the most recently defined scope respectively.
+
+To get a more detailed view of the stack, the ``trace`` command will display every stack frame from the currently
+viewed scope until the toplevel scope. ``trace`` may also accept some positive integer, which will display that
+number of frames beginning with the currently viewed frame. To display a specific range of frames, ``trace`` may
+accept two positive integers indicating the lowest and highest stack frame numbers to be displayed.
+
+Since Asteroid is a statically scoped language, the data in a particular scope may be different from a higher scope.
+To examine this difference, the ``stack`` command may be used to examine the data of a particular scope. By default,
+``stack`` will behave identically to ``trace`` when called with no arguments. However, ``stack`` can accept an optional
+argument either representing a specific stack frame number or ``*``. When called with a specific frame number, ``stack``
+will display every defined item in that scope. The argument ``*`` will display every defined item in every defined scope.
+Similar to ``print``, the ``-v`` arugment allows for the verbose printing of any nested data and can be used with any of
+the previously defined arguments.
+
+Debugging Sessions
 ==================
 During a debugging session the user is able to step through a program and 
 examine its state.  The following is debugging session of a program that prints
