@@ -10,6 +10,7 @@ load system io.
 ------------------------------------------------------------------
 function __get_path
 ------------------------------------------------------------------
+-- returns the path of where the interpreter is being run  from
 with none do return escape
 "
 global __retval__
@@ -22,34 +23,19 @@ end
 function compile
 ------------------------------------------------------------------
 with module:%string do
--- gets the name of the file
 let file_name = os@basename(module).
--- separates the file_name from the extension
 let (lone_name, extension) = os@splitext(file_name).
---checks that the file is an asteroid file
 assert(extension == ".ast").
---checks that the file is a file
 assert(os@isfile(module)).
 let dir_str = os@getdir().
---gets the path to where the python script is being run from
 let comp_path = __get_path().
 let (rootpath, my_base) = os@split(comp_path).
 let ast_file_path = module.
 os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
---prints the original directory before the switch for testing
--- io@println(os@getdir()).
--- changes the directory to access the compile.sh script
 os@chdir(rootpath).
--- printline to check that the directory switch occurred
--- io@println(os@getdir()).
--- rust compiler command, using variables and proposed final version of command, awaiting completion of the compile.sh script
 os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs").
---deletes temporary rust file
 os@syscmd("rm compiler/" + lone_name + ".rs").
---this returns us to original directory
 os@chdir(dir_str).
--- print test to make sure it switched back to original directory
--- io@println(os@getdir()).
 end
 
 ------------------------------------------------------------------

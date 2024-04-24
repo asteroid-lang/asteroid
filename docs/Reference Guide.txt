@@ -854,6 +854,22 @@ bitwise **@bsize** x:%integer
 bitwise **@bxor** (x:%integer, y:%integer)
       Performs the bitwise XOR operation and returns the result as an integer.
 
+compiler
+^^^^^^^^
+
+This module acts as a interface for the compiler, allowing the user to compile asteroid and run the executables from the interpreter
+
+compiler **@__assert_compiler** ()
+      checks the version of rust installed and raises an error if there is no rust compiler installed, 
+      or if the version is older than the specified minimum version.
+
+compiler **@compile** module:%string
+      compiles the asteroid module specified in the module argument and using the asteroid to rust compiler converts it 
+      into a rust file with the same name, then the rustfile is compiled into an executable, then the rust file is deleted.
+
+compiler **@run** module:%string | (module:%string, params:%list)
+	takes a name of a compiled asteroid file and an optional list of parameters and runs the executable,
+	if the params list was present it is turned into a string and passed into the executable as a single argument
 
 hash
 ^^^^
