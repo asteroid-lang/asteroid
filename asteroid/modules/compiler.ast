@@ -23,7 +23,6 @@ end
 function compile
 ------------------------------------------------------------------
 with module:%string do
-<<<<<<< Updated upstream
 let file_name = os@basename(module).
 let (lone_name, extension) = os@splitext(file_name).
 assert(extension == ".ast").
@@ -37,93 +36,6 @@ os@chdir(rootpath).
 os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs").
 os@syscmd("rm compiler/" + lone_name + ".rs").
 os@chdir(dir_str).
-=======
-    -- gets the name of the file
-    let file_name = os@basename(module).
-    -- separates the file_name from the extension
-    let (lone_name, extension) = os@splitext(file_name).
-    --checks that the file is an asteroid file
-    assert(extension == ".ast").
-    --checks that the file is a file
-    assert(os@isfile(module)).
-    let dir_str = os@getdir().
-    --gets the path to where the python script is being run from
-    let comp_path = __get_path().
-    let (rootpath, my_base) = os@split(comp_path).
-    let ast_file_path = module.
-    os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
-    --prints the original directory before the switch for testing
-    -- io@println(os@getdir()).
-    -- changes the directory to access the compile.sh script
-    os@chdir(rootpath).
-    -- printline to check that the directory switch occurred
-    -- io@println(os@getdir()).
-    -- rust compiler command, using variables and proposed final version of command, awaiting completion of the compile.sh script
-    os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs").
-    --deletes temporary rust file
-    os@syscmd("rm compiler/" + lone_name + ".rs").
-    --this returns us to original directory
-    os@chdir(dir_str).
-    -- print test to make sure it switched back to original directory
-    -- io@println(os@getdir()).
-
--- if parameters are provided
-with params do
-    let module:%string = params@0.
-    
-    -- target will be set to last target seen
-    let target = "".
-    for i in 1 to params@length()-1 do
-        if (params@i) == "TARGET=RUST" do
-            let target = "RUST".
-        elif (params@i) == "TARGET=ASM" do
-            let target = "ASM".
-        else
-            -- error
-
-        end
-    end
-    
-    -- gets the name of the file
-    let file_name = os@basename(module).
-
-    -- separates the file_name from the extension
-    let (lone_name, extension) = os@splitext(file_name).
-
-    --checks that the file is an asteroid file
-    assert(extension == ".ast").
-
-    --checks that the file is a file
-    assert(os@isfile(module)).
-    let dir_str = os@getdir().
-
-    --gets the path to where the python script is being run from
-    let comp_path = __get_path().
-    let (rootpath, my_base) = os@split(comp_path).
-    let ast_file_path = module.
-    os@syscmd("python3 " + rootpath + "/compiler/ac.py " + ast_file_path + " > " + rootpath + "/compiler/" + lone_name + ".rs").
-
-    if target == "RUST" do
-        return.
-    end
-    
-    -- changes the directory to access the compile.sh script
-    os@chdir(rootpath).
-
-    -- rust compiler command, using variables and proposed final version of command, awaiting completion of the compile.sh script
-    if target == "ASM" do
-        os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs ASM").
-    else
-        os@syscmd(rootpath + "/compiler/compile.sh " + lone_name + " " + rootpath + "/compiler/" + lone_name + ".rs").
-    end
-
-    --deletes temporary rust file
-    os@syscmd("rm compiler/" + lone_name + ".rs").
-    --this returns us to original directory
-    os@chdir(dir_str).
-    -- print test to make sure it switched back to original directory
-    -- io@println(os@getdir()).
->>>>>>> Stashed changes
 end
 
 ------------------------------------------------------------------
