@@ -9,6 +9,13 @@ import re
 from asteroid.state import state, warning
 from asteroid.globals import ExpectationError, builtins
 
+repl_use_autocompletion = True
+
+def set_repl_autocomplete(flag: bool):
+    global repl_use_autocompletion
+    repl_use_autocompletion = flag
+    _ = 0
+
 # table that specifies the token value and type for keywords
 keywords = {
 #   value:          type:
@@ -182,11 +189,54 @@ def get_member_identifiers(identifier: str) -> list[str]|None:
     if identifier in state.symbol_table.global_scope.keys():
         id_type = state.symbol_table.global_scope[identifier][0]
         if id_type == 'object':
-            return state.symbol_table.global_scope[identifier][2][1][1]
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                STRUCT_ID,
+                ( #Member names
+                    MEMBER_NAMES_LABEL,
+                    ( #List token
+                        LIST_LABEL,
+                        member_names,
+                    )
+                ),
+                STRUCT_MEMORY,
+            ) = token
+            return member_names
+        
         elif id_type == 'module':
-            return list(state.symbol_table.global_scope[identifier][-1][-1][0][0].keys())
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                IDENTIFIER_TUPLE,
+                ( #Scope outer layer
+                    SCOPE_LABEL,
+                    ( #Scope inner layer
+                        (#Local scope symbol tables
+                            local_symtab,
+                            BUILTINS,
+                        ),
+                        _, #?
+                        GLOBAL_SCOPE,
+                    )
+                )
+            ) = token
+            return list(local_symtab.keys())
+        
         elif id_type == 'struct':
-            return state.symbol_table.global_scope[identifier][1][1][1]
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                ( #Member names
+                    MEMBER_NAMES_LABEL,
+                    ( #List token
+                        LIST_LABEL,
+                        member_names,
+                    )
+                ),
+                STRUCT_MEMORY,
+            ) = token
+            return member_names
         else:
             return None
     else:

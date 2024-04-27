@@ -10,7 +10,7 @@ os.chdir(file_path)
 sys.path.append(grandparent_dir)
 
 from asteroid.interp import interp
-import asteroid.lex as lex
+import lex as lex
 from asteroid.state import state
 
 def test_get_identifiers():
@@ -45,8 +45,10 @@ def test_get_member_identifiers():
     print(lex.get_member_identifiers("io"))
     print(lex.get_member_identifiers("A"))
     print(lex.get_member_identifiers("foo"))
+    return None
 
 if __name__ == "__main__":
+    test_get_member_identifiers()
     print("Testing get_identifiers:\n")
     test_get_identifiers()
     print("\n\n\n")
@@ -56,4 +58,5 @@ if __name__ == "__main__":
     print("Testing get_member_identifiers:\n")
     test_get_member_identifiers()
     print("\n\nTesting complete.")
+    
     

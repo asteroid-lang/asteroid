@@ -4,16 +4,14 @@
 # (c) University of Rhode Island
 ###########################################################################################
 
-from asteroid.interp import interp, load_prologue
+from interp import interp, load_prologue
 from asteroid.version import VERSION
 from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from asteroid.lex import get_indentifiers
-from asteroid.lex import get_member_identifiers
+from lex import get_indentifiers, get_member_identifiers, repl_use_autocompletion
 from sys import stdin,exit
-
 import readline
 import re
 
@@ -151,8 +149,9 @@ def completion_function(text, state):
 
 def run_repl(redundancy, functional_mode):
     #Setup the autocompleter
-    readline.parse_and_bind("Tab: complete")
-    readline.set_completer(completion_function)
+    if repl_use_autocompletion:
+        readline.parse_and_bind("Tab: complete")
+        readline.set_completer(completion_function)
     
     # The two different prompt types either > for a new statement
     # or . for continuing one
