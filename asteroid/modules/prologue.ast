@@ -989,5 +989,5 @@ sys.path.append(parent_dir)
 
 from lex import set_repl_autocomplete
 
-set_repl_autocomplete(False)
+set_repl_autocomplete(True)
 "
