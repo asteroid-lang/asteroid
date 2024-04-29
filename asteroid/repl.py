@@ -20,6 +20,9 @@ prefix = ""
 last_completion = ""
 last_index = 0
 
+#Change this flag to False to disable autocompletion
+repl_use_autocompletion = True
+
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
     if new:
         state.initialize()
