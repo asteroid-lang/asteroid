@@ -10,7 +10,7 @@ os.chdir(file_path)
 sys.path.append(grandparent_dir)
 
 from asteroid.interp import interp
-import lex as lex
+import asteroid.lex as lex
 from asteroid.state import state
 
 def test_get_identifiers():
