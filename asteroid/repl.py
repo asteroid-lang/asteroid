@@ -10,7 +10,7 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-from asteroid.lex import get_indentifiers, get_member_identifiers, repl_use_autocompletion
+from asteroid.lex import get_indentifiers, get_member_identifiers
 from sys import stdin,exit
 import readline
 import re
