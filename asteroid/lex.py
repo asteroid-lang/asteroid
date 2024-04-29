@@ -14,7 +14,6 @@ repl_use_autocompletion = True
 def set_repl_autocomplete(flag: bool):
     global repl_use_autocompletion
     repl_use_autocompletion = flag
-    _ = 0
 
 # table that specifies the token value and type for keywords
 keywords = {
