@@ -9,12 +9,6 @@ import re
 from asteroid.state import state, warning
 from asteroid.globals import ExpectationError, builtins
 
-repl_use_autocompletion = True
-
-def set_repl_autocomplete(flag: bool):
-    global repl_use_autocompletion
-    repl_use_autocompletion = flag
-
 # table that specifies the token value and type for keywords
 keywords = {
 #   value:          type:

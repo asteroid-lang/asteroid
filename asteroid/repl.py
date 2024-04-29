@@ -21,7 +21,7 @@ last_completion = ""
 last_index = 0
 
 #Change this flag to False to disable autocompletion
-repl_use_autocompletion = True
+state.repl_use_autocompletion = True
 
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
     if new:
@@ -152,7 +152,7 @@ def completion_function(text, state):
 
 def run_repl(redundancy, functional_mode):
     #Setup the autocompleter
-    if repl_use_autocompletion:
+    if state.repl_use_autocompletion:
         readline.parse_and_bind("Tab: complete")
         readline.set_completer(completion_function)
     
