@@ -973,21 +973,3 @@ with none do
                 @reverse()
                 @join("").
 end
-
-------------------------------------------------------------------
---Repl autocompletion toggle
-------------------------------------------------------------------
-escape
-"
-import os
-import sys
- 
-file_path = os.path.dirname(os.path.abspath( __file__ ))
-os.chdir(file_path)
-(parent_dir,_) = os.path.split(file_path)
-sys.path.append(parent_dir)
-
-from lex import set_repl_autocomplete
-
-set_repl_autocomplete(True)
-"
