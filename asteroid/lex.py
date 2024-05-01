@@ -130,7 +130,7 @@ def token_lookup(type):
 #The pool of identifiers includes both user-defined data
 #and keywords defined by the language. The list of identifiers
 #does not contain duplicates and is sorted alphanumerically.
-def get_indentifiers() -> list[str]:
+def get_indentifiers():
     #A set is used to only have unique elements
     ids = builtins
     for name in keywords:
@@ -151,7 +151,7 @@ def get_indentifiers() -> list[str]:
 #The pool of identifiers includes both user-defined data
 #and keywords defined by the language. The list of identifiers
 #does not contain duplicates and is sorted alphanumerically.
-def get_indentifiers_by_prefix(prefix: str) -> list[str]:
+def get_indentifiers_by_prefix(prefix):
     #A set is used to only have unique elements
     ids = set()
     
@@ -178,7 +178,7 @@ def get_indentifiers_by_prefix(prefix: str) -> list[str]:
 #the associated data type, which can be either an object, module or struct. If
 #the identifier given is not for one of the mentioned data types, it will return
 #None
-def get_member_identifiers(identifier: str) -> list[str]|None:
+def get_member_identifiers(identifier):
     if identifier in state.symbol_table.global_scope.keys():
         id_type = state.symbol_table.global_scope[identifier][0]
         if id_type == 'object':
