@@ -7,7 +7,7 @@
 import re
 
 from asteroid.state import state, warning
-from asteroid.globals import ExpectationError
+from asteroid.globals import ExpectationError, builtins
 
 # table that specifies the token value and type for keywords
 keywords = {
@@ -130,9 +130,9 @@ def token_lookup(type):
 #The pool of identifiers includes both user-defined data
 #and keywords defined by the language. The list of identifiers
 #does not contain duplicates and is sorted alphanumerically.
-def get_indentifiers() -> list[str]:
+def get_indentifiers():
     #A set is used to only have unique elements
-    ids = set()
+    ids = builtins
     for name in keywords:
         ids.add(name)
     
@@ -151,9 +151,14 @@ def get_indentifiers() -> list[str]:
 #The pool of identifiers includes both user-defined data
 #and keywords defined by the language. The list of identifiers
 #does not contain duplicates and is sorted alphanumerically.
-def get_indentifiers_by_prefix(prefix: str) -> list[str]:
+def get_indentifiers_by_prefix(prefix):
     #A set is used to only have unique elements
     ids = set()
+    
+    for name in builtins:
+        if name.startswith(prefix):
+            ids.add(name)
+            
     for name in keywords:
         if name.startswith(prefix):
             ids.add(name)
@@ -168,6 +173,67 @@ def get_indentifiers_by_prefix(prefix: str) -> list[str]:
     ids.sort()
     
     return ids
+
+#Given an identifier, it will return a list of identifiers indentifying members of
+#the associated data type, which can be either an object, module or struct. If
+#the identifier given is not for one of the mentioned data types, it will return
+#None
+def get_member_identifiers(identifier):
+    if identifier in state.symbol_table.global_scope.keys():
+        id_type = state.symbol_table.global_scope[identifier][0]
+        if id_type == 'object':
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                STRUCT_ID,
+                ( #Member names
+                    MEMBER_NAMES_LABEL,
+                    ( #List token
+                        LIST_LABEL,
+                        member_names,
+                    )
+                ),
+                STRUCT_MEMORY,
+            ) = token
+            return member_names
+        
+        elif id_type == 'module':
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                IDENTIFIER_TUPLE,
+                ( #Scope outer layer
+                    SCOPE_LABEL,
+                    ( #Scope inner layer
+                        (#Local scope symbol tables
+                            local_symtab,
+                            BUILTINS,
+                        ),
+                        _, #?
+                        GLOBAL_SCOPE,
+                    )
+                )
+            ) = token
+            return list(local_symtab.keys())
+        
+        elif id_type == 'struct':
+            token = state.symbol_table.global_scope[identifier]
+            (
+                TOKEN_TYPE,
+                ( #Member names
+                    MEMBER_NAMES_LABEL,
+                    ( #List token
+                        LIST_LABEL,
+                        member_names,
+                    )
+                ),
+                STRUCT_MEMORY,
+            ) = token
+            return member_names
+        else:
+            return None
+    else:
+        return None
 
 class Token:
     def __init__(self,type,value,module,lineno):

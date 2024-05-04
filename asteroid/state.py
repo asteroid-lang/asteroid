@@ -25,6 +25,7 @@ class State:
         # this.
         self.error_trace = None
         self.debugger = None
+        self.repl_use_autocompletion = True
 
 state = State()
 
