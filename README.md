@@ -4,6 +4,13 @@ be found at the website [asteroid-lang.org](https://asteroid-lang.org).
 Documentation on Asteroid can be found at
 [asteroid-lang.readthedocs.io](https://asteroid-lang.readthedocs.io).
 
+## New in Release 2.0.2
+
+* Improved interactive debugger (MAD).
+* Autocompletion on interactive shell.
+* Fixed the Windows 'pyreadline3' bug.
+
+
 ## New in Release 2.0.1
 
 * We now support the ASTEROIDPATH environment variable which is expected to have a colon seperated list of directories to search for user defined modules.

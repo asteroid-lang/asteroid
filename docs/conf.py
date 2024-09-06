@@ -27,7 +27,7 @@ author = 'Lutz Hamel, Tim Colaneri, Oliver McLaughlin, Ariel Finkel, Theodore He
 # readthedocs does not handle the full repo so we can't do this
 # from asteroid.version import VERSION
 # release = VERSION
-release = "2.0.1"
+release = "2.0.2"
 
 
 # -- General configuration ---------------------------------------------------

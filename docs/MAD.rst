@@ -36,7 +36,7 @@ This will start a debugging session of the file ``<FILENAME>``.
 Here is an example where ``<FILENAME>`` is ``list.ast``,
 ::
     $ asteroid -d list.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type 'help' for additional information
     mad>
@@ -86,7 +86,7 @@ To get only the current line, the ``where`` command will display the current fil
 the contents of that line. Here are those commands in action,
 ::
     $ asteroid -d list.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> list
@@ -126,7 +126,7 @@ in the order that it was set in. The ``clear`` command will remove all of the br
 an example of this behavior,
 ::
     $ asteroid -d list.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> list
@@ -184,7 +184,7 @@ each of the three commands,
 When calling ``continue``, the debugging session will stop on line 4 followed by line 10,
 ::
     $ asteroid -d nested_scopes.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> list
@@ -224,7 +224,7 @@ When calling ``continue``, the debugging session will stop on line 4 followed by
 When calling ``step``, the debugging session will enter any scope, including load statements and function calls,
 ::
     $ asteroid -d nested_scopes.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> list
@@ -267,7 +267,7 @@ When calling ``step``, the debugging session will enter any scope, including loa
 Calling ``next`` only stops on valid statements within the current scope, never entering a lower scope.
 ::
     $ asteroid -d nested_scopes.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> next
@@ -348,7 +348,7 @@ value separated by a colon on the same line. Here is a demonstration with the fo
 This is the debugging session,
 ::
     $ asteroid -d nested_data.ast
-    Minimal Asteroid Debugger 0.0.1
+    Minimal Asteroid Debugger 0.0.2
     (c) University of Rhode Island
     type "help" for additional information
     mad> set 13
@@ -444,7 +444,7 @@ The following is an demonstration using the example program,
 This is the demonstration,
 ::
    $ asteroid -d factorial.ast
-   Minimal Asteroid Debugger 0.0.1
+   Minimal Asteroid Debugger 0.0.2
    (c) University of Rhode Island
    type "help" for additional information
    mad> set 5
