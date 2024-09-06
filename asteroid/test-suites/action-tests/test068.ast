@@ -10,7 +10,6 @@ function plot with (dt,avg) do escape
 "
 import pandas as pd
 import matplotlib.pyplot as plt
-plt.style.use('seaborn')
 
 # import parameters from Asteroid into Python
 dt_val = state.symbol_table.lookup_sym('dt')

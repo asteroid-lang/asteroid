@@ -111,7 +111,7 @@ def main():
 
     if debug_flag:
         # Create a new debugger
-        db = MAD()
+        db = MAD(functional_mode=flags['-F'])
     else:
         db = None
 

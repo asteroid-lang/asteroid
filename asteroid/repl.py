@@ -10,17 +10,20 @@ from asteroid.state import state
 from asteroid.globals import ExpectationError
 from asteroid.walk import function_return_value
 from asteroid.support import term2string
-
+from asteroid.lex import get_indentifiers, get_member_identifiers
 from sys import stdin,exit
-import platform
+import readline
+import re
 
-if platform.system() == 'Windows':
-    import pyreadline3
-else:
-    import readline
+#Variables needed for autocomplete cycling
+prefix = ""
+last_completion = ""
+last_index = 0
+
+#Change this flag to False to disable autocompletion
+state.repl_use_autocompletion = True
 
 def repl(new=True, redundancy=False, prologue=False, functional_mode=False):
-
     if new:
         state.initialize()
         if prologue:
@@ -37,8 +40,122 @@ def print_repl_menu():
     print("(c) University of Rhode Island")
     print("Type \"help\" for additional information")
 
-def run_repl(redundancy, functional_mode):
+#This is the function that will be passed into readline to
+#allow for autocompletion. Text is the token currently highlighted
+#by the user, while state is the number of times the function was called before
+#a valid completion was returned. The function will be called again if a string is
+#returned, and will stop being called if a non string object is returned.
+def completion_function(text, state):
+    #Here we "hijack" the iteration with readline's calling of the function by
+    #iterating on our own only on the first call, returning None on
+    #all other calls of the function
+    if state == 0:
+        #identifiers is the default pool of completions
+        identifiers = get_indentifiers()
+        
+        #If nothing has been initialized yet, we need to interpret
+        #something to initialize the asteroid state.
+        #We interpret nothing so that it has no impact on the lines
+        #interpreted later.
+        if identifiers == []:
+            interp("",
+                    initialize_state=False,
+                    redundancy=False,
+                    prologue=True,
+                    functional_mode=False,
+                    exceptions=True)
+            identifiers = get_indentifiers()
+        
+        #Here we start checking if we are doing a completion for accessing a member
+        user_in = readline.get_line_buffer()
+        #The index of the beginning of the substring that the user has highlighted
+        i = readline.get_begidx()
+        
+        get_members = False
+        #Check if there's an @ before or at the autocompletion index
+        if i < len(user_in) and user_in[i] == '@':
+            get_members = True
+        else:
+            i -= 1
+            while i > 0:
+                if user_in[i] == ' ':
+                    pass
+                elif user_in[i] == '@':
+                    get_members = True
+                    i -= 1
+                    break
+                else:
+                    break
+                i -= 1
+            
+        #If there was a preceding @, try to use members as the completion pool
+        if get_members:
+            parent_id = ""
+            
+            #Find where the parent begins
+            while i >= 0 and user_in[i] == " ":
+                i -= 1
+            
+            #Get the parent
+            while i >= 0:
+                if re.match(r'[a-zA-Z_0-9]',user_in[i]):
+                    parent_id = user_in[i] + parent_id
+                else:
+                    break
+                i -= 1
 
+            #Only try to set identifiers to member_list if the
+            #parent identifier is valid
+            if len(parent_id) > 0 and re.match(r'[a-zA-Z_]',parent_id[0]):
+                member_list = get_member_identifiers(parent_id)
+                #Make sure the parent is actually a parent
+                if member_list:
+                    identifiers = list(member_list)
+        
+        global last_completion
+        global last_index
+        global prefix
+        
+        start = 0 #Start at the first identifier
+        #This flag allows for the autocompleter to start over
+        #if no autcompletions are available
+        allow_cycle = False
+        
+        if text == "": #This otherwise causes weird behavior
+            start = 0
+            last_index = 0
+            prefix = ""
+            last_completion = ""
+        elif text == last_completion: #Check if this is a repeat tab hit
+            allow_cycle = True
+            start = last_index + 1 #Jump ahead to avoid redundancy
+            if start == len(identifiers):
+                start = 0
+            text = prefix
+        else:
+            prefix = text #Set a new prefix for future cycles
+        
+        i = start
+        while i < len(identifiers):
+            token = identifiers[i]
+            if token.startswith(text) and token != last_completion:
+                last_index = i
+                last_completion = token
+                return token
+            i += 1
+            
+            if i == len(identifiers) and allow_cycle:
+                allow_cycle = False
+                i = 0
+    else:
+        return None
+
+def run_repl(redundancy, functional_mode):
+    #Setup the autocompleter
+    if state.repl_use_autocompletion:
+        readline.parse_and_bind("Tab: complete")
+        readline.set_completer(completion_function)
+    
     # The two different prompt types either > for a new statement
     # or . for continuing one
     # lhh: changed the prompt since replit.com uses the > as their console prompt
@@ -126,3 +243,6 @@ def run_repl(redundancy, functional_mode):
             current_prompt = arrow_prompt
         else:
             current_prompt = arrow_prompt
+
+if __name__ == "__main__":
+    repl(True, redundancy=False, prologue=True, functional_mode=False)

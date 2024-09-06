@@ -297,3 +297,137 @@ def term2string(term):
     else:
         return '('+TYPE+'...)'
 
+def get_tail_term(sym, term, attrs):
+    # sym was None: print error message and return None
+    if not sym:
+        print("error: variable {} not found".format('@'.join(sym + attrs)))
+        return None
+    
+    # Loop over all of the attributes, get the type and check if the attribute is an integer or number
+    for a in attrs:
+        TYPE = term[0]
+        is_index = a.lstrip('-+').isnumeric()
+        is_member = not a.isnumeric()
+        
+        # Indexing a list or tuple: if the index is at least 0, set the term to the value of that index.
+        # Otherwise, print an error message and return None
+        if TYPE in ['list', 'tuple'] and is_index:
+            val = term[1]
+            if 0 <= int(a) < len(val):
+                term = val[int(a)]
+            else:
+                print("error: invalid index value {}".format(a))
+                return None
+        # Indexing a string: if the index is at least 0, set the term to a string equal to a single character.
+        # Otherwise, error and return None
+        elif TYPE in ['string'] and is_index:
+            val = term[1]
+            if 0 <= int(a) < len(val):
+                term = ('string', val[int(a)])
+            else:
+                print("error: invalid index value {}".format(a))
+                return None
+        # Accessing structure member: if the member exists, set the term to the object data of that member
+        # Otherwise, error and return None
+        elif TYPE in ['object'] and is_member:
+            (OBJECT,
+            (STRUCT_ID, (ID, struct_id)),
+            (MEMBER_NAMES, (LIST, member_names)),
+            (OBJECT_MEMORY, (LIST, object_memory))) = term
+            if a in member_names:
+                member_ix = member_names.index(a)
+                term = object_memory[member_ix]
+            else:
+                print("error: instance of struct {} has no member '{}'".format(struct_id, a))
+                return None
+        
+        # Accessing member on list, tuple, or string, or indexing a structure, or attempting to access attributes on any type that
+        # does not include those types: error and return None.
+        elif TYPE in ['list', 'tuple', 'string'] and is_member:
+            print("error: instance of {} has no data members".format(TYPE))
+            return None
+        elif TYPE in ['object'] and is_index:
+            print("error: structures are not indexable")
+            return None
+        elif TYPE not in ['list', 'tuple', 'string', 'object']:
+            print("error: instance of {} has no accessible attributes".format(TYPE))
+            return None
+        
+        # Used for error handling: attach the next attribute to the existing symbol
+        sym += "@{}".format(a)
+    return term
+
+def term2verbose(term, indent_size=0, initial_indent=True):
+    TYPE = term[0]
+    # Type does not contain nested data: call term2string and return the value
+    if TYPE not in ['list', 'tuple', 'object']:
+        return term2string(term)
+    
+    curr_indent, next_indent = ' '*4*indent_size, ' '*4*(indent_size+1)
+    term_string = curr_indent if initial_indent else ''
+    
+    # Type is an object: build string with struct name, and data members and corresponding types on separate lines
+    # Make sure indent is not applied twice
+    if TYPE == 'object':
+        (OBJECT,
+        (STRUCT_ID, (ID, struct_id)),
+        (MEMBER_NAMES, (LIST, member_names)),
+        (OBJECT_MEMORY, (LIST, object_memory))) = term
+        
+        term_string += (struct_id + '(\n')
+        l = len(member_names)
+        for ix in range(l):
+            term_string += "{}{}: {}".format(next_indent,
+                                           member_names[ix],
+                                           term2verbose(object_memory[ix], indent_size=indent_size+1, initial_indent=False))
+            term_string += ',\n' if ix < l-1 else '\n'
+        term_string += curr_indent + ')'
+    # Type is list or tuple: build string with brackets, and stored data on each new line, making sure to indent new data when not nested.
+    else:
+        val = term[1]
+        term_string += '[\n' if TYPE == 'list' else '(\n'
+        l = len(val)
+        for i in range(l):
+            if val[i][0] not in ['list', 'tuple', 'object']:
+                term_string += next_indent
+            term_string += term2verbose(val[i], indent_size=indent_size+1)
+            if i != l-1:
+                term_string += ','
+            if l > 1 or TYPE == 'list':
+                term_string += '\n'
+        if l == 1 and TYPE == 'tuple':
+            term_string += ',\n'
+        term_string += curr_indent + (']' if TYPE == 'list' else ')')
+    return term_string
+
+def find_function(sym, val, fname, func_name):
+    # If the function has already been found, check if it is in the correct file
+    if sym == func_name and val[0] == 'function-val':
+        if _check_lineinfo_function(val, fname): return True
+    # If we are looking at a struct, check if the function is one of its members and if it lies in the correct file
+    if val[0] == 'struct':
+        (STRUCT,
+        (MEMBER_NAMES, (LIST, member_names)),
+        (STRUCT_MEMORY, (LIST, struct_memory))) = val
+        if func_name in member_names and struct_memory[member_names.index(func_name)][0] == 'function-val':
+            if _check_lineinfo_function(struct_memory[member_names.index(func_name)], fname): return True
+    # If we are looking at a loaded module, recurse on everything that is not another module and return True if the function was found
+    if val[0] == 'module':
+        (MODULE,
+        (ID, id),
+        (SCOPE, scope)) = val
+        for s in scope[0]:
+            for (new_sym, new_val) in s.items():
+                if new_val[0] != 'module' and find_function(new_sym, new_val, fname, func_name):
+                    return True
+    return False
+    
+def _check_lineinfo_function(val, fname):
+    # Extract the lineinfo field and compare it to the provided filename
+    (FUNCTION_VAL,
+    (BODY_LIST,
+    (LIST, body_list)),
+    (scopes, globals, global_scope)) = val
+    (LINEINFO,
+    (filename, lineno)) = body_list[0]
+    return filename == fname
