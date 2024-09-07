@@ -1,5 +1,4 @@
 pandas
 numpy
 matplotlib
-sphinx-rtd-theme
 pyreadline3; platform_system == "Windows"
