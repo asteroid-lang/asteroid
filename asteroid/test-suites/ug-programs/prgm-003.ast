@@ -9,5 +9,5 @@
         with n:*pos_int do            -- use first pattern
             return n * fact (n-1).
         with n:*neg_int do            -- use second pattern
-            throw Error("undefined for "+n).
+            throw Error("undefined for "+ tostring (n)).
         end
