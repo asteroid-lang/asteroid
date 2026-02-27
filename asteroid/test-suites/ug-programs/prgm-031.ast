@@ -6,7 +6,7 @@
         with n if (n is %integer) and (n > 0) do
             return n * factorial (n-1).
         with n if (n is %integer) and (n < 0) do
-            throw Error("factorial is not defined for "+n).
+            throw Error("factorial is not defined for " + tostring (n)).
     end
 
     io @println ("The factorial of 3 is: " + tostring (factorial 3)).
